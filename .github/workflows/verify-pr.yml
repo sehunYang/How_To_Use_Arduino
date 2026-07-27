@@ -1,20 +1,21 @@
 # PR verification gate for changes touching recipe/sketch/rule content.
 #
-# The plan's PR trigger is "diff + L3" (diff-aware checks plus a real Wokwi
-# simulation run). L3 needs a Wokwi CLI token, which is human-provisioning-gated
-# (see docs/wokwi-setup.md, US-209) and is not available in this run, so this
-# workflow instead runs every check that IS code-verifiable at PR time: L1 +
-# L2 + L5, the same subset as verify-daily.yml. Treat this as "everything we
-# can prove without a Wokwi account", not the full plan's PR gate.
+# This is the plan's full PR trigger: L1 + L2 + L5 plus real L3 Wokwi
+# simulation. `WOKWI_CLI_TOKEN` is provisioned (docs/wokwi-setup.md) and L3 has
+# been observed passing end-to-end in a real runner — see the verified run
+# recorded in docs/wokwi-setup.md §5.
+#
+# Two L3 projects run, because a recipe's diagram must contain exactly the
+# circuit its `wiring[]` describes (enforced by src/wokwi/netlist.test.ts):
+#   - root project        -> the pendulum recipe as a student builds it
+#   - wokwi/chip-conformance -> the INA219/TSL2591 custom-chip rig, a fixture
 #
 # Source of truth for each job's correctness:
 #   - L1 (corpus/static check)         -> US-006 / US-013 (`npm test`)
+#   - Wokwi layout + netlist gates     -> `npm run test:wokwi-layout`
 #   - Firestore/Storage security rules -> US-009 (`npm run test:rules`)
 #   - L2 (arduino-cli compile gate)    -> US-205 (`npm run verify:compile`)
 #   - L5 (host logic + chip-register)  -> US-206 / US-207 (`npm run verify:logic`)
-# As with verify-daily.yml, this file has been validated for YAML correctness
-# and every referenced script verified green locally by its own story — it
-# has not been proven to execute inside a real GitHub Actions runner.
 name: PR Verification
 
 on:
@@ -60,10 +61,12 @@ jobs:
       - name: L1 corpus/static checks (US-006/US-013 source of truth)
         run: npm test
 
-      - name: Strict Wokwi wiring layout rules
+      # Geometric layout rules AND the electrical netlist gate: every conductor
+      # a layout builds must be one recipe.wiring[] declares, and vice versa.
+      - name: Strict Wokwi wiring layout + netlist rules
         run: npm run test:wokwi-layout
 
-      - name: Verify generated Wokwi diagram is current
+      - name: Verify generated Wokwi diagrams are current
         run: npm run verify:wokwi-diagram
 
       - uses: actions/setup-java@v4
@@ -80,19 +83,33 @@ jobs:
       - name: L5 logic + chip-register harness (US-206/US-207 source of truth)
         run: npm run verify:logic
 
-      - name: Build Arduino Uno firmware for Wokwi
-        run: npm run build:wokwi
-
       - name: Install Wokwi CLI
         run: curl -L https://wokwi.com/ci/install.sh | sh
 
+      # MUST precede `build:wokwi`: that step copies chips/*.chip.wasm into the
+      # self-contained wokwi/chip-conformance project, so rebuilding the wasm
+      # afterwards would leave the rig simulating the committed binaries
+      # instead of the ones just built from C source.
       - name: Build INA219 and TSL2591 custom chips
         run: npm run build:wokwi:chips
 
-      - name: L3 Wokwi simulation
+      - name: Build Arduino Uno firmware + stage Wokwi project assets
+        run: npm run build:wokwi
+
+      - name: L3 Wokwi simulation — pendulum recipe
         uses: wokwi/wokwi-ci-action@v1
         with:
           token: ${{ secrets.WOKWI_CLI_TOKEN }}
           path: /
           timeout: 10000
           scenario: wokwi/pendulum.test.yaml
+
+      # Separate project: proves the hand-written chips answer real I2C traffic
+      # without wiring them into a recipe that never declared them.
+      - name: L3 Wokwi simulation — custom chip conformance rig
+        uses: wokwi/wokwi-ci-action@v1
+        with:
+          token: ${{ secrets.WOKWI_CLI_TOKEN }}
+          path: wokwi/chip-conformance
+          timeout: 10000
+          scenario: scenario.test.yaml

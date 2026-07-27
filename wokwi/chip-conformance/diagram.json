@@ -1,0 +1,244 @@
+{
+  "version": 1,
+  "author": "sehunYang",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "wokwi-arduino-uno",
+      "id": "uno",
+      "top": 360,
+      "left": 180,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-breadboard-half",
+      "id": "breadboard",
+      "top": 20,
+      "left": 100,
+      "attrs": {}
+    },
+    {
+      "type": "chip-ina219",
+      "id": "ina219",
+      "top": -170,
+      "left": 250,
+      "rotate": 0,
+      "attrs": {
+        "shuntRaw": "100",
+        "busRaw": "5000"
+      }
+    },
+    {
+      "type": "chip-tsl2591",
+      "id": "tsl2591",
+      "top": -170,
+      "left": 390,
+      "rotate": 0,
+      "attrs": {
+        "ch0Raw": "1234",
+        "ch1Raw": "321"
+      }
+    }
+  ],
+  "connections": [
+    [
+      "uno:5V",
+      "breadboard:tp.1",
+      "red",
+      [
+        "v-30",
+        "h-130",
+        "v-60",
+        "*",
+        "v30",
+        "h-20"
+      ]
+    ],
+    [
+      "uno:GND.2",
+      "breadboard:tn.1",
+      "black",
+      [
+        "v-50",
+        "h-130",
+        "v-40",
+        "*",
+        "v50",
+        "h20"
+      ]
+    ],
+    [
+      "uno:A4",
+      "breadboard:5t.a",
+      "green",
+      [
+        "v-70",
+        "h-120",
+        "v-20",
+        "*",
+        "v30",
+        "h-20"
+      ]
+    ],
+    [
+      "uno:A5",
+      "breadboard:7t.a",
+      "yellow",
+      [
+        "h20",
+        "v-90",
+        "h-140",
+        "v-10",
+        "*",
+        "v50",
+        "h20"
+      ]
+    ],
+    [
+      "ina219:VCC",
+      "breadboard:tp.15",
+      "red",
+      [
+        "h-35",
+        "v35",
+        "h10",
+        "*",
+        "v-30",
+        "h-20"
+      ]
+    ],
+    [
+      "ina219:GND",
+      "breadboard:tn.15",
+      "black",
+      [
+        "v55",
+        "h-10",
+        "*",
+        "v-50",
+        "h20"
+      ]
+    ],
+    [
+      "ina219:SDA",
+      "breadboard:15t.b",
+      "green",
+      [
+        "h15",
+        "v75",
+        "h5",
+        "*",
+        "v-30",
+        "h-20"
+      ]
+    ],
+    [
+      "ina219:SCL",
+      "breadboard:17t.b",
+      "yellow",
+      [
+        "h35",
+        "v95",
+        "h-10",
+        "*",
+        "v-50",
+        "h20"
+      ]
+    ],
+    [
+      "tsl2591:VCC",
+      "breadboard:tp.25",
+      "red",
+      [
+        "h-35",
+        "v35",
+        "h10",
+        "*",
+        "v-30",
+        "h-20"
+      ]
+    ],
+    [
+      "tsl2591:GND",
+      "breadboard:tn.25",
+      "black",
+      [
+        "v55",
+        "h-10",
+        "*",
+        "v-50",
+        "h20"
+      ]
+    ],
+    [
+      "tsl2591:SDA",
+      "breadboard:25t.b",
+      "green",
+      [
+        "h15",
+        "v75",
+        "h5",
+        "*",
+        "v-30",
+        "h-20"
+      ]
+    ],
+    [
+      "tsl2591:SCL",
+      "breadboard:27t.b",
+      "yellow",
+      [
+        "h35",
+        "v95",
+        "h-10",
+        "*",
+        "v-50",
+        "h20"
+      ]
+    ],
+    [
+      "breadboard:5t.e",
+      "breadboard:15t.e",
+      "green",
+      [
+        "v-20",
+        "h90",
+        "v20",
+        "h10"
+      ]
+    ],
+    [
+      "breadboard:15t.d",
+      "breadboard:25t.d",
+      "green",
+      [
+        "h10",
+        "v-35",
+        "h90",
+        "v35"
+      ]
+    ],
+    [
+      "breadboard:7t.e",
+      "breadboard:17t.e",
+      "yellow",
+      [
+        "v20",
+        "h90",
+        "v-20",
+        "h10"
+      ]
+    ],
+    [
+      "breadboard:17t.d",
+      "breadboard:27t.d",
+      "yellow",
+      [
+        "h10",
+        "v45",
+        "h90",
+        "v-45"
+      ]
+    ]
+  ]
+}

@@ -12,15 +12,46 @@
 5. 검증을 통과한 명세만 `compileReadableLayout()`로 Wokwi 형식에 변환합니다.
 6. 생성된 `diagram.json`은 직접 수정하지 않습니다.
 
-현재 루트 회로의 원본은 `src/wokwi/layouts/pendulumLayout.ts`입니다.
+현재 원본은 두 개입니다.
+
+| 원본 | 생성물 | 성격 |
+| --- | --- | --- |
+| `src/wokwi/layouts/pendulumLayout.ts` | `diagram.json` | pendulum 레시피 회로. **학생이 실제로 만드는 회로** |
+| `src/wokwi/layouts/chipConformanceLayout.ts` | `wokwi/chip-conformance/diagram.json` | INA219·TSL2591 커스텀 칩 검증 리그. 레시피가 아닌 픽스처 |
 
 ```powershell
 npm run generate:wokwi-diagram
 npm run verify:wokwi-diagram
 ```
 
-첫 명령은 엄격한 검증을 통과한 경우에만 `diagram.json`을 생성합니다. 두 번째 명령은
+첫 명령은 엄격한 검증을 통과한 경우에만 두 `diagram.json`을 생성합니다. 두 번째 명령은
 생성물이 원본과 정확히 일치하는지 확인하며 CI에서도 실행됩니다.
+
+## 전기적 검증 — 넷리스트
+
+기하학적 검증은 도선이 **보기 좋은지**만 판정합니다. 도선이 **옳은 구멍에 꽂혔는지**는
+판정하지 못합니다. 5번 행 대신 6번 행에 꽂아도 직교이고 겹치지 않으면 11종 검사를
+모두 통과합니다.
+
+`src/wokwi/netlist.ts`가 이 공백을 메웁니다. 레이아웃에서 실제 도통을 유도한 뒤
+두 가지 독립적인 선언과 대조합니다.
+
+1. **`wire`의 `net` 라벨** — 한 도체가 서로 다른 net 이름을 가질 수 없고(`net-label-conflict`),
+   같은 net 이름이 서로 이어지지 않은 두 도체에 나뉘어 있을 수 없습니다(`net-label-split`,
+   버스 도선 누락 탐지).
+2. **`recipe.wiring[]`** — 레이아웃이 만드는 도체 집합과 레시피가 학생에게 지시하는
+   도체 집합이 **정확히 같아야** 합니다(`netlist-mismatch`).
+
+브레드보드 도통은 실물 규칙 그대로 모델링합니다. 터미널 스트립 한 열(`5t.a`~`5t.e`)은
+하나의 도체이고, 전원·접지 레일(`tp.*`, `tn.*`)은 보드 전체에 걸쳐 각각 하나의 도체입니다.
+따라서 가독성을 위해 브레드보드를 경유해도 레시피가 선언하지 않은 연결이 생기지 않습니다.
+
+이 대조 덕분에 **CI가 시뮬레이션한 회로와 학생이 만드는 회로가 같다는 것이 구성상 보장**
+됩니다. 검증은 `src/wokwi/netlist.test.ts`가 수행하며 `npm run test:wokwi-layout`과
+`npm test`에 모두 포함됩니다.
+
+> 커스텀 칩 리그(`chipConformanceLayout`)에는 대응하는 레시피가 없으므로 2번 대조가
+> 적용되지 않습니다. 대신 기대 넷리스트를 테스트에 직접 단언합니다.
 
 ## 명세 계약
 

@@ -5,6 +5,7 @@ import {
   type ReadableLayout,
 } from './readableLayout'
 import { pendulumLayout } from './layouts/pendulumLayout'
+import { chipConformanceLayout } from './layouts/chipConformanceLayout'
 
 const base = (wires: ReadableLayout['wires']): ReadableLayout => {
   const partIds = new Set(
@@ -163,15 +164,26 @@ describe('strict readable Wokwi layout', () => {
     ])
   })
 
-  it('validates and compiles the production pendulum layout without overlapping bus routes', () => {
-    expect(
-      pendulumLayout.parts
-        .filter((part) => part.type !== 'wokwi-breadboard-half')
-        .every((part) => part.bounds !== undefined),
-    ).toBe(true)
+  it('validates and compiles the production pendulum layout, which wires the sensor straight to the board', () => {
+    expect(pendulumLayout.parts.every((part) => part.bounds !== undefined)).toBe(true)
     expect(validateReadableLayout(pendulumLayout)).toEqual([])
 
+    // The MPU6050 breaks out SCL before SDA while the Uno exposes A4 before A5,
+    // so those two wires must cross; every other pair stays crossing-free by
+    // turning at its own horizontal level.
     const diagram = compileReadableLayout(pendulumLayout)
+    expect(diagram.connections).toEqual([
+      ['mpu6050:VCC', 'uno:5V', 'red', ['v260', 'h120', 'v170']],
+      ['mpu6050:GND', 'uno:GND.2', 'black', ['v230', 'h125', 'v200']],
+      ['mpu6050:SCL', 'uno:A5', 'yellow', ['v200', 'h150', 'v230']],
+      ['mpu6050:SDA', 'uno:A4', 'green', ['v170', 'h115', 'v260']],
+    ])
+  })
+
+  it('validates and compiles the chip-conformance rig, whose two chips share a breadboard I2C bus', () => {
+    expect(validateReadableLayout(chipConformanceLayout)).toEqual([])
+
+    const diagram = compileReadableLayout(chipConformanceLayout)
     expect(diagram.connections).toEqual(
       expect.arrayContaining([
         ['breadboard:5t.e', 'breadboard:15t.e', 'green', ['v-20', 'h90', 'v20', 'h10']],

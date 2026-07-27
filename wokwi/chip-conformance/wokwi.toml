@@ -1,0 +1,18 @@
+# Custom-chip conformance rig (plan 2.4) — a verification fixture, not a recipe.
+#
+# Every path here is local to this directory on purpose: wokwi-cli resolves
+# wokwi.toml paths relative to the project root, so `npm run build:wokwi` copies
+# the compiled firmware and the chip binaries in beside this file rather than
+# pointing back at ../../.tools and ../../chips. Those copies are gitignored.
+[wokwi]
+version = 1
+firmware = "firmware.hex"
+elf = "firmware.elf"
+
+[[chip]]
+name = "ina219"
+binary = "ina219.chip.wasm"
+
+[[chip]]
+name = "tsl2591"
+binary = "tsl2591.chip.wasm"

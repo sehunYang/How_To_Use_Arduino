@@ -1,12 +1,11 @@
+# Root Wokwi project: the pendulum recipe exactly as a student builds it.
+# diagram.json is generated from src/wokwi/layouts/pendulumLayout.ts and is
+# gated against pendulumRecipe.wiring[] by src/wokwi/netlist.test.ts.
+#
+# No [[chip]] entries: this circuit is an Uno plus a stock wokwi-mpu6050. The
+# hand-written INA219/TSL2591 chips are exercised by the separate conformance
+# project in wokwi/chip-conformance/.
 [wokwi]
 version = 1
 firmware = ".tools/wokwi/pendulum/pendulum.ino.hex"
 elf = ".tools/wokwi/pendulum/pendulum.ino.elf"
-
-[[chip]]
-name = "ina219"
-binary = "chips/ina219.chip.wasm"
-
-[[chip]]
-name = "tsl2591"
-binary = "chips/tsl2591.chip.wasm"

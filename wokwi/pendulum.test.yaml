@@ -1,12 +1,11 @@
-name: Pendulum and custom I2C chips
+# Pendulum recipe scenario — asserts only what this recipe's own circuit can
+# produce. The INA219/TSL2591 assertions that used to live here moved to
+# wokwi/chip-conformance/scenario.test.yaml when the custom-chip rig was split
+# out of the recipe; keeping them here required wiring two sensors into the
+# diagram that pendulumRecipe.wiring[] never declared.
+name: Pendulum recipe (MPU6050)
 version: 1
 author: sehunYang
 steps:
   - wait-serial: "WOKWI_READY"
   - wait-serial: "MPU6050_OK"
-  - wait-serial: "CUSTOM_CHIPS_OK"
-  - set-control:
-      part-id: tsl2591
-      control: ch0Raw
-      value: 2048
-  - wait-serial: "TSL_CH0=2048"

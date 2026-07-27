@@ -56,6 +56,33 @@ function resolvePin(sensor: Sensor | undefined, pin: string): string {
 }
 
 /**
+ * Resolves one `Component.Pin` wiring endpoint to the `{partId, pin}` pair it
+ * denotes in Wokwi terms. Exported so the netlist checker (netlist.ts) derives
+ * recipe connectivity through the exact same rule this generator uses —
+ * duplicating it there would reintroduce, one layer down, the very drift the
+ * netlist gate exists to prevent.
+ */
+export function resolveWiringRef(
+  ref: string,
+  sensors: Sensor[],
+): { partId: string; pin: string; sensor: Sensor | undefined } {
+  const [token, pin] = splitRef(ref)
+  if (token.toUpperCase() === UNO_TOKEN) return { partId: UNO_PART_ID, pin, sensor: undefined }
+
+  const sensor = resolveSensor(token, sensors)
+  if (!sensor) {
+    // Emitting the connection anyway would produce a diagram whose endpoint
+    // references a part that was never added to parts[] — a dangling wire
+    // that no L1 check catches (those validate recipe.sensors[], not the
+    // wiring tokens themselves).
+    throw new Error(
+      `buildDiagram: wiring token "${token}" does not resolve to any known sensor or actuator`,
+    )
+  }
+  return { partId: token.toLowerCase(), pin: resolvePin(sensor, pin), sensor }
+}
+
+/**
  * Builds a Wokwi diagram.json-shaped object from a Recipe's wiring[] and the
  * owned Sensor inventory. Every part/pin decision flows from data already on
  * the Sensor record (`wokwi.part`, `wokwi.pinMap`) — there is no per-sensor
@@ -72,41 +99,23 @@ export function buildDiagram(recipe: Recipe, sensors: Sensor[]): Diagram {
   const seenPartIds = new Set([UNO_PART_ID])
   let nextLeft = PART_SPACING
 
-  function resolveToken(token: string): { partId: string; sensor: Sensor | undefined } {
-    if (token.toUpperCase() === UNO_TOKEN) return { partId: UNO_PART_ID, sensor: undefined }
+  function resolveEndpoint(ref: string): string {
+    const { partId, pin, sensor } = resolveWiringRef(ref, sensors)
 
-    const sensor = resolveSensor(token, sensors)
-    if (!sensor) {
-      // Emitting the connection anyway would produce a diagram whose endpoint
-      // references a part that was never added to parts[] — a dangling wire
-      // that no L1 check catches (those validate recipe.sensors[], not the
-      // wiring tokens themselves).
-      throw new Error(
-        `buildDiagram: wiring token "${token}" does not resolve to any known sensor or actuator`,
-      )
-    }
-
-    const partId = token.toLowerCase()
-    if (!seenPartIds.has(partId)) {
+    if (sensor && !seenPartIds.has(partId)) {
       seenPartIds.add(partId)
       parts.push({ id: partId, type: sensor.wokwi.part, top: 0, left: nextLeft })
       nextLeft += PART_SPACING
     }
-    return { partId, sensor }
+    return `${partId}:${pin}`
   }
 
-  const connections: DiagramConnection[] = recipe.wiring.map((step) => {
-    const [fromToken, fromPin] = splitRef(step.from)
-    const [toToken, toPin] = splitRef(step.to)
-    const from = resolveToken(fromToken)
-    const to = resolveToken(toToken)
-    return [
-      `${from.partId}:${resolvePin(from.sensor, fromPin)}`,
-      `${to.partId}:${resolvePin(to.sensor, toPin)}`,
-      step.color,
-      [],
-    ]
-  })
+  const connections: DiagramConnection[] = recipe.wiring.map((step) => [
+    resolveEndpoint(step.from),
+    resolveEndpoint(step.to),
+    step.color,
+    [],
+  ])
 
   return {
     version: 1,

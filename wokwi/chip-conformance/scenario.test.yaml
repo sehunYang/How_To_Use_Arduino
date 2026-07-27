@@ -1,0 +1,16 @@
+# Custom chip conformance: proves chips/ina219.chip.c and chips/tsl2591.chip.c
+# answer real I2C register traffic, including a control changed mid-simulation.
+name: INA219 and TSL2591 custom chip conformance
+version: 1
+author: sehunYang
+steps:
+  - wait-serial: "WOKWI_READY"
+  # Initial register reads matched: INA219 current == 100, TSL2591 CH0 == 1234.
+  - wait-serial: "CUSTOM_CHIPS_OK"
+  # Change the chip's control and prove the sketch reads the new value back —
+  # a static register dump would pass even if the chip ignored writes.
+  - set-control:
+      part-id: tsl2591
+      control: ch0Raw
+      value: 2048
+  - wait-serial: "TSL_CH0=2048"

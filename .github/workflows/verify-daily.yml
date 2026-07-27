@@ -1,9 +1,11 @@
 # Daily verification sweep against the canary recipe set (검증 원장 N5).
 #
-# This is a code-verifiable subset of the full verification ladder: L3 (real
-# Wokwi simulation) and PL5 (monthly-minutes measurement) need a Wokwi
-# account/CLI token that is human-provisioning-gated (see
-# docs/wokwi-setup.md, US-209) and are intentionally NOT run here.
+# L3 (real Wokwi simulation) is deliberately absent here, and NOT for want of a
+# token — `WOKWI_CLI_TOKEN` is provisioned and verify-pr.yml runs L3 on every
+# PR. The plan's trigger matrix puts L3 on the PR trigger and a monthly full
+# sweep, while the daily cron carries L1 + L2 + L5 + index/stats work; running
+# simulation minutes on a timer would spend the free-tier budget (PL5) on
+# content that has not changed.
 #
 # Source of truth for each job's correctness is the story that already
 # proved the underlying check green on its own, in isolation:
@@ -46,6 +48,11 @@ jobs:
 
       - name: L1 corpus/static checks (US-006/US-013 source of truth)
         run: npm test
+
+      # Catches a diagram committed out of sync with its ReadableLayout source
+      # even on days when nothing opens a PR.
+      - name: Verify generated Wokwi diagrams are current
+        run: npm run verify:wokwi-diagram
 
       - uses: actions/setup-java@v4
         with:

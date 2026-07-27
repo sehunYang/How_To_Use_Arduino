@@ -37,6 +37,12 @@ storage-debug.log
 /sketches/
 /diagram/
 
+# Build artefacts staged into the self-contained chip-conformance Wokwi project
+# by scripts/build-wokwi-firmware.ts (wokwi.toml paths must stay project-local).
+# The .wasm sources live in chips/ and ARE committed; these are copies.
+/wokwi/chip-conformance/firmware.*
+/wokwi/chip-conformance/*.chip.wasm
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

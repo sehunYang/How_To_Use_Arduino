@@ -20,7 +20,7 @@
     "build:wokwi": "tsx scripts/build-wokwi-firmware.ts",
     "generate:wokwi-diagram": "tsx scripts/generate-wokwi-diagram.ts",
     "verify:wokwi-diagram": "tsx scripts/generate-wokwi-diagram.ts --check",
-    "test:wokwi-layout": "vitest run src/wokwi/readableLayout.test.ts",
+    "test:wokwi-layout": "vitest run src/wokwi",
     "build:wokwi:chips": "wokwi-cli chip compile chips/ina219.chip.c chips/ina219.c -o chips/ina219.chip.wasm && wokwi-cli chip compile chips/tsl2591.chip.c chips/tsl2591.c -o chips/tsl2591.chip.wasm",
     "setup:zig": "node scripts/setup-zig.mjs",
     "verify:logic": "node scripts/verify-logic.mjs"

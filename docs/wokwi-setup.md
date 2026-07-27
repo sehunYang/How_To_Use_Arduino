@@ -64,19 +64,40 @@ npm run build:wokwi
 npm run build:wokwi:chips
 ```
 
-## 4. 대표 자동화 시나리오
+## 4. 자동화 시나리오 — 프로젝트 2개
 
-- [x] `wokwi/pendulum.test.yaml`을 작성했습니다.
+레시피 회로와 칩 검증 리그는 **분리된 Wokwi 프로젝트**입니다. 레시피의 `diagram.json`은
+`recipe.wiring[]`이 선언한 회로와 정확히 일치해야 하므로(`src/wokwi/netlist.ts` 게이트),
+레시피가 쓰지도 않는 조도계·전류계를 회로에 끼워 넣을 수 없기 때문입니다.
+
+### 4-1. pendulum 레시피 (루트 프로젝트)
+
+- [x] `wokwi/pendulum.test.yaml`
+- [x] MPU6050이 연결되어 `MPU6050_OK`를 출력하는지 확인합니다.
+- [x] 회로는 MPU6050 4선을 Uno에 직결 — 레시피 배선 스텝과 동일합니다.
+
+```powershell
+wokwi-cli . --scenario wokwi/pendulum.test.yaml --timeout 10000
+```
+
+### 4-2. 커스텀 칩 적합성 리그 (`wokwi/chip-conformance`)
+
+- [x] `wokwi/chip-conformance/scenario.test.yaml`
 - [x] Arduino Uno가 INA219의 CURRENT 레지스터를 I2C로 읽습니다.
 - [x] Arduino Uno가 TSL2591의 CH0 레지스터를 I2C로 읽습니다.
 - [x] 초기값이 맞으면 `CUSTOM_CHIPS_OK`를 출력합니다.
 - [x] 시나리오가 TSL2591의 `ch0Raw` 컨트롤을 2048로 변경합니다.
 - [x] 펌웨어가 변경값을 읽어 `TSL_CH0=2048`을 출력하는지 확인합니다.
 
-로컬 실행:
+이 프로젝트는 자기완결형입니다. `wokwi.toml`의 모든 경로가 프로젝트 루트 기준으로
+해석되므로 `npm run build:wokwi`가 펌웨어와 칩 WASM을 디렉터리 안으로 복사합니다.
+따라서 **`npm run build:wokwi:chips`를 `npm run build:wokwi`보다 먼저** 실행해야
+방금 빌드한 WASM이 리그에 반영됩니다.
 
 ```powershell
-wokwi-cli . --scenario wokwi/pendulum.test.yaml --timeout 10000
+npm run build:wokwi:chips
+npm run build:wokwi
+wokwi-cli wokwi/chip-conformance --scenario scenario.test.yaml --timeout 10000
 ```
 
 ## 5. GitHub Actions L3 검증
