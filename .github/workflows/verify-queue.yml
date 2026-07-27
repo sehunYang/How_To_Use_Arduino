@@ -4,8 +4,9 @@
 # enabled without changing the implementation.
 #
 # Required secrets:
-#   FIREBASE_PROJECT_ID, FIREBASE_API_KEY,
-#   FIREBASE_CI_EMAIL, FIREBASE_CI_PASSWORD
+#   FIREBASE_PROJECT_ID, FIREBASE_API_KEY, FIREBASE_APP_ID,
+#   FIREBASE_CI_EMAIL, FIREBASE_CI_PASSWORD,
+#   FIREBASE_APPCHECK_DEBUG_TOKEN
 #
 # The Firebase Auth user must carry the `ci:true` custom claim. The script uses
 # the client SDK, not an Admin service-account key, so live Firestore rules stay
@@ -39,5 +40,7 @@ jobs:
         env:
           FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
           FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
           FIREBASE_CI_EMAIL: ${{ secrets.FIREBASE_CI_EMAIL }}
           FIREBASE_CI_PASSWORD: ${{ secrets.FIREBASE_CI_PASSWORD }}
+          FIREBASE_APPCHECK_DEBUG_TOKEN: ${{ secrets.FIREBASE_APPCHECK_DEBUG_TOKEN }}

@@ -31,8 +31,15 @@ secret을 등록합니다.
 
 - [ ] `FIREBASE_PROJECT_ID`
 - [ ] `FIREBASE_API_KEY`
+- [ ] `FIREBASE_APP_ID`
 - [ ] `FIREBASE_CI_EMAIL`
 - [ ] `FIREBASE_CI_PASSWORD`
+- [ ] `FIREBASE_APPCHECK_DEBUG_TOKEN`
+
+`FIREBASE_APPCHECK_DEBUG_TOKEN`은 Firebase Console의
+`App Check > Apps > 웹 앱 메뉴 > 디버그 토큰 관리`에서 CI 전용으로 생성합니다.
+이 토큰은 App Check가 적용된 Firebase 서비스를 GitHub Actions에서 호출할 때만
+사용하며, 저장소나 로그에 기록하지 않습니다.
 
 기존 `WOKWI_CLI_TOKEN`도 그대로 존재하는지 확인합니다.
 
