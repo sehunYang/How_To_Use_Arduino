@@ -1,0 +1,4 @@
+[wokwi]
+version = 1
+firmware = ".tools/wokwi/pendulum/pendulum.ino.hex"
+elf = ".tools/wokwi/pendulum/pendulum.ino.elf"
