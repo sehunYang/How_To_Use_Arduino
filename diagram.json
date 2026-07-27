@@ -23,8 +23,8 @@
       "top": 120,
       "left": 320,
       "attrs": {
-        "shuntRaw": 100,
-        "busRaw": 5000
+        "shuntRaw": "100",
+        "busRaw": "5000"
       }
     },
     {
@@ -33,8 +33,8 @@
       "top": 240,
       "left": 320,
       "attrs": {
-        "ch0Raw": 1234,
-        "ch1Raw": 321
+        "ch0Raw": "1234",
+        "ch1Raw": "321"
       }
     }
   ],
