@@ -1,0 +1,8 @@
+[wokwi]
+version = 1
+firmware = "firmware.hex"
+elf = "firmware.elf"
+
+[[chip]]
+name = "ina219"
+binary = "ina219.chip.wasm"

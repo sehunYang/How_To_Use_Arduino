@@ -12,11 +12,15 @@
  * runnable without first running the extraction pipeline. The source string is
  * the same field in both cases.
  */
-import { pendulumRecipe, multiTsl2591Recipe } from '../src/data/canary'
+import {
+  ina219CurrentRecipe,
+  multiTsl2591Recipe,
+  pendulumRecipe,
+} from '../src/data/canary'
 import { compileSketch, stageSketch } from '../src/verification/compileCheck'
 import { isArduinoCliInstalled, SETUP_HINT } from '../src/verification/arduinoCli'
 
-const recipes = [pendulumRecipe, multiTsl2591Recipe]
+const recipes = [pendulumRecipe, multiTsl2591Recipe, ina219CurrentRecipe]
 
 async function main(): Promise<void> {
   if (!isArduinoCliInstalled()) {

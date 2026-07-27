@@ -1,11 +1,16 @@
 import type { SimStatus } from '@/schema'
 import { computeVerifyHash } from '@/lib/verifyHash'
+import { INVENTORY_VERSION } from '@/data/inventory-seed/version'
 import { pendulumRecipe } from './pendulum'
 import { multiTsl2591Recipe } from './multiTsl2591'
+import { ina219CurrentRecipe } from './ina219Current'
 
-function statusFor(recipe: { sketch: string; wiring: unknown; tunables: unknown; baudRate: number }, simPass: boolean | null): SimStatus {
+function statusFor(
+  recipe: { sketch: string; wiring: unknown; tunables: unknown; baudRate: number },
+  simPass: boolean | null,
+): SimStatus {
   return {
-    verifyHash: computeVerifyHash(recipe),
+    verifyHash: computeVerifyHash({ ...recipe, inventoryVersion: INVENTORY_VERSION }),
     compilePass: true,
     simPass,
     logicPass: true,
@@ -17,7 +22,10 @@ function statusFor(recipe: { sketch: string; wiring: unknown; tunables: unknown;
 export const canarySimStatus: Record<string, SimStatus> = {
   // MPU6050 has a native Wokwi part (simSupported: true in the inventory).
   [pendulumRecipe.id]: statusFor(pendulumRecipe, true),
-  // TSL2591 has no native/custom Wokwi chip yet (simSupported: false) —
-  // simPass is null, meaning "not simulated", not "failed" (plan schema note).
+  // The scenario is wired into CI but remains null until its first real Wokwi
+  // Actions run succeeds; fixture data must not claim an unobserved pass.
+  [ina219CurrentRecipe.id]: statusFor(ina219CurrentRecipe, null),
+  // The recipe still depends on the unsupported TCA9548A multiplexer, so its
+  // custom TSL2591 parts alone are not enough for an end-to-end simulation.
   [multiTsl2591Recipe.id]: statusFor(multiTsl2591Recipe, null),
 }

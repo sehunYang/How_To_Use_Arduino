@@ -3,7 +3,7 @@ import 'firebase/compat/firestore'
 import type { Recipe } from '@/schema'
 import type { Inventory } from '@/validation/staticCheck'
 import { validateRecipe } from '@/validation/staticCheck'
-import { computeVerifyHash } from '@/lib/verifyHash'
+import { computeInventoryVersion, computeVerifyHash } from '@/lib/verifyHash'
 import { compileSketch, stageSketch } from './compileCheck'
 import { writeSimStatus } from './writeSimStatus'
 
@@ -64,6 +64,7 @@ export async function drainVerifyQueue(
       wiring: recipe.wiring,
       tunables: recipe.tunables,
       baudRate: recipe.baudRate,
+      inventoryVersion: computeInventoryVersion(inventory),
     })
 
     await writeSimStatus(firestore, recipeId, {

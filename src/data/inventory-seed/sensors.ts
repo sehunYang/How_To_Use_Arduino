@@ -3,10 +3,10 @@ import type { Sensor } from '@/schema'
 /**
  * Seed data for the 10 owned sensors (spec hardware inventory).
  * `wokwi.simSupported` reflects CURRENT state: true only for sensors with
- * either a native Wokwi part or an approved analog stand-in today. INA219,
- * TSL2591, and BME280 are scheduled for custom/community Wokwi chips in
- * Phase 2 (plan 2.4) — they flip to true once those chips land, at which
- * point 32/34 sim coverage is *derived* from this flag, never hardcoded.
+ * either a native Wokwi part or an approved analog stand-in today. INA219
+ * and TSL2591 now use audited in-repo chips. The available community BME280
+ * chip was rejected after license/accuracy review (docs/bme280-wokwi-review.md)
+ * and remains unsupported until an auditable I2C implementation exists.
  * TCA9548A has no path to simulation and stays false permanently.
  */
 export const sensors: Sensor[] = [

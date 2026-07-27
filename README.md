@@ -35,7 +35,9 @@ npm run verify:logic       # logic/*.test.cpp + chips/*.test.cpp 컴파일 + 실
 (npm 패키지 `@ziglang/cli`는 postinstall이 `tar xJ`로 고정돼 있어 `.zip`으로 배포되는 Windows에서 동작하지 않습니다.)
 
 테스트 프레임워크는 [doctest](https://github.com/doctest/doctest) 단일 헤더(MIT)를 `logic/vendor/doctest.h`에 벤더링해 씁니다.
-지금은 카나리 2종(pendulum, multi-tsl2591)만 돌지만, Phase 5에서 레시피 34종으로 그대로 확장되는 구조입니다.
+지금은 카나리 3종(pendulum, ina219-current, multi-tsl2591)을 돌립니다. 앞의 두
+레시피는 L3까지 실행되고, TCA9548A에 의존하는 multi-tsl2591은 L1·L2·L5까지만
+실행됩니다. 같은 하네스가 Phase 5에서 레시피 34종으로 확장됩니다.
 
 ## Firebase 프로젝트 준비
 

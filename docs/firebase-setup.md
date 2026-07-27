@@ -104,6 +104,24 @@
   - 대신 이메일/비밀번호 계정(위의 CI 계정)을 사용하여 로그인하고 클레임 검증에 의존합니다
   - 이것이 설계된 보안 경계의 핵심입니다
 
+### 4.4 검증 큐 GitHub Actions 비밀값
+
+- [ ] GitHub 저장소의 `Settings > Secrets and variables > Actions`에 다음
+  repository secret 4개를 등록합니다.
+  - `FIREBASE_PROJECT_ID`: 실제 Firebase 프로젝트 ID
+  - `FIREBASE_API_KEY`: Firebase 웹 앱의 API 키
+  - `FIREBASE_CI_EMAIL`: 위에서 만든 CI 자동화 계정 이메일
+  - `FIREBASE_CI_PASSWORD`: CI 자동화 계정 비밀번호
+- [ ] Actions에서 **Verify Queue Drain** 워크플로를 한 번 수동 실행합니다.
+- [ ] 실행 로그가 `verifyRequests queue drained successfully.`로 끝나는지 확인합니다.
+- [ ] 첫 성공 후 `.github/workflows/verify-queue.yml`의 `on:` 아래에 다음
+  15분 크론을 추가합니다.
+
+  ```yaml
+  schedule:
+    - cron: '*/15 * * * *'
+  ```
+
 ---
 
 ## 5. 인증 승인 도메인 추가
