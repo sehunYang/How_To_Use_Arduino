@@ -6,22 +6,24 @@
     {
       "type": "wokwi-arduino-uno",
       "id": "uno",
-      "top": 0,
+      "top": 100,
       "left": 0,
       "attrs": {}
     },
     {
       "type": "wokwi-mpu6050",
       "id": "mpu6050",
-      "top": -5,
-      "left": 320,
+      "top": -160,
+      "left": 460,
+      "rotate": 90,
       "attrs": {}
     },
     {
       "type": "chip-ina219",
       "id": "ina219",
-      "top": 120,
-      "left": 320,
+      "top": 100,
+      "left": 460,
+      "rotate": 90,
       "attrs": {
         "shuntRaw": "100",
         "busRaw": "5000"
@@ -30,8 +32,9 @@
     {
       "type": "chip-tsl2591",
       "id": "tsl2591",
-      "top": 240,
-      "left": 320,
+      "top": 360,
+      "left": 460,
+      "rotate": 90,
       "attrs": {
         "ch0Raw": "1234",
         "ch1Raw": "321"
@@ -39,17 +42,17 @@
     }
   ],
   "connections": [
-    ["mpu6050:VCC", "uno:5V", "red", []],
-    ["mpu6050:GND", "uno:GND.2", "black", []],
-    ["mpu6050:SDA", "uno:A4", "green", []],
-    ["mpu6050:SCL", "uno:A5", "yellow", []],
-    ["ina219:VCC", "uno:5V", "red", []],
-    ["ina219:GND", "uno:GND.2", "black", []],
-    ["ina219:SDA", "uno:A4", "green", []],
-    ["ina219:SCL", "uno:A5", "yellow", []],
-    ["tsl2591:VCC", "uno:5V", "red", []],
-    ["tsl2591:GND", "uno:GND.2", "black", []],
-    ["tsl2591:SDA", "uno:A4", "green", []],
-    ["tsl2591:SCL", "uno:A5", "yellow", []]
+    ["mpu6050:VCC", "uno:5V", "red", ["h-40", "v40", "*", "h40"]],
+    ["mpu6050:GND", "uno:GND.2", "black", ["h-60", "v60", "*", "h60"]],
+    ["mpu6050:SDA", "uno:A4", "green", ["h-80", "v80", "*", "h80"]],
+    ["mpu6050:SCL", "uno:A5", "yellow", ["h-100", "v100", "*", "h100"]],
+    ["ina219:VCC", "uno:5V", "red", ["h-140", "v20", "*", "h140"]],
+    ["ina219:GND", "uno:GND.2", "black", ["h-160", "v40", "*", "h160"]],
+    ["ina219:SDA", "uno:A4", "green", ["h-180", "v60", "*", "h180"]],
+    ["ina219:SCL", "uno:A5", "yellow", ["h-200", "v80", "*", "h200"]],
+    ["tsl2591:VCC", "uno:5V", "red", ["h-240", "v-100", "*", "h240"]],
+    ["tsl2591:GND", "uno:GND.2", "black", ["h-260", "v-80", "*", "h260"]],
+    ["tsl2591:SDA", "uno:A4", "green", ["h-280", "v-60", "*", "h280"]],
+    ["tsl2591:SCL", "uno:A5", "yellow", ["h-300", "v-40", "*", "h300"]]
   ]
 }
