@@ -34,23 +34,28 @@ async function main(): Promise<void> {
       apiKey: required('FIREBASE_API_KEY'),
       debugToken: required('FIREBASE_APPCHECK_DEBUG_TOKEN'),
     }),
-    true,
+    false,
   )
 
-  const credential = await app
-    .auth()
-    .signInWithEmailAndPassword(
-      required('FIREBASE_CI_EMAIL'),
-      required('FIREBASE_CI_PASSWORD'),
-    )
-  const token = await credential.user?.getIdTokenResult(true)
-  if (token?.claims.ci !== true) {
-    throw new Error('Authenticated Firebase user does not have the required ci:true custom claim.')
-  }
+  try {
+    const credential = await app
+      .auth()
+      .signInWithEmailAndPassword(
+        required('FIREBASE_CI_EMAIL'),
+        required('FIREBASE_CI_PASSWORD'),
+      )
+    const token = await credential.user?.getIdTokenResult(true)
+    if (token?.claims.ci !== true) {
+      throw new Error('Authenticated Firebase user does not have the required ci:true custom claim.')
+    }
 
-  await drainVerifyQueue(app.firestore(), { sensors, actuators })
-  await app.auth().signOut()
-  console.log('verifyRequests queue drained successfully.')
+    await drainVerifyQueue(app.firestore(), { sensors, actuators })
+    console.log('verifyRequests queue drained successfully.')
+  } finally {
+    await app.auth().signOut().catch(() => undefined)
+    await app.firestore().terminate().catch(() => undefined)
+    await app.delete()
+  }
 }
 
 main().catch((error: unknown) => {
