@@ -16,6 +16,9 @@ const base = (wires: ReadableLayout['wires']): ReadableLayout => {
   return {
     version: 1,
     author: 'test',
+    // Synthetic parts with made-up coordinates: these cases exercise the
+    // geometric rules in isolation, so geometry anchoring is out of scope.
+    purpose: 'fixture',
     minimumClearance: 10,
     parts: [...partIds].map((id) => ({ id, type: 'wokwi-test', top: 0, left: 0, pins: ['from', 'to'] })),
     wires,
@@ -30,6 +33,33 @@ const wire = (id: string, points: ReadableLayout['wires'][number]['points']) => 
   color: 'green',
   points,
 })
+
+/** Route builder for geometry-anchored cases, where points must be real. */
+const wire2 = (
+  id: string,
+  from: string,
+  to: string,
+  start: { x: number; y: number },
+  deltas: (readonly ['h' | 'v', number])[],
+) => routedWire(id, from, to, start, deltas)
+
+function routedWire(
+  id: string,
+  from: string,
+  to: string,
+  start: { x: number; y: number },
+  deltas: (readonly ['h' | 'v', number])[],
+): ReadableLayout['wires'][number] {
+  const points = [{ ...start }]
+  for (const [axis, distance] of deltas) {
+    const previous = points.at(-1)!
+    points.push({
+      x: previous.x + (axis === 'h' ? distance : 0),
+      y: previous.y + (axis === 'v' ? distance : 0),
+    })
+  }
+  return { id, net: id, from, to, color: 'green', points }
+}
 
 describe('strict readable Wokwi layout', () => {
   it('rejects collinear overlap even when wires belong to the same logical net', () => {
@@ -164,20 +194,127 @@ describe('strict readable Wokwi layout', () => {
     ])
   })
 
-  it('validates and compiles the production pendulum layout, which wires the sensor straight to the board', () => {
-    expect(pendulumLayout.parts.every((part) => part.bounds !== undefined)).toBe(true)
+  it('validates and compiles the production pendulum layout, anchored to real part geometry', () => {
+    // 'recipe' purpose means every route point is checked against the pin
+    // position Wokwi actually renders — bounds are derived, not declared.
+    expect(pendulumLayout.purpose).toBe('recipe')
     expect(validateReadableLayout(pendulumLayout)).toEqual([])
 
-    // The MPU6050 breaks out SCL before SDA while the Uno exposes A4 before A5,
-    // so those two wires must cross; every other pair stays crossing-free by
-    // turning at its own horizontal level.
     const diagram = compileReadableLayout(pendulumLayout)
     expect(diagram.connections).toEqual([
-      ['mpu6050:VCC', 'uno:5V', 'red', ['v260', 'h120', 'v170']],
-      ['mpu6050:GND', 'uno:GND.2', 'black', ['v230', 'h125', 'v200']],
-      ['mpu6050:SCL', 'uno:A5', 'yellow', ['v200', 'h150', 'v230']],
-      ['mpu6050:SDA', 'uno:A4', 'green', ['v170', 'h115', 'v260']],
+      ['mpu6050:VCC', 'uno:5V', 'red', ['v-105.78', 'h145.6', 'v-28.5']],
+      ['mpu6050:GND', 'uno:GND.2', 'black', ['v-80.78', 'h164.7', 'v-53.5']],
+      ['mpu6050:SDA', 'uno:A4', 'green', ['v-55.78', 'h260.4', 'v-78.5']],
+      ['mpu6050:SCL', 'uno:A5', 'yellow', ['v-30.78', 'h260.3', 'v-103.5']],
     ])
+  })
+
+  describe('anchoring to real Wokwi part geometry', () => {
+    // Uno bottom header: 5V(160,191.5) GND.2(169.5,191.5) A4(246,191.5) A5(255.5,191.5)
+    // MPU6050 top header: SDA(45.6,5.78) SCL(55.2,5.78) GND(64.8,5.78) VCC(74.4,5.78)
+    const grounded = (wires: ReadableLayout['wires']): ReadableLayout => ({
+      version: 1,
+      author: 'test',
+      purpose: 'recipe',
+      minimumClearance: 10,
+      parts: [
+        { id: 'uno', type: 'wokwi-arduino-uno', top: 0, left: 200, pins: ['5V', 'GND.2', 'A4', 'A5'] },
+        { id: 'mpu6050', type: 'wokwi-mpu6050', top: 320, left: 140, pins: ['VCC', 'GND', 'SDA', 'SCL'] },
+      ],
+      wires,
+    })
+    const codes = (layout: ReadableLayout) => validateReadableLayout(layout).map((i) => i.code)
+
+    it('rejects a route that does not start where Wokwi draws the pin', () => {
+      const issues = codes(
+        grounded([
+          wire2('bad', 'mpu6050:VCC', 'uno:5V', { x: 999, y: 999 }, [['v', -673.22], ['h', -639]]),
+        ]),
+      )
+      expect(issues).toContain('pin-position-mismatch')
+    })
+
+    it('reports parts whose real geometry is unavailable instead of silently trusting them', () => {
+      const layout = grounded([])
+      layout.parts.push({ id: 'bb', type: 'wokwi-breadboard-half', top: 0, left: 0, pins: ['5t.a'] })
+      expect(codes(layout)).toContain('unknown-part-geometry')
+    })
+
+    it('refuses to check a rotated part rather than using the unrotated pin table', () => {
+      const layout = grounded([])
+      layout.parts[1].rotate = 90
+      expect(codes(layout)).toContain('unsupported-part-rotation')
+    })
+
+    it('lets a wire leave its own pin through its own board, but not cross another part', () => {
+      // 5V sits 10px inboard of the Uno's bottom edge, so every attached wire
+      // necessarily starts inside the body — that must not read as a violation.
+      expect(
+        codes(
+          grounded([
+            wire2('own', 'mpu6050:VCC', 'uno:5V', { x: 214.4, y: 325.78 }, [
+              ['v', -105.78],
+              ['h', 145.6],
+              ['v', -28.5],
+            ]),
+          ]),
+        ),
+      ).not.toContain('wire-through-part')
+    })
+  })
+
+  describe('keeping connected pins visible', () => {
+    const uno = { id: 'uno', type: 'wokwi-arduino-uno', top: 0, left: 200, pins: ['5V', 'GND.2', 'A4', 'A5'] }
+    const mpu = { id: 'mpu6050', type: 'wokwi-mpu6050', top: 320, left: 140, pins: ['VCC', 'GND', 'SDA', 'SCL'] }
+    const layoutOf = (wires: ReadableLayout['wires']): ReadableLayout => ({
+      version: 1,
+      author: 'test',
+      purpose: 'recipe',
+      minimumClearance: 10,
+      parts: [uno, mpu],
+      wires,
+    })
+    const codes = (layout: ReadableLayout) => validateReadableLayout(layout).map((i) => i.code)
+
+    it('flags a wire that lies across a pin another wire is plugged into', () => {
+      // 'crosser' runs along the header at y=191.5 and passes straight over
+      // A4(446,191.5), hiding where the green wire actually lands.
+      const issues = codes(
+        layoutOf([
+          wire2('victim', 'mpu6050:SDA', 'uno:A4', { x: 185.6, y: 325.78 }, [
+            ['v', -55.78],
+            ['h', 260.4],
+            ['v', -78.5],
+          ]),
+          wire2('crosser', 'mpu6050:SCL', 'uno:A5', { x: 195.2, y: 325.78 }, [
+            ['v', -134.28],
+            ['h', 260.3],
+          ]),
+        ]),
+      )
+      expect(issues).toContain('wire-over-connected-hole')
+    })
+
+    it('accepts a wire landing on the neighbouring pin 9.5px away', () => {
+      // Header pitch is 9.5px — below minimumClearance. Treating that as a
+      // violation would make the Uno's power header unwireable by construction.
+      const issues = codes(
+        layoutOf([
+          wire2('a', 'mpu6050:VCC', 'uno:5V', { x: 214.4, y: 325.78 }, [
+            ['v', -105.78],
+            ['h', 145.6],
+            ['v', -28.5],
+          ]),
+          wire2('b', 'mpu6050:GND', 'uno:GND.2', { x: 204.8, y: 325.78 }, [
+            ['v', -80.78],
+            ['h', 164.7],
+            ['v', -53.5],
+          ]),
+        ]),
+      )
+      expect(issues).not.toContain('wire-over-connected-hole')
+      expect(issues).not.toContain('wire-clearance-too-small')
+    })
   })
 
   it('validates and compiles the chip-conformance rig, whose two chips share a breadboard I2C bus', () => {

@@ -21,6 +21,10 @@ import { wire } from './routing'
 export const chipConformanceLayout: ReadableLayout = {
   version: 1,
   author: 'sehunYang',
+  // Headless-only rig: the breadboard and both custom chips have no published
+  // pin coordinates to anchor against, and no photograph is ever taken of it.
+  // Its routing was reviewed by eye in Wokwi rather than machine-verified.
+  purpose: 'fixture',
   minimumClearance: 10,
   parts: [
     {
