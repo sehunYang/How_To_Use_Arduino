@@ -4,6 +4,7 @@
  * sketch string the rest of the pipeline verifies:
  *
  *   pendulum         -> pendulumRecipe.sketch   (the recipe students are shown)
+ *   ina219-current   -> ina219CurrentRecipe.sketch
  *   chip-conformance -> the INA219/TSL2591 verification fixture
  *
  * Output lands in .tools/wokwi/<id>/, which each project's wokwi.toml points at.
@@ -12,7 +13,7 @@
 import { copyFileSync, mkdirSync, rmSync } from 'node:fs'
 import { spawnSync } from 'node:child_process'
 import { join, resolve } from 'node:path'
-import { pendulumRecipe } from '../src/data/canary'
+import { ina219CurrentRecipe, pendulumRecipe } from '../src/data/canary'
 import { chipConformanceFixture } from '../src/wokwi/fixtures/chipConformance'
 import { stageSketch } from '../src/verification/compileCheck'
 import {
@@ -35,6 +36,12 @@ const projects: {
   chips?: readonly string[]
 }[] = [
   { id: pendulumRecipe.id, sketch: pendulumRecipe.sketch },
+  {
+    id: ina219CurrentRecipe.id,
+    sketch: ina219CurrentRecipe.sketch,
+    projectDir: 'wokwi/ina219-current',
+    chips: ['ina219'],
+  },
   {
     id: chipConformanceFixture.id,
     sketch: chipConformanceFixture.sketch,

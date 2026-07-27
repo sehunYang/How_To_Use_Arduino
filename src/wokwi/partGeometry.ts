@@ -32,11 +32,104 @@ export interface PartGeometry {
   /** Rendered size in px. */
   width: number
   height: number
+  source: 'wokwi-elements' | 'measured'
+  /** Maximum accepted route-to-pin coordinate error in px. */
+  tolerance: number
   pins: PartPin[]
 }
 
 const pins = (entries: [string, number, number][]): PartPin[] =>
   entries.map(([name, x, y]) => ({ name, x, y }))
+
+const PX_PER_MM = 96 / 25.4
+const HEADER_PITCH = 9.6
+const WOKWI_ELEMENTS_TOLERANCE = 0.01
+const MEASURED_TOLERANCE = 0.5
+
+function halfBreadboardGeometry(): PartGeometry {
+  const terminalX0 = 26.3897637795
+  const topY0 = 50.7897637795
+  const bottomY0 = 118.7897637795
+  const terminalPins: PartPin[] = []
+
+  for (let column = 1; column <= 30; column += 1) {
+    const x = terminalX0 + HEADER_PITCH * (column - 1)
+    for (let row = 0; row < 5; row += 1) {
+      terminalPins.push({
+        name: `${column}t.${String.fromCharCode('a'.charCodeAt(0) + row)}`,
+        x,
+        y: topY0 + HEADER_PITCH * row,
+      })
+      terminalPins.push({
+        name: `${column}b.${String.fromCharCode('f'.charCodeAt(0) + row)}`,
+        x,
+        y: bottomY0 + HEADER_PITCH * row,
+      })
+    }
+  }
+
+  const railPins: PartPin[] = []
+  const rails = [
+    ['tp', 12.6897637795],
+    ['tn', 22.2897637795],
+    ['bp', 186.4897637795],
+    ['bn', 196.0897637795],
+  ] as const
+  for (let column = 1; column <= 25; column += 1) {
+    const offset = column - 1
+    const x =
+      34.8897637795 +
+      HEADER_PITCH * offset +
+      HEADER_PITCH * Math.floor(offset / 5)
+    for (const [rail, y] of rails) {
+      railPins.push({ name: `${rail}.${column}`, x, y })
+    }
+  }
+
+  return {
+    width: 87 * PX_PER_MM,
+    height: 55 * PX_PER_MM,
+    source: 'measured',
+    tolerance: MEASURED_TOLERANCE,
+    pins: [...terminalPins, ...railPins],
+  }
+}
+
+export function customChipGeometry(
+  pinNames: string[],
+  display: { width: number; height: number },
+): PartGeometry {
+  if (pinNames.length < 2 || pinNames.length % 2 !== 0) {
+    throw new Error('Custom chip geometry requires an even number of pins.')
+  }
+
+  const rowCount = pinNames.length / 2
+  const width = Math.max(30 * PX_PER_MM, display.width + 2 * PX_PER_MM)
+  const boardHeight = rowCount * HEADER_PITCH + 2 * PX_PER_MM
+  const pinY0 = 2.27 * PX_PER_MM
+  const chipPins = pinNames.map((name, index) => {
+    const onLeft = index < rowCount
+    const row = onLeft ? index : pinNames.length - 1 - index
+    return {
+      name,
+      x: onLeft ? HEADER_PITCH / 2 : width - HEADER_PITCH / 2,
+      y: pinY0 + HEADER_PITCH * row,
+    }
+  })
+
+  return {
+    width,
+    height: boardHeight + display.height,
+    source: 'measured',
+    tolerance: MEASURED_TOLERANCE,
+    pins: chipPins,
+  }
+}
+
+const conformanceChipGeometry = customChipGeometry(
+  ['VCC', 'GND', 'SCL', 'SDA'],
+  { width: 112, height: 73 },
+)
 
 export const PART_GEOMETRY: Record<string, PartGeometry> = {
   // 72.58mm x 53.34mm. Two 9.5px-pitch headers: digital along y=9, power and
@@ -44,6 +137,8 @@ export const PART_GEOMETRY: Record<string, PartGeometry> = {
   'wokwi-arduino-uno': {
     width: 274.34,
     height: 201.6,
+    source: 'wokwi-elements',
+    tolerance: WOKWI_ELEMENTS_TOLERANCE,
     pins: pins([
       ['A5.2', 87, 9],
       ['A4.2', 97, 9],
@@ -85,6 +180,8 @@ export const PART_GEOMETRY: Record<string, PartGeometry> = {
   'wokwi-mpu6050': {
     width: 81.64,
     height: 61.23,
+    source: 'wokwi-elements',
+    tolerance: WOKWI_ELEMENTS_TOLERANCE,
     pins: pins([
       ['INT', 7.28, 5.78],
       ['AD0', 16.9, 5.78],
@@ -96,15 +193,15 @@ export const PART_GEOMETRY: Record<string, PartGeometry> = {
       ['VCC', 74.4, 5.78],
     ]),
   },
+  'wokwi-breadboard-half': halfBreadboardGeometry(),
+  'chip-ina219': conformanceChipGeometry,
+  'chip-tsl2591': conformanceChipGeometry,
 }
 
 /** Parts whose geometry this repo cannot source, with the reason recorded. */
 export const GEOMETRY_UNAVAILABLE: Record<string, string> = {
   'wokwi-breadboard': 'built-in Wokwi part, not published in wokwi-elements',
-  'wokwi-breadboard-half': 'built-in Wokwi part, not published in wokwi-elements',
   'wokwi-breadboard-mini': 'built-in Wokwi part, not published in wokwi-elements',
-  'chip-ina219': 'custom chip; Wokwi generates its body and pin placement at load time',
-  'chip-tsl2591': 'custom chip; Wokwi generates its body and pin placement at load time',
 }
 
 export function geometryFor(type: string): PartGeometry | undefined {

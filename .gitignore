@@ -43,6 +43,9 @@ storage-debug.log
 /wokwi/chip-conformance/firmware.*
 /wokwi/chip-conformance/*.chip.wasm
 /wokwi/chip-conformance/*.chip.json
+/wokwi/ina219-current/firmware.*
+/wokwi/ina219-current/*.chip.wasm
+/wokwi/ina219-current/*.chip.json
 
 # Editor directories and files
 .vscode/*

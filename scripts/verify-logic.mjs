@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // L5 logic harness — compiles and runs every *.test.cpp under logic/ and chips/ on the host.
 //
-// Phase 2 canary subset: 2/2 recipes (pendulum, multi-tsl2591) plus the 2 chip
+// Phase 2 canary subset: 3 recipes (two L3-capable, plus multi-tsl2591) and the 2 chip
 // register-logic models (INA219, TSL2591). This is deliberately
 // the same runner that Phase 5 scales to 34/34 once the remaining recipes land, so the
 // pattern is proven at canary scale before it is depended on at full scale.

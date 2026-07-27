@@ -16,4 +16,9 @@ export const canaryRationales: SensorRationale[] = [
     subject: null,
     whyText: '주소가 고정된 센서를 여러 개 동시에 연결하려면 이 멀티플렉서가 반드시 필요합니다.',
   },
+  {
+    sensorId: 'ina219',
+    subject: null,
+    whyText: '전압 강하를 이용해 회로의 전류와 전력을 디지털 값으로 측정할 수 있습니다.',
+  },
 ]

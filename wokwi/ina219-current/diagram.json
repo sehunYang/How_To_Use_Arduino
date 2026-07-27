@@ -1,0 +1,70 @@
+{
+  "version": 1,
+  "author": "sehunYang",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "wokwi-arduino-uno",
+      "id": "uno",
+      "top": 0,
+      "left": 200,
+      "attrs": {}
+    },
+    {
+      "type": "chip-ina219",
+      "id": "ina219",
+      "top": 320,
+      "left": 160,
+      "attrs": {
+        "shuntRaw": "100",
+        "busRaw": "5000"
+      }
+    }
+  ],
+  "connections": [
+    [
+      "ina219:VCC",
+      "uno:5V",
+      "red",
+      [
+        "h-40",
+        "v-108.58",
+        "h235.2",
+        "v-28.5"
+      ]
+    ],
+    [
+      "ina219:GND",
+      "uno:GND.2",
+      "black",
+      [
+        "h-60",
+        "v-93.18",
+        "h264.7",
+        "v-53.5"
+      ]
+    ],
+    [
+      "ina219:SDA",
+      "uno:A4",
+      "green",
+      [
+        "h30",
+        "v-58.58",
+        "h141.24",
+        "v-78.5"
+      ]
+    ],
+    [
+      "ina219:SCL",
+      "uno:A5",
+      "yellow",
+      [
+        "h50",
+        "v-43.18",
+        "h130.74",
+        "v-103.5"
+      ]
+    ]
+  ]
+}

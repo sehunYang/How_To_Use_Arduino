@@ -2,6 +2,10 @@
   "name": "TSL2591 Light Sensor",
   "author": "sehunYang",
   "pins": ["VCC", "GND", "SCL", "SDA"],
+  "display": {
+    "width": 112,
+    "height": 73
+  },
   "controls": [
     {
       "id": "ch0Raw",

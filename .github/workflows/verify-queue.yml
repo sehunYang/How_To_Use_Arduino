@@ -1,39 +1,25 @@
-# E3 pre-publish queue drain — PLACEHOLDER ONLY. This workflow does NOT yet
-# run drainVerifyQueue() (US-204), and it deliberately carries NO `schedule:`
-# trigger: a cron that runs `npm ci` and nothing else 96 times a day is pure
-# waste. It is `workflow_dispatch`-only until the two blockers below are
-# cleared, at which point the schedule and the drain step get added together.
+# E3 pre-publish queue drain. The executable path is complete, but this
+# workflow remains manual until its four repository secrets are provisioned
+# and one workflow_dispatch run succeeds. Then the 15-minute schedule can be
+# enabled without changing the implementation.
 #
-# Source of truth: US-204's emulator-backed tests prove drainVerifyQueue()
-# itself is correct. Scheduling it is what's blocked — unlike verify-daily.yml
-# / verify-pr.yml (which run against the local Firebase emulator), draining
-# the real queue must run against the LIVE Firestore project as a CI identity
-# carrying the `ci` custom claim (firestore.rules PL2), which is
-# human-provisioning-gated.
+# Required secrets:
+#   FIREBASE_PROJECT_ID, FIREBASE_API_KEY, FIREBASE_APP_ID,
+#   FIREBASE_CI_EMAIL, FIREBASE_CI_PASSWORD,
+#   FIREBASE_APPCHECK_DEBUG_TOKEN
 #
-# EXACTLY what remains before this workflow can invoke drainVerifyQueue() on
-# a schedule — both are follow-up work, neither is in scope for US-208
-# ("wire existing, already-verified capability into workflow YAML"):
-#
-#   (1) A CLI wrapper script (e.g. scripts/drain-verify-queue.ts, same pattern
-#       as scripts/extract-content.ts) that loads the inventory and calls
-#       drainVerifyQueue(firestore, inventory). Note this wrapper cannot just
-#       reuse the app's compat client SDK: authenticating a headless CI job
-#       against the LIVE project requires the Firebase Admin SDK, a materially
-#       different auth path from the `firebase/compat` Firestore handle
-#       drainVerifyQueue() is currently typed against.
-#   (2) A `FIREBASE_CI_SERVICE_ACCOUNT` GitHub secret holding that service
-#       account's credentials, with the `ci` custom claim per firestore.rules
-#       PL2 (see docs/firebase-setup.md for the provisioning pattern).
-#
-# Until both land, this file is an honest placeholder: no `schedule:` trigger
-# (so no no-op job runs on a timer) and no step pointing at a `npm run
-# verify:queue` script that does not exist in package.json. A workflow step
-# referencing a nonexistent command is worse than no step at all.
+# The Firebase Auth user must carry the `ci:true` custom claim. The script uses
+# the client SDK, not an Admin service-account key, so live Firestore rules stay
+# enforced exactly as the plan requires.
 name: Verify Queue Drain
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '*/15 * * * *'
+
+permissions:
+  contents: read
 
 jobs:
   drain:
@@ -48,11 +34,15 @@ jobs:
 
       - run: npm ci
 
-      # TODO(US-204 follow-up): the queue-drain step is intentionally omitted,
-      # not just disabled, because there is nothing real to point it at yet
-      # (see the file-level comment above for the two blockers). Once a
-      # follow-up story clears both, restore the `schedule:` trigger and add:
-      #   - name: Drain verifyRequests queue (US-204 source of truth)
-      #     run: npm run verify:queue
-      #     env:
-      #       FIREBASE_CI_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_CI_SERVICE_ACCOUNT }}
+      - name: Install arduino-cli + arduino:avr core
+        run: npm run setup:arduino-cli
+
+      - name: Drain verifyRequests queue
+        run: npm run verify:queue
+        env:
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          FIREBASE_CI_EMAIL: ${{ secrets.FIREBASE_CI_EMAIL }}
+          FIREBASE_CI_PASSWORD: ${{ secrets.FIREBASE_CI_PASSWORD }}
+          FIREBASE_APPCHECK_DEBUG_TOKEN: ${{ secrets.FIREBASE_APPCHECK_DEBUG_TOKEN }}

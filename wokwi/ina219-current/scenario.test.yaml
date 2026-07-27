@@ -1,0 +1,11 @@
+name: INA219 recipe canary
+version: 1
+author: sehunYang
+steps:
+  - wait-serial: "WOKWI_READY"
+  - wait-serial: "INA219_CURRENT=100"
+  - set-control:
+      part-id: ina219
+      control: shuntRaw
+      value: 250
+  - wait-serial: "INA219_CURRENT=250"

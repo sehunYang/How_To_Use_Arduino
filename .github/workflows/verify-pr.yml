@@ -5,9 +5,10 @@
 # been observed passing end-to-end in a real runner — see the verified run
 # recorded in docs/wokwi-setup.md §5.
 #
-# Two L3 projects run, because a recipe's diagram must contain exactly the
+# Three L3 projects run, because a recipe's diagram must contain exactly the
 # circuit its `wiring[]` describes (enforced by src/wokwi/netlist.test.ts):
 #   - root project        -> the pendulum recipe as a student builds it
+#   - wokwi/ina219-current -> a second recipe-level end-to-end canary
 #   - wokwi/chip-conformance -> the INA219/TSL2591 custom-chip rig, a fixture
 #
 # Source of truth for each job's correctness:
@@ -20,6 +21,10 @@ name: PR Verification
 
 on:
   workflow_dispatch:
+  schedule:
+    # Phase 2 N5: monthly full L3 sweep. At canary scale this runs every
+    # currently registered scenario; Phase 5 extends the scenario matrix.
+    - cron: '0 4 1 * *'
   pull_request:
     branches: [main]
     paths:
@@ -103,6 +108,14 @@ jobs:
           path: /
           timeout: 10000
           scenario: wokwi/pendulum.test.yaml
+
+      - name: L3 Wokwi simulation — INA219 recipe
+        uses: wokwi/wokwi-ci-action@v1
+        with:
+          token: ${{ secrets.WOKWI_CLI_TOKEN }}
+          path: wokwi/ina219-current
+          timeout: 10000
+          scenario: scenario.test.yaml
 
       # Separate project: proves the hand-written chips answer real I2C traffic
       # without wiring them into a recipe that never declared them.

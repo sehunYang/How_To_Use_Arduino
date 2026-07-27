@@ -43,13 +43,10 @@ export interface ReadableLayout {
    *
    * 'recipe'  — a circuit a student builds from and a photo is taken of.
    *             Every route must land on the pin Wokwi actually draws.
-   * 'fixture' — a rig that only ever runs headless in CI. The photographic
-   *             rules still apply, but geometry anchoring is skipped: parts
-   *             like the breadboard and custom chips have no published pin
-   *             coordinates (see GEOMETRY_UNAVAILABLE), so there is nothing to
-   *             anchor against. Its layout is human-reviewed, not machine-
-   *             verified — which is acceptable only because nobody builds or
-   *             photographs it.
+   * 'fixture' — reserved for synthetic validator unit tests whose coordinates
+   *             are deliberately invented. Production layouts must use
+   *             'recipe'; this value must never be used as a geometry escape
+   *             hatch for a real Wokwi project.
    *
    * Defaults to 'recipe': a new layout is held to the strict standard unless
    * it explicitly opts out.
@@ -183,7 +180,8 @@ export function validateReadableLayout(layout: ReadableLayout): LayoutIssue[] {
     }
 
     if (!anchorToRealGeometry) {
-      // Fixture: nothing to anchor against, and the layout says so on purpose.
+      // Synthetic validator fixture: geometry anchoring is intentionally out
+      // of scope. Production layouts are always recipe-grade.
     } else if (geometryFor(part.type)) {
       // Pin coordinates are transcribed for the unrotated element, so a rotated
       // part would silently validate against positions Wokwi does not use.
@@ -232,7 +230,13 @@ export function validateReadableLayout(layout: ReadableLayout): LayoutIssue[] {
         const actual = anchorToRealGeometry
           ? pinPosition(part, endpoint.slice(separator + 1))
           : null
-        if (actual && (Math.abs(actual.x - routePoint.x) > 0.01 || Math.abs(actual.y - routePoint.y) > 0.01)) {
+        const tolerance = geometryFor(part.type)?.tolerance
+        if (
+          actual &&
+          tolerance !== undefined &&
+          (Math.abs(actual.x - routePoint.x) > tolerance ||
+            Math.abs(actual.y - routePoint.y) > tolerance)
+        ) {
           issues.push(
             issue(
               'pin-position-mismatch',

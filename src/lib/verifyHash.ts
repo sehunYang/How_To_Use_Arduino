@@ -5,9 +5,9 @@
  * `simStatus.verifyHash` without an async Web Crypto round-trip, and so CI
  * computes the identical value when writing that field (plan N4).
  *
- * Covers sketch + wiring + tunables + baudRate — deliberately wider than
- * just the sketch, so a wiring-only edit also invalidates the hash (a
- * sketch-only hash would let the diagram silently drift from the badge).
+ * Covers sketch + wiring + tunables + baudRate + inventoryVersion —
+ * deliberately wider than just the sketch, so either a wiring-only edit or
+ * a changed sensor definition invalidates the hash.
  */
 
 function stableStringify(value: unknown): string {
@@ -32,8 +32,29 @@ export interface VerifyHashInput {
   wiring: unknown
   tunables: unknown
   baudRate: number
+  inventoryVersion: string
 }
 
 export function computeVerifyHash(input: VerifyHashInput): string {
   return `fnv1a:${fnv1a(stableStringify(input))}`
+}
+
+export interface InventoryVersionInput {
+  sensors: readonly { id: string }[]
+  actuators: readonly { id: string }[]
+}
+
+/**
+ * Content-derived inventory version. Sorting by id makes the version
+ * independent of seed-file ordering while still changing when any sensor or
+ * actuator contract changes.
+ */
+export function computeInventoryVersion(input: InventoryVersionInput): string {
+  const byId = (a: { id: string }, b: { id: string }) =>
+    a.id < b.id ? -1 : a.id > b.id ? 1 : 0
+  const canonical = {
+    sensors: [...input.sensors].sort(byId),
+    actuators: [...input.actuators].sort(byId),
+  }
+  return `inventory-fnv1a:${fnv1a(stableStringify(canonical))}`
 }

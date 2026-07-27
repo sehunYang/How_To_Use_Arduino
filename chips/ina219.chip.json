@@ -2,6 +2,10 @@
   "name": "INA219 Current Sensor",
   "author": "sehunYang",
   "pins": ["VCC", "GND", "SCL", "SDA"],
+  "display": {
+    "width": 112,
+    "height": 73
+  },
   "controls": [
     {
       "id": "shuntRaw",

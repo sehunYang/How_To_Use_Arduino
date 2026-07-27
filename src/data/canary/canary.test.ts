@@ -2,26 +2,33 @@ import { describe, it, expect } from 'vitest'
 import { RecipeSchema, SensorRationaleSchema, SimStatusSchema } from '@/schema'
 import { resolveTunableAnchor } from '@/validation/manifest'
 import { validateRecipe } from '@/validation/staticCheck'
-import { computeVerifyHash } from '@/lib/verifyHash'
+import { computeInventoryVersion, computeVerifyHash } from '@/lib/verifyHash'
 import { sensors } from '@/data/inventory-seed/sensors'
 import { actuators } from '@/data/inventory-seed/actuators'
-import { pendulumRecipe, multiTsl2591Recipe, canaryRationales, canarySimStatus } from './index'
+import {
+  canaryRationales,
+  canarySimStatus,
+  ina219CurrentRecipe,
+  multiTsl2591Recipe,
+  pendulumRecipe,
+} from './index'
 
 const inventory = { sensors, actuators }
+const inventoryVersion = computeInventoryVersion(inventory)
 
-const recipes = [pendulumRecipe, multiTsl2591Recipe]
+const recipes = [pendulumRecipe, multiTsl2591Recipe, ina219CurrentRecipe]
 
 describe('canary recipe fixtures', () => {
-  it('both validate against RecipeSchema with zero errors', () => {
+  it('all validate against RecipeSchema with zero errors', () => {
     for (const recipe of recipes) {
       const result = RecipeSchema.safeParse(recipe)
       expect(result.success, `${recipe.id}: ${JSON.stringify(result.success ? null : result.error.issues)}`).toBe(true)
     }
   })
 
-  it('one is draft and one is published (both branches exercised downstream)', () => {
-    const statuses = recipes.map((r) => r.status).sort()
-    expect(statuses).toEqual(['draft', 'published'])
+  it('contains both draft and published fixtures (both branches exercised downstream)', () => {
+    const statuses = new Set(recipes.map((r) => r.status))
+    expect(statuses).toEqual(new Set(['draft', 'published']))
   })
 
   it('each has a non-empty wiring[] with focus regions', () => {
@@ -68,6 +75,12 @@ describe('canary recipe fixtures', () => {
     const errors = issues.filter((i) => i.severity === 'error')
     expect(errors, JSON.stringify(errors)).toHaveLength(0)
   })
+
+  it('the INA219 L3 canary passes L1 in publish mode', () => {
+    const issues = validateRecipe(ina219CurrentRecipe, inventory, 'publish')
+    const errors = issues.filter((i) => i.severity === 'error')
+    expect(errors, JSON.stringify(errors)).toHaveLength(0)
+  })
 })
 
 describe('canary sensor rationales', () => {
@@ -101,14 +114,22 @@ describe('canary simStatus fixtures', () => {
 
   it('verifyHash matches a fresh computeVerifyHash() over the current recipe content', () => {
     for (const recipe of recipes) {
-      const fresh = computeVerifyHash(recipe)
+      const fresh = computeVerifyHash({ ...recipe, inventoryVersion })
       expect(canarySimStatus[recipe.id].verifyHash, recipe.id).toBe(fresh)
     }
   })
 
   it('verifyHash changes when the sketch changes (proves the hash is not a constant)', () => {
     const mutated = { ...pendulumRecipe, sketch: pendulumRecipe.sketch + '\n// changed' }
-    expect(computeVerifyHash(mutated)).not.toBe(computeVerifyHash(pendulumRecipe))
+    expect(computeVerifyHash({ ...mutated, inventoryVersion })).not.toBe(
+      computeVerifyHash({ ...pendulumRecipe, inventoryVersion }),
+    )
+  })
+
+  it('verifyHash changes when the inventory contract changes', () => {
+    expect(
+      computeVerifyHash({ ...pendulumRecipe, inventoryVersion: `${inventoryVersion}-changed` }),
+    ).not.toBe(computeVerifyHash({ ...pendulumRecipe, inventoryVersion }))
   })
 
   it('simPass is null (not false) for the sensor with no simulation support yet', () => {

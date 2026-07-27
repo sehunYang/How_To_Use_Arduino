@@ -175,8 +175,8 @@
   "hotPaths": [
     {
       "path": "package.json",
-      "accessCount": 12,
-      "lastAccessed": 1785122772326,
+      "accessCount": 13,
+      "lastAccessed": 1785145491790,
       "type": "file"
     },
     {
@@ -201,6 +201,12 @@
       "path": "docs/firebase-setup.md",
       "accessCount": 9,
       "lastAccessed": 1785121007536,
+      "type": "file"
+    },
+    {
+      "path": "src/data/canary/pendulum.ts",
+      "accessCount": 8,
+      "lastAccessed": 1785144991907,
       "type": "file"
     },
     {
@@ -246,27 +252,21 @@
       "type": "file"
     },
     {
+      "path": "scripts/verify-compile.ts",
+      "accessCount": 6,
+      "lastAccessed": 1785144969559,
+      "type": "file"
+    },
+    {
       "path": "firebase.json",
       "accessCount": 5,
       "lastAccessed": 1785119501367,
       "type": "file"
     },
     {
-      "path": "src/data/canary/pendulum.ts",
-      "accessCount": 5,
-      "lastAccessed": 1785120455908,
-      "type": "file"
-    },
-    {
       "path": "src/verification/writeSimStatus.ts",
       "accessCount": 5,
       "lastAccessed": 1785122657541,
-      "type": "file"
-    },
-    {
-      "path": "scripts/verify-compile.ts",
-      "accessCount": 5,
-      "lastAccessed": 1785122753530,
       "type": "file"
     },
     {
@@ -373,8 +373,8 @@
     },
     {
       "path": "src/lib/verifyHash.ts",
-      "accessCount": 2,
-      "lastAccessed": 1785120449050,
+      "accessCount": 3,
+      "lastAccessed": 1785144619611,
       "type": "file"
     },
     {
@@ -421,8 +421,8 @@
     },
     {
       "path": "src/data/canary/simStatus.ts",
-      "accessCount": 1,
-      "lastAccessed": 1785118966094,
+      "accessCount": 2,
+      "lastAccessed": 1785144619177,
       "type": "file"
     },
     {

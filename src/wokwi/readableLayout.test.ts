@@ -236,8 +236,44 @@ describe('strict readable Wokwi layout', () => {
 
     it('reports parts whose real geometry is unavailable instead of silently trusting them', () => {
       const layout = grounded([])
-      layout.parts.push({ id: 'bb', type: 'wokwi-breadboard-half', top: 0, left: 0, pins: ['5t.a'] })
+      layout.parts.push({ id: 'bb', type: 'wokwi-breadboard', top: 0, left: 0, pins: ['5t.a'] })
       expect(codes(layout)).toContain('unknown-part-geometry')
+    })
+
+    it('uses each geometry source tolerance at the pin-position boundary', () => {
+      const measured: ReadableLayout = {
+        version: 1,
+        author: 'test',
+        purpose: 'recipe',
+        minimumClearance: 10,
+        parts: [
+          {
+            id: 'bb',
+            type: 'wokwi-breadboard-half',
+            top: 0,
+            left: 0,
+            pins: ['1t.a', '2t.a'],
+          },
+        ],
+        wires: [
+          routedWire('inside', 'bb:1t.a', 'bb:2t.a', { x: 26.8897637795, y: 50.7897637795 }, [
+            ['h', 8.6],
+          ]),
+        ],
+      }
+      expect(codes(measured)).not.toContain('pin-position-mismatch')
+
+      measured.wires[0].points[0].x += 0.001
+      expect(codes(measured)).toContain('pin-position-mismatch')
+
+      const exact = grounded([
+        wire2('strict', 'mpu6050:VCC', 'uno:5V', { x: 214.411, y: 325.78 }, [
+          ['v', -105.78],
+          ['h', 145.589],
+          ['v', -28.5],
+        ]),
+      ])
+      expect(codes(exact)).toContain('pin-position-mismatch')
     })
 
     it('refuses to check a rotated part rather than using the unrotated pin table', () => {
@@ -318,15 +354,16 @@ describe('strict readable Wokwi layout', () => {
   })
 
   it('validates and compiles the chip-conformance rig, whose two chips share a breadboard I2C bus', () => {
+    expect(chipConformanceLayout.purpose).toBe('recipe')
     expect(validateReadableLayout(chipConformanceLayout)).toEqual([])
 
     const diagram = compileReadableLayout(chipConformanceLayout)
     expect(diagram.connections).toEqual(
       expect.arrayContaining([
-        ['breadboard:5t.e', 'breadboard:15t.e', 'green', ['v-20', 'h90', 'v20', 'h10']],
-        ['breadboard:15t.d', 'breadboard:25t.d', 'green', ['h10', 'v-35', 'h90', 'v35']],
-        ['breadboard:7t.e', 'breadboard:17t.e', 'yellow', ['v20', 'h90', 'v-20', 'h10']],
-        ['breadboard:17t.d', 'breadboard:27t.d', 'yellow', ['h10', 'v45', 'h90', 'v-45']],
+        ['breadboard:13t.c', 'breadboard:17t.c', 'green', ['h38.4']],
+        ['breadboard:17t.d', 'breadboard:27t.d', 'green', ['h96']],
+        ['breadboard:12t.e', 'breadboard:18t.e', 'yellow', ['h57.6']],
+        ['breadboard:26t.c', 'breadboard:30t.c', 'yellow', ['h38.4']],
       ]),
     )
   })
