@@ -32,10 +32,10 @@ describe('sensor inventory seed', () => {
     })
   })
 
-  it('TSL2591 is fixed at a single address and not yet sim-supported', () => {
+  it('TSL2591 is fixed at a single address and sim-supported by a custom chip', () => {
     const tsl2591 = sensors.find((s) => s.id === 'tsl2591')!
     expect(tsl2591.addressing).toEqual({ mode: 'fixed', addresses: ['0x29'], maxOnBus: 1 })
-    expect(tsl2591.wokwi.simSupported).toBe(false)
+    expect(tsl2591.wokwi.simSupported).toBe(true)
   })
 
   it('DS18B20 is onewire with a large maxOnBus', () => {
@@ -58,12 +58,12 @@ describe('sensor inventory seed', () => {
     }
   })
 
-  it('sim-coverage-derivable set matches the plan: 6 supported, 4 not (yet)', () => {
+  it('sim-coverage-derivable set includes the packaged INA219 and TSL2591 chips', () => {
     const supported = sensors.filter((s) => s.wokwi.simSupported)
     const unsupported = sensors.filter((s) => !s.wokwi.simSupported)
-    expect(supported).toHaveLength(6)
+    expect(supported).toHaveLength(8)
     expect(unsupported.map((s) => s.id).sort()).toEqual(
-      ['bme280', 'ina219', 'tca9548a', 'tsl2591'].sort(),
+      ['bme280', 'tca9548a'].sort(),
     )
   })
 })

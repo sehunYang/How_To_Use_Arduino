@@ -1,0 +1,23 @@
+{
+  "name": "INA219 Current Sensor",
+  "author": "sehunYang",
+  "pins": ["VCC", "GND", "SCL", "SDA"],
+  "controls": [
+    {
+      "id": "shuntRaw",
+      "label": "Raw shunt voltage",
+      "type": "range",
+      "min": -32768,
+      "max": 32767,
+      "step": 1
+    },
+    {
+      "id": "busRaw",
+      "label": "Raw bus voltage",
+      "type": "range",
+      "min": 0,
+      "max": 65535,
+      "step": 1
+    }
+  ]
+}

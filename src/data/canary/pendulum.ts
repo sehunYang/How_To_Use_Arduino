@@ -9,6 +9,38 @@ const sketch = `#include <Wire.h>
 
 MPU6050 mpu;
 
+void writeRegister8(uint8_t address, uint8_t reg, uint8_t value) {
+  Wire.beginTransmission(address);
+  Wire.write(reg);
+  Wire.write(value);
+  Wire.endTransmission();
+}
+
+void writeRegister16(uint8_t address, uint8_t reg, uint16_t value) {
+  Wire.beginTransmission(address);
+  Wire.write(reg);
+  Wire.write(value >> 8);
+  Wire.write(value & 0xff);
+  Wire.endTransmission();
+}
+
+uint16_t readRegister16BE(uint8_t address, uint8_t reg) {
+  Wire.beginTransmission(address);
+  Wire.write(reg);
+  Wire.endTransmission(false);
+  Wire.requestFrom(address, (uint8_t)2);
+  return ((uint16_t)Wire.read() << 8) | Wire.read();
+}
+
+uint16_t readRegister16LE(uint8_t address, uint8_t reg) {
+  Wire.beginTransmission(address);
+  Wire.write(reg);
+  Wire.endTransmission(false);
+  Wire.requestFrom(address, (uint8_t)2);
+  const uint8_t low = Wire.read();
+  return low | ((uint16_t)Wire.read() << 8);
+}
+
 // 진자가 흔들리는 동안 몇 밀리초마다 값을 잴지 정합니다.
 // 숫자를 줄이면 더 촘촘하게, 늘리면 더 듬성듬성 측정합니다.
 // @tunable samplingIntervalMs
@@ -19,6 +51,16 @@ void setup() {
   Wire.begin();
   mpu.initialize();
   Serial.println("WOKWI_READY");
+
+  writeRegister16(0x40, 0x05, 4096);
+  writeRegister8(0x29, 0xA0 | 0x00, 0x03);
+  const uint16_t inaCurrent = readRegister16BE(0x40, 0x04);
+  const uint16_t tslCh0 = readRegister16LE(0x29, 0xA0 | 0x14);
+  if (inaCurrent == 100 && tslCh0 == 1234) {
+    Serial.println("CUSTOM_CHIPS_OK");
+  } else {
+    Serial.println("CUSTOM_CHIPS_ERROR");
+  }
 }
 
 void loop() {
@@ -27,6 +69,8 @@ void loop() {
   Serial.print(ax); Serial.print(",");
   Serial.print(ay); Serial.print(",");
   Serial.println(az);
+  Serial.print("TSL_CH0=");
+  Serial.println(readRegister16LE(0x29, 0xA0 | 0x14));
   delay(samplingIntervalMs);
 }
 `

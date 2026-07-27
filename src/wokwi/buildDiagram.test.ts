@@ -37,7 +37,7 @@ describe('buildDiagram', () => {
 
     for (const id of ['tsl2591_1', 'tsl2591_2']) {
       const part = nonUnoParts.find((p) => p.id === id)
-      expect(part?.type).toBe('custom-tsl2591')
+      expect(part?.type).toBe('chip-tsl2591')
     }
     expect(nonUnoParts.find((p) => p.id === 'tca9548a')?.type).toBe('custom-tca9548a')
 
@@ -56,12 +56,12 @@ describe('buildDiagram', () => {
     )
   })
 
-  it('includes a simSupported: false sensor (TSL2591) in the diagram output', () => {
+  it('includes the sim-supported custom TSL2591 chip in the diagram output', () => {
     const tsl2591 = sensors.find((s) => s.id === 'tsl2591')
-    expect(tsl2591?.wokwi.simSupported).toBe(false)
+    expect(tsl2591?.wokwi.simSupported).toBe(true)
 
     const diagram = buildDiagram(multiTsl2591Recipe, sensors)
-    const tslParts = diagram.parts.filter((p) => p.type === 'custom-tsl2591')
+    const tslParts = diagram.parts.filter((p) => p.type === 'chip-tsl2591')
     expect(tslParts).toHaveLength(2)
 
     const tca = sensors.find((s) => s.id === 'tca9548a')

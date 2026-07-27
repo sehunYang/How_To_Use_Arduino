@@ -1,0 +1,11 @@
+name: Pendulum and custom I2C chips
+version: 1
+author: sehunYang
+steps:
+  - wait-serial: "WOKWI_READY"
+  - wait-serial: "CUSTOM_CHIPS_OK"
+  - set-control:
+      part-id: tsl2591
+      control: ch0Raw
+      value: 2048
+  - wait-serial: "TSL_CH0=2048"

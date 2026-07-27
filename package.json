@@ -18,6 +18,7 @@
     "verify:holdout": "tsx scripts/verify-holdout.ts",
     "verify:extract": "tsx scripts/extract-content.ts",
     "build:wokwi": "tsx scripts/build-wokwi-firmware.ts",
+    "build:wokwi:chips": "wokwi-cli chip compile chips/ina219.chip.c chips/ina219.c -o chips/ina219.chip.wasm && wokwi-cli chip compile chips/tsl2591.chip.c chips/tsl2591.c -o chips/tsl2591.chip.wasm",
     "setup:zig": "node scripts/setup-zig.mjs",
     "verify:logic": "node scripts/verify-logic.mjs"
   },

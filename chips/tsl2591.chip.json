@@ -1,0 +1,23 @@
+{
+  "name": "TSL2591 Light Sensor",
+  "author": "sehunYang",
+  "pins": ["VCC", "GND", "SCL", "SDA"],
+  "controls": [
+    {
+      "id": "ch0Raw",
+      "label": "Full-spectrum raw count",
+      "type": "range",
+      "min": 0,
+      "max": 65535,
+      "step": 1
+    },
+    {
+      "id": "ch1Raw",
+      "label": "Infrared raw count",
+      "type": "range",
+      "min": 0,
+      "max": 65535,
+      "step": 1
+    }
+  ]
+}

@@ -27,7 +27,7 @@ export const sensors: Sensor[] = [
       { name: 'SDA', kind: 'i2c' },
     ],
     currentDrawMa: 1,
-    wokwi: { part: 'custom-ina219', pinMap: { VCC: 'VCC', GND: 'GND', SCL: 'SCL', SDA: 'SDA' }, simSupported: false },
+    wokwi: { part: 'chip-ina219', pinMap: { VCC: 'VCC', GND: 'GND', SCL: 'SCL', SDA: 'SDA' }, simSupported: true },
     muxChannels: 0,
   },
   {
@@ -42,7 +42,7 @@ export const sensors: Sensor[] = [
       { name: 'SDA', kind: 'i2c' },
     ],
     currentDrawMa: 0.4,
-    wokwi: { part: 'custom-tsl2591', pinMap: { VCC: 'VCC', GND: 'GND', SCL: 'SCL', SDA: 'SDA' }, simSupported: false },
+    wokwi: { part: 'chip-tsl2591', pinMap: { VCC: 'VCC', GND: 'GND', SCL: 'SCL', SDA: 'SDA' }, simSupported: true },
     muxChannels: 0,
   },
   {

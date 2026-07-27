@@ -73,10 +73,16 @@ jobs:
       - name: Build Arduino Uno firmware for Wokwi
         run: npm run build:wokwi
 
+      - name: Install Wokwi CLI
+        run: curl -L https://wokwi.com/ci/install.sh | sh
+
+      - name: Build INA219 and TSL2591 custom chips
+        run: npm run build:wokwi:chips
+
       - name: L3 Wokwi simulation
         uses: wokwi/wokwi-ci-action@v1
         with:
           token: ${{ secrets.WOKWI_CLI_TOKEN }}
           path: /
-          timeout: 5000
-          expect_text: WOKWI_READY
+          timeout: 10000
+          scenario: wokwi/pendulum.test.yaml
