@@ -18,6 +18,7 @@ void setup() {
   Serial.begin(9600);
   Wire.begin();
   mpu.initialize();
+  Serial.println("WOKWI_READY");
 }
 
 void loop() {

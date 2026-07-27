@@ -18,6 +18,7 @@
 name: PR Verification
 
 on:
+  workflow_dispatch:
   pull_request:
     branches: [main]
     paths:
@@ -68,3 +69,14 @@ jobs:
 
       - name: L5 logic + chip-register harness (US-206/US-207 source of truth)
         run: npm run verify:logic
+
+      - name: Build Arduino Uno firmware for Wokwi
+        run: npm run build:wokwi
+
+      - name: L3 Wokwi simulation
+        uses: wokwi/wokwi-ci-action@v1
+        with:
+          token: ${{ secrets.WOKWI_CLI_TOKEN }}
+          path: /
+          timeout: 5000
+          expect_text: WOKWI_READY
