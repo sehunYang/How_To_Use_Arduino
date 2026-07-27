@@ -45,6 +45,8 @@ jobs:
 
       - run: npm ci
       - run: npm run lint
+      - name: Install arduino-cli for compile tests
+        run: npm run setup:arduino-cli
       - run: npm test
       - run: npm run verify:wokwi-diagram
 
