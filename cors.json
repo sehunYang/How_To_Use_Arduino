@@ -1,0 +1,8 @@
+[
+    {
+      "origin": ["https://shy.ai.kr"],
+      "method": ["GET", "HEAD", "DELETE"],
+      "responseHeader": ["Content-Type"],
+      "maxAgeSeconds": 3600
+    }
+  ]

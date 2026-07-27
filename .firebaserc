@@ -1,0 +1,22 @@
+{
+  "projects": {
+    "default": "how-to-use-arduino-test"
+  },
+  "targets": {
+    "how-to-use-arduino": {
+      "storage": {
+        "wiring": [
+          "how-to-use-arduino-wiring"
+        ]
+      }
+    },
+    "how-to-use-arduino-test": {
+      "storage": {
+        "wiring": [
+          "how-to-use-arduino-wiring"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

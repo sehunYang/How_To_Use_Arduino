@@ -1,0 +1,64 @@
+# Daily verification sweep against the canary recipe set (검증 원장 N5).
+#
+# This is a code-verifiable subset of the full verification ladder: L3 (real
+# Wokwi simulation) and PL5 (monthly-minutes measurement) need a Wokwi
+# account/CLI token that is human-provisioning-gated (see
+# docs/wokwi-setup.md, US-209) and are intentionally NOT run here.
+#
+# Source of truth for each job's correctness is the story that already
+# proved the underlying check green on its own, in isolation:
+#   - L1 (corpus/static check)         -> US-006 / US-013 (src/validation/*.test.ts, run via `npm test`)
+#   - Firestore/Storage security rules -> US-009 (`npm run test:rules`)
+#   - L2 (arduino-cli compile gate)    -> US-205 (`npm run verify:compile`)
+#   - L5 (host logic + chip-register)  -> US-206 / US-207 (`npm run verify:logic`)
+# This workflow only wires those already-proven checks into a schedule; it
+# has not itself been executed inside a real GitHub Actions runner (see
+# US-208 acceptance criteria) — "workflow exists" is not "workflow is
+# proven to run in CI".
+name: Daily Verification
+
+on:
+  schedule:
+    # 03:00 UTC daily — off-peak, well clear of any push-triggered deploy.
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+      - run: npm run lint
+
+      # Must precede `npm test`, not just `npm run verify:compile`:
+      # src/verification/compileCheck.test.ts is a plain vitest file picked up
+      # by `npm test` and it shells out to the real arduino-cli binary, so
+      # without this step `npm test` fails before verify:compile ever runs.
+      - name: Install arduino-cli + arduino:avr core (US-205 setup step)
+        run: npm run setup:arduino-cli
+
+      - name: L1 corpus/static checks (US-006/US-013 source of truth)
+        run: npm test
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Firestore/Storage security rule tests (US-009 source of truth)
+        run: npm run test:rules
+
+      - name: L2 compile check — SRAM/Flash thresholds (US-205 source of truth)
+        run: npm run verify:compile
+
+      - name: L5 logic + chip-register harness (US-206/US-207 source of truth)
+        # Self-contained: verify-logic.mjs fetches its own host C++ toolchain
+        # (zig) into node_modules/.zig via setup-zig.mjs — no separate setup step.
+        run: npm run verify:logic

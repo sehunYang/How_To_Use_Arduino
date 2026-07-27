@@ -1,0 +1,74 @@
+rules_version = '2';
+
+// Security rules for the "검증 원장" (verification ledger) architecture.
+// Source of truth for this text: .omc/plans/how-to-use-arduino-implementation.md
+// section "0.5 보안 규칙 + App Check + CI 아이덴티티" (A6.4, PL2).
+// Do not hand-edit without updating the plan file first — this is a
+// transcription, not an independent design.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // isAdmin()/isCI() MUST guard on request.auth != null before dereferencing
+    // request.auth.token — an absent request.auth (fully unauthenticated
+    // request) must short-circuit to `false` instead of erroring. See PL2 ⑨.
+    function isAdmin() {
+      return request.auth != null && request.auth.token.admin == true;
+    }
+
+    function isCI() {
+      return request.auth != null && request.auth.token.ci == true;
+    }
+
+    // Payload schema for the fire-and-forget public `events` writes (A5.8).
+    // Rules can only validate shape, not rate — App Check covers the rest.
+    function validEventPayload() {
+      let data = request.resource.data;
+      let allowedKeys = ['anonId', 'recipeId', 'event', 'step', 'at'];
+      let requiredKeys = ['anonId', 'recipeId', 'event', 'at'];
+      return data.keys().hasOnly(allowedKeys)
+        && data.keys().hasAll(requiredKeys)
+        && data.anonId is string && data.anonId.size() <= 64
+        && data.recipeId is string && data.recipeId.size() <= 128
+        && data.event is string
+        && data.event in ['start', 'step_check', 'complete', 'search_fail']
+        && data.at is timestamp
+        && (!('step' in data) || data.step is number);
+    }
+
+    match /recipes/{id} {
+      allow read: if resource.data.status == 'published'
+                  || isAdmin() || isCI();      // ← N6
+      allow write: if isAdmin();
+    }
+
+    match /sensors/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /meta/{doc} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /simStatus/{recipeId} {
+      allow read: if true;
+      allow write: if isCI();
+    }
+
+    match /stats/{recipeId} {
+      allow read: if isAdmin();
+      allow write: if isCI();
+    }
+
+    match /verifyRequests/{id} {
+      allow create: if isAdmin();
+      allow read, delete: if isCI();           // ← E3 큐
+    }
+
+    match /events/{id} {
+      allow create: if validEventPayload();
+      allow read: if isAdmin() || isCI();       // ← E1 크론 집계
+      allow update, delete: if false;
+    }
+  }
+}

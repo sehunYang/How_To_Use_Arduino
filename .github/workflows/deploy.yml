@@ -1,0 +1,92 @@
+# Build + deploy this static SPA to GitHub Pages.
+#
+# NOTE (plan E9): this repository must be PUBLIC. GitHub Actions gives
+# public repos an unmetered minute budget; private repos are capped at
+# 2000 min/month on the free tier, and this project's CI (lint + vitest +
+# build + the Firestore/Storage emulator rule suite) is comprehensive
+# enough to blow through that cap quickly.
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Least-privilege token, scoped up only for the Pages deployment job.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Avoid two concurrent deployments stomping on each other; let an
+# in-flight deployment finish rather than cancelling it mid-publish.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      # Single source of truth for the site's base path (see vite.config.ts
+      # and src/lib/basePath.ts, both of which read this same env var —
+      # US-003 acceptance criterion: no duplicated literals). This project
+      # deploys behind a custom domain (public/CNAME) served from the root,
+      # so the base path is "/" — not a /<repo>/ subpath, which only
+      # applies to the default <owner>.github.io/<repo>/ project-site URL.
+      VITE_BASE_PATH: /
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Firestore/Storage security rule tests (plan 0.5 CI gate)
+        # Runs against the local Firebase emulator only (no live project,
+        # no credentials) -- see firebase.json / .firebaserc. A rules
+        # regression must fail this build, not be discovered later.
+        run: npm run test:rules
+
+      - run: npm run build
+
+      - name: SPA deep-link fallback for GitHub Pages
+        # GitHub Pages returns a real HTTP 404 status for any request path
+        # that isn't a literal file on disk. It also serves a repo-root
+        # 404.html (if present) as the body of that 404 response. Copying
+        # index.html to 404.html means a hard refresh / shared link on a
+        # client-side route (e.g. /some/deep/path) still gets the SPA's
+        # JS + router in the response body, which then resolves the route
+        # client-side instead of showing a bare GitHub 404 page.
+        run: cp dist/index.html dist/404.html
+
+      - name: Verify SPA fallback artifact
+        # Automated check (scripts/verify-spa-fallback.mjs) that dist/404.html
+        # exists and is byte-identical to dist/index.html, so a future
+        # refactor of this workflow can't silently drop the copy step.
+        run: npm run verify:spa-fallback
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

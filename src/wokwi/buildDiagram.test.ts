@@ -1,0 +1,145 @@
+import { describe, it, expect } from 'vitest'
+import type { Recipe, Sensor } from '@/schema'
+import { sensors } from '@/data/inventory-seed/sensors'
+import { pendulumRecipe } from '@/data/canary/pendulum'
+import { multiTsl2591Recipe } from '@/data/canary/multiTsl2591'
+import { buildDiagram } from './buildDiagram'
+
+describe('buildDiagram', () => {
+  it('produces one non-uno part for a single-sensor recipe (pendulum + MPU6050)', () => {
+    const diagram = buildDiagram(pendulumRecipe, sensors)
+
+    const nonUnoParts = diagram.parts.filter((p) => p.id !== 'uno')
+    expect(nonUnoParts).toHaveLength(1)
+    expect(nonUnoParts[0].id).toBe('mpu6050')
+    expect(nonUnoParts[0].type).toBe('wokwi-mpu6050')
+    expect(diagram.parts.some((p) => p.id === 'uno' && p.type === 'wokwi-arduino-uno')).toBe(true)
+
+    expect(diagram.connections).toHaveLength(4)
+    expect(diagram.connections).toEqual(
+      expect.arrayContaining([
+        ['mpu6050:VCC', 'uno:5V', 'red', []],
+        ['mpu6050:GND', 'uno:GND', 'black', []],
+        ['mpu6050:SDA', 'uno:A4', 'green', []],
+        ['mpu6050:SCL', 'uno:A5', 'yellow', []],
+      ]),
+    )
+  })
+
+  it('produces distinct parts for two TSL2591 instances plus the TCA9548A mux, with all 8 connections resolved', () => {
+    const diagram = buildDiagram(multiTsl2591Recipe, sensors)
+
+    const nonUnoParts = diagram.parts.filter((p) => p.id !== 'uno')
+    expect(nonUnoParts).toHaveLength(3)
+
+    const partIds = nonUnoParts.map((p) => p.id).sort()
+    expect(partIds).toEqual(['tca9548a', 'tsl2591_1', 'tsl2591_2'])
+
+    for (const id of ['tsl2591_1', 'tsl2591_2']) {
+      const part = nonUnoParts.find((p) => p.id === id)
+      expect(part?.type).toBe('custom-tsl2591')
+    }
+    expect(nonUnoParts.find((p) => p.id === 'tca9548a')?.type).toBe('custom-tca9548a')
+
+    expect(diagram.connections).toHaveLength(8)
+    expect(diagram.connections).toEqual(
+      expect.arrayContaining([
+        ['tca9548a:VCC', 'uno:5V', 'red', []],
+        ['tca9548a:GND', 'uno:GND', 'black', []],
+        ['tca9548a:SDA', 'uno:A4', 'green', []],
+        ['tca9548a:SCL', 'uno:A5', 'yellow', []],
+        ['tsl2591_1:SDA', 'tca9548a:SD0', 'green', []],
+        ['tsl2591_1:SCL', 'tca9548a:SC0', 'yellow', []],
+        ['tsl2591_2:SDA', 'tca9548a:SD1', 'green', []],
+        ['tsl2591_2:SCL', 'tca9548a:SC1', 'yellow', []],
+      ]),
+    )
+  })
+
+  it('includes a simSupported: false sensor (TSL2591) in the diagram output', () => {
+    const tsl2591 = sensors.find((s) => s.id === 'tsl2591')
+    expect(tsl2591?.wokwi.simSupported).toBe(false)
+
+    const diagram = buildDiagram(multiTsl2591Recipe, sensors)
+    const tslParts = diagram.parts.filter((p) => p.type === 'custom-tsl2591')
+    expect(tslParts).toHaveLength(2)
+
+    const tca = sensors.find((s) => s.id === 'tca9548a')
+    expect(tca?.wokwi.simSupported).toBe(false)
+    expect(diagram.parts.some((p) => p.type === 'custom-tca9548a')).toBe(true)
+  })
+
+  it('throws on a wiring token that resolves to no sensor, instead of emitting a dangling connection', () => {
+    const typoedRecipe: Recipe = {
+      ...multiTsl2591Recipe,
+      wiring: multiTsl2591Recipe.wiring.map((step) => ({
+        ...step,
+        from: step.from.replace(/^TSL2591_2\./, 'TLS2591_2.'),
+      })),
+    }
+
+    expect(typoedRecipe.wiring.some((s) => s.from.startsWith('TLS2591_2.'))).toBe(true)
+    expect(() => buildDiagram(typoedRecipe, sensors)).toThrow(/TLS2591_2/)
+  })
+
+  it('generates a correct diagram for a synthetic sensor absent from the real inventory, with zero changes to buildDiagram.ts', () => {
+    const fakeSensor: Sensor = {
+      id: 'fake-sensor-11',
+      name: 'Fake Sensor 11',
+      interface: 'digital',
+      addressing: { mode: 'none' },
+      pins: [
+        { name: 'VCC', kind: 'power' },
+        { name: 'GND', kind: 'power' },
+        { name: 'SIG', kind: 'digital' },
+      ],
+      currentDrawMa: 2,
+      wokwi: { part: 'wokwi-fake-11', pinMap: { VCC: 'VCC', GND: 'GND', SIG: 'signal' }, simSupported: false },
+      muxChannels: 0,
+    }
+
+    const fakeRecipe: Recipe = {
+      id: 'fake-sensor-fixture',
+      type: 'sensor-example',
+      title: '가짜 센서 테스트',
+      subject: null,
+      difficulty: '초급',
+      minutes: 10,
+      board: 'uno-r3',
+      sensors: ['fake-sensor-11'],
+      actuators: [],
+      coreKeywords: [],
+      imageUrl: 'wiring/fake.png',
+      imageWidth: 400,
+      imageHeight: 300,
+      wiring: [
+        { from: 'FAKE-SENSOR-11.VCC', to: 'UNO.5V', color: 'red', focus: { x: 0, y: 0, w: 10, h: 10 }, text: 'VCC' },
+        { from: 'FAKE-SENSOR-11.GND', to: 'UNO.GND', color: 'black', focus: { x: 0, y: 20, w: 10, h: 10 }, text: 'GND' },
+        { from: 'FAKE-SENSOR-11.SIG', to: 'UNO.D2', color: 'blue', focus: { x: 0, y: 40, w: 10, h: 10 }, text: 'SIG' },
+      ],
+      sketch: '// @baud 9600\nvoid setup() {}\nvoid loop() {}',
+      baudRate: 9600,
+      tunables: [],
+      body: '테스트',
+      applicationGuide: '',
+      troubleshooting: [],
+      status: 'draft',
+      reviewedOnDevice: null,
+      commentReviewed: null,
+      updatedAt: '2026-01-01T00:00:00.000Z',
+    }
+
+    const diagram = buildDiagram(fakeRecipe, [...sensors, fakeSensor])
+
+    const fakePart = diagram.parts.find((p) => p.id === 'fake-sensor-11')
+    expect(fakePart?.type).toBe('wokwi-fake-11')
+
+    expect(diagram.connections).toEqual(
+      expect.arrayContaining([
+        ['fake-sensor-11:VCC', 'uno:5V', 'red', []],
+        ['fake-sensor-11:GND', 'uno:GND', 'black', []],
+        ['fake-sensor-11:signal', 'uno:D2', 'blue', []],
+      ]),
+    )
+  })
+})

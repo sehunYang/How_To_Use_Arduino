@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens (A7.4). Tailwind v4's @theme maps each --color-* variable
+ * to a first-class utility (bg-background, text-foreground, etc.) so
+ * consuming components never need hex literals or the default palette.
+ * Light values are the defaults; :root[data-theme="dark"] overrides them.
+ * The theme toggle (implemented in Phase 3) stamps data-theme on <html>.
+ */
+
+:root {
+  --color-background: #ffffff;
+  --color-foreground: #1a1a1a;
+  --color-muted: #6b7280;
+  --color-muted-background: #f4f4f5;
+  --color-border: #e4e4e7;
+  --color-accent: #2563eb;
+  --color-accent-foreground: #ffffff;
+  --color-warning: #b45309;
+  --color-warning-background: #fef3c7;
+  --color-success: #15803d;
+  --color-success-background: #dcfce7;
+  --color-danger: #b91c1c;
+  --color-danger-background: #fee2e2;
+
+  --spacing-page: 1.5rem;
+  --radius-card: 0.75rem;
+
+  --font-size-body: 1rem;
+  --font-size-heading: 1.5rem;
+  --font-size-caption: 0.875rem;
+  --line-height-body: 1.6;
+}
+
+:root[data-theme="dark"] {
+  --color-background: #0f0f10;
+  --color-foreground: #f2f2f2;
+  --color-muted: #9ca3af;
+  --color-muted-background: #1c1c1f;
+  --color-border: #2a2a2e;
+  --color-accent: #60a5fa;
+  --color-accent-foreground: #0f0f10;
+  --color-warning: #fbbf24;
+  --color-warning-background: #451a03;
+  --color-success: #4ade80;
+  --color-success-background: #052e16;
+  --color-danger: #f87171;
+  --color-danger-background: #450a0a;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-background: #0f0f10;
+    --color-foreground: #f2f2f2;
+    --color-muted: #9ca3af;
+    --color-muted-background: #1c1c1f;
+    --color-border: #2a2a2e;
+    --color-accent: #60a5fa;
+    --color-accent-foreground: #0f0f10;
+    --color-warning: #fbbf24;
+    --color-warning-background: #451a03;
+    --color-success: #4ade80;
+    --color-success-background: #052e16;
+    --color-danger: #f87171;
+    --color-danger-background: #450a0a;
+  }
+}
+
+@theme {
+  --color-background: var(--color-background);
+  --color-foreground: var(--color-foreground);
+  --color-muted: var(--color-muted);
+  --color-muted-background: var(--color-muted-background);
+  --color-border: var(--color-border);
+  --color-accent: var(--color-accent);
+  --color-accent-foreground: var(--color-accent-foreground);
+  --color-warning: var(--color-warning);
+  --color-warning-background: var(--color-warning-background);
+  --color-success: var(--color-success);
+  --color-success-background: var(--color-success-background);
+  --color-danger: var(--color-danger);
+  --color-danger-background: var(--color-danger-background);
+
+  --spacing-page: var(--spacing-page);
+  --radius-card: var(--radius-card);
+
+  --font-size-body: var(--font-size-body);
+  --font-size-heading: var(--font-size-heading);
+  --font-size-caption: var(--font-size-caption);
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  line-height: var(--line-height-body);
+}

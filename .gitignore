@@ -1,0 +1,49 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Env / secrets — Firebase web config is public-by-design but keep local
+# overrides (emulator toggles, VITE_BASE_PATH for local testing) untracked
+.env
+.env.local
+
+# Firebase emulator + CLI artifacts
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+storage-debug.log
+
+# Ralph session-scoped runtime state (progress logs, prd.json working copy)
+.omc/state/
+
+# Project-local toolchain: the arduino-cli binary, the arduino:avr core,
+# installed libraries and staged .ino sketch folders (see
+# scripts/setup-arduino-cli.ts). Downloaded on demand, never committed.
+.tools/
+
+# CI-generated verification artifacts (scripts/extract-content.ts, US-202):
+# regenerated from Firestore recipes on every run, not committed source.
+/sketches/
+/diagram/
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

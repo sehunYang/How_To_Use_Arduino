@@ -1,0 +1,70 @@
+# PR verification gate for changes touching recipe/sketch/rule content.
+#
+# The plan's PR trigger is "diff + L3" (diff-aware checks plus a real Wokwi
+# simulation run). L3 needs a Wokwi CLI token, which is human-provisioning-gated
+# (see docs/wokwi-setup.md, US-209) and is not available in this run, so this
+# workflow instead runs every check that IS code-verifiable at PR time: L1 +
+# L2 + L5, the same subset as verify-daily.yml. Treat this as "everything we
+# can prove without a Wokwi account", not the full plan's PR gate.
+#
+# Source of truth for each job's correctness:
+#   - L1 (corpus/static check)         -> US-006 / US-013 (`npm test`)
+#   - Firestore/Storage security rules -> US-009 (`npm run test:rules`)
+#   - L2 (arduino-cli compile gate)    -> US-205 (`npm run verify:compile`)
+#   - L5 (host logic + chip-register)  -> US-206 / US-207 (`npm run verify:logic`)
+# As with verify-daily.yml, this file has been validated for YAML correctness
+# and every referenced script verified green locally by its own story — it
+# has not been proven to execute inside a real GitHub Actions runner.
+name: PR Verification
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'logic/**'
+      - 'chips/**'
+      - 'scripts/**'
+      - '.github/workflows/**'
+      - 'firestore.rules'
+      - 'storage.rules'
+      - 'package.json'
+      - 'package-lock.json'
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+      - run: npm run lint
+
+      # Must precede `npm test`, not just `npm run verify:compile`:
+      # src/verification/compileCheck.test.ts is a plain vitest file picked up
+      # by `npm test` and it shells out to the real arduino-cli binary, so
+      # without this step `npm test` fails before verify:compile ever runs.
+      - name: Install arduino-cli + arduino:avr core (US-205 setup step)
+        run: npm run setup:arduino-cli
+
+      - name: L1 corpus/static checks (US-006/US-013 source of truth)
+        run: npm test
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Firestore/Storage security rule tests (US-009 source of truth)
+        run: npm run test:rules
+
+      - name: L2 compile check — SRAM/Flash thresholds (US-205 source of truth)
+        run: npm run verify:compile
+
+      - name: L5 logic + chip-register harness (US-206/US-207 source of truth)
+        run: npm run verify:logic

@@ -1,0 +1,478 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1785102607676,
+  "projectRoot": "C:\\Users\\Sehun\\Desktop\\Private Files\\Dev\\How_To_Use_Arduino",
+  "techStack": {
+    "languages": [
+      {
+        "name": "JavaScript/TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "tsconfig.json"
+        ]
+      }
+    ],
+    "frameworks": [
+      {
+        "name": "react",
+        "version": "19.2.7",
+        "category": "frontend"
+      },
+      {
+        "name": "react-dom",
+        "version": "19.2.7",
+        "category": "frontend"
+      },
+      {
+        "name": "vite",
+        "version": "8.1.1",
+        "category": "build"
+      },
+      {
+        "name": "vitest",
+        "version": "2.1.8",
+        "category": "testing"
+      }
+    ],
+    "packageManager": "npm",
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": "npm run build",
+    "testCommand": "npm test",
+    "lintCommand": "npm run lint",
+    "devCommand": "npm run dev",
+    "scripts": {
+      "dev": "vite",
+      "build": "tsc -b && vite build",
+      "lint": "eslint .",
+      "preview": "vite preview",
+      "test": "vitest run",
+      "test:watch": "vitest",
+      "test:rules": "firebase emulators:exec --project how-to-use-arduino-test --only firestore,storage \"vitest run --config vitest.rules.config.ts\"",
+      "verify:spa-fallback": "node scripts/verify-spa-fallback.mjs",
+      "verify:matching": "tsx scripts/verify-matching.ts",
+      "verify:holdout": "tsx scripts/verify-holdout.ts"
+    }
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": "type-based"
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "docs",
+      "public",
+      "scripts",
+      "src"
+    ],
+    "gitBranches": null
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "docs": {
+      "path": "docs",
+      "purpose": "Documentation",
+      "fileCount": 1,
+      "lastAccessed": 1785102607170,
+      "keyFiles": [
+        "firebase-setup.md"
+      ]
+    },
+    "eslint-rules": {
+      "path": "eslint-rules",
+      "purpose": null,
+      "fileCount": 1,
+      "lastAccessed": 1785102607280,
+      "keyFiles": [
+        "no-hardcoded-design-values.js"
+      ]
+    },
+    "public": {
+      "path": "public",
+      "purpose": "Public files",
+      "fileCount": 3,
+      "lastAccessed": 1785102607293,
+      "keyFiles": [
+        "CNAME",
+        "favicon.svg",
+        "icons.svg"
+      ]
+    },
+    "scripts": {
+      "path": "scripts",
+      "purpose": "Build/utility scripts",
+      "fileCount": 3,
+      "lastAccessed": 1785102607302,
+      "keyFiles": [
+        "verify-holdout.ts",
+        "verify-matching.ts",
+        "verify-spa-fallback.mjs"
+      ]
+    },
+    "src": {
+      "path": "src",
+      "purpose": "Source code",
+      "fileCount": 2,
+      "lastAccessed": 1785102607314,
+      "keyFiles": [
+        "App.tsx",
+        "main.tsx"
+      ]
+    },
+    "test-data": {
+      "path": "test-data",
+      "purpose": null,
+      "fileCount": 2,
+      "lastAccessed": 1785102607325,
+      "keyFiles": [
+        "README.md",
+        "search-sentences.json"
+      ]
+    },
+    "src\\components": {
+      "path": "src\\components",
+      "purpose": "UI components",
+      "fileCount": 0,
+      "lastAccessed": 1785102607371,
+      "keyFiles": []
+    },
+    "src\\data": {
+      "path": "src\\data",
+      "purpose": "Data files",
+      "fileCount": 2,
+      "lastAccessed": 1785102607380,
+      "keyFiles": [
+        "synonyms.ts",
+        "testCorpus.ts"
+      ]
+    },
+    "src\\lib": {
+      "path": "src\\lib",
+      "purpose": "Library code",
+      "fileCount": 3,
+      "lastAccessed": 1785102607391,
+      "keyFiles": [
+        "basePath.ts",
+        "utils.ts",
+        "verifyHash.ts"
+      ]
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "package.json",
+      "accessCount": 12,
+      "lastAccessed": 1785122772326,
+      "type": "file"
+    },
+    {
+      "path": "scripts/verify-logic.mjs",
+      "accessCount": 11,
+      "lastAccessed": 1785122756020,
+      "type": "file"
+    },
+    {
+      "path": "src/rules/drainVerifyQueue.test.ts",
+      "accessCount": 11,
+      "lastAccessed": 1785123207680,
+      "type": "file"
+    },
+    {
+      "path": "README.md",
+      "accessCount": 10,
+      "lastAccessed": 1785122977348,
+      "type": "file"
+    },
+    {
+      "path": "docs/firebase-setup.md",
+      "accessCount": 9,
+      "lastAccessed": 1785121007536,
+      "type": "file"
+    },
+    {
+      "path": "src/verification/drainVerifyQueue.ts",
+      "accessCount": 7,
+      "lastAccessed": 1785122658377,
+      "type": "file"
+    },
+    {
+      "path": "src/validation/staticCheck.ts",
+      "accessCount": 6,
+      "lastAccessed": 1785122042393,
+      "type": "file"
+    },
+    {
+      "path": "src/rules/simStatus.test.ts",
+      "accessCount": 6,
+      "lastAccessed": 1785122722567,
+      "type": "file"
+    },
+    {
+      "path": "vitest.rules.config.ts",
+      "accessCount": 6,
+      "lastAccessed": 1785122772052,
+      "type": "file"
+    },
+    {
+      "path": "chips/ina219.c",
+      "accessCount": 6,
+      "lastAccessed": 1785122787972,
+      "type": "file"
+    },
+    {
+      "path": "chips/tsl2591.c",
+      "accessCount": 6,
+      "lastAccessed": 1785122798325,
+      "type": "file"
+    },
+    {
+      "path": "src/verification/compileCheck.ts",
+      "accessCount": 6,
+      "lastAccessed": 1785122990649,
+      "type": "file"
+    },
+    {
+      "path": "firebase.json",
+      "accessCount": 5,
+      "lastAccessed": 1785119501367,
+      "type": "file"
+    },
+    {
+      "path": "src/data/canary/pendulum.ts",
+      "accessCount": 5,
+      "lastAccessed": 1785120455908,
+      "type": "file"
+    },
+    {
+      "path": "src/verification/writeSimStatus.ts",
+      "accessCount": 5,
+      "lastAccessed": 1785122657541,
+      "type": "file"
+    },
+    {
+      "path": "scripts/verify-compile.ts",
+      "accessCount": 5,
+      "lastAccessed": 1785122753530,
+      "type": "file"
+    },
+    {
+      "path": "scripts/setup-arduino-cli.ts",
+      "accessCount": 5,
+      "lastAccessed": 1785122754948,
+      "type": "file"
+    },
+    {
+      "path": "logic/multiTsl2591.h",
+      "accessCount": 5,
+      "lastAccessed": 1785122779007,
+      "type": "file"
+    },
+    {
+      "path": "src/verification/arduinoCli.ts",
+      "accessCount": 5,
+      "lastAccessed": 1785122992159,
+      "type": "file"
+    },
+    {
+      "path": "scripts/setup-zig.mjs",
+      "accessCount": 5,
+      "lastAccessed": 1785122993247,
+      "type": "file"
+    },
+    {
+      "path": "src/data/canary/multiTsl2591.ts",
+      "accessCount": 4,
+      "lastAccessed": 1785119481735,
+      "type": "file"
+    },
+    {
+      "path": "src/rules/security.test.ts",
+      "accessCount": 4,
+      "lastAccessed": 1785120449420,
+      "type": "file"
+    },
+    {
+      "path": "src/schema/simStatus.ts",
+      "accessCount": 4,
+      "lastAccessed": 1785121944685,
+      "type": "file"
+    },
+    {
+      "path": "logic/pendulum.h",
+      "accessCount": 4,
+      "lastAccessed": 1785122778586,
+      "type": "file"
+    },
+    {
+      "path": "src/data/inventory-seed/sensors.ts",
+      "accessCount": 3,
+      "lastAccessed": 1785119493180,
+      "type": "file"
+    },
+    {
+      "path": "src/schema/index.ts",
+      "accessCount": 3,
+      "lastAccessed": 1785119493493,
+      "type": "file"
+    },
+    {
+      "path": "src/schema/sensor.ts",
+      "accessCount": 3,
+      "lastAccessed": 1785119557231,
+      "type": "file"
+    },
+    {
+      "path": "firestore.rules",
+      "accessCount": 3,
+      "lastAccessed": 1785120454306,
+      "type": "file"
+    },
+    {
+      "path": "src/schema/recipe.ts",
+      "accessCount": 3,
+      "lastAccessed": 1785120491649,
+      "type": "file"
+    },
+    {
+      "path": "src/verification/extractContent.ts",
+      "accessCount": 3,
+      "lastAccessed": 1785122657002,
+      "type": "file"
+    },
+    {
+      "path": "src/rules/extractContent.test.ts",
+      "accessCount": 3,
+      "lastAccessed": 1785122721627,
+      "type": "file"
+    },
+    {
+      "path": "scripts/extract-content.ts",
+      "accessCount": 3,
+      "lastAccessed": 1785122754122,
+      "type": "file"
+    },
+    {
+      "path": "logic/multiTsl2591.test.cpp",
+      "accessCount": 3,
+      "lastAccessed": 1785122786197,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/verifyHash.ts",
+      "accessCount": 2,
+      "lastAccessed": 1785120449050,
+      "type": "file"
+    },
+    {
+      "path": "src/validation/staticCheck.test.ts",
+      "accessCount": 2,
+      "lastAccessed": 1785120454776,
+      "type": "file"
+    },
+    {
+      "path": "vitest.config.ts",
+      "accessCount": 2,
+      "lastAccessed": 1785120996527,
+      "type": "file"
+    },
+    {
+      "path": "src",
+      "accessCount": 2,
+      "lastAccessed": 1785122067428,
+      "type": "directory"
+    },
+    {
+      "path": "src/verification/compileCheck.test.ts",
+      "accessCount": 2,
+      "lastAccessed": 1785122771182,
+      "type": "file"
+    },
+    {
+      "path": "logic/pendulum.test.cpp",
+      "accessCount": 2,
+      "lastAccessed": 1785122785270,
+      "type": "file"
+    },
+    {
+      "path": "chips/ina219.h",
+      "accessCount": 2,
+      "lastAccessed": 1785122786731,
+      "type": "file"
+    },
+    {
+      "path": "chips/tsl2591.h",
+      "accessCount": 2,
+      "lastAccessed": 1785122797774,
+      "type": "file"
+    },
+    {
+      "path": "src/data/canary/simStatus.ts",
+      "accessCount": 1,
+      "lastAccessed": 1785118966094,
+      "type": "file"
+    },
+    {
+      "path": "eslint.config.js",
+      "accessCount": 1,
+      "lastAccessed": 1785119287031,
+      "type": "file"
+    },
+    {
+      "path": "tsconfig.node.json",
+      "accessCount": 1,
+      "lastAccessed": 1785119287577,
+      "type": "file"
+    },
+    {
+      "path": "eslint-rules/no-hardcoded-design-values.js",
+      "accessCount": 1,
+      "lastAccessed": 1785119292692,
+      "type": "file"
+    },
+    {
+      "path": "scripts/verify-holdout.ts",
+      "accessCount": 1,
+      "lastAccessed": 1785119490208,
+      "type": "file"
+    },
+    {
+      "path": "scripts/verify-matching.ts",
+      "accessCount": 1,
+      "lastAccessed": 1785119491700,
+      "type": "file"
+    },
+    {
+      "path": "logic/vendor/doctest.h",
+      "accessCount": 1,
+      "lastAccessed": 1785119933406,
+      "type": "file"
+    },
+    {
+      "path": "src/validation/corpusCheck.ts",
+      "accessCount": 1,
+      "lastAccessed": 1785120455486,
+      "type": "file"
+    },
+    {
+      "path": "src/schema",
+      "accessCount": 1,
+      "lastAccessed": 1785120470045,
+      "type": "directory"
+    }
+  ],
+  "userDirectives": []
+}

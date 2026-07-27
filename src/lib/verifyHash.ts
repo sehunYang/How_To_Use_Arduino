@@ -1,0 +1,39 @@
+/**
+ * Deterministic, synchronous, portable (browser + Node) change-detection
+ * hash — intentionally NOT cryptographic. It exists so the client-side
+ * SimBadge (Phase 3) can compute `hash(recipe)` and compare it against
+ * `simStatus.verifyHash` without an async Web Crypto round-trip, and so CI
+ * computes the identical value when writing that field (plan N4).
+ *
+ * Covers sketch + wiring + tunables + baudRate — deliberately wider than
+ * just the sketch, so a wiring-only edit also invalidates the hash (a
+ * sketch-only hash would let the diagram silently drift from the badge).
+ */
+
+function stableStringify(value: unknown): string {
+  if (value === null || typeof value !== 'object') return JSON.stringify(value)
+  if (Array.isArray(value)) return `[${value.map(stableStringify).join(',')}]`
+  const record = value as Record<string, unknown>
+  const keys = Object.keys(record).sort()
+  return `{${keys.map((k) => `${JSON.stringify(k)}:${stableStringify(record[k])}`).join(',')}}`
+}
+
+function fnv1a(str: string): string {
+  let hash = 0x811c9dc5
+  for (let i = 0; i < str.length; i++) {
+    hash ^= str.charCodeAt(i)
+    hash = Math.imul(hash, 0x01000193)
+  }
+  return (hash >>> 0).toString(16).padStart(8, '0')
+}
+
+export interface VerifyHashInput {
+  sketch: string
+  wiring: unknown
+  tunables: unknown
+  baudRate: number
+}
+
+export function computeVerifyHash(input: VerifyHashInput): string {
+  return `fnv1a:${fnv1a(stableStringify(input))}`
+}
