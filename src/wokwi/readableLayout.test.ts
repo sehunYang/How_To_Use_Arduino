@@ -118,6 +118,18 @@ describe('strict readable Wokwi layout', () => {
     )
   })
 
+  it('rejects a wire that obscures a hole occupied by another wire', () => {
+    const layout = base([
+      wire('connected-hole', [{ x: 20, y: 20 }, { x: 20, y: 40 }]),
+      wire('covering-wire', [{ x: 0, y: 20 }, { x: 40, y: 20 }]),
+    ])
+
+    expect(validateReadableLayout(layout).map((entry) => entry.code)).toContain(
+      'wire-over-connected-hole',
+    )
+    expect(() => compileReadableLayout(layout)).toThrow(/wire-over-connected-hole/)
+  })
+
   it('compiles only a valid orthogonal route into Wokwi path commands', () => {
     const layout = base([
       wire('signal', [

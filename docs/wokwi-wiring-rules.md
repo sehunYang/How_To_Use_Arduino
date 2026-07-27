@@ -31,6 +31,8 @@ npm run verify:wokwi-diagram
 - 부품의 `bounds`는 핀을 제외한 본체 영역입니다. 도선은 이 영역을 통과할 수 없습니다.
 - 실제 핀이나 브레드보드 홀 하나에는 도선 플러그 하나만 연결할 수 있습니다.
 - 모든 연결점은 해당 부품의 `pins` 목록에 미리 선언되어야 합니다.
+- 연결된 핀이나 브레드보드 홀 주변에는 `minimumClearance`만큼의 가시 영역을
+  확보해야 하며, 다른 도선은 이 영역을 통과할 수 없습니다.
 
 ## 생성 차단 오류
 
@@ -45,6 +47,7 @@ npm run verify:wokwi-diagram
 | `wire-segment-overlap` | 두 도선이 같은 선분을 일부라도 공유함 |
 | `wire-clearance-too-small` | 평행 구간 사이가 `minimumClearance`보다 가까움 |
 | `wire-crossing` | 두 도선이 승인 없이 교차함 |
+| `wire-over-connected-hole` | 다른 도선이 이미 연결된 핀·홀의 가시 영역을 가림 |
 | `wire-through-part` | 도선이 부품 본체를 관통함 |
 
 같은 `SDA`, `SCL`, 전원 또는 접지 연결망이라도 보이는 선분의 중첩은 허용하지

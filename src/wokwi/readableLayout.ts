@@ -42,6 +42,7 @@ export type LayoutIssueCode =
   | 'wire-segment-overlap'
   | 'wire-clearance-too-small'
   | 'wire-crossing'
+  | 'wire-over-connected-hole'
   | 'wire-through-part'
 
 export interface LayoutIssue {
@@ -268,6 +269,36 @@ export function validateReadableLayout(layout: ReadableLayout): LayoutIssue[] {
   }
 
   for (const segment of allSegments) {
+    for (const owner of layout.wires) {
+      if (owner.id === segment.wire.id || owner.points.length < 2) continue
+      const protectedEndpoints = [
+        { ref: owner.from, point: owner.points[0] },
+        { ref: owner.to, point: owner.points.at(-1)! },
+      ]
+
+      for (const endpoint of protectedEndpoints) {
+        const [x1, x2] = ordered(segment.a.x, segment.b.x)
+        const [y1, y2] = ordered(segment.a.y, segment.b.y)
+        const distance = segment.horizontal
+          ? Math.abs(endpoint.point.y - segment.a.y)
+          : Math.abs(endpoint.point.x - segment.a.x)
+        const withinSpan = segment.horizontal
+          ? endpoint.point.x >= x1 && endpoint.point.x <= x2
+          : endpoint.point.y >= y1 && endpoint.point.y <= y2
+
+        if (withinSpan && distance < layout.minimumClearance) {
+          issues.push(
+            issue(
+              'wire-over-connected-hole',
+              `"${segment.wire.id}" passes within ${distance}px of connected hole "${endpoint.ref}" owned by "${owner.id}"; minimum clearance is ${layout.minimumClearance}px.`,
+              [segment.wire.id, owner.id],
+              [segment.index],
+            ),
+          )
+        }
+      }
+    }
+
     for (const part of layout.parts) {
       if (!part.bounds) continue
       const [x1, x2] = ordered(segment.a.x, segment.b.x)
