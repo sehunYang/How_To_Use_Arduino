@@ -3,6 +3,7 @@ version: 1
 author: sehunYang
 steps:
   - wait-serial: "WOKWI_READY"
+  - wait-serial: "MPU6050_OK"
   - wait-serial: "CUSTOM_CHIPS_OK"
   - set-control:
       part-id: tsl2591

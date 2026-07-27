@@ -51,6 +51,11 @@ void setup() {
   Wire.begin();
   mpu.initialize();
   Serial.println("WOKWI_READY");
+  if (mpu.testConnection()) {
+    Serial.println("MPU6050_OK");
+  } else {
+    Serial.println("MPU6050_ERROR");
+  }
 
   writeRegister16(0x40, 0x05, 4096);
   writeRegister8(0x29, 0xA0 | 0x00, 0x03);
