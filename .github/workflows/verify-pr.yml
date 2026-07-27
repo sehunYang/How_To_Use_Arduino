@@ -63,6 +63,9 @@ jobs:
       - name: Strict Wokwi wiring layout rules
         run: npm run test:wokwi-layout
 
+      - name: Verify generated Wokwi diagram is current
+        run: npm run verify:wokwi-diagram
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin

@@ -20,6 +20,7 @@ export interface ReadablePart {
   left: number
   rotate?: number
   attrs?: Record<string, string>
+  pins?: string[]
   bounds?: { left: number; top: number; right: number; bottom: number }
 }
 
@@ -89,6 +90,7 @@ export function validateReadableLayout(layout: ReadableLayout): LayoutIssue[] {
   const ids = new Set<string>()
   const endpoints = new Map<string, string>()
   const partIds = new Set<string>()
+  const partsById = new Map<string, ReadablePart>()
 
   if (!Number.isFinite(layout.minimumClearance) || layout.minimumClearance <= 0) {
     issues.push(
@@ -105,6 +107,7 @@ export function validateReadableLayout(layout: ReadableLayout): LayoutIssue[] {
       issues.push(issue('invalid-layout-value', `Part id "${part.id}" is duplicated.`, []))
     }
     partIds.add(part.id)
+    partsById.set(part.id, part)
     if (
       part.bounds &&
       (!Object.values(part.bounds).every(Number.isFinite) ||
@@ -132,6 +135,18 @@ export function validateReadableLayout(layout: ReadableLayout): LayoutIssue[] {
             [wire.id],
           ),
         )
+      } else {
+        const pin = endpoint.slice(separator + 1)
+        const declaredPins = partsById.get(endpointPart)?.pins
+        if (!declaredPins?.includes(pin)) {
+          issues.push(
+            issue(
+              'unknown-endpoint-part',
+              `Endpoint "${endpoint}" does not reference a declared pin.`,
+              [wire.id],
+            ),
+          )
+        }
       }
       const owner = endpoints.get(endpoint)
       if (owner) {
@@ -295,7 +310,10 @@ export function compileReadableLayout(layout: ReadableLayout) {
     version: 1 as const,
     author: layout.author,
     editor: 'wokwi' as const,
-    parts: layout.parts.map(({ bounds: _bounds, ...part }) => ({ ...part, attrs: part.attrs ?? {} })),
+    parts: layout.parts.map(({ bounds: _bounds, pins: _pins, ...part }) => ({
+      ...part,
+      attrs: part.attrs ?? {},
+    })),
     connections: layout.wires.map((wire) => [
       wire.from,
       wire.to,

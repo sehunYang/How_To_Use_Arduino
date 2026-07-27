@@ -49,29 +49,197 @@
     }
   ],
   "connections": [
-    ["uno:5V", "breadboard:tp.1", "red", ["v-35", "h-85", "v-70"]],
-    ["uno:GND.2", "breadboard:tn.1", "black", ["v-55", "h-110", "v-50"]],
-    ["uno:A4", "breadboard:5t.a", "green", ["v-75", "h-35", "v-45"]],
-    ["uno:A5", "breadboard:7t.a", "yellow", ["v-95", "h-10", "v-25"]],
-
-    ["mpu6050:VCC", "breadboard:tp.5", "red", ["v35", "h-25"]],
-    ["mpu6050:GND", "breadboard:tn.5", "black", ["v55", "h-10"]],
-    ["mpu6050:SDA", "breadboard:5t.b", "green", ["v75", "h10"]],
-    ["mpu6050:SCL", "breadboard:7t.b", "yellow", ["v95", "h25"]],
-
-    ["ina219:VCC", "breadboard:tp.15", "red", ["v35", "h-25"]],
-    ["ina219:GND", "breadboard:tn.15", "black", ["v55", "h-10"]],
-    ["ina219:SDA", "breadboard:15t.b", "green", ["v75", "h10"]],
-    ["ina219:SCL", "breadboard:17t.b", "yellow", ["v95", "h25"]],
-
-    ["tsl2591:VCC", "breadboard:tp.25", "red", ["v35", "h-25"]],
-    ["tsl2591:GND", "breadboard:tn.25", "black", ["v55", "h-10"]],
-    ["tsl2591:SDA", "breadboard:25t.b", "green", ["v75", "h10"]],
-    ["tsl2591:SCL", "breadboard:27t.b", "yellow", ["v95", "h25"]],
-
-    ["breadboard:5t.e", "breadboard:15t.e", "green", ["v0"]],
-    ["breadboard:15t.d", "breadboard:25t.d", "green", ["v0"]],
-    ["breadboard:7t.e", "breadboard:17t.e", "yellow", ["v0"]],
-    ["breadboard:17t.d", "breadboard:27t.d", "yellow", ["v0"]]
+    [
+      "uno:5V",
+      "breadboard:tp.1",
+      "red",
+      [
+        "v-30",
+        "h-130",
+        "v-60"
+      ]
+    ],
+    [
+      "uno:GND.2",
+      "breadboard:tn.1",
+      "black",
+      [
+        "v-50",
+        "h-130",
+        "v-40"
+      ]
+    ],
+    [
+      "uno:A4",
+      "breadboard:5t.a",
+      "green",
+      [
+        "v-70",
+        "h-120",
+        "v-20"
+      ]
+    ],
+    [
+      "uno:A5",
+      "breadboard:7t.a",
+      "yellow",
+      [
+        "v-90",
+        "h-120",
+        "v-10"
+      ]
+    ],
+    [
+      "mpu6050:VCC",
+      "breadboard:tp.5",
+      "red",
+      [
+        "v35",
+        "h-25"
+      ]
+    ],
+    [
+      "mpu6050:GND",
+      "breadboard:tn.5",
+      "black",
+      [
+        "v55",
+        "h-10"
+      ]
+    ],
+    [
+      "mpu6050:SDA",
+      "breadboard:5t.b",
+      "green",
+      [
+        "v75",
+        "h10"
+      ]
+    ],
+    [
+      "mpu6050:SCL",
+      "breadboard:7t.b",
+      "yellow",
+      [
+        "v95",
+        "h25"
+      ]
+    ],
+    [
+      "ina219:VCC",
+      "breadboard:tp.15",
+      "red",
+      [
+        "v35",
+        "h-25"
+      ]
+    ],
+    [
+      "ina219:GND",
+      "breadboard:tn.15",
+      "black",
+      [
+        "v55",
+        "h-10"
+      ]
+    ],
+    [
+      "ina219:SDA",
+      "breadboard:15t.b",
+      "green",
+      [
+        "v75",
+        "h10"
+      ]
+    ],
+    [
+      "ina219:SCL",
+      "breadboard:17t.b",
+      "yellow",
+      [
+        "v95",
+        "h25"
+      ]
+    ],
+    [
+      "tsl2591:VCC",
+      "breadboard:tp.25",
+      "red",
+      [
+        "v35",
+        "h-25"
+      ]
+    ],
+    [
+      "tsl2591:GND",
+      "breadboard:tn.25",
+      "black",
+      [
+        "v55",
+        "h-10"
+      ]
+    ],
+    [
+      "tsl2591:SDA",
+      "breadboard:25t.b",
+      "green",
+      [
+        "v75",
+        "h10"
+      ]
+    ],
+    [
+      "tsl2591:SCL",
+      "breadboard:27t.b",
+      "yellow",
+      [
+        "v95",
+        "h25"
+      ]
+    ],
+    [
+      "breadboard:5t.e",
+      "breadboard:15t.e",
+      "green",
+      [
+        "v-20",
+        "h90",
+        "v20",
+        "h10"
+      ]
+    ],
+    [
+      "breadboard:15t.d",
+      "breadboard:25t.d",
+      "green",
+      [
+        "h10",
+        "v-35",
+        "h90",
+        "v35"
+      ]
+    ],
+    [
+      "breadboard:7t.e",
+      "breadboard:17t.e",
+      "yellow",
+      [
+        "v20",
+        "h90",
+        "v-20",
+        "h10"
+      ]
+    ],
+    [
+      "breadboard:17t.d",
+      "breadboard:27t.d",
+      "yellow",
+      [
+        "h10",
+        "v45",
+        "h90",
+        "v-45"
+      ]
+    ]
   ]
 }

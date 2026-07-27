@@ -12,6 +12,16 @@
 5. 검증을 통과한 명세만 `compileReadableLayout()`로 Wokwi 형식에 변환합니다.
 6. 생성된 `diagram.json`은 직접 수정하지 않습니다.
 
+현재 루트 회로의 원본은 `src/wokwi/layouts/pendulumLayout.ts`입니다.
+
+```powershell
+npm run generate:wokwi-diagram
+npm run verify:wokwi-diagram
+```
+
+첫 명령은 엄격한 검증을 통과한 경우에만 `diagram.json`을 생성합니다. 두 번째 명령은
+생성물이 원본과 정확히 일치하는지 확인하며 CI에서도 실행됩니다.
+
 ## 명세 계약
 
 - 모든 도선은 고유한 `id`, 전기적 연결망 `net`, `from`, `to`, `color`, `points`를 가집니다.
@@ -20,6 +30,7 @@
 - `minimumClearance`는 사진에서 두 평행선을 구별하기 위한 최소 픽셀 간격입니다.
 - 부품의 `bounds`는 핀을 제외한 본체 영역입니다. 도선은 이 영역을 통과할 수 없습니다.
 - 실제 핀이나 브레드보드 홀 하나에는 도선 플러그 하나만 연결할 수 있습니다.
+- 모든 연결점은 해당 부품의 `pins` 목록에 미리 선언되어야 합니다.
 
 ## 생성 차단 오류
 

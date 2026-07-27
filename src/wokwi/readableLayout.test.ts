@@ -4,6 +4,7 @@ import {
   validateReadableLayout,
   type ReadableLayout,
 } from './readableLayout'
+import { pendulumLayout } from './layouts/pendulumLayout'
 
 const base = (wires: ReadableLayout['wires']): ReadableLayout => {
   const partIds = new Set(
@@ -15,7 +16,7 @@ const base = (wires: ReadableLayout['wires']): ReadableLayout => {
     version: 1,
     author: 'test',
     minimumClearance: 10,
-    parts: [...partIds].map((id) => ({ id, type: 'wokwi-test', top: 0, left: 0 })),
+    parts: [...partIds].map((id) => ({ id, type: 'wokwi-test', top: 0, left: 0, pins: ['from', 'to'] })),
     wires,
   }
 }
@@ -132,5 +133,24 @@ describe('strict readable Wokwi layout', () => {
       'green',
       ['v30', 'h60'],
     ])
+  })
+
+  it('validates and compiles the production pendulum layout without overlapping bus routes', () => {
+    expect(
+      pendulumLayout.parts
+        .filter((part) => part.type !== 'wokwi-breadboard-half')
+        .every((part) => part.bounds !== undefined),
+    ).toBe(true)
+    expect(validateReadableLayout(pendulumLayout)).toEqual([])
+
+    const diagram = compileReadableLayout(pendulumLayout)
+    expect(diagram.connections).toEqual(
+      expect.arrayContaining([
+        ['breadboard:5t.e', 'breadboard:15t.e', 'green', ['v-20', 'h90', 'v20', 'h10']],
+        ['breadboard:15t.d', 'breadboard:25t.d', 'green', ['h10', 'v-35', 'h90', 'v35']],
+        ['breadboard:7t.e', 'breadboard:17t.e', 'yellow', ['v20', 'h90', 'v-20', 'h10']],
+        ['breadboard:17t.d', 'breadboard:27t.d', 'yellow', ['h10', 'v45', 'h90', 'v-45']],
+      ]),
+    )
   })
 })
