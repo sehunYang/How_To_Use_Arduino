@@ -26,6 +26,10 @@ on:
       - 'logic/**'
       - 'chips/**'
       - 'scripts/**'
+      - 'wokwi/**'
+      - 'diagram.json'
+      - 'diagram/**'
+      - 'docs/wokwi-wiring-rules.md'
       - '.github/workflows/**'
       - 'firestore.rules'
       - 'storage.rules'
@@ -55,6 +59,9 @@ jobs:
 
       - name: L1 corpus/static checks (US-006/US-013 source of truth)
         run: npm test
+
+      - name: Strict Wokwi wiring layout rules
+        run: npm run test:wokwi-layout
 
       - uses: actions/setup-java@v4
         with:
