@@ -20,9 +20,9 @@
     {
       "type": "wokwi-mpu6050",
       "id": "mpu6050",
-      "top": -220,
-      "left": 70,
-      "rotate": 90,
+      "top": -180,
+      "left": 40,
+      "rotate": 0,
       "attrs": {}
     },
     {
@@ -54,10 +54,10 @@
     ["uno:A4", "breadboard:10t.a", "green", ["v-75", "h-45", "v-55"]],
     ["uno:A5", "breadboard:14t.a", "yellow", ["v-95", "h-20", "v-35"]],
 
-    ["mpu6050:VCC", "breadboard:tp.5", "red", ["v35", "h-40"]],
-    ["mpu6050:GND", "breadboard:tn.6", "black", ["v55", "h-20"]],
-    ["mpu6050:SDA", "breadboard:10t.b", "green", ["v75", "h20"]],
-    ["mpu6050:SCL", "breadboard:14t.b", "yellow", ["v95", "h40"]],
+    ["mpu6050:VCC", "breadboard:tp.5", "red", ["v25", "h-70", "v25"]],
+    ["mpu6050:GND", "breadboard:tn.6", "black", ["v45", "h-25", "v25"]],
+    ["mpu6050:SDA", "breadboard:10t.b", "green", ["v65", "h25", "v25"]],
+    ["mpu6050:SCL", "breadboard:14t.b", "yellow", ["v85", "h70", "v25"]],
 
     ["ina219:VCC", "breadboard:tp.12", "red", ["v35", "h-40"]],
     ["ina219:GND", "breadboard:tn.13", "black", ["v55", "h-20"]],
