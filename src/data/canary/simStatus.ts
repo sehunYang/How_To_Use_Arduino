@@ -22,9 +22,8 @@ function statusFor(
 export const canarySimStatus: Record<string, SimStatus> = {
   // MPU6050 has a native Wokwi part (simSupported: true in the inventory).
   [pendulumRecipe.id]: statusFor(pendulumRecipe, true),
-  // The scenario is wired into CI but remains null until its first real Wokwi
-  // Actions run succeeds; fixture data must not claim an unobserved pass.
-  [ina219CurrentRecipe.id]: statusFor(ina219CurrentRecipe, null),
+  // GitHub Actions run 30281813853 observed the INA219 recipe scenario pass.
+  [ina219CurrentRecipe.id]: statusFor(ina219CurrentRecipe, true),
   // The recipe still depends on the unsupported TCA9548A multiplexer, so its
   // custom TSL2591 parts alone are not enough for an end-to-end simulation.
   [multiTsl2591Recipe.id]: statusFor(multiTsl2591Recipe, null),

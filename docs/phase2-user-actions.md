@@ -7,8 +7,8 @@
 
 - [ ] `git status`로 현재 수정·추가 파일을 확인합니다.
 - [ ] 기존에 작업하던 Wokwi geometry 변경과 이번 Phase 2 변경을 함께 검토합니다.
-- [ ] 변경사항을 새 브랜치에 커밋하고 원격 저장소에 push합니다.
-- [ ] `main` 대상 Pull Request를 생성합니다.
+- [x] 변경사항을 새 브랜치에 커밋하고 원격 저장소에 push합니다.
+- [x] `main` 대상 Pull Request를 생성합니다.
 
 현재 작업트리에는 기존 작업과 Phase 2 변경이 함께 있으므로, 파일을 삭제하거나
 `git reset --hard`를 실행하면 안 됩니다.
@@ -18,9 +18,9 @@
 Firebase Console의 `Authentication > Users`에서 자동화 전용 이메일/비밀번호
 사용자를 만듭니다.
 
-- [ ] CI 자동화 사용자 생성
-- [ ] 로컬 Admin SDK를 이용해 해당 사용자에게 `ci: true` 커스텀 클레임 부여
-- [ ] Admin SDK 서비스 계정 JSON은 GitHub에 올리지 않고 사용 후 로컬에서 삭제
+- [x] CI 자동화 사용자 생성
+- [x] 로컬 Admin SDK를 이용해 해당 사용자에게 `ci: true` 커스텀 클레임 부여
+- [x] Admin SDK 서비스 계정 JSON은 GitHub에 올리지 않고 사용 후 로컬에서 삭제
 
 상세 절차는 [`firebase-setup.md`](firebase-setup.md)의 4.3절을 따릅니다.
 
@@ -29,12 +29,12 @@ Firebase Console의 `Authentication > Users`에서 자동화 전용 이메일/�
 GitHub 저장소의 `Settings > Secrets and variables > Actions`에 다음 repository
 secret을 등록합니다.
 
-- [ ] `FIREBASE_PROJECT_ID`
-- [ ] `FIREBASE_API_KEY`
-- [ ] `FIREBASE_APP_ID`
-- [ ] `FIREBASE_CI_EMAIL`
-- [ ] `FIREBASE_CI_PASSWORD`
-- [ ] `FIREBASE_APPCHECK_DEBUG_TOKEN`
+- [x] `FIREBASE_PROJECT_ID`
+- [x] `FIREBASE_API_KEY`
+- [x] `FIREBASE_APP_ID`
+- [x] `FIREBASE_CI_EMAIL`
+- [x] `FIREBASE_CI_PASSWORD`
+- [x] `FIREBASE_APPCHECK_DEBUG_TOKEN`
 
 `FIREBASE_APPCHECK_DEBUG_TOKEN`은 Firebase Console의
 `App Check > Apps > 웹 앱 메뉴 > 디버그 토큰 관리`에서 CI 전용으로 생성합니다.
@@ -43,18 +43,18 @@ secret을 등록합니다.
 
 기존 `WOKWI_CLI_TOKEN`도 그대로 존재하는지 확인합니다.
 
-- [ ] `WOKWI_CLI_TOKEN` 존재 확인
+- [x] `WOKWI_CLI_TOKEN` 존재 확인
 
 ## 4. Phase 2 원격 검증
 
 Pull Request가 생성되면 **PR Verification** 워크플로를 확인합니다.
 
-- [ ] L1 corpus/static checks 성공
-- [ ] L2 compile check 성공
-- [ ] L5 logic + chip-register harness 성공
-- [ ] `L3 Wokwi simulation — pendulum recipe` 성공
-- [ ] `L3 Wokwi simulation — INA219 recipe` 성공
-- [ ] `L3 Wokwi simulation — custom chip conformance rig` 성공
+- [x] L1 corpus/static checks 성공
+- [x] L2 compile check 성공
+- [x] L5 logic + chip-register harness 성공
+- [x] `L3 Wokwi simulation — pendulum recipe` 성공
+- [x] `L3 Wokwi simulation — INA219 recipe` 성공
+- [x] `L3 Wokwi simulation — custom chip conformance rig` 성공
 
 신규 INA219 시나리오 성공 전에는 `src/data/canary/simStatus.ts`의 상태를
 `simPass: true`로 바꾸지 않습니다.
@@ -63,8 +63,8 @@ Pull Request가 생성되면 **PR Verification** 워크플로를 확인합니다
 
 GitHub Actions에서 **Verify Queue Drain** 워크플로를 수동 실행합니다.
 
-- [ ] 워크플로가 Firebase CI 사용자로 로그인함
-- [ ] 로그가 `verifyRequests queue drained successfully.`로 종료됨
+- [x] 워크플로가 Firebase CI 사용자로 로그인함
+- [x] 로그가 `verifyRequests queue drained successfully.`로 종료됨
 - [ ] 테스트용 `verifyRequests/{recipeId}` 문서가 처리 후 삭제됨
 - [ ] 대응하는 `simStatus/{recipeId}` 문서가 생성 또는 갱신됨
 
@@ -82,8 +82,10 @@ on:
 
 다음 두 URL을 Codex에 전달합니다.
 
-- [ ] PR Verification 성공 실행 URL
-- [ ] Verify Queue Drain 성공 실행 URL
+- [x] PR Verification 성공 실행 URL:
+      https://github.com/sehunYang/How_To_Use_Arduino/actions/runs/30281813853
+- [x] Verify Queue Drain 성공 실행 URL:
+      https://github.com/sehunYang/How_To_Use_Arduino/actions/runs/30281905800
 
 URL을 전달하면 다음 후속 작업을 코드로 처리할 수 있습니다.
 
