@@ -10,6 +10,8 @@ export interface ReadableWire {
   to: string
   color: string
   points: Point[]
+  /** Wokwi target-pin-side route instructions, written after the `*` separator. */
+  targetPath?: string[]
   allowCrossings?: string[]
 }
 
@@ -175,6 +177,21 @@ export function validateReadableLayout(layout: ReadableLayout): LayoutIssue[] {
     if (wire.points.some((point) => !Number.isFinite(point.x) || !Number.isFinite(point.y))) {
       issues.push(
         issue('invalid-layout-value', `"${wire.id}" contains a non-finite coordinate.`, [wire.id]),
+      )
+    }
+    if (
+      wire.targetPath?.some(
+        (command) =>
+          !/^[hv]-?(?:\d+(?:\.\d+)?|\.\d+)$/.test(command) ||
+          Number(command.slice(1)) === 0,
+      )
+    ) {
+      issues.push(
+        issue(
+          'invalid-layout-value',
+          `"${wire.id}" contains an invalid or zero-length targetPath instruction.`,
+          [wire.id],
+        ),
       )
     }
 
@@ -345,11 +362,16 @@ export function compileReadableLayout(layout: ReadableLayout) {
       ...part,
       attrs: part.attrs ?? {},
     })),
-    connections: layout.wires.map((wire) => [
-      wire.from,
-      wire.to,
-      wire.color,
-      wire.points.slice(1).map((point, index) => segmentCommand(wire.points[index], point)),
-    ]),
+    connections: layout.wires.map((wire) => {
+      const sourcePath = wire.points
+        .slice(1)
+        .map((point, index) => segmentCommand(wire.points[index], point))
+      return [
+        wire.from,
+        wire.to,
+        wire.color,
+        wire.targetPath?.length ? [...sourcePath, '*', ...wire.targetPath] : sourcePath,
+      ]
+    }),
   }
 }

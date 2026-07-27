@@ -147,6 +147,22 @@ describe('strict readable Wokwi layout', () => {
     ])
   })
 
+  it('compiles an explicit target-pin approach after the Wokwi star separator', () => {
+    const layout = base([
+      {
+        ...wire('signal', [{ x: 10, y: 10 }, { x: 10, y: 40 }]),
+        targetPath: ['h20', 'v-30'],
+      },
+    ])
+
+    expect(compileReadableLayout(layout).connections[0]).toEqual([
+      'signal:from',
+      'signal:to',
+      'green',
+      ['v30', '*', 'h20', 'v-30'],
+    ])
+  })
+
   it('validates and compiles the production pendulum layout without overlapping bus routes', () => {
     expect(
       pendulumLayout.parts
