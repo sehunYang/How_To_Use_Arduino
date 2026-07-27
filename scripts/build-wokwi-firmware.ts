@@ -69,8 +69,16 @@ for (const project of projects) {
 
   copyFileSync(join(outputDir, `${project.id}.ino.hex`), join(projectRoot, 'firmware.hex'))
   copyFileSync(join(outputDir, `${project.id}.ino.elf`), join(projectRoot, 'firmware.elf'))
+  // Both halves of a custom chip are required: wokwi.toml names the .wasm, and
+  // wokwi-cli looks for the matching .chip.json (pin/control declarations)
+  // beside it in the same directory.
   for (const chip of project.chips ?? []) {
-    copyFileSync(resolve('chips', `${chip}.chip.wasm`), join(projectRoot, `${chip}.chip.wasm`))
+    for (const extension of ['wasm', 'json']) {
+      copyFileSync(
+        resolve('chips', `${chip}.chip.${extension}`),
+        join(projectRoot, `${chip}.chip.${extension}`),
+      )
+    }
   }
   console.log(`Wokwi project assets staged in ${project.projectDir}`)
 }

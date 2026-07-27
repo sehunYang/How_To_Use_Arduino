@@ -42,6 +42,7 @@ storage-debug.log
 # The .wasm sources live in chips/ and ARE committed; these are copies.
 /wokwi/chip-conformance/firmware.*
 /wokwi/chip-conformance/*.chip.wasm
+/wokwi/chip-conformance/*.chip.json
 
 # Editor directories and files
 .vscode/*
