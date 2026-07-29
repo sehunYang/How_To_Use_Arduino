@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 import { SensorCard } from '@/components/SensorCard'
-import { sensors } from '@/data/inventory-seed/sensors'
 import { sensorProfileById } from '@/data/sensorProfiles'
+import { useSensorInventory } from '@/firebase/sensorInventory'
+import type { Sensor } from '@/schema'
 
 const interfaceLabels: Record<string, string> = {
   i2c: 'I2C',
@@ -11,11 +12,12 @@ const interfaceLabels: Record<string, string> = {
 }
 
 export function SensorListPage() {
+  const sensors = useSensorInventory()
   const [query, setQuery] = useState('')
   const [sensorInterface, setSensorInterface] = useState('')
   const cards = useMemo(() => sensors
     .map((sensor) => ({ sensor, profile: sensorProfileById.get(sensor.id) }))
-    .filter((entry): entry is { sensor: typeof sensors[number]; profile: NonNullable<typeof entry.profile> } => Boolean(entry.profile))
+    .filter((entry): entry is { sensor: Sensor; profile: NonNullable<typeof entry.profile> } => Boolean(entry.profile))
         .filter(({ sensor }) => !sensorInterface || sensor.interface === sensorInterface)
     .filter(({ sensor, profile }) => {
       const normalized = query.trim().toLocaleLowerCase('ko')
@@ -25,7 +27,7 @@ export function SensorListPage() {
         .includes(normalized)
     })
     .sort((a, b) => a.sensor.name.localeCompare(b.sensor.name, 'ko')),
-  [query, sensorInterface])
+  [query, sensorInterface, sensors])
 
   return (
     <div className="mx-auto max-w-6xl">

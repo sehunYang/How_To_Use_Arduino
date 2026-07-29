@@ -92,6 +92,17 @@ service cloud.firestore {
       allow write: if isCI();
     }
 
+    // Private state for exact, incremental stats aggregation. Keeping this
+    // separate prevents anonymous identifiers and cursors from entering the
+    // teacher-facing stats documents.
+    match /statsSessions/{sessionId} {
+      allow read, write: if isCI();
+    }
+
+    match /aggregationMeta/{doc} {
+      allow read, write: if isCI();
+    }
+
     match /verifyRequests/{id} {
       allow create: if isAdmin();
       allow read, delete: if isCI();           // ← E3 큐

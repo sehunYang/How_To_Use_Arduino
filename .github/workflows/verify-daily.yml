@@ -19,6 +19,10 @@
 # proven to run in CI".
 name: Daily Verification
 
+concurrency:
+  group: daily-verification-stats
+  cancel-in-progress: false
+
 on:
   schedule:
     # 03:00 UTC daily — off-peak, well clear of any push-triggered deploy.
@@ -49,6 +53,15 @@ jobs:
       - name: L1 corpus/static checks (US-006/US-013 source of truth)
         run: npm test
 
+      - name: Verify published search index has not drifted
+        run: npm run verify:index
+
+      - name: Verify search quality gates
+        run: |
+          npm run verify:matching
+          npm run verify:holdout
+          npm run verify:search-performance
+
       # Catches a diagram committed out of sync with its ReadableLayout source
       # even on days when nothing opens a PR.
       - name: Verify generated Wokwi diagrams are current
@@ -69,3 +82,13 @@ jobs:
         # Self-contained: verify-logic.mjs fetches its own host C++ toolchain
         # (zig) into node_modules/.zig via setup-zig.mjs — no separate setup step.
         run: npm run verify:logic
+
+      - name: Aggregate anonymous learning events into recipe stats
+        run: npm run aggregate:stats
+        env:
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          FIREBASE_CI_EMAIL: ${{ secrets.FIREBASE_CI_EMAIL }}
+          FIREBASE_CI_PASSWORD: ${{ secrets.FIREBASE_CI_PASSWORD }}
+          FIREBASE_APPCHECK_DEBUG_TOKEN: ${{ secrets.FIREBASE_APPCHECK_DEBUG_TOKEN }}

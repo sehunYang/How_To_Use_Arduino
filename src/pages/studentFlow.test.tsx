@@ -55,11 +55,19 @@ describe('Phase 3 student flow', () => {
     expect(screen.getByRole('link', { name: '검색으로 돌아가기' })).toBeInTheDocument()
   })
 
-  it('renders the validated circuit independently of legacy image URLs', () => {
-    const { rerender } = render(<WiringIllustration recipe={pendulumRecipe} activeStep={0} />)
+  it.each([
+    ['static SVG', '/How_To_Use_Arduino/wiring/circuit.svg'],
+    ['Firebase Storage URL', 'https://firebasestorage.googleapis.com/v0/b/example/o/wiring%2Fcircuit.svg?alt=media'],
+  ])('renders the same validated vector circuit for a %s source', (_, imageUrl) => {
+    const { container } = render(
+      <WiringIllustration recipe={{ ...pendulumRecipe, imageUrl }} activeStep={0} />,
+    )
     expect(screen.getByRole('img', { name: /1단계까지 연결됨/ })).toBeTruthy()
-    rerender(<WiringIllustration recipe={{ ...pendulumRecipe, imageUrl: 'https://storage.googleapis.com/example/circuit.svg' }} activeStep={0} />)
-    expect(screen.getByRole('img', { name: /1단계까지 연결됨/ })).toBeTruthy()
+    const svg = container.querySelector('svg')
+    expect(svg).toBeInTheDocument()
+    expect(svg).toHaveAttribute('viewBox')
+    expect(svg?.querySelectorAll('[data-part-id]').length).toBeGreaterThan(0)
+    expect(svg?.querySelectorAll('[data-wire-id]')).toHaveLength(1)
   })
 
   it('renders a draft only after an authenticated admin preview check', async () => {

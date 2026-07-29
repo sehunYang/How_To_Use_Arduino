@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { RecipeCard } from '@/components/RecipeCard'
-import { studentRecipes, sensorById } from '@/data/studentCatalog'
+import { studentRecipes } from '@/data/studentCatalog'
 import { synonyms } from '@/data/synonyms'
 import { buildIndex, search } from '@/search'
 import { normalizeSearchTokens, sendAnonymousEvent } from '@/telemetry/events'
@@ -9,8 +9,10 @@ import { sensorProfileById } from '@/data/sensorProfiles'
 import { SensorCard } from '@/components/SensorCard'
 import { canaryRationales } from '@/data/canary'
 import { rankSensors } from '@/results/aggregateSensors'
+import { useSensorInventory } from '@/firebase/sensorInventory'
 
 export function SearchResultsPage() {
+  const sensorById = new Map(useSensorInventory().map((sensor) => [sensor.id, sensor]))
   const [params] = useSearchParams()
   const query = params.get('q')?.trim() ?? ''
   const index = buildIndex(studentRecipes)
