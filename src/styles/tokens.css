@@ -94,6 +94,12 @@ body {
   background-color: var(--color-background);
   color: var(--color-foreground);
   line-height: var(--line-height-body);
+  /* Keep Korean eojeol intact: a content word and its attached particles or
+     endings move together instead of splitting at an arbitrary syllable. */
+  word-break: keep-all;
+  line-break: strict;
+  overflow-wrap: break-word;
+  hyphens: none;
   overflow-x: hidden;
 }
 

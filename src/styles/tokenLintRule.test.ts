@@ -11,6 +11,8 @@ import rule from '../../eslint-rules/no-hardcoded-design-values.js'
 const fixturePath = fileURLToPath(
   new URL('./__fixtures__/design-token-violations.fixture.tsx', import.meta.url),
 )
+const tokensPath = fileURLToPath(new URL('./tokens.css', import.meta.url))
+const htmlPath = fileURLToPath(new URL('../../index.html', import.meta.url))
 
 function lintFixture() {
   const source = readFileSync(fixturePath, 'utf-8')
@@ -50,5 +52,18 @@ describe('no-hardcoded-design-values (A7.4)', () => {
     // be reported anywhere in that range.
     const inCleanComponent = messages.filter((m) => m.line >= 17 && m.line <= 19)
     expect(inCleanComponent).toHaveLength(0)
+  })
+})
+
+describe('Korean semantic line breaking', () => {
+  it('keeps Korean eojeol together while retaining an emergency overflow fallback', () => {
+    const tokens = readFileSync(tokensPath, 'utf-8')
+    const html = readFileSync(htmlPath, 'utf-8')
+
+    expect(html).toContain('<html lang="ko">')
+    expect(tokens).toMatch(/word-break:\s*keep-all/)
+    expect(tokens).toMatch(/line-break:\s*strict/)
+    expect(tokens).toMatch(/overflow-wrap:\s*break-word/)
+    expect(tokens).toMatch(/hyphens:\s*none/)
   })
 })
