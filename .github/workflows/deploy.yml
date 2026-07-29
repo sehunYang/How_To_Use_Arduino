@@ -28,13 +28,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      # Single source of truth for the site's base path (see vite.config.ts
-      # and src/lib/basePath.ts, both of which read this same env var —
-      # US-003 acceptance criterion: no duplicated literals). This project
-      # deploys behind a custom domain (public/CNAME) served from the root,
-      # so the base path is "/" — not a /<repo>/ subpath, which only
-      # applies to the default <owner>.github.io/<repo>/ project-site URL.
-      VITE_BASE_PATH: /
+      # Single source of truth for emitted asset URLs and the client router.
+      # shy.ai.kr exposes this project beneath the repository subpath.
+      VITE_BASE_PATH: /How_To_Use_Arduino/
     steps:
       - uses: actions/checkout@v4
 
