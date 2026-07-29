@@ -5,6 +5,8 @@ import { studentRecipes, rationaleFor, sensorById } from '@/data/studentCatalog'
 import { synonyms } from '@/data/synonyms'
 import { buildIndex, search } from '@/search'
 import { normalizeSearchTokens, sendAnonymousEvent } from '@/telemetry/events'
+import { sensorProfileById } from '@/data/sensorProfiles'
+import { SensorCard } from '@/components/SensorCard'
 
 export function SearchResultsPage() {
   const [params] = useSearchParams()
@@ -29,16 +31,14 @@ export function SearchResultsPage() {
       <h1 className="mt-4 text-3xl font-semibold">“{query || '전체'}” 검색 결과</h1>
       <section aria-labelledby="sensor-summary" className="mt-8">
         <h2 id="sensor-summary" className="text-heading font-semibold">필요한 센서</h2>
-        <div className="mt-3 grid gap-3 md:grid-cols-2">
+        <div className="mt-3 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {sensorIds.map((id) => {
             const sensor = sensorById.get(id)
+            const profile = sensorProfileById.get(id)
             const rationale = rationaleFor(id, results.find((result) => result.entry.sensors.includes(id))?.entry.subject ?? null)
-            return (
-              <article key={id} className="rounded-card border border-border p-4">
-                <h3 className="font-semibold">{sensor?.name ?? id}</h3>
-                <p className="mt-1 text-caption text-muted">{rationale?.whyText ?? '이 탐구의 값을 직접 측정하는 데 필요한 센서입니다.'}</p>
-              </article>
-            )
+            return sensor && profile
+              ? <SensorCard key={id} sensor={sensor} profile={profile} reason={rationale?.whyText ?? '이 탐구의 값을 직접 측정하는 데 필요한 센서입니다.'} />
+              : null
           })}
         </div>
       </section>

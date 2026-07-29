@@ -28,6 +28,8 @@ describe('Phase 3 student flow', () => {
     expect(screen.getAllByRole('link', { name: /레시피 보기/ })).toHaveLength(3)
     expect(screen.getByText(/#진자/)).toBeInTheDocument()
     expect(screen.getByText(/진자의 길이를 바꿔가며/)).toBeInTheDocument()
+    expect(screen.getAllByRole('link', { name: /센서 자세히 보기/ }).length).toBeGreaterThan(0)
+    expect(screen.getAllByText('추천 이유').length).toBeGreaterThan(0)
   })
 
   it('advances wiring focus, persists progress, and reverses on uncheck', async () => {
