@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import type { Recipe } from '@/schema'
 import { layoutForRecipe } from '@/wokwi/layoutRegistry'
@@ -19,6 +19,7 @@ export function WiringIllustration({
   const viewport = useRef<HTMLDivElement>(null)
   const [view, setView] = useState({ scale: 1, x: 0, y: 0 })
   const viewRef = useRef(view)
+  const wheelZoom = useRef<(event: WheelEvent) => void>(() => undefined)
   const pointers = useRef(new Map<number, { x: number; y: number }>())
   const pinch = useRef<{ distance: number; midpoint: { x: number; y: number } } | null>(null)
 
@@ -100,6 +101,20 @@ export function WiringIllustration({
     if (pointers.current.size < 2) pinch.current = null
   }
 
+  wheelZoom.current = (event) => {
+    event.preventDefault()
+    event.stopPropagation()
+    zoomAt(viewRef.current.scale * Math.exp(-event.deltaY * 0.002), event.clientX, event.clientY)
+  }
+
+  useEffect(() => {
+    const element = viewport.current
+    if (!element) return
+    const handleWheel = (event: WheelEvent) => wheelZoom.current(event)
+    element.addEventListener('wheel', handleWheel, { passive: false })
+    return () => element.removeEventListener('wheel', handleWheel)
+  }, [])
+
   return (
     <figure className="relative overflow-hidden rounded-card border border-border bg-muted-background">
       <div
@@ -107,10 +122,6 @@ export function WiringIllustration({
         data-testid="wiring-viewport"
         className={`relative aspect-[4/3] touch-none select-none ${view.scale > 1 ? 'cursor-grab active:cursor-grabbing' : ''}`}
         aria-label={`${recipe.title} 완성 배선도. 마우스 휠 또는 두 손가락으로 최대 500%까지 확대하고, 확대 후 드래그해 이동할 수 있습니다.`}
-        onWheel={(event) => {
-          event.preventDefault()
-          zoomAt(viewRef.current.scale * Math.exp(-event.deltaY * 0.002), event.clientX, event.clientY)
-        }}
         onDoubleClick={(event) => viewRef.current.scale > 1
           ? commitView({ scale: 1, x: 0, y: 0 })
           : zoomAt(2, event.clientX, event.clientY)}
@@ -142,17 +153,20 @@ export function WiringIllustration({
             </div>
           )}
         </div>
+        <figcaption
+          className="absolute inset-x-0 bottom-0 z-10 border-t border-border bg-background/95 px-4 py-2 text-caption text-muted backdrop-blur"
+          onPointerDown={(event) => event.stopPropagation()}
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span>휠·핀치로 최대 500% 확대 · 확대 후 드래그하여 이동</span>
+            <span className="flex gap-1">
+              <Button size="sm" variant="ghost" aria-label="배선도 축소" onClick={() => zoomAt(viewRef.current.scale - 0.5)}>−</Button>
+              <Button size="sm" variant="ghost" aria-label="배선도 원래 크기" onClick={() => commitView({ scale: 1, x: 0, y: 0 })}>{Math.round(view.scale * 100)}%</Button>
+              <Button size="sm" variant="ghost" aria-label="배선도 확대" onClick={() => zoomAt(viewRef.current.scale + 0.5)}>＋</Button>
+            </span>
+          </div>
+        </figcaption>
       </div>
-      <figcaption className="border-t border-border px-4 py-2 text-caption text-muted">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <span>휠·핀치로 최대 500% 확대 · 확대 후 드래그하여 이동</span>
-          <span className="flex gap-1">
-            <Button size="sm" variant="ghost" aria-label="배선도 축소" onClick={() => zoomAt(viewRef.current.scale - 0.5)}>−</Button>
-            <Button size="sm" variant="ghost" aria-label="배선도 원래 크기" onClick={() => commitView({ scale: 1, x: 0, y: 0 })}>{Math.round(view.scale * 100)}%</Button>
-            <Button size="sm" variant="ghost" aria-label="배선도 확대" onClick={() => zoomAt(viewRef.current.scale + 0.5)}>＋</Button>
-          </span>
-        </div>
-      </figcaption>
     </figure>
   )
 }
