@@ -1,7 +1,8 @@
 import { useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { withBasePath } from '@/lib/basePath'
 import type { Recipe } from '@/schema'
+import { layoutForRecipe } from '@/wokwi/layoutRegistry'
+import { CircuitDiagram } from './CircuitDiagram'
 
 export function WiringIllustration({
   recipe,
@@ -10,7 +11,7 @@ export function WiringIllustration({
   recipe: Recipe
   activeStep: number
 }) {
-  const focus = recipe.wiring[activeStep]?.focus
+  const layout = layoutForRecipe(recipe.id)
   const [scale, setScale] = useState(1)
   const pointers = useRef(new Map<number, { x: number; y: number }>())
   const distance = useRef<number | null>(null)
@@ -46,25 +47,18 @@ export function WiringIllustration({
         onPointerCancel={releasePointer}
       >
         <div className="absolute inset-0 origin-center transition-transform" style={{ transform: `scale(${scale})` }}>
-          <img className="size-full object-contain" src={withBasePath(recipe.imageUrl)} alt={`${recipe.title} 완성 배선도`} />
-          {focus && (
-            <div
-              data-testid="wiring-focus"
-              aria-hidden="true"
-              className="pointer-events-none absolute rounded-card border-4 border-warning bg-warning/20 transition-all"
-              style={{
-                left: `${(focus.x / recipe.imageWidth) * 100}%`,
-                top: `${(focus.y / recipe.imageHeight) * 100}%`,
-                width: `${(focus.w / recipe.imageWidth) * 100}%`,
-                height: `${(focus.h / recipe.imageHeight) * 100}%`,
-              }}
-            />
+          {layout ? (
+            <CircuitDiagram layout={layout} activeStep={activeStep} title={recipe.title} />
+          ) : (
+            <div className="grid size-full place-items-center p-8 text-center text-muted">
+              검증된 배선 이미지를 준비하고 있습니다.
+            </div>
           )}
         </div>
       </div>
       <figcaption className="border-t border-border px-4 py-2 text-caption text-muted">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <span>완성 배선도 · 강조 영역은 현재 단계의 연결 위치입니다.</span>
+          <span>현재 단계까지 누적된 배선 · 밝은 선이 이번 단계의 연결입니다.</span>
           <span className="flex gap-1">
             <Button size="sm" variant="ghost" aria-label="배선도 축소" onClick={() => setScale((value) => Math.max(1, value - 0.5))}>−</Button>
             <Button size="sm" variant="ghost" aria-label="배선도 원래 크기" onClick={() => setScale(1)}>{Math.round(scale * 100)}%</Button>

@@ -53,12 +53,11 @@ describe('Phase 3 student flow', () => {
     expect(screen.getByRole('link', { name: '검색으로 돌아가기' })).toBeInTheDocument()
   })
 
-  it('renders static and Storage image URLs through the same wiring component', () => {
+  it('renders the validated circuit independently of legacy image URLs', () => {
     const { rerender } = render(<WiringIllustration recipe={pendulumRecipe} activeStep={0} />)
-    const staticImage = screen.getByRole('img', { name: /완성 배선도/ })
-    expect(staticImage.getAttribute('src')).toContain('wiring/circuit.svg')
+    expect(screen.getByRole('img', { name: /1단계까지 연결됨/ })).toBeTruthy()
     rerender(<WiringIllustration recipe={{ ...pendulumRecipe, imageUrl: 'https://storage.googleapis.com/example/circuit.svg' }} activeStep={0} />)
-    expect(screen.getByRole('img', { name: /완성 배선도/ })).toHaveAttribute('src', 'https://storage.googleapis.com/example/circuit.svg')
+    expect(screen.getByRole('img', { name: /1단계까지 연결됨/ })).toBeTruthy()
   })
 
   it('renders a draft only after an authenticated admin preview check', async () => {

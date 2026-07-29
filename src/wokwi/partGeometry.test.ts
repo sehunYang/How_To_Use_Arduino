@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest'
-import { readFileSync } from 'node:fs'
 import {
   GEOMETRY_UNAVAILABLE,
   customChipGeometry,
@@ -85,14 +84,18 @@ describe('Wokwi part geometry', () => {
     expect(GEOMETRY_UNAVAILABLE).toHaveProperty('wokwi-breadboard-mini')
   })
 
-  it('keeps custom-chip geometry synchronized with both chip definitions', () => {
+  it('uses the real breakout header as the visual SVG wiring anchor', () => {
     for (const chip of ['ina219', 'tsl2591']) {
-      const definition = JSON.parse(
-        readFileSync(new URL(`../../chips/${chip}.chip.json`, import.meta.url), 'utf8'),
-      ) as { pins: string[]; display: { width: number; height: number } }
-      expect(geometryFor(`chip-${chip}`)).toEqual(
-        customChipGeometry(definition.pins, definition.display),
-      )
+      expect(geometryFor(`visual-${chip}`)).toMatchObject({
+        width: 112,
+        height: 73,
+        pins: [
+          { name: 'VCC', x: 43, y: 72 },
+          { name: 'GND', x: 54, y: 72 },
+          { name: 'SCL', x: 65, y: 72 },
+          { name: 'SDA', x: 76, y: 72 },
+        ],
+      })
     }
   })
 

@@ -46,6 +46,23 @@ const HEADER_PITCH = 9.6
 const WOKWI_ELEMENTS_TOLERANCE = 0.01
 const MEASURED_TOLERANCE = 0.5
 
+function breakoutBoardGeometry(pinNames: string[]): PartGeometry {
+  const pinPitch = 11
+  const firstPinX = 43
+
+  return {
+    width: 112,
+    height: 73,
+    source: 'measured',
+    tolerance: MEASURED_TOLERANCE,
+    pins: pinNames.map((name, index) => ({
+      name,
+      x: firstPinX + index * pinPitch,
+      y: 72,
+    })),
+  }
+}
+
 function halfBreadboardGeometry(): PartGeometry {
   const terminalX0 = 26.3897637795
   const topY0 = 50.7897637795
@@ -130,6 +147,7 @@ const conformanceChipGeometry = customChipGeometry(
   ['VCC', 'GND', 'SCL', 'SDA'],
   { width: 112, height: 73 },
 )
+const sensorBreakoutGeometry = breakoutBoardGeometry(['VCC', 'GND', 'SCL', 'SDA'])
 
 export const PART_GEOMETRY: Record<string, PartGeometry> = {
   // 72.58mm x 53.34mm. Two 9.5px-pitch headers: digital along y=9, power and
@@ -196,6 +214,8 @@ export const PART_GEOMETRY: Record<string, PartGeometry> = {
   'wokwi-breadboard-half': halfBreadboardGeometry(),
   'chip-ina219': conformanceChipGeometry,
   'chip-tsl2591': conformanceChipGeometry,
+  'visual-ina219': sensorBreakoutGeometry,
+  'visual-tsl2591': sensorBreakoutGeometry,
 }
 
 /** Parts whose geometry this repo cannot source, with the reason recorded. */
