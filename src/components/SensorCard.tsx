@@ -14,7 +14,7 @@ export function SensorCard({
 }) {
   return (
     <article className="flex h-full flex-col overflow-hidden rounded-card border border-border bg-background shadow-sm">
-      <div className="aspect-[4/3] bg-muted-background p-5">
+      <div className="aspect-[4/3] overflow-hidden bg-muted-background p-2">
         <SensorVisual sensorId={sensor.id} />
       </div>
       <div className="flex flex-1 flex-col p-5">

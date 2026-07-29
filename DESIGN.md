@@ -46,7 +46,7 @@
 - Spacing/layout rhythm: 부품 좌표와 크기는 `src/wokwi/partGeometry.ts`를 따른다.
 - Shape/radius/elevation: 회로 SVG는 평면 벡터 중심이며, Wokwi 원본에 존재하는 최소 음영만 허용한다.
 - Motion: 단계 전환은 짧은 불투명도 전환만 사용하고 `prefers-reduced-motion`을 존중한다.
-- Imagery/iconography: 사진과 임의 생성 이미지를 혼용하지 않는다. 공개 Wokwi SVG와 검토된 자체 SVG만 사용한다.
+- Imagery/iconography: 사진과 임의 생성 이미지를 혼용하지 않는다. 공개 Wokwi SVG와 검토된 자체 SVG만 사용한다. 센서 미리보기는 실물의 외곽 형태·핀 수·기판 유무를 보존하며, 공통 4:3 안전 영역 안에서 의미 있는 핀이나 라벨이 잘리지 않는 최대 크기로 광학 보정한다.
 
 ## Components
 
