@@ -107,16 +107,11 @@ jobs:
         run: |
           mkdir -p wokwi-captures
           wokwi-cli wokwi/ina219-current \
-            --screenshot-part ina219 \
-            --screenshot-time 1000 \
-            --screenshot-file wokwi-captures/ina219-part.png
-          wokwi-cli wokwi/chip-conformance \
-            --screenshot-part tsl2591 \
-            --screenshot-time 1000 \
-            --screenshot-file wokwi-captures/tsl2591-part.png
-          wokwi-cli wokwi/ina219-current \
             --screenshot-time 1000 \
             --screenshot-file wokwi-captures/ina219-circuit.png
+          wokwi-cli wokwi/chip-conformance \
+            --screenshot-time 1000 \
+            --screenshot-file wokwi-captures/custom-chip-conformance.png
 
       - name: Upload custom sensor appearance proof
         uses: actions/upload-artifact@v4
