@@ -74,14 +74,20 @@ function CdsVisual() {
 }
 
 function NativeVisual({ sensorId, tag }: { sensorId: string; tag: string }) {
-  const style: CSSProperties = {
-    display: 'block',
-    width: '100%',
-    height: '100%',
+  const wrapperStyle: CSSProperties = {
     transform: `scale(${nativeScale[sensorId] ?? 1})`,
     transformOrigin: 'center',
   }
-  return createElement(tag, { style })
+  const partStyle: CSSProperties = {
+    display: 'block',
+    width: '80%',
+    height: '80%',
+  }
+  return (
+    <div className="grid size-full place-items-center" style={wrapperStyle}>
+      {createElement(tag, { style: partStyle })}
+    </div>
+  )
 }
 
 export function SensorVisual({ sensorId }: { sensorId: string }) {
