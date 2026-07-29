@@ -51,6 +51,44 @@ describe('RecipeSchema', () => {
     expect(RecipeSchema.safeParse(validRecipe).success).toBe(true)
   })
 
+  it('retains a validated vector layout for dynamic recipes', () => {
+    const layout = {
+      version: 1 as const,
+      author: 'teacher',
+      purpose: 'recipe' as const,
+      minimumClearance: 8,
+      parts: [{ id: 'uno', type: 'wokwi-arduino-uno', top: 0, left: 0 }],
+      wires: [{
+        id: 'power',
+        net: '5V',
+        from: 'uno:5V',
+        to: 'uno:3.3V',
+        color: 'red',
+        points: [{ x: 0, y: 0 }, { x: 0, y: 20 }],
+      }],
+    }
+    const parsed = RecipeSchema.parse({ ...validRecipe, layout })
+    expect(parsed.layout).toEqual(layout)
+  })
+
+  it('rejects a dynamic layout with fewer than two points per wire', () => {
+    const layout = {
+      version: 1,
+      author: 'teacher',
+      minimumClearance: 8,
+      parts: [{ id: 'uno', type: 'wokwi-arduino-uno', top: 0, left: 0 }],
+      wires: [{
+        id: 'power',
+        net: '5V',
+        from: 'uno:5V',
+        to: 'uno:3.3V',
+        color: 'red',
+        points: [{ x: 0, y: 0 }],
+      }],
+    }
+    expect(RecipeSchema.safeParse({ ...validRecipe, layout }).success).toBe(false)
+  })
+
   it('rejects a recipe missing the required sketch field', () => {
     const { sketch: _sketch, ...withoutSketch } = validRecipe
     expect(RecipeSchema.safeParse(withoutSketch).success).toBe(false)

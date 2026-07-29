@@ -1,4 +1,5 @@
 #include "wokwi-api.h"
+#include "sensor-board-display.h"
 #include "tsl2591.h"
 
 #include <stdlib.h>
@@ -48,6 +49,10 @@ static bool on_i2c_write(void *user_data, uint8_t data) {
 
 void chip_init(void) {
   chip_state_t *chip = calloc(1, sizeof(chip_state_t));
+  uint32_t display_width;
+  uint32_t display_height;
+  const buffer_t framebuffer = framebuffer_init(&display_width, &display_height);
+  sensor_draw_tsl2591_board(framebuffer);
   tsl2591_reset(&chip->registers);
   chip->ch0_raw_attr = attr_init("ch0Raw", 1234);
   chip->ch1_raw_attr = attr_init("ch1Raw", 321);

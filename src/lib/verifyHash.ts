@@ -5,7 +5,7 @@
  * `simStatus.verifyHash` without an async Web Crypto round-trip, and so CI
  * computes the identical value when writing that field (plan N4).
  *
- * Covers sketch + wiring + tunables + baudRate + inventoryVersion —
+ * Covers sketch + wiring + layout + tunables + baudRate + inventoryVersion —
  * deliberately wider than just the sketch, so either a wiring-only edit or
  * a changed sensor definition invalidates the hash.
  */
@@ -30,6 +30,7 @@ function fnv1a(str: string): string {
 export interface VerifyHashInput {
   sketch: string
   wiring: unknown
+  layout?: unknown
   tunables: unknown
   baudRate: number
   inventoryVersion: string

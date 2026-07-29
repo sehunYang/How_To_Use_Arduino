@@ -20,6 +20,8 @@ export interface Diagram {
 
 const UNO_TOKEN = 'UNO'
 const UNO_PART_ID = 'uno'
+const BREADBOARD_TOKEN = 'BB'
+const BREADBOARD_PART_ID = 'bb'
 const PART_SPACING = 100
 
 /** Splits a `Component.Pin` wiring endpoint into its two halves. */
@@ -68,6 +70,9 @@ export function resolveWiringRef(
 ): { partId: string; pin: string; sensor: Sensor | undefined } {
   const [token, pin] = splitRef(ref)
   if (token.toUpperCase() === UNO_TOKEN) return { partId: UNO_PART_ID, pin, sensor: undefined }
+  if (token.toUpperCase() === BREADBOARD_TOKEN) {
+    return { partId: BREADBOARD_PART_ID, pin, sensor: undefined }
+  }
 
   const sensor = resolveSensor(token, sensors)
   if (!sensor) {
@@ -102,6 +107,11 @@ export function buildDiagram(recipe: Recipe, sensors: Sensor[]): Diagram {
   function resolveEndpoint(ref: string): string {
     const { partId, pin, sensor } = resolveWiringRef(ref, sensors)
 
+    if (partId === BREADBOARD_PART_ID && !seenPartIds.has(partId)) {
+      seenPartIds.add(partId)
+      parts.push({ id: partId, type: 'wokwi-breadboard-half', top: 0, left: nextLeft })
+      nextLeft += PART_SPACING
+    }
     if (sensor && !seenPartIds.has(partId)) {
       seenPartIds.add(partId)
       parts.push({ id: partId, type: sensor.wokwi.part, top: 0, left: nextLeft })

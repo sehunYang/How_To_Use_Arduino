@@ -1,5 +1,6 @@
 #include "wokwi-api.h"
 #include "ina219.h"
+#include "sensor-board-display.h"
 
 #include <stdlib.h>
 
@@ -63,6 +64,10 @@ static bool on_i2c_write(void *user_data, uint8_t data) {
 
 void chip_init(void) {
   chip_state_t *chip = calloc(1, sizeof(chip_state_t));
+  uint32_t display_width;
+  uint32_t display_height;
+  const buffer_t framebuffer = framebuffer_init(&display_width, &display_height);
+  sensor_draw_ina219_board(framebuffer);
   ina219_reset(&chip->registers);
   chip->shunt_raw_attr = attr_init("shuntRaw", 100);
   chip->bus_raw_attr = attr_init("busRaw", 5000);

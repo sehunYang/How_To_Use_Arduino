@@ -62,6 +62,7 @@ export async function drainVerifyQueue(
     const verifyHash = computeVerifyHash({
       sketch: recipe.sketch,
       wiring: recipe.wiring,
+      layout: recipe.layout,
       tunables: recipe.tunables,
       baudRate: recipe.baudRate,
       inventoryVersion: computeInventoryVersion(inventory),

@@ -16,12 +16,12 @@ import { compileReadableLayout } from '../src/wokwi/readableLayout'
 import type { ReadableLayout } from '../src/wokwi/readableLayout'
 import { pendulumLayout } from '../src/wokwi/layouts/pendulumLayout'
 import { chipConformanceLayout } from '../src/wokwi/layouts/chipConformanceLayout'
-import { ina219CurrentLayout } from '../src/wokwi/layouts/ina219CurrentLayout'
+import { ina219SimulationLayout } from '../src/wokwi/layouts/ina219SimulationLayout'
 
 const targets: { layout: ReadableLayout; path: string }[] = [
   { layout: pendulumLayout, path: 'diagram.json' },
   { layout: chipConformanceLayout, path: 'wokwi/chip-conformance/diagram.json' },
-  { layout: ina219CurrentLayout, path: 'wokwi/ina219-current/diagram.json' },
+  { layout: ina219SimulationLayout, path: 'wokwi/ina219-current/diagram.json' },
 ]
 
 const check = process.argv.includes('--check')
