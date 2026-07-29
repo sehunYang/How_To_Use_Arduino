@@ -13,6 +13,21 @@ export interface SensorProfile {
   cautions: string[]
 }
 
+export function profileForSensor(sensor: Sensor): SensorProfile {
+  return sensorProfileById.get(sensor.id) ?? {
+    id: sensor.id,
+    quantities: ['측정값'],
+    summary: `${sensor.name}에서 측정값을 읽어 탐구 활동에 활용하는 센서입니다.`,
+    output: `${sensor.interface.toUpperCase()} 방식의 측정값`,
+    specs: [
+      { label: '통신 방식', value: sensor.interface.toUpperCase() },
+      { label: '소비 전류', value: `${sensor.currentDrawMa}mA` },
+    ],
+    experiments: [`${sensor.name}의 측정값이 환경에 따라 어떻게 달라지는지 비교하기`],
+    cautions: ['전원 전압과 핀 배열을 확인한 뒤 연결하세요.'],
+  }
+}
+
 export const sensorProfiles: SensorProfile[] = [
   {
     id: 'ina219',
@@ -148,3 +163,4 @@ export const sensorProfiles: SensorProfile[] = [
 ]
 
 export const sensorProfileById = new Map(sensorProfiles.map((profile) => [profile.id, profile]))
+import type { Sensor } from '@/schema'

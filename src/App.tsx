@@ -7,13 +7,16 @@ import { RecipeListPage } from '@/pages/RecipeListPage'
 import { RecipeDetailPage } from '@/pages/RecipeDetailPage'
 import { SensorListPage } from '@/pages/SensorListPage'
 import { SensorDetailPage } from '@/pages/SensorDetailPage'
+import { AdminPage } from '@/pages/AdminPage'
+import { type AdminServices } from '@/admin/AdminServices'
+import { firebaseAdminServices } from '@/firebase/adminServices'
 
 function RecipeRoute() {
   const { id } = useParams()
   return <RecipeDetailPage key={id} />
 }
 
-function App() {
+function App({ adminServices = firebaseAdminServices }: { adminServices?: AdminServices }) {
   return (
     <BrowserRouter basename={routerBasename}>
       <AppShell>
@@ -24,6 +27,7 @@ function App() {
           <Route path="/recipes/:id" element={<RecipeRoute />} />
           <Route path="/sensors" element={<SensorListPage />} />
           <Route path="/sensors/:id" element={<SensorDetailPage />} />
+          <Route path="/admin/*" element={<AdminPage services={adminServices} />} />
           <Route path="*" element={<div className="py-20 text-center"><h1 className="text-3xl font-semibold">페이지를 찾을 수 없어요</h1><Link className="mt-4 inline-block text-accent" to="/">처음으로</Link></div>} />
         </Routes>
       </AppShell>

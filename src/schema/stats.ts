@@ -15,3 +15,9 @@ export const StatsSchema = z.object({
   processedThrough: z.string().min(1).nullable().default(null),
 })
 export type Stats = z.infer<typeof StatsSchema>
+
+export const SearchFailureStatsSchema = z.object({
+  tokens: z.record(z.string(), z.number().int().nonnegative()).default({}),
+  processedThrough: z.string().min(1).nullable().default(null),
+})
+export type SearchFailureStats = z.infer<typeof SearchFailureStatsSchema>

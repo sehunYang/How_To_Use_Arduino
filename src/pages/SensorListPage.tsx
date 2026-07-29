@@ -1,8 +1,7 @@
 import { useMemo, useState } from 'react'
 import { SensorCard } from '@/components/SensorCard'
-import { sensorProfileById } from '@/data/sensorProfiles'
+import { profileForSensor } from '@/data/sensorProfiles'
 import { useSensorInventory } from '@/firebase/sensorInventory'
-import type { Sensor } from '@/schema'
 
 const interfaceLabels: Record<string, string> = {
   i2c: 'I2C',
@@ -16,8 +15,7 @@ export function SensorListPage() {
   const [query, setQuery] = useState('')
   const [sensorInterface, setSensorInterface] = useState('')
   const cards = useMemo(() => sensors
-    .map((sensor) => ({ sensor, profile: sensorProfileById.get(sensor.id) }))
-    .filter((entry): entry is { sensor: Sensor; profile: NonNullable<typeof entry.profile> } => Boolean(entry.profile))
+    .map((sensor) => ({ sensor, profile: profileForSensor(sensor) }))
         .filter(({ sensor }) => !sensorInterface || sensor.interface === sensorInterface)
     .filter(({ sensor, profile }) => {
       const normalized = query.trim().toLocaleLowerCase('ko')

@@ -3,8 +3,8 @@ import { RecipeCard } from '@/components/RecipeCard'
 import { SensorVisual } from '@/components/SensorVisual'
 import { useSensorInventory } from '@/firebase/sensorInventory'
 import type { Sensor } from '@/schema'
-import { sensorProfileById } from '@/data/sensorProfiles'
-import { publishedRecipes } from '@/data/studentCatalog'
+import { profileForSensor } from '@/data/sensorProfiles'
+import { usePublishedRecipes } from '@/firebase/contentRepository'
 
 const interfaceLabels: Record<string, string> = {
   i2c: 'I2C 디지털 통신',
@@ -20,11 +20,11 @@ function addressingText(sensor: Sensor) {
 }
 
 export function SensorDetailPage() {
+  const publishedRecipes = usePublishedRecipes()
   const { id } = useParams()
   const sensors = useSensorInventory()
   const sensor = sensors.find((entry) => entry.id === id)
-  const profile = id ? sensorProfileById.get(id) : undefined
-  if (!sensor || !profile) {
+  if (!sensor) {
     return (
       <div className="py-20 text-center">
         <h1 className="text-3xl font-semibold">센서 정보를 찾을 수 없어요</h1>
@@ -33,6 +33,7 @@ export function SensorDetailPage() {
     )
   }
 
+  const profile = profileForSensor(sensor)
   const recipes = publishedRecipes.filter((recipe) => recipe.sensors.includes(sensor.id))
   return (
     <article className="mx-auto max-w-6xl">

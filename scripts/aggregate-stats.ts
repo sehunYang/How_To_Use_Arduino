@@ -4,7 +4,7 @@ import firebase from 'firebase/compat/app'
 import 'firebase/compat/app-check'
 import 'firebase/compat/auth'
 import 'firebase/compat/firestore'
-import { AnonEventSchema, StatsSchema, type AnonEvent } from '../src/schema'
+import { AnonEventSchema, SearchFailureStatsSchema, StatsSchema, type AnonEvent } from '../src/schema'
 import { applyEventBatch, sessionKey, type LearningSession } from '../src/telemetry/aggregateStats'
 import { createCiAppCheckProvider } from '../src/firebase/ciAppCheckProvider'
 
@@ -69,17 +69,21 @@ try {
       const at = data.at?.toDate instanceof Function ? data.at.toDate().toISOString() : data.at
       return AnonEventSchema.parse({ ...data, at })
     })
+    const searchFailureEvents = events.filter((event) => event.event === 'search_fail')
     const relevant = events.filter((event) => event.event !== 'search_fail')
     const recipeIds = [...new Set(relevant.map((event) => event.recipeId))]
     const sessionKeys = [...new Set(relevant.map((event) => sessionKey(event.recipeId, event.anonId)))]
     const statsRefs = recipeIds.map((id) => db.collection('stats').doc(id))
     const sessionRefs = sessionKeys.map((key) => db.collection('statsSessions').doc(stateDocumentId(key)))
+    const searchStatsRef = db.doc('searchStats/summary')
     const stateSnapshots = await Promise.all([
       ...statsRefs.map((ref) => ref.get()),
       ...sessionRefs.map((ref) => ref.get()),
+      searchStatsRef.get(),
     ])
     const statsSnapshots = stateSnapshots.slice(0, statsRefs.length)
-    const sessionSnapshots = stateSnapshots.slice(statsRefs.length)
+    const sessionSnapshots = stateSnapshots.slice(statsRefs.length, statsRefs.length + sessionRefs.length)
+    const searchStatsSnapshot = stateSnapshots.at(-1)!
     const existingStats = new Map(statsSnapshots
       .filter((snapshot) => snapshot.exists)
       .map((snapshot) => [snapshot.id, StatsSchema.parse(snapshot.data())]))
@@ -104,6 +108,19 @@ try {
       if (value) batch.set(db.collection('statsSessions').doc(stateDocumentId(key)), value)
     })
     const lastDocument = page.docs.at(-1)!
+    if (searchFailureEvents.length > 0) {
+      const current = searchStatsSnapshot.exists
+        ? SearchFailureStatsSchema.parse(searchStatsSnapshot.data())
+        : SearchFailureStatsSchema.parse({})
+      const tokens = { ...current.tokens }
+      for (const event of searchFailureEvents) {
+        for (const token of event.tokens ?? []) tokens[token] = (tokens[token] ?? 0) + 1
+      }
+      batch.set(searchStatsRef, {
+        tokens,
+        processedThrough: lastDocument.get('at').toDate().toISOString(),
+      })
+    }
     batch.set(cursorRef, {
       lastAt: lastDocument.get('at'),
       lastEventId: lastDocument.id,
