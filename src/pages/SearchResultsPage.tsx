@@ -1,12 +1,14 @@
 import { useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { RecipeCard } from '@/components/RecipeCard'
-import { studentRecipes, rationaleFor, sensorById } from '@/data/studentCatalog'
+import { studentRecipes, sensorById } from '@/data/studentCatalog'
 import { synonyms } from '@/data/synonyms'
 import { buildIndex, search } from '@/search'
 import { normalizeSearchTokens, sendAnonymousEvent } from '@/telemetry/events'
 import { sensorProfileById } from '@/data/sensorProfiles'
 import { SensorCard } from '@/components/SensorCard'
+import { canaryRationales } from '@/data/canary'
+import { rankSensors } from '@/results/aggregateSensors'
 
 export function SearchResultsPage() {
   const [params] = useSearchParams()
@@ -23,7 +25,7 @@ export function SearchResultsPage() {
       }).catch(() => undefined)
     }
   }, [query, usedFuzzyFallback])
-  const sensorIds = [...new Set(results.flatMap((result) => result.entry.sensors))]
+  const rankedSensors = rankSensors(results, canaryRationales)
 
   return (
     <div className="mx-auto max-w-6xl">
@@ -32,12 +34,11 @@ export function SearchResultsPage() {
       <section aria-labelledby="sensor-summary" className="mt-8">
         <h2 id="sensor-summary" className="text-heading font-semibold">필요한 센서</h2>
         <div className="mt-3 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {sensorIds.map((id) => {
+          {rankedSensors.map(({ sensorId: id, whyText }) => {
             const sensor = sensorById.get(id)
             const profile = sensorProfileById.get(id)
-            const rationale = rationaleFor(id, results.find((result) => result.entry.sensors.includes(id))?.entry.subject ?? null)
             return sensor && profile
-              ? <SensorCard key={id} sensor={sensor} profile={profile} reason={rationale?.whyText ?? '이 탐구의 값을 직접 측정하는 데 필요한 센서입니다.'} />
+              ? <SensorCard key={id} sensor={sensor} profile={profile} reason={whyText} />
               : null
           })}
         </div>
