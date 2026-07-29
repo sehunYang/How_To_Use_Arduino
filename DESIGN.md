@@ -67,7 +67,7 @@
 
 - Supported breakpoints/devices: 360px 이상 모바일, 태블릿, 데스크톱
 - Layout adaptations: 모바일은 상단 sticky 이미지, 데스크톱은 이미지와 단계 목록 2단
-- Touch/hover differences: 핀치·더블탭·버튼 확대를 지원하고 hover에만 정보를 의존하지 않는다.
+- Touch/hover differences: 모바일 핀치와 드래그, 데스크톱 휠과 드래그, 더블탭·버튼 확대를 지원하며 hover에만 정보를 의존하지 않는다. 확대 범위는 100%~500%다.
 
 ## Interaction states
 
