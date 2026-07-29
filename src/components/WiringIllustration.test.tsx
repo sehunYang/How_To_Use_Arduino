@@ -30,11 +30,27 @@ describe('WiringIllustration zoom and pan', () => {
     render(<WiringIllustration recipe={pendulumRecipe} activeStep={0} />)
     const viewport = screen.getByTestId('wiring-viewport')
 
-    fireEvent.wheel(viewport, { deltaY: -2000, clientX: 400, clientY: 300 })
+    const wheel = new WheelEvent('wheel', {
+      deltaY: -2000,
+      clientX: 400,
+      clientY: 300,
+      bubbles: true,
+      cancelable: true,
+    })
+    expect(fireEvent(viewport, wheel)).toBe(false)
+    expect(wheel.defaultPrevented).toBe(true)
     expect(screen.getByRole('button', { name: '배선도 원래 크기' })).toHaveTextContent('500%')
     expect(screen.getByTestId('wiring-canvas')).toHaveStyle({
       transform: 'translate(0px, 0px) scale(5)',
     })
+  })
+
+  it('keeps the instructions and controls anchored inside the viewport', () => {
+    render(<WiringIllustration recipe={pendulumRecipe} activeStep={0} />)
+    const viewport = screen.getByTestId('wiring-viewport')
+
+    expect(viewport).toContainElement(screen.getByText(/휠·핀치로 최대 500% 확대/))
+    expect(viewport).toContainElement(screen.getByRole('button', { name: '배선도 확대' }))
   })
 
   it('drags the enlarged diagram and resets both zoom and position', () => {
