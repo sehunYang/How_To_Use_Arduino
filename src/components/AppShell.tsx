@@ -6,6 +6,7 @@ import { ThemeToggle } from '@/components/ThemeToggle'
 const navigation = [
   { to: '/', label: '아이디어 찾기' },
   { to: '/recipes', label: '레시피 둘러보기' },
+  { to: '/sensors', label: '센서 학습하기' },
 ]
 
 export function AppShell({ children }: { children: ReactNode }) {

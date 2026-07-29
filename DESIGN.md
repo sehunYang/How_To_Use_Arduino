@@ -4,7 +4,7 @@
 
 - Status: Active
 - Last refreshed: 2026-07-29
-- Primary product surfaces: 학생용 검색, 레시피 목록, 레시피 상세, 단계별 배선 뷰어
+- Primary product surfaces: 학생용 검색, 레시피 목록·상세, 센서 학습 목록·상세, 단계별 배선 뷰어
 - Evidence reviewed: `src/styles/tokens.css`, `src/components/WiringIllustration.tsx`, `src/wokwi/partGeometry.ts`, `docs/wokwi-wiring-rules.md`, `.omc/plans/how-to-use-arduino-implementation.md`, Adafruit INA219/TSL2591/TCA9548A product and fabrication references
 
 ## Brand
@@ -27,8 +27,8 @@
 
 ## Information architecture
 
-- Primary navigation: 탐색 → 검색/목록 → 레시피 상세
-- Core routes/screens: `/`, `/search`, `/recipes`, `/recipes/:id`
+- Primary navigation: 아이디어 찾기 · 레시피 둘러보기 · 센서 학습하기
+- Core routes/screens: `/`, `/search`, `/recipes`, `/recipes/:id`, `/sensors`, `/sensors/:id`
 - Content hierarchy: 현재 단계 배선 이미지 → 연결 문장 → 진행 제어 → 코드와 설명
 
 ## Design principles
@@ -51,7 +51,7 @@
 ## Components
 
 - Existing components to reuse: `WiringIllustration`, `Button`, 레시피 진행 상태 훅
-- New/changed components: 정적 회로 SVG 렌더러, 부품 SVG 레지스트리, 단계별 도선 레이어
+- New/changed components: 정적 회로 SVG 렌더러, 부품 SVG 레지스트리, 단계별 도선 레이어, 센서 카드, 센서 갤러리, 센서 상세 스펙
 - Variants and states: 0단계, 현재 단계까지 누적, 완성, 확대, 이미지 누락 오류
 - Token/component ownership: 앱 토큰은 `tokens.css`; 회로 부품 팔레트와 선 스타일은 렌더러 전용 상수로 관리한다.
 

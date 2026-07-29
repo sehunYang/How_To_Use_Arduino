@@ -5,6 +5,8 @@ import { DiscoveryPage } from '@/pages/DiscoveryPage'
 import { SearchResultsPage } from '@/pages/SearchResultsPage'
 import { RecipeListPage } from '@/pages/RecipeListPage'
 import { RecipeDetailPage } from '@/pages/RecipeDetailPage'
+import { SensorListPage } from '@/pages/SensorListPage'
+import { SensorDetailPage } from '@/pages/SensorDetailPage'
 
 function RecipeRoute() {
   const { id } = useParams()
@@ -20,6 +22,8 @@ function App() {
           <Route path="/search" element={<SearchResultsPage />} />
           <Route path="/recipes" element={<RecipeListPage />} />
           <Route path="/recipes/:id" element={<RecipeRoute />} />
+          <Route path="/sensors" element={<SensorListPage />} />
+          <Route path="/sensors/:id" element={<SensorDetailPage />} />
           <Route path="*" element={<div className="py-20 text-center"><h1 className="text-3xl font-semibold">페이지를 찾을 수 없어요</h1><Link className="mt-4 inline-block text-accent" to="/">처음으로</Link></div>} />
         </Routes>
       </AppShell>
