@@ -101,6 +101,30 @@ jobs:
       - name: Build Arduino Uno firmware + stage Wokwi project assets
         run: npm run build:wokwi
 
+      - name: Capture custom sensor appearance
+        env:
+          WOKWI_CLI_TOKEN: ${{ secrets.WOKWI_CLI_TOKEN }}
+        run: |
+          mkdir -p wokwi-captures
+          wokwi-cli wokwi/ina219-current \
+            --screenshot-part ina219 \
+            --screenshot-time 1000 \
+            --screenshot-file wokwi-captures/ina219-part.png
+          wokwi-cli wokwi/chip-conformance \
+            --screenshot-part tsl2591 \
+            --screenshot-time 1000 \
+            --screenshot-file wokwi-captures/tsl2591-part.png
+          wokwi-cli wokwi/ina219-current \
+            --screenshot-time 1000 \
+            --screenshot-file wokwi-captures/ina219-circuit.png
+
+      - name: Upload custom sensor appearance proof
+        uses: actions/upload-artifact@v4
+        with:
+          name: wokwi-custom-sensor-captures
+          path: wokwi-captures/*.png
+          if-no-files-found: error
+
       - name: L3 Wokwi simulation — pendulum recipe
         uses: wokwi/wokwi-ci-action@v1
         with:
