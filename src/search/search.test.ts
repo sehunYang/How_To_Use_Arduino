@@ -85,6 +85,7 @@ describe('search — dictionary + fuzzy pipeline', () => {
   it('a nonsense query still returns at least 3 results via the fuzzy fallback', () => {
     const results = search('asdkjqwoeiuraskjdf', index, synonyms)
     expect(results.length).toBeGreaterThanOrEqual(3)
+    expect(results.every((result) => result.sensorEligible === false)).toBe(true)
   })
 
   it('never returns zero results for a non-empty index, regardless of query', () => {

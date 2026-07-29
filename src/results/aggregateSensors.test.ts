@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { SearchIndexEntry, SensorRationale } from '@/schema'
-import { aggregateSensors } from './aggregateSensors'
+import { aggregateSensors, rankSensors } from './aggregateSensors'
+import type { SearchResult } from '@/search'
 
 function entry(
   id: string,
@@ -79,5 +80,60 @@ describe('aggregateSensors', () => {
         rationales,
       ),
     ).toThrow('missing-sensor')
+  })
+})
+
+describe('rankSensors', () => {
+  function result(
+    recipe: SearchIndexEntry,
+    relevanceScore: number,
+    sensorEligible = true,
+  ): SearchResult {
+    return {
+      entry: recipe,
+      matchedKeywords: [],
+      via: 'dictionary',
+      relevanceScore,
+      sensorEligible,
+    }
+  }
+
+  it('ranks a repeatedly recommended sensor above a one-off sensor', () => {
+    const ranked = rankSensors(
+      [
+        result(entry('first', ['mpu6050', 'ina219'], '물리'), 3),
+        result(entry('second', ['mpu6050'], '공학·로봇'), 2),
+      ],
+      rationales,
+    )
+
+    expect(ranked.map((sensor) => sensor.sensorId)).toEqual(['mpu6050', 'ina219'])
+    expect(ranked[0].recipeCount).toBe(2)
+    expect(ranked[0].score).toBeGreaterThan(ranked[1].score)
+  })
+
+  it('excludes sensors from recipes added only as zero-relevance padding', () => {
+    const ranked = rankSensors(
+      [
+        result(entry('matched', ['mpu6050'], '물리'), 3),
+        result(entry('padding', ['ina219'], '물리'), 0, false),
+      ],
+      rationales,
+    )
+
+    expect(ranked.map((sensor) => sensor.sensorId)).toEqual(['mpu6050'])
+  })
+
+  it('downweights an infrastructure part relative to the measuring sensor', () => {
+    const extendedRationales: SensorRationale[] = [
+      ...rationales,
+      { sensorId: 'tca9548a', subject: null, whyText: 'I2C 연결을 확장합니다.' },
+    ]
+    const ranked = rankSensors(
+      [result(entry('multi-light', ['tca9548a', 'mpu6050'], '물리'), 3)],
+      extendedRationales,
+    )
+
+    expect(ranked.map((sensor) => sensor.sensorId)).toEqual(['mpu6050', 'tca9548a'])
   })
 })

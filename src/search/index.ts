@@ -6,6 +6,8 @@ export interface SearchResult {
   entry: SearchIndexEntry
   matchedKeywords: string[]
   via: 'dictionary' | 'fuzzy'
+  relevanceScore: number
+  sensorEligible: boolean
 }
 
 export interface SearchOptions {
@@ -42,6 +44,8 @@ export function search(
     entry: byId.get(match.recipeId)!,
     matchedKeywords: match.matchedKeywords,
     via: 'dictionary',
+    relevanceScore: match.score,
+    sensorEligible: true,
   }))
   const seen = new Set(results.map((r) => r.entry.id))
 
@@ -51,10 +55,17 @@ export function search(
     keys: ['title', 'coreKeywords'],
     threshold: 0.4,
     ignoreLocation: true,
+    includeScore: true,
   })
   for (const hit of fuse.search(query)) {
     if (seen.has(hit.item.id)) continue
-    results.push({ entry: hit.item, matchedKeywords: [], via: 'fuzzy' })
+    results.push({
+      entry: hit.item,
+      matchedKeywords: [],
+      via: 'fuzzy',
+      relevanceScore: Math.max(0, (1 - (hit.score ?? 1)) * DEFAULT_THRESHOLD),
+      sensorEligible: true,
+    })
     seen.add(hit.item.id)
     if (results.length >= minResults) return results
   }
@@ -63,7 +74,13 @@ export function search(
   // index so the "never empty" guarantee holds for any non-empty corpus.
   for (const entry of index) {
     if (seen.has(entry.id)) continue
-    results.push({ entry, matchedKeywords: [], via: 'fuzzy' })
+    results.push({
+      entry,
+      matchedKeywords: [],
+      via: 'fuzzy',
+      relevanceScore: 0,
+      sensorEligible: false,
+    })
     seen.add(entry.id)
     if (results.length >= minResults) break
   }
