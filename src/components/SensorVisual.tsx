@@ -11,9 +11,9 @@ const nativeParts: Record<string, string> = {
 }
 
 const nativeScale: Record<string, number> = {
-  mpu6050: 1.55,
-  'hc-sr501': 1.45,
-  'hc-sr04': 1.32,
+  mpu6050: 1.8,
+  'hc-sr501': 1.65,
+  'hc-sr04': 1.45,
 }
 
 function FullFrame({ children }: { children: ReactNode }) {
@@ -74,17 +74,16 @@ function CdsVisual() {
 }
 
 function NativeVisual({ sensorId, tag }: { sensorId: string; tag: string }) {
-  const wrapperStyle: CSSProperties = {
-    transform: `scale(${nativeScale[sensorId] ?? 1})`,
-    transformOrigin: 'center',
-  }
   const partStyle: CSSProperties = {
     display: 'block',
-    width: '80%',
-    height: '80%',
+    position: 'absolute',
+    left: '50%',
+    top: '50%',
+    transform: `translate(-50%, -50%) scale(${nativeScale[sensorId] ?? 1})`,
+    transformOrigin: 'center',
   }
   return (
-    <div className="grid size-full place-items-center" style={wrapperStyle}>
+    <div className="relative size-full">
       {createElement(tag, { style: partStyle })}
     </div>
   )
