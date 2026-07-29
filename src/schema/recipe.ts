@@ -50,6 +50,48 @@ export const ReviewFlagSchema = z
   .nullable()
 export type ReviewFlag = z.infer<typeof ReviewFlagSchema>
 
+const PointSchema = z.object({
+  x: z.number().finite(),
+  y: z.number().finite(),
+})
+
+const ReadableWireSchema = z.object({
+  id: z.string().min(1),
+  net: z.string().min(1),
+  from: z.string().min(1),
+  to: z.string().min(1),
+  color: z.string().min(1),
+  points: z.array(PointSchema).min(2),
+  targetPath: z.array(z.string()).optional(),
+  allowCrossings: z.array(z.string()).optional(),
+})
+
+const ReadablePartSchema = z.object({
+  id: z.string().min(1),
+  type: z.string().min(1),
+  top: z.number().finite(),
+  left: z.number().finite(),
+  rotate: z.number().finite().optional(),
+  attrs: z.record(z.string(), z.string()).optional(),
+  pins: z.array(z.string()).optional(),
+  bounds: z.object({
+    left: z.number().finite(),
+    top: z.number().finite(),
+    right: z.number().finite(),
+    bottom: z.number().finite(),
+  }).optional(),
+})
+
+export const ReadableLayoutSchema = z.object({
+  version: z.literal(1),
+  author: z.string().min(1),
+  purpose: z.enum(['recipe', 'fixture']).optional(),
+  minimumClearance: z.number().positive(),
+  pinObscureRadius: z.number().positive().optional(),
+  parts: z.array(ReadablePartSchema).min(1),
+  wires: z.array(ReadableWireSchema),
+})
+
 export const RecipeSchema = z.object({
   id: z.string().min(1),
   type: z.enum(['sensor-example', 'project']),
@@ -71,6 +113,8 @@ export const RecipeSchema = z.object({
    */
   imageWidth: z.number().int().positive(),
   imageHeight: z.number().int().positive(),
+  /** Validated vector layout used by dynamic/Firestore recipes. */
+  layout: ReadableLayoutSchema.optional(),
   wiring: z.array(WiringStepSchema).default([]),
   sketch: z.string().min(1),
   baudRate: z.number().int().positive(),

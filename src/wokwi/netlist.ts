@@ -230,10 +230,12 @@ export function recipeNetlist(recipe: Recipe, sensors: Sensor[]): string[][] {
   for (const step of recipe.wiring) {
     const from = resolveWiringRef(step.from, sensors)
     const to = resolveWiringRef(step.to, sensors)
-    const fromKey = `${from.partId}:${normalizePin(from.pin)}`
-    const toKey = `${to.partId}:${normalizePin(to.pin)}`
-    pins.add(fromKey)
-    pins.add(toKey)
+    const fromBreadboard = breadboardNode(from.partId, from.pin)
+    const toBreadboard = breadboardNode(to.partId, to.pin)
+    const fromKey = fromBreadboard ?? `${from.partId}:${normalizePin(from.pin)}`
+    const toKey = toBreadboard ?? `${to.partId}:${normalizePin(to.pin)}`
+    if (!fromBreadboard) pins.add(fromKey)
+    if (!toBreadboard) pins.add(toKey)
     set.union(fromKey, toKey)
   }
 

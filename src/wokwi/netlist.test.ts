@@ -3,11 +3,13 @@ import type { Recipe } from '@/schema'
 import { sensors } from '@/data/inventory-seed/sensors'
 import { pendulumRecipe } from '@/data/canary/pendulum'
 import { ina219CurrentRecipe } from '@/data/canary/ina219Current'
+import { multiTsl2591Recipe } from '@/data/canary/multiTsl2591'
 import type { ReadableLayout, ReadableWire } from './readableLayout'
 import { validateReadableLayout } from './readableLayout'
 import { pendulumLayout } from './layouts/pendulumLayout'
 import { chipConformanceLayout } from './layouts/chipConformanceLayout'
 import { ina219CurrentLayout } from './layouts/ina219CurrentLayout'
+import { multiTsl2591Layout } from './layouts/multiTsl2591Layout'
 import {
   compareNetlists,
   layoutNetlist,
@@ -164,6 +166,12 @@ describe('layout ↔ recipe gate', () => {
   it('binds the INA219 L3 canary layout to its recipe wiring', () => {
     expect(
       validateLayoutAgainstRecipe(ina219CurrentLayout, ina219CurrentRecipe, sensors),
+    ).toEqual([])
+  })
+
+  it('binds the powered multi-TSL2591 layout to its recipe wiring', () => {
+    expect(
+      validateLayoutAgainstRecipe(multiTsl2591Layout, multiTsl2591Recipe, sensors),
     ).toEqual([])
   })
 

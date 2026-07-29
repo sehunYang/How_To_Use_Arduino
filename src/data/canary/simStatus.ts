@@ -6,7 +6,7 @@ import { multiTsl2591Recipe } from './multiTsl2591'
 import { ina219CurrentRecipe } from './ina219Current'
 
 function statusFor(
-  recipe: { sketch: string; wiring: unknown; tunables: unknown; baudRate: number },
+  recipe: { sketch: string; wiring: unknown; layout?: unknown; tunables: unknown; baudRate: number },
   simPass: boolean | null,
 ): SimStatus {
   return {

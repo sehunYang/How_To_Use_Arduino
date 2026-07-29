@@ -1,7 +1,8 @@
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import type { Recipe } from '@/schema'
 import { layoutForRecipe } from '@/wokwi/layoutRegistry'
+import { validateReadableLayout } from '@/wokwi/readableLayout'
 import { CircuitDiagram } from './CircuitDiagram'
 
 export function WiringIllustration({
@@ -11,7 +12,10 @@ export function WiringIllustration({
   recipe: Recipe
   activeStep: number
 }) {
-  const layout = layoutForRecipe(recipe.id)
+  const layout = useMemo(() => {
+    const candidate = layoutForRecipe(recipe)
+    return candidate && validateReadableLayout(candidate).length === 0 ? candidate : null
+  }, [recipe])
   const [scale, setScale] = useState(1)
   const pointers = useRef(new Map<number, { x: number; y: number }>())
   const distance = useRef<number | null>(null)

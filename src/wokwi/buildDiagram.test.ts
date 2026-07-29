@@ -26,14 +26,15 @@ describe('buildDiagram', () => {
     )
   })
 
-  it('produces distinct parts for two TSL2591 instances plus the TCA9548A mux, with all 8 connections resolved', () => {
+  it('produces a powered breadboard circuit for two TSL2591 instances and the TCA9548A mux', () => {
     const diagram = buildDiagram(multiTsl2591Recipe, sensors)
 
     const nonUnoParts = diagram.parts.filter((p) => p.id !== 'uno')
-    expect(nonUnoParts).toHaveLength(3)
+    expect(nonUnoParts).toHaveLength(4)
 
     const partIds = nonUnoParts.map((p) => p.id).sort()
-    expect(partIds).toEqual(['tca9548a', 'tsl2591_1', 'tsl2591_2'])
+    expect(partIds).toEqual(['bb', 'tca9548a', 'tsl2591_1', 'tsl2591_2'])
+    expect(nonUnoParts.find((p) => p.id === 'bb')?.type).toBe('wokwi-breadboard-half')
 
     for (const id of ['tsl2591_1', 'tsl2591_2']) {
       const part = nonUnoParts.find((p) => p.id === id)
@@ -41,11 +42,15 @@ describe('buildDiagram', () => {
     }
     expect(nonUnoParts.find((p) => p.id === 'tca9548a')?.type).toBe('custom-tca9548a')
 
-    expect(diagram.connections).toHaveLength(8)
+    expect(diagram.connections).toHaveLength(16)
     expect(diagram.connections).toEqual(
       expect.arrayContaining([
-        ['tca9548a:VCC', 'uno:5V', 'red', []],
-        ['tca9548a:GND', 'uno:GND', 'black', []],
+        ['uno:5V', 'bb:tp.1', 'red', []],
+        ['uno:GND', 'bb:tn.2', 'black', []],
+        ['tca9548a:VCC', 'bb:bp.8', 'red', []],
+        ['tca9548a:GND', 'bb:bn.7', 'black', []],
+        ['tsl2591_1:VCC', 'bb:bp.3', 'red', []],
+        ['tsl2591_2:GND', 'bb:bn.24', 'black', []],
         ['tca9548a:SDA', 'uno:A4', 'green', []],
         ['tca9548a:SCL', 'uno:A5', 'yellow', []],
         ['tsl2591_1:SDA', 'tca9548a:SD0', 'green', []],

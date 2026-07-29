@@ -5,7 +5,7 @@
 - Status: Active
 - Last refreshed: 2026-07-29
 - Primary product surfaces: 학생용 검색, 레시피 목록, 레시피 상세, 단계별 배선 뷰어
-- Evidence reviewed: `src/styles/tokens.css`, `src/components/WiringIllustration.tsx`, `src/wokwi/partGeometry.ts`, `docs/wokwi-wiring-rules.md`, `.omc/plans/how-to-use-arduino-implementation.md`
+- Evidence reviewed: `src/styles/tokens.css`, `src/components/WiringIllustration.tsx`, `src/wokwi/partGeometry.ts`, `docs/wokwi-wiring-rules.md`, `.omc/plans/how-to-use-arduino-implementation.md`, Adafruit INA219/TSL2591/TCA9548A product and fabrication references
 
 ## Brand
 
@@ -95,4 +95,4 @@
 ## Open questions
 
 - [ ] 공개되지 않은 Wokwi 브레드보드 외형의 허용 시각 오차를 첫 기준 이미지 검토 후 수치화한다.
-- [ ] INA219·TSL2591 실물 모듈 제조사별 변형 중 프로젝트 표준 외형을 확정한다.
+- [x] INA219·TSL2591·TCA9548A는 Adafruit 계열 파란 PCB와 공식 핀 라벨을 프로젝트 표준 외형으로 사용한다.

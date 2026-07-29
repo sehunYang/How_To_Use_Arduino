@@ -6,6 +6,7 @@ import {
 } from './readableLayout'
 import { pendulumLayout } from './layouts/pendulumLayout'
 import { chipConformanceLayout } from './layouts/chipConformanceLayout'
+import { multiTsl2591Layout } from './layouts/multiTsl2591Layout'
 
 const base = (wires: ReadableLayout['wires']): ReadableLayout => {
   const partIds = new Set(
@@ -366,5 +367,9 @@ describe('strict readable Wokwi layout', () => {
         ['breadboard:26t.c', 'breadboard:30t.c', 'yellow', ['h38.4']],
       ]),
     )
+  })
+
+  it('validates the powered multi-TSL2591 teaching layout', () => {
+    expect(validateReadableLayout(multiTsl2591Layout)).toEqual([])
   })
 })

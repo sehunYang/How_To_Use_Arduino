@@ -3,13 +3,14 @@ import '@wokwi/elements/dist/esm/arduino-uno-element.js'
 import '@wokwi/elements/dist/esm/mpu6050-element.js'
 import type { ReadableLayout, ReadablePart } from '@/wokwi/readableLayout'
 import { geometryFor } from '@/wokwi/partGeometry'
-import { HalfBreadboardPart, Ina219Part, Tsl2591Part } from './wokwiParts'
+import { HalfBreadboardPart, Ina219Part, Tca9548aPart, Tsl2591Part } from './wokwiParts'
 
 const PADDING = 24
 
 function partGraphic(part: ReadablePart) {
   if (part.type === 'visual-ina219') return <Ina219Part />
   if (part.type === 'visual-tsl2591') return <Tsl2591Part />
+  if (part.type === 'visual-tca9548a') return <Tca9548aPart />
   if (part.type === 'wokwi-breadboard-half') return <HalfBreadboardPart />
   if (part.type === 'wokwi-arduino-uno' || part.type === 'wokwi-mpu6050') {
     return createElement(part.type, { style: { width: '100%', height: '100%', display: 'block' } })
@@ -43,12 +44,16 @@ export function CircuitDiagram({
   }, [layout])
 
   const visibleWires = layout.wires.slice(0, activeStep + 1)
+  const currentWire = visibleWires.at(-1)
+  const accessibleStep = currentWire
+    ? `현재 ${currentWire.color} 선: ${currentWire.from}에서 ${currentWire.to}`
+    : '연결된 선 없음'
 
   return (
     <svg
       viewBox={`${bounds.left} ${bounds.top} ${bounds.width} ${bounds.height}`}
       role="img"
-      aria-label={`${title} 배선도, ${activeStep + 1}단계까지 연결됨`}
+      aria-label={`${title} 배선도, ${activeStep + 1}단계까지 연결됨. ${accessibleStep}`}
       className="size-full"
       preserveAspectRatio="xMidYMid meet"
     >

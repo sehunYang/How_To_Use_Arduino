@@ -14,12 +14,16 @@ function MountingHole({ x, y }: { x: number; y: number }) {
 }
 
 function HeaderPins() {
+  const labels = ['VCC', 'GND', 'SCL', 'SDA']
   return (
     <g>
       {[0, 1, 2, 3].map((index) => (
         <g key={index}>
           <rect x={39 + index * 11} y="60" width="8" height="12" rx="1" fill="#25282a" />
           <rect x={41 + index * 11} y="61" width="4" height="11" fill="#dfad45" />
+          <text x={43 + index * 11} y="57.5" textAnchor="middle" fontSize="3.8" fill={WOKWI_SILK}>
+            {labels[index]}
+          </text>
         </g>
       ))}
     </g>
@@ -67,7 +71,7 @@ export function Ina219Part() {
 
 export function Tsl2591Part() {
   return (
-    <SensorBoard boardColor="#202830" label="TSL2591 조도 센서 모듈">
+    <SensorBoard boardColor="#17639a" label="TSL2591 조도 센서 모듈">
       <path d="M22 19h28v9m0 17h39" fill="none" stroke={WOKWI_GOLD} strokeWidth="2" />
       <rect x="40" y="18" width="34" height="33" rx="2" fill="#cda044" />
       <rect x="45" y="23" width="24" height="23" rx="2" fill="#292d30" />
@@ -78,6 +82,54 @@ export function Tsl2591Part() {
       <text x="57" y="12" textAnchor="middle" fontSize="7" fontWeight="700" fill={WOKWI_SILK}>TSL2591</text>
       <text x="88" y="54" textAnchor="middle" fontSize="5" fill={WOKWI_SILK}>LIGHT</text>
     </SensorBoard>
+  )
+}
+
+export function Tca9548aPart() {
+  const channels = [
+    { side: 'left', channel: 0, y: 45 },
+    { side: 'right', channel: 1, y: 45 },
+  ] as const
+
+  return (
+    <svg viewBox="0 0 220 130" role="img" aria-label="TCA9548A I2C 멀티플렉서 모듈" className="size-full">
+      <rect width="220" height="130" rx="4" fill="#234f86" />
+      <MountingHole x={11} y={11} />
+      <MountingHole x={209} y={11} />
+      <MountingHole x={11} y={119} />
+      <MountingHole x={209} y={119} />
+      <rect x="88" y="40" width="44" height="44" rx="3" fill="#24282b" />
+      <circle cx="94" cy="46" r="2" fill="#d8d8d5" />
+      {[0, 1, 2, 3, 4, 5, 6, 7].map((index) => (
+        <g key={index}>
+          <rect x={82 + index * 8} y="44" width="6" height="2.5" fill="#c9c6bd" />
+          <rect x={82 + index * 8} y="77.5" width="6" height="2.5" fill="#c9c6bd" />
+        </g>
+      ))}
+      <text x="110" y="23" textAnchor="middle" fontSize="10" fontWeight="700" fill={WOKWI_SILK}>TCA9548A</text>
+      <text x="110" y="96" textAnchor="middle" fontSize="6" fill={WOKWI_SILK}>8-CHANNEL I2C MULTIPLEXER</text>
+      {channels.map(({ side, channel, y }) => {
+        const left = side === 'left'
+        const x = left ? 0 : 208
+        return (
+          <g key={channel}>
+            <rect x={x} y={y - 7} width="12" height="31" rx="2" fill="#25282a" />
+            <rect x={left ? 0 : 216} y={y} width="4" height="4" fill={WOKWI_GOLD} />
+            <rect x={left ? 0 : 216} y={y + 12} width="4" height="4" fill={WOKWI_GOLD} />
+            <text x={left ? 16 : 204} y={y + 3.5} textAnchor={left ? 'start' : 'end'} fontSize="6" fill={WOKWI_SILK}>SC{channel}</text>
+            <text x={left ? 16 : 204} y={y + 15.5} textAnchor={left ? 'start' : 'end'} fontSize="6" fill={WOKWI_SILK}>SD{channel}</text>
+          </g>
+        )
+      })}
+      {['VCC', 'GND', 'SCL', 'SDA'].map((label, index) => (
+        <g key={label}>
+          <rect x={88 + index * 12} y="0" width="8" height="12" rx="1" fill="#25282a" />
+          <rect x={90 + index * 12} y="0" width="4" height="10" fill={WOKWI_GOLD} />
+          <text x={92 + index * 12} y="17" textAnchor="middle" fontSize="5" fill={WOKWI_SILK}>{label}</text>
+        </g>
+      ))}
+      <path d="M31 45h48v16h9m44 0h57V45" fill="none" stroke={WOKWI_GOLD} strokeWidth="1.5" opacity=".75" />
+    </svg>
   )
 }
 
@@ -117,6 +169,18 @@ export function HalfBreadboardPart() {
           />
         )),
       )}
+      {[1, 5, 10, 15, 20, 25, 30].map((column) => (
+        <g key={column} fill="#77766f" fontSize="4.8" textAnchor="middle">
+          <text x={26.39 + (column - 1) * 9.6} y="43">{column}</text>
+          <text x={26.39 + (column - 1) * 9.6} y="171">{column}</text>
+        </g>
+      ))}
+      {['a', 'b', 'c', 'd', 'e'].map((label, index) => (
+        <text key={label} x="14" y={52.5 + index * 9.6} fill="#77766f" fontSize="5">{label}</text>
+      ))}
+      {['f', 'g', 'h', 'i', 'j'].map((label, index) => (
+        <text key={label} x="14" y={120.5 + index * 9.6} fill="#77766f" fontSize="5">{label}</text>
+      ))}
     </svg>
   )
 }

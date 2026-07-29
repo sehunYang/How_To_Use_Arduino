@@ -63,6 +63,25 @@ function breakoutBoardGeometry(pinNames: string[]): PartGeometry {
   }
 }
 
+function tca9548aVisualGeometry(): PartGeometry {
+  return {
+    width: 220,
+    height: 130,
+    source: 'measured',
+    tolerance: MEASURED_TOLERANCE,
+    pins: pins([
+      ['VCC', 92, 0],
+      ['GND', 104, 0],
+      ['SCL', 116, 0],
+      ['SDA', 128, 0],
+      ['SC0', 0, 45],
+      ['SD0', 0, 57],
+      ['SC1', 220, 45],
+      ['SD1', 220, 57],
+    ]),
+  }
+}
+
 function halfBreadboardGeometry(): PartGeometry {
   const terminalX0 = 26.3897637795
   const topY0 = 50.7897637795
@@ -216,6 +235,7 @@ export const PART_GEOMETRY: Record<string, PartGeometry> = {
   'chip-tsl2591': conformanceChipGeometry,
   'visual-ina219': sensorBreakoutGeometry,
   'visual-tsl2591': sensorBreakoutGeometry,
+  'visual-tca9548a': tca9548aVisualGeometry(),
 }
 
 /** Parts whose geometry this repo cannot source, with the reason recorded. */
