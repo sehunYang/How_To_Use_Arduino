@@ -157,6 +157,23 @@ describe('Firestore rules (PL2)', () => {
     )
   })
 
+  it('incremental aggregation state and cursor are private to the CI identity', async () => {
+    const student = testEnv.authenticatedContext('student-1')
+    const admin = testEnv.authenticatedContext('admin-1', { admin: true })
+    const ci = testEnv.authenticatedContext('ci-1', { ci: true })
+    const session = { completed: false, lastCheckedStep: 2 }
+    const cursor = { lastAt: new Date(), lastEventId: 'event-1' }
+
+    await assertFails(student.firestore().collection('statsSessions').doc('s1').set(session))
+    await assertFails(admin.firestore().collection('statsSessions').doc('s1').get())
+    await assertSucceeds(ci.firestore().collection('statsSessions').doc('s1').set(session))
+    await assertSucceeds(ci.firestore().collection('statsSessions').doc('s1').get())
+
+    await assertFails(admin.firestore().collection('aggregationMeta').doc('events').set(cursor))
+    await assertSucceeds(ci.firestore().collection('aggregationMeta').doc('events').set(cursor))
+    await assertSucceeds(ci.firestore().collection('aggregationMeta').doc('events').get())
+  })
+
   it('(7) an unfiltered recipes query is denied while a where(status==published) query succeeds', async () => {
     await testEnv.withSecurityRulesDisabled(async (ctx) => {
       await ctx

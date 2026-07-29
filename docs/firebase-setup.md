@@ -153,20 +153,25 @@
   - 기본 위치: 프로젝트와 동일한 지역
   - 액세스 제어: "공개" (나중에 규칙으로 제어)
 
+> 현재 운영 버킷 `how-to-use-arduino-wiring`은 `US-CENTRAL1`, Firestore는
+> `asia-northeast3`에 있습니다. 기존 버킷 위치는 변경할 수 없으며, 정적 배선 이미지
+> 제공에는 기능상 문제가 없지만 이후 새 버킷을 만들 때는 동일 지역을 우선합니다.
+
 ### 6.2 CORS 설정
 
 - [ ] 로컬에서 `cors.json` 파일을 생성합니다:
   ```json
   [
     {
-      "origin": ["https://<github-username-or-org>.github.io"],
+      "origin": ["https://shy.ai.kr", "https://sehunYang.github.io"],
       "method": ["GET", "HEAD", "DELETE"],
       "responseHeader": ["Content-Type"],
       "maxAgeSeconds": 3600
     }
   ]
   ```
-  - `<github-username-or-org>`를 실제 GitHub 사용자명 또는 조직명으로 교체합니다
+  - 커스텀 도메인만 운영할 경우 `https://shy.ai.kr`만으로 충분합니다.
+  - GitHub Pages 기본 주소로도 직접 접근하게 하려면 `https://sehunYang.github.io`를 함께 허용합니다.
 
 - [ ] Google Cloud CLI를 사용하여 CORS를 적용합니다 (최신 방식):
   ```bash
@@ -249,6 +254,11 @@
   - 날짜, 사용한 백업 시점, 복원 성공 여부
   - 이 기록을 프로젝트 문서에 추가합니다 (예: `OPERATIONS.md`)
 
+#### 복원 훈련 실행 기록
+
+- [x] 2026-07-29: 프로젝트 소유자가 Firebase 예약 백업 복원 훈련의 성공 완료를 확인했습니다.
+- 사용한 백업의 정확한 시점과 복원 대상 데이터베이스 이름은 Firebase/GCP 운영 기록에서 관리합니다.
+
 ---
 
 ## 배포해야 할 보안 규칙 및 설정 파일
@@ -292,7 +302,15 @@ firebase deploy --project <실제-프로젝트-id> --only firestore:rules,storag
 
 - [ ] 위의 8개 섹션을 모두 완료했습니다
 - [ ] 모든 ⚠️ 경고를 읽고 이해했습니다
-- [ ] 보안 규칙을 배포하고 드리프트를 확인했습니다
-- [ ] Firestore 내보내기/복원 훈련을 최소 1회 실행했습니다
+- [x] 보안 규칙을 배포하고 드리프트를 확인했습니다
+- [x] Firestore 내보내기/복원 훈련을 최소 1회 실행했습니다
 
 **이제 Phase 0이 완료되었습니다.** Phase 1 개발(데이터 모델, 검증기)로 진행할 수 있습니다.
+
+### 운영 확인 기록
+
+- [x] 2026-07-29: 관리자 Firebase Auth 사용자에 `admin: true` 커스텀 클레임이 설정된 것을 프로젝트 소유자가 확인했습니다.
+- [x] 2026-07-29: GCP `$1 / 100%` 예산 알림을 프로젝트 소유자가 확인했습니다.
+- [x] 2026-07-29: Authentication 승인 도메인 `shy.ai.kr`, `sehunYang.github.io`를 프로젝트 소유자가 확인했습니다.
+- [x] 2026-07-29: Firestore·Storage App Check 적용 상태를 프로젝트 소유자가 확인했습니다.
+- [x] 2026-07-29: 로컬 `firestore.rules`를 운영 프로젝트 `how-to-use-arduino`에 배포했습니다. Firebase CLI에서 컴파일 성공과 `released rules firestore.rules to cloud.firestore`를 확인했습니다.

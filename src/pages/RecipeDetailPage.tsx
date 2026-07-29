@@ -115,9 +115,9 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
       <section aria-labelledby="wiring-title" className="mt-8">
         <h2 id="wiring-title" className="text-2xl font-semibold">1. 배선하기</h2>
         <p className="mt-2 text-muted">먼저 완성 모습을 확인한 뒤 한 단계씩 체크하세요.</p>
-        <div className="mt-5 grid min-w-0 gap-6 lg:grid-cols-2">
+        <div data-testid="wiring-layout" className="mt-5 grid min-w-0 gap-6 lg:grid-cols-2">
           <div className="sticky top-20 z-20 self-start bg-background pb-2 lg:top-24"><WiringIllustration recipe={recipe} activeStep={active} /></div>
-          <ol className="min-w-0 space-y-3">
+          <ol data-testid="wiring-steps" className="min-w-0 space-y-3">
             {recipe.wiring.map((step, index) => (
               <li
                 id={`step-${index + 1}`}

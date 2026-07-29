@@ -1,7 +1,8 @@
 import { Link, useParams } from 'react-router-dom'
 import { RecipeCard } from '@/components/RecipeCard'
 import { SensorVisual } from '@/components/SensorVisual'
-import { sensors } from '@/data/inventory-seed/sensors'
+import { useSensorInventory } from '@/firebase/sensorInventory'
+import type { Sensor } from '@/schema'
 import { sensorProfileById } from '@/data/sensorProfiles'
 import { publishedRecipes } from '@/data/studentCatalog'
 
@@ -12,7 +13,7 @@ const interfaceLabels: Record<string, string> = {
   onewire: '1-Wire 디지털 통신',
 }
 
-function addressingText(sensor: typeof sensors[number]) {
+function addressingText(sensor: Sensor) {
   if (sensor.addressing.mode === 'none') return '주소를 사용하지 않음'
   if (sensor.addressing.mode === 'onewire') return `고유 1-Wire 주소 · 한 버스 최대 ${sensor.addressing.maxOnBus}개`
   return `${sensor.addressing.addresses.join(', ')} · 한 버스 최대 ${sensor.addressing.maxOnBus}개`
@@ -20,6 +21,7 @@ function addressingText(sensor: typeof sensors[number]) {
 
 export function SensorDetailPage() {
   const { id } = useParams()
+  const sensors = useSensorInventory()
   const sensor = sensors.find((entry) => entry.id === id)
   const profile = id ? sensorProfileById.get(id) : undefined
   if (!sensor || !profile) {
