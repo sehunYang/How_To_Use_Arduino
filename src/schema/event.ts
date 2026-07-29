@@ -9,6 +9,7 @@ export const AnonEventSchema = z.object({
   recipeId: z.string().min(1),
   step: z.number().int().nonnegative().optional(),
   event: z.enum(['start', 'step_check', 'complete', 'search_fail']),
+  tokens: z.array(z.string().min(1).max(48)).max(20).optional(),
   at: z.string().min(1),
 })
 export type AnonEvent = z.infer<typeof AnonEventSchema>

@@ -12,6 +12,7 @@ function stub(overrides: Partial<SearchIndexEntry> & Pick<SearchIndexEntry, 'id'
     sensors: [],
     actuators: [],
     imageUrl: 'wiring/stub.png',
+    applicationGuideExcerpt: '이 레시피를 다른 탐구에 적용하는 방법입니다.',
     ...overrides,
   }
 }
@@ -31,11 +32,27 @@ describe('buildIndexEntry / buildIndex', () => {
   })
 
   it('excludes a draft recipe', () => {
-    expect(buildIndexEntry(multiTsl2591Recipe)).toBeNull()
+    expect(buildIndexEntry({ ...multiTsl2591Recipe, status: 'draft' })).toBeNull()
+  })
+
+  it('includes the application guide needed by bundled search results', () => {
+    expect(buildIndexEntry(pendulumRecipe)?.applicationGuideExcerpt).toBe(
+      pendulumRecipe.applicationGuide,
+    )
+  })
+
+  it('caps a long application guide to a 180-character excerpt', () => {
+    const entry = buildIndexEntry({
+      ...pendulumRecipe,
+      applicationGuide: '가'.repeat(200),
+    })
+
+    expect(entry?.applicationGuideExcerpt).toHaveLength(180)
+    expect(entry?.applicationGuideExcerpt.endsWith('…')).toBe(true)
   })
 
   it('buildIndex over a mixed set only contains published entries', () => {
-    const index = buildIndex([pendulumRecipe, multiTsl2591Recipe])
+    const index = buildIndex([pendulumRecipe, { ...multiTsl2591Recipe, status: 'draft' }])
     expect(index).toHaveLength(1)
     expect(index[0].id).toBe('pendulum')
   })

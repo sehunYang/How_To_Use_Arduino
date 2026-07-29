@@ -48,7 +48,7 @@ beforeEach(async () => {
   await testEnv.clearStorage()
   await testEnv.withSecurityRulesDisabled(async (ctx) => {
     await ctx.firestore().collection('recipes').doc('pendulum').set(pendulumRecipe)
-    await ctx.firestore().collection('recipes').doc('multi-tsl2591').set(multiTsl2591Recipe)
+    await ctx.firestore().collection('recipes').doc('multi-tsl2591').set({ ...multiTsl2591Recipe, status: 'draft' })
   })
 })
 

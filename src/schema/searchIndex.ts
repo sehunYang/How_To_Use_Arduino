@@ -16,5 +16,7 @@ export const SearchIndexEntrySchema = z.object({
   actuators: z.array(z.string()),
   coreKeywords: z.array(z.string()),
   imageUrl: z.string().min(1),
+  /** Short application-guide copy shown on fallback result cards (A1.2). */
+  applicationGuideExcerpt: z.string().min(1),
 })
 export type SearchIndexEntry = z.infer<typeof SearchIndexEntrySchema>

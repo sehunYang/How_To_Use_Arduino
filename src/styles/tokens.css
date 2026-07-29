@@ -11,7 +11,7 @@
 :root {
   --color-background: #ffffff;
   --color-foreground: #1a1a1a;
-  --color-muted: #6b7280;
+  --color-muted: #596273;
   --color-muted-background: #f4f4f5;
   --color-border: #e4e4e7;
   --color-accent: #2563eb;
@@ -90,7 +90,39 @@
 }
 
 body {
+  margin: 0;
   background-color: var(--color-background);
   color: var(--color-foreground);
   line-height: var(--line-height-body);
+  overflow-x: hidden;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+.app-layout {
+  display: grid;
+}
+
+@media (min-width: 48rem) {
+  .app-layout {
+    grid-template-columns: 15rem minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }
