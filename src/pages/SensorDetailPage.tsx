@@ -59,7 +59,6 @@ export function SensorDetailPage() {
             <tbody>
               {profile.specs.map((spec) => <tr key={spec.label} className="border-b border-border last:border-0"><th className="w-40 bg-muted-background p-4 align-top">{spec.label}</th><td className="p-4">{spec.value}</td></tr>)}
               <tr className="border-b border-border"><th className="bg-muted-background p-4 align-top">핀 구성</th><td className="p-4">{sensor.pins.map((pin) => `${pin.name}(${pin.kind})`).join(', ')}</td></tr>
-              <tr><th className="bg-muted-background p-4 align-top">Wokwi 상태</th><td className="p-4">{sensor.wokwi.simSupported ? '시뮬레이션 지원' : '현재 실물 배선 학습 중심'}</td></tr>
             </tbody>
           </table>
         </div>

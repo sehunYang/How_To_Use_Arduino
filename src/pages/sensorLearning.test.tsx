@@ -42,6 +42,7 @@ describe('sensor learning flow', () => {
     expect(screen.getByText(/I2C 16비트 축별 값/)).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: '구체적인 스펙' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: '추천 실험' })).toBeInTheDocument()
+    expect(screen.queryByText('Wokwi 상태')).not.toBeInTheDocument()
     expect(screen.getByText('단진자의 주기 측정')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: '이 센서를 사용하는 레시피' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /레시피 보기/ })).toBeInTheDocument()
