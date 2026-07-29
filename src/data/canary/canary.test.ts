@@ -26,9 +26,9 @@ describe('canary recipe fixtures', () => {
     }
   })
 
-  it('contains both draft and published fixtures (both branches exercised downstream)', () => {
+  it('promotes all Phase 3 student fixtures to published content', () => {
     const statuses = new Set(recipes.map((r) => r.status))
-    expect(statuses).toEqual(new Set(['draft', 'published']))
+    expect(statuses).toEqual(new Set(['published']))
   })
 
   it('each has a non-empty wiring[] with focus regions', () => {
@@ -64,13 +64,13 @@ describe('canary recipe fixtures', () => {
     expect(errors, JSON.stringify(errors)).toHaveLength(0)
   })
 
-  it('the draft fixture passes L1 in draft mode with zero errors (warnings are non-blocking)', () => {
+  it('the multi-sensor fixture passes L1 in draft mode with zero errors (warnings are non-blocking)', () => {
     const issues = validateRecipe(multiTsl2591Recipe, inventory, 'draft')
     const errors = issues.filter((i) => i.severity === 'error')
     expect(errors, JSON.stringify(errors)).toHaveLength(0)
   })
 
-  it('the draft fixture would also pass L1 in publish mode (it is genuinely complete, just marked draft)', () => {
+  it('the multi-sensor fixture passes L1 in publish mode', () => {
     const issues = validateRecipe(multiTsl2591Recipe, inventory, 'publish')
     const errors = issues.filter((i) => i.severity === 'error')
     expect(errors, JSON.stringify(errors)).toHaveLength(0)

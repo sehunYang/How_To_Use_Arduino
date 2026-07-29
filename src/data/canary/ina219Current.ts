@@ -52,7 +52,7 @@ export const ina219CurrentRecipe: Recipe = {
   sensors: ['ina219'],
   actuators: [],
   coreKeywords: ['전류', '전압', '전력', 'I2C'],
-  imageUrl: 'wiring/ina219-current.png',
+  imageUrl: 'wiring/circuit.svg',
   imageWidth: 800,
   imageHeight: 600,
   wiring: [
@@ -82,7 +82,7 @@ INA219의 전류 레지스터를 I2C로 읽어 부하 변화가 측정값에 반
     { symptom: '값이 계속 0으로 나옴', cause: '캘리브레이션 레지스터가 설정되지 않았거나 측정 부하가 없을 수 있습니다', fix: '0x05 캘리브레이션 쓰기와 VIN+/VIN- 부하 연결을 확인하세요' },
     { symptom: '센서가 응답하지 않음', cause: 'SDA/SCL 배선이나 I2C 주소가 맞지 않을 수 있습니다', fix: 'A4=SDA, A5=SCL과 기본 주소 0x40을 확인하세요' },
   ],
-  status: 'draft',
+  status: 'published',
   reviewedOnDevice: null,
   commentReviewed: null,
   updatedAt: '2026-07-27T00:00:00.000Z',

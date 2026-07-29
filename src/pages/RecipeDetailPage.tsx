@@ -1,0 +1,152 @@
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link, useLocation, useParams } from 'react-router-dom'
+import { Button } from '@/components/ui/button'
+import { CodeBlock } from '@/components/ui/CodeBlock'
+import { SafeMarkdown } from '@/components/ui/SafeMarkdown'
+import { SimBadge } from '@/components/ui/SimBadge'
+import { WiringIllustration } from '@/components/WiringIllustration'
+import { canarySimStatus, studentRecipes } from '@/data/studentCatalog'
+import { INVENTORY_VERSION } from '@/data/inventory-seed/version'
+import { useWiringSteps } from '@/hooks/useWiringSteps'
+import { loadProgress, PROGRESS_VERSION, saveProgress } from '@/progress'
+import { sendAnonymousEvent } from '@/telemetry/events'
+import { authorizeAdminPreview, loadAdminPreviewRecipe } from '@/firebase/adminPreview'
+import type { Recipe } from '@/schema'
+
+export interface PreviewServices {
+  authorize: () => Promise<boolean>
+  loadRecipe: (recipeId: string) => Promise<Recipe | null>
+}
+
+const defaultPreviewServices: PreviewServices = {
+  authorize: authorizeAdminPreview,
+  loadRecipe: loadAdminPreviewRecipe,
+}
+
+function emitStudentEvent(event: Parameters<typeof sendAnonymousEvent>[0]) {
+  void sendAnonymousEvent(event).catch(() => undefined)
+}
+
+export function RecipeDetailPage({ previewServices = defaultPreviewServices }: { previewServices?: PreviewServices }) {
+  const { id = '' } = useParams()
+  const location = useLocation()
+  const previewRequested = new URLSearchParams(location.search).get('preview') === '1'
+  const [previewAuthorized, setPreviewAuthorized] = useState(false)
+  const [previewChecked, setPreviewChecked] = useState(!previewRequested)
+  const [remoteRecipe, setRemoteRecipe] = useState<Recipe | null>(null)
+  const recipe = studentRecipes.find((candidate) => candidate.id === id) ?? remoteRecipe
+  const stored = useMemo(() => recipe ? loadProgress(recipe.id, recipe.wiring.length, typeof window === 'undefined' ? undefined : window.localStorage) : null, [recipe])
+  const machine = useWiringSteps(recipe?.wiring ?? [], stored?.checked)
+  const setActiveStep = machine.setActiveStep
+  const stepRefs = useRef<Array<HTMLLIElement | null>>([])
+
+  useEffect(() => {
+    if (!previewRequested) {
+      setPreviewAuthorized(false)
+      setPreviewChecked(true)
+      return
+    }
+    let active = true
+    void previewServices.authorize()
+      .then(async (allowed) => {
+        if (!active) return
+        setPreviewAuthorized(allowed)
+        if (allowed && !studentRecipes.some((candidate) => candidate.id === id)) {
+          setRemoteRecipe(await previewServices.loadRecipe(id))
+        }
+      })
+      .catch(() => {
+        if (active) setPreviewAuthorized(false)
+      })
+      .finally(() => {
+        if (active) setPreviewChecked(true)
+      })
+    return () => { active = false }
+  }, [id, previewRequested, previewServices])
+
+  useEffect(() => {
+    const match = location.hash.match(/^#step-(\d+)$/)
+    if (match && recipe) setActiveStep(Math.min(recipe.wiring.length - 1, Math.max(0, Number(match[1]) - 1)))
+  }, [location.hash, recipe, setActiveStep])
+
+  useEffect(() => {
+    if (!recipe) return
+    saveProgress({ version: PROGRESS_VERSION, recipeId: recipe.id, checked: machine.checked, updatedAt: new Date().toISOString() }, window.localStorage)
+  }, [machine.checked, recipe])
+
+  useEffect(() => {
+    if (recipe?.status === 'published') emitStudentEvent({ recipeId: recipe.id, event: 'start' })
+  }, [recipe])
+
+  useEffect(() => {
+    if (machine.activeStep === null) return
+    stepRefs.current[machine.activeStep]?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  }, [machine.activeStep])
+
+  if (previewRequested && !previewChecked) {
+    return <p className="py-20 text-center text-muted">미리보기 권한을 확인하고 있습니다…</p>
+  }
+
+  if (!recipe || (recipe.status !== 'published' && !previewAuthorized)) {
+    return <div className="mx-auto max-w-2xl py-20 text-center"><h1 className="text-3xl font-semibold">이 레시피는 현재 볼 수 없어요</h1><p className="mt-3 text-muted">게시가 취소되었거나 주소가 바뀌었을 수 있습니다.</p><Link className="mt-6 inline-block text-accent hover:underline" to="/">검색으로 돌아가기</Link></div>
+  }
+
+  const activeRecipe = recipe
+  const active = machine.activeStep ?? 0
+  function toggleStep(index: number, checked: boolean) {
+    if (checked) machine.checkStep(index)
+    else machine.uncheckStep(index)
+    if (checked) {
+      emitStudentEvent({ recipeId: activeRecipe.id, event: 'step_check', step: index })
+      const willComplete = machine.checked.every((value, step) => value || step === index)
+      if (willComplete) emitStudentEvent({ recipeId: activeRecipe.id, event: 'complete' })
+    }
+  }
+
+  return (
+    <article className="mx-auto max-w-6xl pb-24">
+      {previewRequested && previewAuthorized && <div className="sticky top-16 z-30 -mx-page mb-4 bg-warning-background px-page py-2 text-center font-semibold text-warning">관리자 미리보기 · 학생 화면과 동일한 레이아웃</div>}
+      <Link to="/recipes" className="text-caption text-accent hover:underline">← 레시피 목록</Link>
+      <header className="mt-5 border-b border-border pb-6">
+        <div className="flex flex-wrap items-center gap-3"><span className="text-caption text-muted">{recipe.subject ?? '융합'} · {recipe.difficulty} · {recipe.minutes}분</span><SimBadge recipe={recipe} status={canarySimStatus[recipe.id]} inventoryVersion={INVENTORY_VERSION} /></div>
+        <h1 className="mt-3 text-4xl font-semibold">{recipe.title}</h1>
+      </header>
+
+      <section aria-labelledby="wiring-title" className="mt-8">
+        <h2 id="wiring-title" className="text-2xl font-semibold">1. 배선하기</h2>
+        <p className="mt-2 text-muted">먼저 완성 모습을 확인한 뒤 한 단계씩 체크하세요.</p>
+        <div className="mt-5 grid min-w-0 gap-6 lg:grid-cols-2">
+          <div className="sticky top-20 z-20 self-start bg-background pb-2 lg:top-24"><WiringIllustration recipe={recipe} activeStep={active} /></div>
+          <ol className="min-w-0 space-y-3">
+            {recipe.wiring.map((step, index) => (
+              <li
+                id={`step-${index + 1}`}
+                ref={(node) => { stepRefs.current[index] = node }}
+                key={`${step.from}-${step.to}`}
+                className={`scroll-mt-24 rounded-card border p-4 ${active === index ? 'border-accent bg-muted-background' : 'border-border'}`}
+              >
+                <label className="flex min-h-11 cursor-pointer items-start gap-3">
+                  <input className="mt-1 size-5 accent-accent" type="checkbox" checked={machine.checked[index] ?? false} onChange={(event) => toggleStep(index, event.target.checked)} onFocus={() => machine.setActiveStep(index)} />
+                  <span><strong>{index + 1}. {step.from} → {step.to}</strong><span className="mt-1 block text-caption text-muted">{step.text} · {step.color} 선</span></span>
+                </label>
+              </li>
+            ))}
+          </ol>
+        </div>
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background px-page pt-3 [padding-bottom:calc(0.75rem+env(safe-area-inset-bottom))] lg:static lg:mt-5 lg:border-0 lg:p-0">
+          <div className="mx-auto flex max-w-3xl items-center justify-between gap-3">
+            <Button variant="outline" disabled={active === 0} onClick={() => machine.setActiveStep(active - 1)}>이전</Button>
+            <span className="text-caption text-muted">{machine.checked.filter(Boolean).length}/{recipe.wiring.length} 완료</span>
+            <Button disabled={active >= recipe.wiring.length - 1} onClick={() => machine.setActiveStep(active + 1)}>다음</Button>
+          </div>
+        </div>
+        {machine.completed && <aside className="mt-6 rounded-card border border-success bg-success-background p-5"><h3 className="font-semibold text-success">배선 완료 → 이제 코드를 실행할 차례예요</h3><p className="mt-2">PC에서 이 페이지를 열고 아래 코드를 Arduino IDE에 복사하세요.</p><Button className="mt-3" variant="outline" onClick={() => void navigator.clipboard?.writeText(window.location.href)}>페이지 주소 복사</Button></aside>}
+      </section>
+
+      <section className="mt-12" aria-labelledby="code-title"><h2 id="code-title" className="text-2xl font-semibold">2. 코드 넣기</h2><div className="mt-4 overflow-hidden rounded-card border border-border"><CodeBlock code={recipe.sketch} tunables={recipe.tunables} /></div></section>
+      <section className="prose mt-12 max-w-3xl" aria-labelledby="guide-title"><h2 id="guide-title" className="text-2xl font-semibold">3. 탐구 가이드</h2><SafeMarkdown source={recipe.body} /></section>
+      <section className="mt-12 max-w-3xl" aria-labelledby="application-title"><h2 id="application-title" className="text-2xl font-semibold">응용해 보기</h2><p className="mt-3 text-muted">{recipe.applicationGuide}</p></section>
+      <section className="mt-12 max-w-3xl" aria-labelledby="trouble-title"><h2 id="trouble-title" className="text-2xl font-semibold">문제가 생겼나요?</h2><div className="mt-4 space-y-3">{recipe.troubleshooting.map((item) => <details key={item.symptom} className="rounded-card border border-border p-4"><summary className="cursor-pointer font-semibold">{item.symptom}</summary><p className="mt-3 text-muted">원인: {item.cause}</p><p className="mt-2">해결: {item.fix}</p></details>)}</div></section>
+    </article>
+  )
+}

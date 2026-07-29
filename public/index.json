@@ -1,0 +1,60 @@
+[
+  {
+    "id": "pendulum",
+    "title": "단진자의 주기 측정하기",
+    "subject": "물리",
+    "difficulty": "중급",
+    "minutes": 60,
+    "sensors": [
+      "mpu6050"
+    ],
+    "actuators": [],
+    "coreKeywords": [
+      "진자",
+      "주기",
+      "에너지",
+      "가속도"
+    ],
+    "imageUrl": "wiring/circuit.svg",
+    "applicationGuideExcerpt": "진자의 길이를 바꿔가며 측정하면 주기와 길이의 관계를 확인할 수 있습니다. 추의 무게를 바꿔도 주기가 거의 변하지 않는지도 비교해보세요."
+  },
+  {
+    "id": "ina219-current",
+    "title": "INA219로 전류 변화 읽기",
+    "subject": null,
+    "difficulty": "중급",
+    "minutes": 30,
+    "sensors": [
+      "ina219"
+    ],
+    "actuators": [],
+    "coreKeywords": [
+      "전류",
+      "전압",
+      "전력",
+      "I2C"
+    ],
+    "imageUrl": "wiring/circuit.svg",
+    "applicationGuideExcerpt": "모터나 LED 부하를 바꿔가며 전류와 전력의 관계를 비교할 수 있습니다."
+  },
+  {
+    "id": "multi-tsl2591",
+    "title": "주소가 같은 센서 여러 개 연결하기",
+    "subject": null,
+    "difficulty": "고급",
+    "minutes": 45,
+    "sensors": [
+      "tca9548a",
+      "tsl2591"
+    ],
+    "actuators": [],
+    "coreKeywords": [
+      "멀티플렉서",
+      "조도",
+      "다중연결",
+      "I2C"
+    ],
+    "imageUrl": "wiring/circuit.svg",
+    "applicationGuideExcerpt": "채널 수를 늘려 3개 이상의 조도센서를 동시에 읽어 교실 여러 지점의 밝기를 비교할 수 있습니다."
+  }
+]

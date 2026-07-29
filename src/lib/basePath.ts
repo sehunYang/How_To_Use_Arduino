@@ -11,3 +11,9 @@ export const basePath: string = import.meta.env.VITE_BASE_PATH ?? '/'
 /** react-router's `basename` prop does not accept a trailing slash. */
 export const routerBasename: string =
   basePath === '/' ? '/' : basePath.replace(/\/$/, '')
+
+export function withBasePath(relativePath: string): string {
+  if (/^(?:https?:)?\/\//.test(relativePath)) return relativePath
+  const normalizedBase = basePath.endsWith('/') ? basePath : `${basePath}/`
+  return `${normalizedBase}${relativePath.replace(/^\/+/, '')}`
+}

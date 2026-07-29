@@ -1,25 +1,28 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Link, Routes, Route, useParams } from 'react-router-dom'
 import { routerBasename } from '@/lib/basePath'
-import { Button } from '@/components/ui/button'
+import { AppShell } from '@/components/AppShell'
+import { DiscoveryPage } from '@/pages/DiscoveryPage'
+import { SearchResultsPage } from '@/pages/SearchResultsPage'
+import { RecipeListPage } from '@/pages/RecipeListPage'
+import { RecipeDetailPage } from '@/pages/RecipeDetailPage'
 
-function Home() {
-  return (
-    <main className="mx-auto max-w-2xl p-page">
-      <h1 className="text-heading font-semibold">How to use Arduino</h1>
-      <p className="text-body text-muted">
-        아두이노를 처음 쓰는 학생을 위한 가이드 사이트 (개발 초기 단계)
-      </p>
-      <Button className="mt-4">시작하기</Button>
-    </main>
-  )
+function RecipeRoute() {
+  const { id } = useParams()
+  return <RecipeDetailPage key={id} />
 }
 
 function App() {
   return (
     <BrowserRouter basename={routerBasename}>
-      <Routes>
-        <Route path="/" element={<Home />} />
-      </Routes>
+      <AppShell>
+        <Routes>
+          <Route path="/" element={<DiscoveryPage />} />
+          <Route path="/search" element={<SearchResultsPage />} />
+          <Route path="/recipes" element={<RecipeListPage />} />
+          <Route path="/recipes/:id" element={<RecipeRoute />} />
+          <Route path="*" element={<div className="py-20 text-center"><h1 className="text-3xl font-semibold">페이지를 찾을 수 없어요</h1><Link className="mt-4 inline-block text-accent" to="/">처음으로</Link></div>} />
+        </Routes>
+      </AppShell>
     </BrowserRouter>
   )
 }

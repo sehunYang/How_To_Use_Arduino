@@ -55,7 +55,7 @@ export const multiTsl2591Recipe: Recipe = {
   sensors: ['tca9548a', 'tsl2591'],
   actuators: [],
   coreKeywords: ['멀티플렉서', '조도', '다중연결', 'I2C'],
-  imageUrl: 'wiring/multi-tsl2591.png',
+  imageUrl: 'wiring/circuit.svg',
   imageWidth: 800,
   imageHeight: 600,
   wiring: [
@@ -93,7 +93,7 @@ INA219는 A0/A1 점퍼로 주소를 바꿀 수 있지만, TSL2591은 그럴 수 
     { symptom: '두 센서가 같은 값만 나옴', cause: '채널 전환(openChannel/closeChannel)이 제대로 되지 않았을 수 있습니다', fix: '한 채널을 닫고 다음 채널을 여는 순서를 확인하세요' },
     { symptom: '센서가 아예 응답하지 않음', cause: '멀티플렉서의 채널 핀(SD0/SC0 등)과 센서 배선이 뒤바뀌었을 수 있습니다', fix: 'SDA는 SDx, SCL은 SCx에 연결되어 있는지 다시 확인하세요' },
   ],
-  status: 'draft',
+  status: 'published',
   reviewedOnDevice: null,
   commentReviewed: null,
   updatedAt: '2026-01-01T00:00:00.000Z',

@@ -47,7 +47,7 @@ export const pendulumRecipe: Recipe = {
   sensors: ['mpu6050'],
   actuators: [],
   coreKeywords: ['진자', '주기', '에너지', '가속도'],
-  imageUrl: 'wiring/pendulum.png',
+  imageUrl: 'wiring/circuit.svg',
   imageWidth: 800,
   imageHeight: 600,
   wiring: [

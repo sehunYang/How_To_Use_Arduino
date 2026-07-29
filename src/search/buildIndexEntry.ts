@@ -1,5 +1,13 @@
 import type { Recipe, SearchIndexEntry } from '@/schema'
 
+const APPLICATION_GUIDE_EXCERPT_LENGTH = 180
+
+function applicationGuideExcerpt(applicationGuide: string): string {
+  const normalized = applicationGuide.trim().replace(/\s+/g, ' ')
+  if (normalized.length <= APPLICATION_GUIDE_EXCERPT_LENGTH) return normalized
+  return `${normalized.slice(0, APPLICATION_GUIDE_EXCERPT_LENGTH - 1).trimEnd()}…`
+}
+
 /**
  * Excludes drafts (plan N7) — a draft appearing in the index would be a
  * search result that 404s when opened, since read access is gated on
@@ -19,6 +27,7 @@ export function buildIndexEntry(recipe: Recipe): SearchIndexEntry | null {
     actuators: recipe.actuators,
     coreKeywords: recipe.coreKeywords,
     imageUrl: recipe.imageUrl,
+    applicationGuideExcerpt: applicationGuideExcerpt(recipe.applicationGuide),
   }
 }
 

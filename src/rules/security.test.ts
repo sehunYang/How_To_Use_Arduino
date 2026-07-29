@@ -94,6 +94,42 @@ describe('Firestore rules (PL2)', () => {
     await assertSucceeds(ci.firestore().collection('events').doc('e1').get())
   })
 
+  it('anonymous telemetry accepts normalized tokens and rejects raw or malformed payloads', async () => {
+    const unauth = testEnv.unauthenticatedContext()
+    const events = unauth.firestore().collection('events')
+    await assertSucceeds(events.doc('valid-search').set(validEvent({
+      recipeId: 'search',
+      event: 'search_fail',
+      tokens: ['진자가', 'robot', '123'],
+    })))
+    await assertFails(events.doc('raw-search').set(validEvent({
+      recipeId: 'search',
+      event: 'search_fail',
+      tokens: ['진자가 어떻게 움직이는지 알려줘'],
+    })))
+    await assertFails(events.doc('non-string-token').set(validEvent({
+      recipeId: 'search',
+      event: 'search_fail',
+      tokens: [123],
+    })))
+    await assertFails(events.doc('fractional-step').set(validEvent({
+      event: 'step_check',
+      step: 1.5,
+    })))
+    await assertFails(events.doc('tokens-on-start').set(validEvent({
+      event: 'start',
+      tokens: ['진자'],
+    })))
+    await assertFails(events.doc('missing-step').set(validEvent({
+      event: 'step_check',
+    })))
+    await assertFails(events.doc('tokens-and-step').set(validEvent({
+      event: 'search_fail',
+      tokens: ['진자'],
+      step: 1,
+    })))
+  })
+
   it('(5) CI-identity write to recipes is denied', async () => {
     const ci = testEnv.authenticatedContext('ci-1', { ci: true })
     await assertFails(
