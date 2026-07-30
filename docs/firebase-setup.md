@@ -110,10 +110,11 @@
   `디버그 토큰 관리`에서 GitHub Actions 전용 디버그 토큰을 생성합니다.
   이 토큰은 CI Secret에만 저장하고 저장소나 로그에 기록하지 않습니다.
 - [ ] GitHub 저장소의 `Settings > Secrets and variables > Actions`에 다음
-  repository secret 6개를 등록합니다.
+  repository secret 7개를 등록합니다.
   - `FIREBASE_PROJECT_ID`: 실제 Firebase 프로젝트 ID
   - `FIREBASE_API_KEY`: Firebase 웹 앱의 API 키
   - `FIREBASE_APP_ID`: Firebase 웹 앱 설정의 앱 ID (`appId`)
+  - `FIREBASE_APPCHECK_SITE_KEY`: 운영 웹 앱의 reCAPTCHA v3 Site Key
   - `FIREBASE_CI_EMAIL`: 위에서 만든 CI 자동화 계정 이메일
   - `FIREBASE_CI_PASSWORD`: CI 자동화 계정 비밀번호
   - `FIREBASE_APPCHECK_DEBUG_TOKEN`: 위에서 만든 CI 전용 App Check 디버그 토큰

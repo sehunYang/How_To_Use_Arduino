@@ -80,7 +80,7 @@ async function sessionFor(user: User | null): Promise<AdminSession | null> {
 }
 
 export async function signInAdmin(email: string, password: string): Promise<AdminSession> {
-  const app = await requireApp()
+  const app = await requireCheckedApp()
   const { getAuth, signInWithEmailAndPassword, signOut } = await import('firebase/auth')
   const auth = getAuth(app)
   const credential = await signInWithEmailAndPassword(auth, email, password)
@@ -93,7 +93,7 @@ export async function signInAdmin(email: string, password: string): Promise<Admi
 }
 
 export async function getAdminSession(forceRefresh = false): Promise<AdminSession | null> {
-  const app = await requireApp()
+  const app = await requireCheckedApp()
   const { getAuth } = await import('firebase/auth')
   const auth = getAuth(app)
   await auth.authStateReady()

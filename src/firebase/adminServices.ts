@@ -29,7 +29,7 @@ import {
   uploadWiringImage,
   listRecipeVersions,
 } from './adminRepository'
-import { getClientApp } from './clientApp'
+import { ensureAppCheck, getClientApp } from './clientApp'
 import { loadSensorInventory } from './sensorInventory'
 
 let authState: AdminAuthState = { status: 'loading' }
@@ -83,6 +83,11 @@ export const firebaseAdminServices: AdminServices = {
     void getClientApp().then(async (app) => {
       if (!active) return
       if (!app) {
+        authState = { status: 'signed-out' }
+        listener(authState)
+        return
+      }
+      if (!(await ensureAppCheck(app))) {
         authState = { status: 'signed-out' }
         listener(authState)
         return
