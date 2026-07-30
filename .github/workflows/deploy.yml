@@ -31,6 +31,12 @@ jobs:
       # Single source of truth for emitted asset URLs and the client router.
       # shy.ai.kr exposes this project beneath the repository subpath.
       VITE_BASE_PATH: /How_To_Use_Arduino/
+      # Vite only exposes variables prefixed with VITE_ to browser code.
+      # The repository secrets use the shared FIREBASE_* names consumed by
+      # the verification workflows, so map them explicitly for the SPA build.
+      VITE_FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+      VITE_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+      VITE_FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
     steps:
       - uses: actions/checkout@v4
 
