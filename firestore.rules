@@ -11,11 +11,15 @@ service cloud.firestore {
     // request.auth.token — an absent request.auth (fully unauthenticated
     // request) must short-circuit to `false` instead of erroring. See PL2 ⑨.
     function isAdmin() {
-      return request.auth != null && request.auth.token.admin == true;
+      return request.auth != null
+        && 'admin' in request.auth.token
+        && request.auth.token.admin == true;
     }
 
     function isCI() {
-      return request.auth != null && request.auth.token.ci == true;
+      return request.auth != null
+        && 'ci' in request.auth.token
+        && request.auth.token.ci == true;
     }
 
     // Payload schema for the fire-and-forget public `events` writes (A5.8).
@@ -70,9 +74,19 @@ service cloud.firestore {
       allow read: if resource.data.status == 'published'
                   || isAdmin() || isCI();      // ← N6
       allow write: if isAdmin();
+
+      match /versions/{versionId} {
+        allow read, create: if isAdmin();
+        allow update, delete: if false;
+      }
     }
 
     match /sensors/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /sensorRationales/{id} {
       allow read: if true;
       allow write: if isAdmin();
     }
@@ -88,6 +102,11 @@ service cloud.firestore {
     }
 
     match /stats/{recipeId} {
+      allow read: if isAdmin();
+      allow write: if isCI();
+    }
+
+    match /searchStats/{doc} {
       allow read: if isAdmin();
       allow write: if isCI();
     }

@@ -1,17 +1,18 @@
 import { useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { RecipeCard } from '@/components/RecipeCard'
-import { studentRecipes } from '@/data/studentCatalog'
 import { synonyms } from '@/data/synonyms'
 import { buildIndex, search } from '@/search'
 import { normalizeSearchTokens, sendAnonymousEvent } from '@/telemetry/events'
-import { sensorProfileById } from '@/data/sensorProfiles'
+import { profileForSensor } from '@/data/sensorProfiles'
 import { SensorCard } from '@/components/SensorCard'
 import { canaryRationales } from '@/data/canary'
 import { rankSensors } from '@/results/aggregateSensors'
 import { useSensorInventory } from '@/firebase/sensorInventory'
+import { usePublishedRecipes } from '@/firebase/contentRepository'
 
 export function SearchResultsPage() {
+  const studentRecipes = usePublishedRecipes()
   const sensorById = new Map(useSensorInventory().map((sensor) => [sensor.id, sensor]))
   const [params] = useSearchParams()
   const query = params.get('q')?.trim() ?? ''
@@ -38,9 +39,8 @@ export function SearchResultsPage() {
         <div className="mt-3 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {rankedSensors.map(({ sensorId: id, whyText }) => {
             const sensor = sensorById.get(id)
-            const profile = sensorProfileById.get(id)
-            return sensor && profile
-              ? <SensorCard key={id} sensor={sensor} profile={profile} reason={whyText} />
+            return sensor
+              ? <SensorCard key={id} sensor={sensor} profile={profileForSensor(sensor)} reason={whyText} />
               : null
           })}
         </div>

@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react'
 import { RecipeCard } from '@/components/RecipeCard'
-import { publishedRecipes } from '@/data/studentCatalog'
+import { usePublishedRecipes } from '@/firebase/contentRepository'
 
 type View = 'gallery' | 'table'
 
 export function RecipeListPage() {
+  const publishedRecipes = usePublishedRecipes()
   const [view, setView] = useState<View>('gallery')
   const [subject, setSubject] = useState('')
   const [difficulty, setDifficulty] = useState('')
@@ -14,7 +15,7 @@ export function RecipeListPage() {
     .filter((recipe) => !subject || recipe.subject === subject)
     .filter((recipe) => !difficulty || recipe.difficulty === difficulty)
     .filter((recipe) => !sensor || recipe.sensors.includes(sensor))
-    .sort((a, b) => sort === 'minutes' ? a.minutes - b.minutes : a.title.localeCompare(b.title, 'ko')), [subject, difficulty, sensor, sort])
+    .sort((a, b) => sort === 'minutes' ? a.minutes - b.minutes : a.title.localeCompare(b.title, 'ko')), [publishedRecipes, subject, difficulty, sensor, sort])
 
   return (
     <div className="mx-auto max-w-6xl">

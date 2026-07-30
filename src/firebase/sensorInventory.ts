@@ -7,6 +7,12 @@ export function parseSensorInventory(records: unknown[]): Sensor[] {
   return records.map((record) => SensorSchema.parse(record))
 }
 
+export function mergeSensorInventory(bundled: Sensor[], remote: Sensor[]): Sensor[] {
+  const byId = new Map(bundled.map((sensor) => [sensor.id, sensor]))
+  for (const sensor of remote) byId.set(sensor.id, sensor)
+  return [...byId.values()].sort((a, b) => a.name.localeCompare(b.name, 'ko'))
+}
+
 /**
  * Reads the public Firestore inventory while retaining the validated bundled
  * seed for offline use and deployments without Firebase configuration.
@@ -17,7 +23,10 @@ export async function loadSensorInventory(): Promise<Sensor[]> {
   const { collection, getDocs, getFirestore } = await import('firebase/firestore')
   const snapshot = await getDocs(collection(getFirestore(app), 'sensors'))
   if (snapshot.empty) return bundledSensors
-  return parseSensorInventory(snapshot.docs.map((entry) => ({ ...entry.data(), id: entry.id })))
+  return mergeSensorInventory(
+    bundledSensors,
+    parseSensorInventory(snapshot.docs.map((entry) => ({ ...entry.data(), id: entry.id }))),
+  )
 }
 
 export function useSensorInventory(): Sensor[] {

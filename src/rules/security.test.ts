@@ -238,6 +238,32 @@ describe('Firestore rules (PL2)', () => {
       unauth.firestore().collection('recipes').doc('draft-2').get(),
     )
   })
+
+  it('recipe versions are admin-only and immutable', async () => {
+    const student = testEnv.authenticatedContext('student-1')
+    const admin = testEnv.authenticatedContext('admin-1', { admin: true })
+    const studentVersion = student.firestore().collection('recipes').doc('r1').collection('versions').doc('v1')
+    const adminVersion = admin.firestore().collection('recipes').doc('r1').collection('versions').doc('v1')
+    const data = { recipe: validRecipe(), savedAt: '2026-01-01T00:00:00.000Z' }
+
+    await assertFails(studentVersion.set(data))
+    await assertSucceeds(adminVersion.set(data))
+    await assertSucceeds(adminVersion.get())
+    await assertFails(adminVersion.update({ savedAt: '2026-01-02T00:00:00.000Z' }))
+    await assertFails(adminVersion.delete())
+  })
+
+  it('sensor rationales are public-readable but admin-write-only', async () => {
+    const unauth = testEnv.unauthenticatedContext()
+    const student = testEnv.authenticatedContext('student-1')
+    const admin = testEnv.authenticatedContext('admin-1', { admin: true })
+    const rationale = { sensorId: 'mpu6050', subject: null, whyText: 'Measures motion.' }
+    const id = 'mpu6050__general'
+
+    await assertFails(student.firestore().collection('sensorRationales').doc(id).set(rationale))
+    await assertSucceeds(admin.firestore().collection('sensorRationales').doc(id).set(rationale))
+    await assertSucceeds(unauth.firestore().collection('sensorRationales').doc(id).get())
+  })
 })
 
 describe('Storage rules (PL2 ④)', () => {
@@ -252,5 +278,17 @@ describe('Storage rules (PL2 ④)', () => {
         student.storage().ref('wiring/photo.png').put(bytes, { contentType: 'image/png' }),
       ),
     )
+  })
+
+  it('admin image upload is allowed at a recipe-scoped path while invalid payloads are denied', async () => {
+    const admin = testEnv.authenticatedContext('admin-1', { admin: true })
+    const bytes = new Uint8Array([1, 2, 3, 4])
+
+    await assertSucceeds(Promise.resolve(
+      admin.storage().ref('wiring/recipe-1/photo.png').put(bytes, { contentType: 'image/png' }),
+    ))
+    await assertFails(Promise.resolve(
+      admin.storage().ref('wiring/recipe-1/readme.txt').put(bytes, { contentType: 'text/plain' }),
+    ))
   })
 })

@@ -11,6 +11,7 @@ import { useWiringSteps } from '@/hooks/useWiringSteps'
 import { loadProgress, PROGRESS_VERSION, saveProgress } from '@/progress'
 import { sendAnonymousEvent } from '@/telemetry/events'
 import { authorizeAdminPreview, loadAdminPreviewRecipe } from '@/firebase/adminPreview'
+import { loadDynamicSearchIndex, loadPublishedRecipe } from '@/firebase/contentRepository'
 import type { Recipe } from '@/schema'
 
 export interface PreviewServices {
@@ -34,11 +35,32 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
   const [previewAuthorized, setPreviewAuthorized] = useState(false)
   const [previewChecked, setPreviewChecked] = useState(!previewRequested)
   const [remoteRecipe, setRemoteRecipe] = useState<Recipe | null>(null)
-  const recipe = studentRecipes.find((candidate) => candidate.id === id) ?? remoteRecipe
+  const [publicCatalogStatus, setPublicCatalogStatus] = useState<'checking' | 'available' | 'withdrawn'>('checking')
+  const bundledRecipe = studentRecipes.find((candidate) => candidate.id === id)
+  const recipe = remoteRecipe ?? (publicCatalogStatus !== 'withdrawn' ? bundledRecipe : undefined)
   const stored = useMemo(() => recipe ? loadProgress(recipe.id, recipe.wiring.length, typeof window === 'undefined' ? undefined : window.localStorage) : null, [recipe])
   const machine = useWiringSteps(recipe?.wiring ?? [], stored?.checked)
   const setActiveStep = machine.setActiveStep
   const stepRefs = useRef<Array<HTMLLIElement | null>>([])
+
+  useEffect(() => {
+    if (previewRequested) return
+    let active = true
+    void Promise.allSettled([loadPublishedRecipe(id), loadDynamicSearchIndex()])
+      .then(([recipeResult, indexResult]) => {
+        if (!active) return
+        const loaded = recipeResult.status === 'fulfilled' ? recipeResult.value : null
+        const index = indexResult.status === 'fulfilled' ? indexResult.value : null
+        setRemoteRecipe(loaded)
+        setPublicCatalogStatus(index && !index.some((entry) => entry.id === id) ? 'withdrawn' : 'available')
+      })
+      .catch(() => {
+        if (active) setPublicCatalogStatus('available')
+      })
+    return () => {
+      active = false
+    }
+  }, [id, previewRequested])
 
   useEffect(() => {
     if (!previewRequested) {
