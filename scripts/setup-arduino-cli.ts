@@ -26,12 +26,17 @@ import {
 
 const ARDUINO_CLI_VERSION = '1.5.1'
 
-/** Libraries pulled from the Arduino library index for the canary sketches. */
+/** Libraries pulled from the Arduino library index for all Phase 5 sketches. */
 const REQUIRED_LIBRARIES = [
-  'MPU6050', // pendulum canary
-  'Adafruit TSL2591 Library', // multi-TSL2591 canary
-  'Adafruit Unified Sensor', // TSL2591 dependency
-  'TCA9548A', // multi-TSL2591 canary (I2C multiplexer)
+  'MPU6050',
+  'Adafruit TSL2591 Library',
+  'Adafruit Unified Sensor',
+  'Adafruit BusIO',
+  'Adafruit BME280 Library',
+  'Adafruit INA219',
+  'OneWire',
+  'DallasTemperature',
+  'TCA9548A',
 ]
 
 function releaseAsset(): string {

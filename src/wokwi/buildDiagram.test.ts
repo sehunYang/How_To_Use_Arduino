@@ -87,6 +87,40 @@ describe('buildDiagram', () => {
     expect(() => buildDiagram(typoedRecipe, sensors)).toThrow(/TLS2591_2/)
   })
 
+  it('throws when a component wiring endpoint names a logical pin the sensor does not declare', () => {
+    const invalidPinRecipe: Recipe = {
+      ...pendulumRecipe,
+      wiring: pendulumRecipe.wiring.map((step) => ({
+        ...step,
+        from: step.from === 'MPU6050.SDA' ? 'MPU6050.NOT_A_PIN' : step.from,
+      })),
+    }
+
+    expect(() => buildDiagram(invalidPinRecipe, sensors)).toThrow(
+      /logical pin "NOT_A_PIN" is not declared on sensor "mpu6050"/,
+    )
+  })
+
+  it('throws when a declared component pin has no Wokwi pin mapping', () => {
+    const mpu6050 = sensors.find((sensor) => sensor.id === 'mpu6050')
+    expect(mpu6050).toBeDefined()
+
+    const pinMapWithoutSda = Object.fromEntries(
+      Object.entries(mpu6050!.wokwi.pinMap).filter(([pin]) => pin !== 'SDA'),
+    )
+    const sensorWithoutSdaMapping: Sensor = {
+      ...mpu6050!,
+      wokwi: { ...mpu6050!.wokwi, pinMap: pinMapWithoutSda },
+    }
+    const sensorsWithMissingMapping = sensors.map((sensor) =>
+      sensor.id === sensorWithoutSdaMapping.id ? sensorWithoutSdaMapping : sensor,
+    )
+
+    expect(() => buildDiagram(pendulumRecipe, sensorsWithMissingMapping)).toThrow(
+      /logical pin "SDA" on sensor "mpu6050" has no Wokwi pin mapping/,
+    )
+  })
+
   it('generates a correct diagram for a synthetic sensor absent from the real inventory, with zero changes to buildDiagram.ts', () => {
     const fakeSensor: Sensor = {
       id: 'fake-sensor-11',

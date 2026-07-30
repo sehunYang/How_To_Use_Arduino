@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+<rect width="100%" height="100%" fill="#f3f6fa"/>
+<text x="30" y="585" font-family="sans-serif" font-size="14" fill="#172033">CDS로 밝기를 아날로그로 재기 · 배선 단계 카드</text>
+<g>
+  <rect x="30" y="30" width="150" height="60" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
+  <text x="40" y="55" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">1. CDS.VCC → UNO.5V</text>
+  <text x="40" y="77" font-family="sans-serif" font-size="11" fill="#455064">조도센서 모듈 VCC를 5V에 연결하세요.</text>
+</g>
+<g>
+  <rect x="215" y="30" width="150" height="60" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
+  <text x="225" y="55" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">2. CDS.GND → UNO.GND</text>
+  <text x="225" y="77" font-family="sans-serif" font-size="11" fill="#455064">조도센서 모듈 GND를 GND에 연결하세요.</text>
+</g>
+<g>
+  <rect x="400" y="30" width="150" height="60" rx="8" fill="#ffffff" stroke="green" stroke-width="4"/>
+  <text x="410" y="55" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">3. CDS.AO → UNO.A0</text>
+  <text x="410" y="77" font-family="sans-serif" font-size="11" fill="#455064">아날로그 출력 AO를 A0에 연결하세요.</text>
+</g>
+</svg>

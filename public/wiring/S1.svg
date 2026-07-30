@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+<rect width="100%" height="100%" fill="#f3f6fa"/>
+<text x="30" y="585" font-family="sans-serif" font-size="14" fill="#172033">MPU6050으로 기울기와 흔들림 읽기 · 배선 단계 카드</text>
+<g>
+  <rect x="30" y="30" width="150" height="60" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
+  <text x="40" y="55" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">1. MPU6050.VCC → UNO.5V</text>
+  <text x="40" y="77" font-family="sans-serif" font-size="11" fill="#455064">MPU6050 VCC를 아두이노 5V에 연결</text>
+</g>
+<g>
+  <rect x="215" y="30" width="150" height="60" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
+  <text x="225" y="55" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">2. MPU6050.GND → UNO.GND</text>
+  <text x="225" y="77" font-family="sans-serif" font-size="11" fill="#455064">MPU6050 GND를 아두이노 GND에 연</text>
+</g>
+<g>
+  <rect x="400" y="30" width="150" height="60" rx="8" fill="#ffffff" stroke="green" stroke-width="4"/>
+  <text x="410" y="55" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">3. MPU6050.SDA → UNO.A4</text>
+  <text x="410" y="77" font-family="sans-serif" font-size="11" fill="#455064">MPU6050 SDA를 아두이노 A4에 연결</text>
+</g>
+<g>
+  <rect x="585" y="30" width="150" height="60" rx="8" fill="#ffffff" stroke="yellow" stroke-width="4"/>
+  <text x="595" y="55" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">4. MPU6050.SCL → UNO.A5</text>
+  <text x="595" y="77" font-family="sans-serif" font-size="11" fill="#455064">MPU6050 SCL을 아두이노 A5에 연결</text>
+</g>
+</svg>

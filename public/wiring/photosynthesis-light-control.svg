@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+<rect width="100%" height="100%" fill="#f3f6fa"/>
+<text x="30" y="585" font-family="sans-serif" font-size="14" fill="#172033">광합성 조건 탐구 (조도 제어) · 배선 단계 카드</text>
+<g>
+  <rect x="40" y="35" width="150" height="70" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
+  <text x="50" y="60" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">1. TSL2591.VCC → UNO.5V</text>
+  <text x="50" y="82" font-family="sans-serif" font-size="11" fill="#455064">TSL2591 VCC를 아두이노 5V에 연결</text>
+</g>
+<g>
+  <rect x="230" y="35" width="150" height="70" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
+  <text x="240" y="60" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">2. TSL2591.GND → UNO.GND</text>
+  <text x="240" y="82" font-family="sans-serif" font-size="11" fill="#455064">TSL2591 GND를 아두이노 GND에 연</text>
+</g>
+<g>
+  <rect x="420" y="35" width="150" height="70" rx="8" fill="#ffffff" stroke="green" stroke-width="4"/>
+  <text x="430" y="60" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">3. TSL2591.SDA → UNO.A4</text>
+  <text x="430" y="82" font-family="sans-serif" font-size="11" fill="#455064">TSL2591 SDA를 아두이노 A4에 연결</text>
+</g>
+<g>
+  <rect x="610" y="35" width="150" height="70" rx="8" fill="#ffffff" stroke="yellow" stroke-width="4"/>
+  <text x="620" y="60" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">4. TSL2591.SCL → UNO.A5</text>
+  <text x="620" y="82" font-family="sans-serif" font-size="11" fill="#455064">TSL2591 SCL을 아두이노 A5에 연결</text>
+</g>
+<g>
+  <rect x="40" y="140" width="150" height="70" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
+  <text x="50" y="165" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">5. RELAY.VCC → UNO.5V</text>
+  <text x="50" y="187" font-family="sans-serif" font-size="11" fill="#455064">릴레이 모듈 VCC를 5V에 연결하세요.</text>
+</g>
+<g>
+  <rect x="230" y="140" width="150" height="70" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
+  <text x="240" y="165" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">6. RELAY.GND → UNO.GND</text>
+  <text x="240" y="187" font-family="sans-serif" font-size="11" fill="#455064">릴레이 모듈 GND를 공통 GND에 연결하세</text>
+</g>
+<g>
+  <rect x="420" y="140" width="150" height="70" rx="8" fill="#ffffff" stroke="orange" stroke-width="4"/>
+  <text x="430" y="165" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">7. RELAY.IN → UNO.D7</text>
+  <text x="430" y="187" font-family="sans-serif" font-size="11" fill="#455064">릴레이 제어 IN을 D7에 연결하세요.</text>
+</g>
+<g>
+  <rect x="610" y="140" width="150" height="70" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
+  <text x="620" y="165" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">8. LED_SUPPLY.+ → RELAY.COM</text>
+  <text x="620" y="187" font-family="sans-serif" font-size="11" fill="#455064">정격에 맞는 LED 별도 전원 양극을 릴레이</text>
+</g>
+<g>
+  <rect x="40" y="245" width="150" height="70" rx="8" fill="#ffffff" stroke="purple" stroke-width="4"/>
+  <text x="50" y="270" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">9. RELAY.NO → LED.+</text>
+  <text x="50" y="292" font-family="sans-serif" font-size="11" fill="#455064">릴레이 NO를 식물용 LED 전원의 양극 입</text>
+</g>
+<g>
+  <rect x="230" y="245" width="150" height="70" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
+  <text x="240" y="270" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">10. LED.- → LED_SUPPLY.-</text>
+  <text x="240" y="292" font-family="sans-serif" font-size="11" fill="#455064">LED 음극을 별도 전원 음극에 연결하세요.</text>
+</g>
+</svg>

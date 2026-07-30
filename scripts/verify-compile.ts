@@ -3,24 +3,18 @@
  * CI gate for A3.2 (L2 compile check). Run with:
  *   npm run verify:compile
  *
- * Compiles every canary recipe's sketch for the Uno and exits non-zero if any
+ * Compiles every Phase 5 recipe's sketch for the Uno and exits non-zero if any
  * of them fails to build or crosses the 95% memory ceiling. A `warning` (>=80%)
  * is reported but does not fail the gate.
  *
- * Sketches are staged straight from the recipe objects in src/data/canary
+ * Sketches are staged straight from the canonical Phase 5 recipe objects
  * rather than from US-202's extracted `sketches/*.ino`, so this gate stays
  * runnable without first running the extraction pipeline. The source string is
  * the same field in both cases.
  */
-import {
-  ina219CurrentRecipe,
-  multiTsl2591Recipe,
-  pendulumRecipe,
-} from '../src/data/canary'
+import { phase5Recipes } from '../src/data/phase5'
 import { compileSketch, stageSketch } from '../src/verification/compileCheck'
 import { isArduinoCliInstalled, SETUP_HINT } from '../src/verification/arduinoCli'
-
-const recipes = [pendulumRecipe, multiTsl2591Recipe, ina219CurrentRecipe]
 
 async function main(): Promise<void> {
   if (!isArduinoCliInstalled()) {
@@ -29,7 +23,7 @@ async function main(): Promise<void> {
   }
 
   let failed = false
-  for (const recipe of recipes) {
+  for (const recipe of phase5Recipes) {
     const inoPath = stageSketch(recipe.id, recipe.sketch)
     const result = await compileSketch(inoPath)
     console.log(

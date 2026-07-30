@@ -3,10 +3,8 @@ import type { Sensor } from '@/schema'
 /**
  * Seed data for the 10 owned sensors (spec hardware inventory).
  * `wokwi.simSupported` reflects CURRENT state: true only for sensors with
- * either a native Wokwi part or an approved analog stand-in today. INA219
- * and TSL2591 now use audited in-repo chips. The available community BME280
- * chip was rejected after license/accuracy review (docs/bme280-wokwi-review.md)
- * and remains unsupported until an auditable I2C implementation exists.
+ * a native Wokwi part, an approved analog stand-in, or an audited in-repo
+ * custom chip. INA219, TSL2591, and BME280 use audited in-repo chips.
  * TCA9548A has no path to simulation and stays false permanently.
  */
 export const sensors: Sensor[] = [
@@ -72,7 +70,7 @@ export const sensors: Sensor[] = [
       { name: 'SDA', kind: 'i2c' },
     ],
     currentDrawMa: 0.36,
-    wokwi: { part: 'custom-bme280', pinMap: { VCC: 'VCC', GND: 'GND', SCL: 'SCL', SDA: 'SDA' }, simSupported: false },
+    wokwi: { part: 'chip-bme280', pinMap: { VCC: 'VCC', GND: 'GND', SCL: 'SCL', SDA: 'SDA' }, simSupported: true },
     muxChannels: 0,
   },
   {
@@ -120,7 +118,7 @@ export const sensors: Sensor[] = [
       { name: 'AO', kind: 'analog' },
     ],
     currentDrawMa: 5,
-    wokwi: { part: 'wokwi-photoresistor-sensor', pinMap: { VCC: 'VCC', GND: 'GND', AO: 'AOUT' }, simSupported: true },
+    wokwi: { part: 'wokwi-photoresistor-sensor', pinMap: { VCC: 'VCC', GND: 'GND', AO: 'AO' }, simSupported: true },
     muxChannels: 0,
   },
   {
@@ -151,7 +149,7 @@ export const sensors: Sensor[] = [
     currentDrawMa: 15,
     wokwi: {
       part: 'wokwi-hc-sr04',
-      pinMap: { VCC: 'VCC', GND: 'GND', TRIG: 'trig', ECHO: 'echo' },
+      pinMap: { VCC: 'VCC', GND: 'GND', TRIG: 'TRIG', ECHO: 'ECHO' },
       simSupported: true,
     },
     muxChannels: 0,
@@ -169,7 +167,7 @@ export const sensors: Sensor[] = [
     currentDrawMa: 5,
     // No native Wokwi Hall-sensor part; a potentiometer stands in as the
     // analog value source for simulation purposes (plan Round 21 decision).
-    wokwi: { part: 'wokwi-potentiometer', pinMap: { OUT: 'wiper' }, simSupported: true },
+    wokwi: { part: 'wokwi-potentiometer', pinMap: { OUT: 'SIG' }, simSupported: true },
     muxChannels: 0,
   },
 ]

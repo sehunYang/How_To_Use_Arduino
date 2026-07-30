@@ -53,6 +53,9 @@ jobs:
       - name: L1 corpus/static checks (US-006/US-013 source of truth)
         run: npm test
 
+      - name: Phase 5 authored-content corpus (34/34)
+        run: npm run verify:corpus
+
       - name: Verify published search index has not drifted
         run: npm run verify:index
 

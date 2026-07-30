@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { runMatchReport, type SentenceCase } from './verifyMatching'
 import { buildTestIndex } from '@/data/testCorpus'
+import { phase5Recipes } from '@/data/phase5'
 import { synonyms } from '@/data/synonyms'
 
 const sentencesPath = fileURLToPath(new URL('../../test-data/search-sentences.json', import.meta.url))
@@ -21,6 +22,13 @@ describe('search-sentences.json shape', () => {
     for (const c of allCases) {
       expect(validIds.has(c.expectedRecipeId), `unknown id "${c.expectedRecipeId}" in "${c.sentence}"`).toBe(true)
     }
+  })
+
+  it('covers every canonical Phase 5 recipe across tuning and holdout cases', () => {
+    const coveredIds = new Set(allCases.map((c) => c.expectedRecipeId))
+    const phase5Ids = new Set(phase5Recipes.map((recipe) => recipe.id))
+
+    expect([...phase5Ids].filter((id) => !coveredIds.has(id))).toEqual([])
   })
 })
 

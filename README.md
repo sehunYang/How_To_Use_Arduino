@@ -27,7 +27,7 @@ US-207부터는 커스텀 칩 레지스터 모델(`chips/*.c`)도 같은 하네�
 
 ```bash
 npm run setup:zig          # 호스트 C++ 컴파일러 준비 (최초 1회, 자동 실행됨)
-npm run verify:logic       # logic/*.test.cpp + chips/*.test.cpp 컴파일 + 실행 (현재 4/4)
+npm run verify:logic       # logic/*.test.cpp + chips/*.test.cpp 컴파일 + 실행
 ```
 
 호스트 컴파일러는 **Zig 0.14.1의 `zig c++`(clang 19)** 이며, [`scripts/setup-zig.mjs`](scripts/setup-zig.mjs)가
@@ -35,9 +35,27 @@ npm run verify:logic       # logic/*.test.cpp + chips/*.test.cpp 컴파일 + 실
 (npm 패키지 `@ziglang/cli`는 postinstall이 `tar xJ`로 고정돼 있어 `.zip`으로 배포되는 Windows에서 동작하지 않습니다.)
 
 테스트 프레임워크는 [doctest](https://github.com/doctest/doctest) 단일 헤더(MIT)를 `logic/vendor/doctest.h`에 벤더링해 씁니다.
-지금은 카나리 3종(pendulum, ina219-current, multi-tsl2591)을 돌립니다. 앞의 두
-레시피는 L3까지 실행되고, TCA9548A에 의존하는 multi-tsl2591은 L1·L2·L5까지만
-실행됩니다. 같은 하네스가 Phase 5에서 레시피 34종으로 확장됩니다.
+카나리 회귀와 Phase 5 레시피 34종의 계산·통과 로직을 함께 검증합니다.
+
+## Phase 5 콘텐츠 검증
+
+정본 초안 34건은 `src/data/phase5/`에 있으며 학생 화면에는 검토 전 초안이
+번들되지 않습니다. 다음 명령으로 콘텐츠 계약, 검색, Uno 컴파일과 로직을
+검증합니다.
+
+```bash
+npm run verify:corpus
+npm run verify:matching -- --min 83
+npm run verify:holdout -- --min 73
+npm run verify:compile
+npm run verify:logic
+```
+
+`npm run verify:corpus -- --release`는 34건의 실제 게시 상태와 현재 해시에
+대한 모바일·주석 검토를 추가로 요구하므로 사람 검토 전에는 실패하는 것이
+정상입니다. 운영 Firestore에 초안과 센서 근거를 적재할 때는 관리자 자격증명과
+등록된 App Check 디버그 토큰을 환경변수로 제공한 뒤 `npm run seed:phase5`를
+실행합니다. 이 명령은 초안만 저장하며 게시나 검색 인덱스 갱신은 하지 않습니다.
 
 ## Firebase 프로젝트 준비
 

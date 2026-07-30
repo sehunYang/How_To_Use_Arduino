@@ -1,4 +1,5 @@
 import { canaryRationales, canarySimStatus, ina219CurrentRecipe, multiTsl2591Recipe, pendulumRecipe } from '@/data/canary'
+import { phase5Rationales } from '@/data/phase5/rationales'
 import { sensors } from '@/data/inventory-seed/sensors'
 
 export const studentRecipes = [pendulumRecipe, ina219CurrentRecipe, multiTsl2591Recipe]
@@ -6,7 +7,7 @@ export const publishedRecipes = studentRecipes.filter((recipe) => recipe.status 
 
 export const sensorById = new Map(sensors.map((sensor) => [sensor.id, sensor]))
 export const rationaleBySensor = new Map(
-  canaryRationales.map((rationale) => [
+  [...canaryRationales, ...phase5Rationales].map((rationale) => [
     `${rationale.sensorId}:${rationale.subject ?? '*'}`,
     rationale,
   ]),

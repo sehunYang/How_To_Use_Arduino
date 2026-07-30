@@ -1,0 +1,31 @@
+{
+  "name": "BME280 Environmental Sensor",
+  "author": "sehunYang",
+  "pins": ["VCC", "GND", "SCL", "SDA"],
+  "controls": [
+    {
+      "id": "temperatureRaw",
+      "label": "Raw temperature ADC",
+      "type": "range",
+      "min": 0,
+      "max": 1048575,
+      "step": 1
+    },
+    {
+      "id": "pressureRaw",
+      "label": "Raw pressure ADC",
+      "type": "range",
+      "min": 0,
+      "max": 1048575,
+      "step": 1
+    },
+    {
+      "id": "humidityRaw",
+      "label": "Raw humidity ADC",
+      "type": "range",
+      "min": 0,
+      "max": 65535,
+      "step": 1
+    }
+  ]
+}

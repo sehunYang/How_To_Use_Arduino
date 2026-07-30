@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+<rect width="100%" height="100%" fill="#f3f6fa"/>
+<text x="30" y="585" font-family="sans-serif" font-size="14" fill="#172033">TCA9548A로 주소가 같은 TSL2591 두 개 연결하기 · 배선 단계 카드</text>
+<g>
+  <rect x="30" y="30" width="150" height="60" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
+  <text x="40" y="55" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">1. TCA9548A.VCC → UNO.5V</text>
+  <text x="40" y="77" font-family="sans-serif" font-size="11" fill="#455064">TCA9548A VCC를 아두이노 5V에 연</text>
+</g>
+<g>
+  <rect x="215" y="30" width="150" height="60" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
+  <text x="225" y="55" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">2. TCA9548A.GND → UNO.GND</text>
+  <text x="225" y="77" font-family="sans-serif" font-size="11" fill="#455064">TCA9548A GND를 아두이노 GND에 </text>
+</g>
+<g>
+  <rect x="400" y="30" width="150" height="60" rx="8" fill="#ffffff" stroke="green" stroke-width="4"/>
+  <text x="410" y="55" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">3. TCA9548A.SDA → UNO.A4</text>
+  <text x="410" y="77" font-family="sans-serif" font-size="11" fill="#455064">TCA9548A SDA를 아두이노 A4에 연</text>
+</g>
+<g>
+  <rect x="585" y="30" width="150" height="60" rx="8" fill="#ffffff" stroke="yellow" stroke-width="4"/>
+  <text x="595" y="55" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">4. TCA9548A.SCL → UNO.A5</text>
+  <text x="595" y="77" font-family="sans-serif" font-size="11" fill="#455064">TCA9548A SCL을 아두이노 A5에 연</text>
+</g>
+<g>
+  <rect x="30" y="120" width="150" height="60" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
+  <text x="40" y="145" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">5. TSL2591_1.VCC → TCA9548A.VCC</text>
+  <text x="40" y="167" font-family="sans-serif" font-size="11" fill="#455064">첫 번째 TSL2591에 공통 전원을 연결하</text>
+</g>
+<g>
+  <rect x="215" y="120" width="150" height="60" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
+  <text x="225" y="145" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">6. TSL2591_1.GND → TCA9548A.GND</text>
+  <text x="225" y="167" font-family="sans-serif" font-size="11" fill="#455064">첫 번째 TSL2591에 공통 접지를 연결하</text>
+</g>
+<g>
+  <rect x="400" y="120" width="150" height="60" rx="8" fill="#ffffff" stroke="green" stroke-width="4"/>
+  <text x="410" y="145" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">7. TSL2591_1.SDA → TCA9548A.SD0</text>
+  <text x="410" y="167" font-family="sans-serif" font-size="11" fill="#455064">첫 번째 센서 SDA를 채널 0의 SD0에 </text>
+</g>
+<g>
+  <rect x="585" y="120" width="150" height="60" rx="8" fill="#ffffff" stroke="yellow" stroke-width="4"/>
+  <text x="595" y="145" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">8. TSL2591_1.SCL → TCA9548A.SC0</text>
+  <text x="595" y="167" font-family="sans-serif" font-size="11" fill="#455064">첫 번째 센서 SCL을 채널 0의 SC0에 </text>
+</g>
+<g>
+  <rect x="30" y="210" width="150" height="60" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
+  <text x="40" y="235" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">9. TSL2591_2.VCC → TCA9548A.VCC</text>
+  <text x="40" y="257" font-family="sans-serif" font-size="11" fill="#455064">두 번째 TSL2591에 공통 전원을 연결하</text>
+</g>
+<g>
+  <rect x="215" y="210" width="150" height="60" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
+  <text x="225" y="235" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">10. TSL2591_2.GND → TCA9548A.GND</text>
+  <text x="225" y="257" font-family="sans-serif" font-size="11" fill="#455064">두 번째 TSL2591에 공통 접지를 연결하</text>
+</g>
+<g>
+  <rect x="400" y="210" width="150" height="60" rx="8" fill="#ffffff" stroke="green" stroke-width="4"/>
+  <text x="410" y="235" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">11. TSL2591_2.SDA → TCA9548A.SD1</text>
+  <text x="410" y="257" font-family="sans-serif" font-size="11" fill="#455064">두 번째 센서 SDA를 채널 1의 SD1에 </text>
+</g>
+<g>
+  <rect x="585" y="210" width="150" height="60" rx="8" fill="#ffffff" stroke="yellow" stroke-width="4"/>
+  <text x="595" y="235" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">12. TSL2591_2.SCL → TCA9548A.SC1</text>
+  <text x="595" y="257" font-family="sans-serif" font-size="11" fill="#455064">두 번째 센서 SCL을 채널 1의 SC1에 </text>
+</g>
+</svg>

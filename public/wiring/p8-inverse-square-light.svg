@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+<rect width="100%" height="100%" fill="#f3f6fa"/>
+<text x="30" y="585" font-family="sans-serif" font-size="14" fill="#172033">거리에 따른 빛의 세기 (역제곱 법칙) · 배선 단계 카드</text>
+<g>
+  <rect x="40" y="35" width="150" height="70" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
+  <text x="50" y="60" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">1. TSL2591.VCC → UNO.5V</text>
+  <text x="50" y="82" font-family="sans-serif" font-size="11" fill="#455064">TSL2591 VCC를 아두이노 5V에 연결</text>
+</g>
+<g>
+  <rect x="230" y="35" width="150" height="70" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
+  <text x="240" y="60" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">2. TSL2591.GND → UNO.GND</text>
+  <text x="240" y="82" font-family="sans-serif" font-size="11" fill="#455064">TSL2591 GND를 아두이노 GND에 연</text>
+</g>
+<g>
+  <rect x="420" y="35" width="150" height="70" rx="8" fill="#ffffff" stroke="green" stroke-width="4"/>
+  <text x="430" y="60" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">3. TSL2591.SDA → UNO.A4</text>
+  <text x="430" y="82" font-family="sans-serif" font-size="11" fill="#455064">TSL2591 SDA를 아두이노 A4에 연결</text>
+</g>
+<g>
+  <rect x="610" y="35" width="150" height="70" rx="8" fill="#ffffff" stroke="yellow" stroke-width="4"/>
+  <text x="620" y="60" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">4. TSL2591.SCL → UNO.A5</text>
+  <text x="620" y="82" font-family="sans-serif" font-size="11" fill="#455064">TSL2591 SCL을 아두이노 A5에 연결</text>
+</g>
+<g>
+  <rect x="40" y="140" width="150" height="70" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
+  <text x="50" y="165" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">5. HC-SR04.VCC → UNO.5V</text>
+  <text x="50" y="187" font-family="sans-serif" font-size="11" fill="#455064">HC-SR04 VCC를 아두이노 5V에 연결</text>
+</g>
+<g>
+  <rect x="230" y="140" width="150" height="70" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
+  <text x="240" y="165" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">6. HC-SR04.GND → UNO.GND</text>
+  <text x="240" y="187" font-family="sans-serif" font-size="11" fill="#455064">HC-SR04 GND를 아두이노 GND에 연</text>
+</g>
+<g>
+  <rect x="420" y="140" width="150" height="70" rx="8" fill="#ffffff" stroke="orange" stroke-width="4"/>
+  <text x="430" y="165" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">7. HC-SR04.TRIG → UNO.D9</text>
+  <text x="430" y="187" font-family="sans-serif" font-size="11" fill="#455064">HC-SR04 TRIG를 아두이노 D9에 연</text>
+</g>
+<g>
+  <rect x="610" y="140" width="150" height="70" rx="8" fill="#ffffff" stroke="blue" stroke-width="4"/>
+  <text x="620" y="165" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">8. HC-SR04.ECHO → UNO.D10</text>
+  <text x="620" y="187" font-family="sans-serif" font-size="11" fill="#455064">HC-SR04 ECHO를 아두이노 D10에 </text>
+</g>
+</svg>

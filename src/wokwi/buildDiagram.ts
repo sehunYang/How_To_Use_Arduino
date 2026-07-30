@@ -51,10 +51,26 @@ function resolveSensor(token: string, sensors: Sensor[]): Sensor | undefined {
   return sensors.find((s) => s.id.toUpperCase() === instanceBase || s.name.toUpperCase() === instanceBase)
 }
 
-/** Resolves a logical pin name through the sensor's wokwi.pinMap, falling back to the raw name for pins the map doesn't cover (e.g. a mux's channel pins). */
-function resolvePin(sensor: Sensor | undefined, pin: string): string {
-  if (!sensor) return pin
-  return sensor.wokwi.pinMap[pin] ?? pin
+/** Resolves a declared logical pin name through the sensor's wokwi.pinMap. */
+function resolvePin(sensor: Sensor, pin: string): string {
+  const muxChannel = /^(?:SC|SD)(\d+)$/.exec(pin)
+  if (muxChannel && Number(muxChannel[1]) < sensor.muxChannels) {
+    return pin
+  }
+
+  if (!sensor.pins.some((candidate) => candidate.name === pin)) {
+    throw new Error(
+      `buildDiagram: logical pin "${pin}" is not declared on sensor "${sensor.id}"`,
+    )
+  }
+
+  const wokwiPin = sensor.wokwi.pinMap[pin]
+  if (wokwiPin === undefined) {
+    throw new Error(
+      `buildDiagram: logical pin "${pin}" on sensor "${sensor.id}" has no Wokwi pin mapping`,
+    )
+  }
+  return wokwiPin
 }
 
 /**

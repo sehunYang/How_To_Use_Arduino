@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+<rect width="100%" height="100%" fill="#f3f6fa"/>
+<text x="30" y="585" font-family="sans-serif" font-size="14" fill="#172033">야행성 활동 감지 · 배선 단계 카드</text>
+<g>
+  <rect x="40" y="35" width="150" height="70" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
+  <text x="50" y="60" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">1. HC-SR501.VCC → UNO.5V</text>
+  <text x="50" y="82" font-family="sans-serif" font-size="11" fill="#455064">PIR VCC를 5V에 연결하세요.</text>
+</g>
+<g>
+  <rect x="230" y="35" width="150" height="70" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
+  <text x="240" y="60" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">2. HC-SR501.GND → UNO.GND</text>
+  <text x="240" y="82" font-family="sans-serif" font-size="11" fill="#455064">PIR GND를 공통 GND에 연결하세요.</text>
+</g>
+<g>
+  <rect x="420" y="35" width="150" height="70" rx="8" fill="#ffffff" stroke="yellow" stroke-width="4"/>
+  <text x="430" y="60" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">3. HC-SR501.OUT → UNO.D2</text>
+  <text x="430" y="82" font-family="sans-serif" font-size="11" fill="#455064">PIR OUT을 D2에 연결하세요.</text>
+</g>
+<g>
+  <rect x="610" y="35" width="150" height="70" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
+  <text x="620" y="60" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">4. CDS.VCC → UNO.5V</text>
+  <text x="620" y="82" font-family="sans-serif" font-size="11" fill="#455064">CDS 모듈 VCC를 5V에 연결하세요.</text>
+</g>
+<g>
+  <rect x="40" y="140" width="150" height="70" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
+  <text x="50" y="165" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">5. CDS.GND → UNO.GND</text>
+  <text x="50" y="187" font-family="sans-serif" font-size="11" fill="#455064">CDS 모듈 GND를 공통 GND에 연결하세</text>
+</g>
+<g>
+  <rect x="230" y="140" width="150" height="70" rx="8" fill="#ffffff" stroke="blue" stroke-width="4"/>
+  <text x="240" y="165" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">6. CDS.AO → UNO.A0</text>
+  <text x="240" y="187" font-family="sans-serif" font-size="11" fill="#455064">CDS 아날로그 출력 AO를 A0에 연결하세</text>
+</g>
+</svg>
