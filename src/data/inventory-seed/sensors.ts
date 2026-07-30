@@ -167,7 +167,11 @@ export const sensors: Sensor[] = [
     currentDrawMa: 5,
     // No native Wokwi Hall-sensor part; a potentiometer stands in as the
     // analog value source for simulation purposes (plan Round 21 decision).
-    wokwi: { part: 'wokwi-potentiometer', pinMap: { OUT: 'SIG' }, simSupported: true },
+    wokwi: {
+      part: 'wokwi-potentiometer',
+      pinMap: { VCC: 'VCC', GND: 'GND', OUT: 'SIG' },
+      simSupported: true,
+    },
     muxChannels: 0,
   },
 ]

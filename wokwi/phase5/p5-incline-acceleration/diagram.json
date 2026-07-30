@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "author": "p5-incline-acceleration",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "id": "uno",
+      "type": "wokwi-arduino-uno",
+      "top": 0,
+      "left": 0
+    },
+    {
+      "id": "mpu6050",
+      "type": "wokwi-mpu6050",
+      "top": 0,
+      "left": 100
+    }
+  ],
+  "connections": [
+    [
+      "mpu6050:VCC",
+      "uno:5V",
+      "red",
+      []
+    ],
+    [
+      "mpu6050:GND",
+      "uno:GND",
+      "black",
+      []
+    ],
+    [
+      "mpu6050:SDA",
+      "uno:A4",
+      "green",
+      []
+    ],
+    [
+      "mpu6050:SCL",
+      "uno:A5",
+      "yellow",
+      []
+    ]
+  ]
+}

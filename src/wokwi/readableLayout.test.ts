@@ -354,7 +354,7 @@ describe('strict readable Wokwi layout', () => {
     })
   })
 
-  it('validates and compiles the chip-conformance rig, whose two chips share a breadboard I2C bus', () => {
+  it('validates and compiles the chip-conformance rig, whose three chips share a breadboard I2C bus', () => {
     expect(chipConformanceLayout.purpose).toBe('recipe')
     expect(validateReadableLayout(chipConformanceLayout)).toEqual([])
 
@@ -362,11 +362,21 @@ describe('strict readable Wokwi layout', () => {
     expect(diagram.connections).toEqual(
       expect.arrayContaining([
         ['breadboard:13t.c', 'breadboard:17t.c', 'green', ['h38.4']],
+        ['breadboard:8t.c', 'breadboard:13t.d', 'green', ['h48', 'v9.6']],
         ['breadboard:17t.d', 'breadboard:27t.d', 'green', ['h96']],
         ['breadboard:12t.e', 'breadboard:18t.e', 'yellow', ['h57.6']],
+        ['breadboard:7t.e', 'breadboard:12t.d', 'yellow', ['h48', 'v-9.6']],
         ['breadboard:26t.c', 'breadboard:30t.c', 'yellow', ['h38.4']],
       ]),
     )
+    expect(diagram.parts.find((part) => part.id === 'bme280')).toMatchObject({
+      type: 'chip-bme280',
+      attrs: {
+        temperatureRaw: '519888',
+        pressureRaw: '415148',
+        humidityRaw: '30000',
+      },
+    })
   })
 
   it('validates the powered multi-TSL2591 teaching layout', () => {

@@ -1,4 +1,9 @@
-import type { Recipe, Sensor } from '@/schema'
+import {
+  actuators,
+  wokwiAuxiliaryParts,
+  type WokwiAuxiliaryPart,
+} from '@/data/inventory-seed/actuators'
+import type { Actuator, Recipe, Sensor, WokwiDescriptor } from '@/schema'
 
 export interface DiagramPart {
   id: string
@@ -51,23 +56,52 @@ function resolveSensor(token: string, sensors: Sensor[]): Sensor | undefined {
   return sensors.find((s) => s.id.toUpperCase() === instanceBase || s.name.toUpperCase() === instanceBase)
 }
 
-/** Resolves a declared logical pin name through the sensor's wokwi.pinMap. */
-function resolvePin(sensor: Sensor, pin: string): string {
+interface ResolvableComponent {
+  id: string
+  pins?: readonly { name: string }[]
+  wokwi: WokwiDescriptor
+  muxChannels?: number
+}
+
+function matchesToken(component: ResolvableComponent, token: string): boolean {
+  const upper = token.toUpperCase()
+  return component.id.toUpperCase() === upper
+    || component.wokwi.aliases?.some((alias) => alias.toUpperCase() === upper) === true
+}
+
+function resolveComponent<T extends ResolvableComponent>(
+  token: string,
+  components: readonly T[],
+): T | undefined {
+  const exact = components.find((component) => matchesToken(component, token))
+  if (exact) return exact
+
+  const instanceBase = token.replace(/_\d+$/, '')
+  if (instanceBase === token) return undefined
+  return components.find((component) => matchesToken(component, instanceBase))
+}
+
+/** Resolves a declared logical pin name through a component's wokwi.pinMap. */
+function resolvePin(
+  component: ResolvableComponent,
+  pin: string,
+  componentKind = 'component',
+): string {
   const muxChannel = /^(?:SC|SD)(\d+)$/.exec(pin)
-  if (muxChannel && Number(muxChannel[1]) < sensor.muxChannels) {
+  if (muxChannel && Number(muxChannel[1]) < (component.muxChannels ?? 0)) {
     return pin
   }
 
-  if (!sensor.pins.some((candidate) => candidate.name === pin)) {
+  if (component.pins && !component.pins.some((candidate) => candidate.name === pin)) {
     throw new Error(
-      `buildDiagram: logical pin "${pin}" is not declared on sensor "${sensor.id}"`,
+      `buildDiagram: logical pin "${pin}" is not declared on ${componentKind} "${component.id}"`,
     )
   }
 
-  const wokwiPin = sensor.wokwi.pinMap[pin]
+  const wokwiPin = component.wokwi.pinMap[pin]
   if (wokwiPin === undefined) {
     throw new Error(
-      `buildDiagram: logical pin "${pin}" on sensor "${sensor.id}" has no Wokwi pin mapping`,
+      `buildDiagram: logical pin "${pin}" on ${componentKind} "${component.id}" has no Wokwi pin mapping`,
     )
   }
   return wokwiPin
@@ -83,6 +117,7 @@ function resolvePin(sensor: Sensor, pin: string): string {
 export function resolveWiringRef(
   ref: string,
   sensors: Sensor[],
+  availableActuators: Actuator[] = actuators,
 ): { partId: string; pin: string; sensor: Sensor | undefined } {
   const [token, pin] = splitRef(ref)
   if (token.toUpperCase() === UNO_TOKEN) return { partId: UNO_PART_ID, pin, sensor: undefined }
@@ -91,7 +126,20 @@ export function resolveWiringRef(
   }
 
   const sensor = resolveSensor(token, sensors)
-  if (!sensor) {
+  if (sensor) {
+    return { partId: token.toLowerCase(), pin: resolvePin(sensor, pin, 'sensor'), sensor }
+  }
+
+  const actuator = resolveComponent(token, availableActuators)
+  if (actuator) {
+    return { partId: token.toLowerCase(), pin: resolvePin(actuator, pin), sensor: undefined }
+  }
+
+  const auxiliary = resolveComponent(
+    token,
+    wokwiAuxiliaryParts as Array<WokwiAuxiliaryPart & ResolvableComponent>,
+  )
+  if (!auxiliary) {
     // Emitting the connection anyway would produce a diagram whose endpoint
     // references a part that was never added to parts[] — a dangling wire
     // that no L1 check catches (those validate recipe.sensors[], not the
@@ -100,7 +148,7 @@ export function resolveWiringRef(
       `buildDiagram: wiring token "${token}" does not resolve to any known sensor or actuator`,
     )
   }
-  return { partId: token.toLowerCase(), pin: resolvePin(sensor, pin), sensor }
+  return { partId: token.toLowerCase(), pin: resolvePin(auxiliary, pin), sensor: undefined }
 }
 
 /**
@@ -119,9 +167,11 @@ export function buildDiagram(recipe: Recipe, sensors: Sensor[]): Diagram {
   const parts: DiagramPart[] = [{ id: UNO_PART_ID, type: 'wokwi-arduino-uno', top: 0, left: 0 }]
   const seenPartIds = new Set([UNO_PART_ID])
   let nextLeft = PART_SPACING
+  const recipeActuators = actuators.filter((actuator) => recipe.actuators.includes(actuator.id))
 
   function resolveEndpoint(ref: string): string {
-    const { partId, pin, sensor } = resolveWiringRef(ref, sensors)
+    const [token] = splitRef(ref)
+    const { partId, pin, sensor } = resolveWiringRef(ref, sensors, recipeActuators)
 
     if (partId === BREADBOARD_PART_ID && !seenPartIds.has(partId)) {
       seenPartIds.add(partId)
@@ -132,6 +182,18 @@ export function buildDiagram(recipe: Recipe, sensors: Sensor[]): Diagram {
       seenPartIds.add(partId)
       parts.push({ id: partId, type: sensor.wokwi.part, top: 0, left: nextLeft })
       nextLeft += PART_SPACING
+    }
+    if (!sensor && partId !== UNO_PART_ID && partId !== BREADBOARD_PART_ID && !seenPartIds.has(partId)) {
+      const component = resolveComponent(token, recipeActuators)
+        ?? resolveComponent(
+          token,
+          wokwiAuxiliaryParts as Array<WokwiAuxiliaryPart & ResolvableComponent>,
+        )
+      if (component) {
+        seenPartIds.add(partId)
+        parts.push({ id: partId, type: component.wokwi.part, top: 0, left: nextLeft })
+        nextLeft += PART_SPACING
+      }
     }
     return `${partId}:${pin}`
   }

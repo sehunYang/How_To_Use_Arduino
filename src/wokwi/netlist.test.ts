@@ -211,14 +211,14 @@ describe('layout ↔ recipe gate', () => {
 })
 
 describe('chip conformance rig (strict layout with no teaching recipe)', () => {
-  it('puts both custom chips on one shared I2C bus with the Uno', () => {
+  it('puts all three custom chips on one shared I2C bus with the Uno', () => {
     const { nets, issues } = layoutNetlist(chipConformanceLayout)
     expect(issues).toEqual([])
     expect(nets.map((net) => [net.labels, net.pins])).toEqual([
-      [['GND'], ['ina219:GND', 'tsl2591:GND', 'uno:GND']],
-      [['SCL'], ['ina219:SCL', 'tsl2591:SCL', 'uno:A5']],
-      [['SDA'], ['ina219:SDA', 'tsl2591:SDA', 'uno:A4']],
-      [['5V'], ['ina219:VCC', 'tsl2591:VCC', 'uno:5V']],
+      [['GND'], ['bme280:GND', 'ina219:GND', 'tsl2591:GND', 'uno:GND']],
+      [['SCL'], ['bme280:SCL', 'ina219:SCL', 'tsl2591:SCL', 'uno:A5']],
+      [['SDA'], ['bme280:SDA', 'ina219:SDA', 'tsl2591:SDA', 'uno:A4']],
+      [['5V'], ['bme280:VCC', 'ina219:VCC', 'tsl2591:VCC', 'uno:5V']],
     ])
   })
 

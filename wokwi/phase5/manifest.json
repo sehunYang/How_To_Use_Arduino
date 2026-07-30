@@ -1,0 +1,287 @@
+{
+  "version": 1,
+  "generatedFrom": "phase5SimulationRegistry",
+  "projectCount": 32,
+  "exclusions": [
+    "S9",
+    "e5-spatial-light-map"
+  ],
+  "projects": [
+    {
+      "id": "S1",
+      "path": "wokwi/phase5/S1",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/S1 --scenario scenario.test.yaml --timeout 20000",
+      "chips": []
+    },
+    {
+      "id": "S2",
+      "path": "wokwi/phase5/S2",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/S2 --scenario scenario.test.yaml --timeout 20000",
+      "chips": []
+    },
+    {
+      "id": "S3",
+      "path": "wokwi/phase5/S3",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/S3 --scenario scenario.test.yaml --timeout 20000",
+      "chips": []
+    },
+    {
+      "id": "S4",
+      "path": "wokwi/phase5/S4",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/S4 --scenario scenario.test.yaml --timeout 20000",
+      "chips": []
+    },
+    {
+      "id": "S5",
+      "path": "wokwi/phase5/S5",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/S5 --scenario scenario.test.yaml --timeout 20000",
+      "chips": []
+    },
+    {
+      "id": "S6",
+      "path": "wokwi/phase5/S6",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/S6 --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "bme280"
+      ]
+    },
+    {
+      "id": "S7",
+      "path": "wokwi/phase5/S7",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/S7 --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "ina219"
+      ]
+    },
+    {
+      "id": "S8",
+      "path": "wokwi/phase5/S8",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/S8 --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "tsl2591"
+      ]
+    },
+    {
+      "id": "S10",
+      "path": "wokwi/phase5/S10",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/S10 --scenario scenario.test.yaml --timeout 20000",
+      "chips": []
+    },
+    {
+      "id": "p1-pendulum-period",
+      "path": "wokwi/phase5/p1-pendulum-period",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/p1-pendulum-period --scenario scenario.test.yaml --timeout 20000",
+      "chips": []
+    },
+    {
+      "id": "p2-mechanical-energy",
+      "path": "wokwi/phase5/p2-mechanical-energy",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/p2-mechanical-energy --scenario scenario.test.yaml --timeout 20000",
+      "chips": []
+    },
+    {
+      "id": "free-fall",
+      "path": "wokwi/phase5/free-fall",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/free-fall --scenario scenario.test.yaml --timeout 20000",
+      "chips": []
+    },
+    {
+      "id": "p4-friction-energy-loss",
+      "path": "wokwi/phase5/p4-friction-energy-loss",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/p4-friction-energy-loss --scenario scenario.test.yaml --timeout 20000",
+      "chips": []
+    },
+    {
+      "id": "p5-incline-acceleration",
+      "path": "wokwi/phase5/p5-incline-acceleration",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/p5-incline-acceleration --scenario scenario.test.yaml --timeout 20000",
+      "chips": []
+    },
+    {
+      "id": "p6-magnetic-field-distance",
+      "path": "wokwi/phase5/p6-magnetic-field-distance",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/p6-magnetic-field-distance --scenario scenario.test.yaml --timeout 20000",
+      "chips": []
+    },
+    {
+      "id": "p7-solar-panel-angle",
+      "path": "wokwi/phase5/p7-solar-panel-angle",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/p7-solar-panel-angle --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "ina219",
+        "tsl2591"
+      ]
+    },
+    {
+      "id": "p8-inverse-square-light",
+      "path": "wokwi/phase5/p8-inverse-square-light",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/p8-inverse-square-light --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "tsl2591"
+      ]
+    },
+    {
+      "id": "fan-control",
+      "path": "wokwi/phase5/fan-control",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/fan-control --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "bme280"
+      ]
+    },
+    {
+      "id": "e2-reaction-temperature",
+      "path": "wokwi/phase5/e2-reaction-temperature",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/e2-reaction-temperature --scenario scenario.test.yaml --timeout 20000",
+      "chips": []
+    },
+    {
+      "id": "cooling-curve",
+      "path": "wokwi/phase5/cooling-curve",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/cooling-curve --scenario scenario.test.yaml --timeout 20000",
+      "chips": []
+    },
+    {
+      "id": "e4-weather-pressure",
+      "path": "wokwi/phase5/e4-weather-pressure",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/e4-weather-pressure --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "bme280"
+      ]
+    },
+    {
+      "id": "e6-multi-point-temperature",
+      "path": "wokwi/phase5/e6-multi-point-temperature",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/e6-multi-point-temperature --scenario scenario.test.yaml --timeout 20000",
+      "chips": []
+    },
+    {
+      "id": "plant-growth",
+      "path": "wokwi/phase5/plant-growth",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/plant-growth --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "bme280",
+        "tsl2591"
+      ]
+    },
+    {
+      "id": "night-activity",
+      "path": "wokwi/phase5/night-activity",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/night-activity --scenario scenario.test.yaml --timeout 20000",
+      "chips": []
+    },
+    {
+      "id": "photosynthesis-light-control",
+      "path": "wokwi/phase5/photosynthesis-light-control",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/photosynthesis-light-control --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "tsl2591"
+      ]
+    },
+    {
+      "id": "human-activity-meter",
+      "path": "wokwi/phase5/human-activity-meter",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/human-activity-meter --scenario scenario.test.yaml --timeout 20000",
+      "chips": []
+    },
+    {
+      "id": "obstacle-avoid-car",
+      "path": "wokwi/phase5/obstacle-avoid-car",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/obstacle-avoid-car --scenario scenario.test.yaml --timeout 20000",
+      "chips": []
+    },
+    {
+      "id": "light-follow-car",
+      "path": "wokwi/phase5/light-follow-car",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/light-follow-car --scenario scenario.test.yaml --timeout 20000",
+      "chips": []
+    },
+    {
+      "id": "automatic-door",
+      "path": "wokwi/phase5/automatic-door",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/automatic-door --scenario scenario.test.yaml --timeout 20000",
+      "chips": []
+    },
+    {
+      "id": "parking-alarm",
+      "path": "wokwi/phase5/parking-alarm",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/parking-alarm --scenario scenario.test.yaml --timeout 20000",
+      "chips": []
+    },
+    {
+      "id": "rpm-meter",
+      "path": "wokwi/phase5/rpm-meter",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/rpm-meter --scenario scenario.test.yaml --timeout 20000",
+      "chips": []
+    },
+    {
+      "id": "smart-lighting",
+      "path": "wokwi/phase5/smart-lighting",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/smart-lighting --scenario scenario.test.yaml --timeout 20000",
+      "chips": []
+    }
+  ]
+}

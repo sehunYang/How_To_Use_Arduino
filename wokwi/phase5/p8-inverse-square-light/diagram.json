@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "author": "p8-inverse-square-light",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "id": "uno",
+      "type": "wokwi-arduino-uno",
+      "top": 0,
+      "left": 0
+    },
+    {
+      "id": "tsl2591",
+      "type": "chip-tsl2591",
+      "top": 0,
+      "left": 100
+    },
+    {
+      "id": "hc-sr04",
+      "type": "wokwi-hc-sr04",
+      "top": 0,
+      "left": 200
+    }
+  ],
+  "connections": [
+    [
+      "tsl2591:VCC",
+      "uno:5V",
+      "red",
+      []
+    ],
+    [
+      "tsl2591:GND",
+      "uno:GND",
+      "black",
+      []
+    ],
+    [
+      "tsl2591:SDA",
+      "uno:A4",
+      "green",
+      []
+    ],
+    [
+      "tsl2591:SCL",
+      "uno:A5",
+      "yellow",
+      []
+    ],
+    [
+      "hc-sr04:VCC",
+      "uno:5V",
+      "red",
+      []
+    ],
+    [
+      "hc-sr04:GND",
+      "uno:GND",
+      "black",
+      []
+    ],
+    [
+      "hc-sr04:TRIG",
+      "uno:D9",
+      "orange",
+      []
+    ],
+    [
+      "hc-sr04:ECHO",
+      "uno:D10",
+      "blue",
+      []
+    ]
+  ]
+}

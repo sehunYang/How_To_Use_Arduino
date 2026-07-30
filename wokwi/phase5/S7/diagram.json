@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "author": "S7",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "id": "uno",
+      "type": "wokwi-arduino-uno",
+      "top": 0,
+      "left": 0
+    },
+    {
+      "id": "ina219",
+      "type": "chip-ina219",
+      "top": 0,
+      "left": 100
+    }
+  ],
+  "connections": [
+    [
+      "ina219:VCC",
+      "uno:5V",
+      "red",
+      []
+    ],
+    [
+      "ina219:GND",
+      "uno:GND",
+      "black",
+      []
+    ],
+    [
+      "ina219:SDA",
+      "uno:A4",
+      "green",
+      []
+    ],
+    [
+      "ina219:SCL",
+      "uno:A5",
+      "yellow",
+      []
+    ]
+  ]
+}

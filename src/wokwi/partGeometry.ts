@@ -233,6 +233,7 @@ export const PART_GEOMETRY: Record<string, PartGeometry> = {
   'wokwi-breadboard-half': halfBreadboardGeometry(),
   'chip-ina219': conformanceChipGeometry,
   'chip-tsl2591': conformanceChipGeometry,
+  'chip-bme280': conformanceChipGeometry,
   'visual-ina219': sensorBreakoutGeometry,
   'visual-tsl2591': sensorBreakoutGeometry,
   'visual-tca9548a': tca9548aVisualGeometry(),

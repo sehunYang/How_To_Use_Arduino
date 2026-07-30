@@ -1,0 +1,5 @@
+name: Phase 5 deterministic smoke - p7-solar-panel-angle
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "PHASE5_READY:p7-solar-panel-angle"

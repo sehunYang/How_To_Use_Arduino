@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "author": "e2-reaction-temperature",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "id": "uno",
+      "type": "wokwi-arduino-uno",
+      "top": 0,
+      "left": 0
+    },
+    {
+      "id": "ds18b20",
+      "type": "wokwi-ds18b20",
+      "top": 0,
+      "left": 100
+    }
+  ],
+  "connections": [
+    [
+      "ds18b20:VCC",
+      "uno:5V",
+      "red",
+      []
+    ],
+    [
+      "ds18b20:GND",
+      "uno:GND",
+      "black",
+      []
+    ],
+    [
+      "ds18b20:DQ",
+      "uno:D2",
+      "green",
+      []
+    ]
+  ]
+}

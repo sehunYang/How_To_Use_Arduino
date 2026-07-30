@@ -21,6 +21,7 @@ function parseMinArg(argv: string[], fallback: number): number {
 
 const DEFAULT_MIN = 73
 const min = parseMinArg(process.argv.slice(2), DEFAULT_MIN)
+const release = process.argv.includes('--release')
 
 const allCases: SentenceCase[] = JSON.parse(readFileSync('test-data/search-sentences.json', 'utf-8'))
 const holdout = allCases.filter((c) => c.split === 'holdout')
@@ -31,6 +32,14 @@ if (studentSourced === 0) {
     '⚠️  홀드아웃 15개 전부 source:"author"입니다. PL8은 최소 15개(전체 기준)를 실제 학생 문장으로 요구합니다. ' +
       'test-data/README.md의 TODO를 참고해 출시 전 반드시 교체하세요.',
   )
+}
+
+if (release && studentSourced < 15) {
+  console.error(
+    `FAIL: PL8 requires at least 15 real student sentences; found ${studentSourced}. ` +
+      'Replace author placeholders according to test-data/README.md.',
+  )
+  process.exit(1)
 }
 
 const index = buildTestIndex()

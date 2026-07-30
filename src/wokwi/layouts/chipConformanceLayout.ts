@@ -33,11 +33,26 @@ export const chipConformanceLayout: ReadableLayout = {
         'tp.1', 'tn.2', '29t.e', '30t.e',
         'tp.4', 'tn.5', '13t.b', '12t.b',
         'tp.13', 'tn.12', '27t.b', '24t.b',
+        'tp.3', 'tn.18', '8t.b', '7t.b',
+        '8t.c', '7t.e', '13t.d', '12t.d',
         '13t.c', '17t.c', '17t.d', '27t.d',
         '27t.e', '28t.e', '28t.b', '29t.b',
         '12t.e', '18t.e', '18t.c', '24t.c',
         '24t.e', '26t.e', '26t.c', '30t.c',
       ],
+    },
+    {
+      type: 'chip-bme280',
+      id: 'bme280',
+      top: -120,
+      left: -90,
+      rotate: 0,
+      attrs: {
+        temperatureRaw: '519888',
+        pressureRaw: '415148',
+        humidityRaw: '30000',
+      },
+      pins: ['VCC', 'GND', 'SDA', 'SCL'],
     },
     {
       type: 'chip-ina219',
@@ -76,59 +91,88 @@ export const chipConformanceLayout: ReadableLayout = {
       ['v', -502.31],
     ]),
 
+    wire('power-bme', '5V', 'bme280:VCC', 'breadboard:tp.3', 'red', { x: -85.2, y: -111.42 }, [
+      ['h', -34.8],
+      ['v', 147.42],
+      ['h', 274.09],
+      ['v', 76.69],
+    ], { allowCrossings: ['ground-bme', 'sda-bme', 'scl-bme', 'power-ina', 'ground-ina'] }),
+    wire('ground-bme', 'GND', 'bme280:GND', 'breadboard:tn.18', 'black', { x: -85.2, y: -101.82 }, [
+      ['h', -24.8],
+      ['v', 196.82],
+      ['h', 436.89],
+      ['v', 27.29],
+    ], { allowCrossings: ['power-bme', 'sda-bme', 'scl-bme', 'power-ina', 'ground-ina', 'sda-ina', 'scl-ina', 'power-tsl', 'ground-tsl', 'sda-tsl', 'scl-tsl'] }),
+    wire('sda-bme', 'SDA', 'bme280:SDA', 'breadboard:8t.b', 'green', { x: 24.76, y: -111.42 }, [
+      ['h', 34.8],
+      ['v', 195.42],
+      ['h', 134.03],
+      ['v', 76.39],
+    ], { allowCrossings: ['power-bme', 'ground-bme', 'scl-bme', 'power-ina', 'ground-ina'] }),
+    wire('scl-bme', 'SCL', 'bme280:SCL', 'breadboard:7t.b', 'yellow', { x: 24.76, y: -101.82 }, [
+      ['h', 24.8],
+      ['v', 173.82],
+      ['h', 134.43],
+      ['v', 88.39],
+    ], { allowCrossings: ['power-bme', 'ground-bme', 'sda-bme', 'power-ina', 'ground-ina'] }),
+
     wire('power-ina', '5V', 'ina219:VCC', 'breadboard:tp.4', 'red', { x: 124.8, y: -111.42 }, [
       ['h', -34.8],
       ['v', 123.42],
       ['h', 73.69],
       ['v', 100.69],
-    ]),
+    ], { allowCrossings: ['power-bme', 'ground-bme', 'sda-bme', 'scl-bme'] }),
     wire('ground-ina', 'GND', 'ina219:GND', 'breadboard:tn.5', 'black', { x: 124.8, y: -101.82 }, [
       ['h', -24.8],
       ['v', 101.82],
       ['h', 73.29],
       ['v', 122.29],
-    ]),
+    ], { allowCrossings: ['power-bme', 'ground-bme', 'sda-bme', 'scl-bme'] }),
     wire('sda-ina', 'SDA', 'ina219:SDA', 'breadboard:13t.b', 'green', { x: 234.76, y: -111.42 }, [
       ['h', 34.8],
       ['v', 147.42],
       ['h', -27.97],
       ['v', 124.39],
-    ]),
+    ], { allowCrossings: ['ground-bme'] }),
     wire('scl-ina', 'SCL', 'ina219:SCL', 'breadboard:12t.b', 'yellow', { x: 234.76, y: -101.82 }, [
       ['h', 24.8],
       ['v', 125.82],
       ['h', -27.57],
       ['v', 136.39],
-    ]),
+    ], { allowCrossings: ['ground-bme'] }),
 
     wire('power-tsl', '5V', 'tsl2591:VCC', 'breadboard:tp.13', 'red', { x: 334, y: -111.42 }, [
       ['h', -34.8],
       ['v', 171.42],
       ['h', -29.91],
       ['v', 52.69],
-    ], { allowCrossings: ['ground-tsl'] }),
+    ], { allowCrossings: ['ground-tsl', 'ground-bme'] }),
     wire('ground-tsl', 'GND', 'tsl2591:GND', 'breadboard:tn.12', 'black', { x: 334, y: -101.82 }, [
       ['h', -24.8],
       ['v', 149.82],
       ['h', -49.51],
       ['v', 74.29],
-    ], { allowCrossings: ['power-tsl'] }),
+    ], { allowCrossings: ['power-tsl', 'ground-bme'] }),
     wire('sda-tsl', 'SDA', 'tsl2591:SDA', 'breadboard:27t.b', 'green', { x: 443.96, y: -111.42 }, [
       ['h', 34.8],
       ['v', 195.42],
       ['h', -102.77],
       ['v', 76.39],
-    ]),
+    ], { allowCrossings: ['ground-bme'] }),
     wire('scl-tsl', 'SCL', 'tsl2591:SCL', 'breadboard:24t.b', 'yellow', { x: 443.96, y: -101.82 }, [
       ['h', 24.8],
       ['v', 173.82],
       ['h', -121.57],
       ['v', 88.39],
-    ]),
+    ], { allowCrossings: ['ground-bme'] }),
 
     wire('sda-bus-1', 'SDA', 'breadboard:13t.c', 'breadboard:17t.c', 'green', { x: 241.59, y: 169.99 }, [
       ['h', 38.4],
-    ]),
+    ], { allowCrossings: ['sda-bus-bme'] }),
+    wire('sda-bus-bme', 'SDA', 'breadboard:8t.c', 'breadboard:13t.d', 'green', { x: 193.59, y: 169.99 }, [
+      ['h', 48],
+      ['v', 9.6],
+    ], { allowCrossings: ['sda-bus-1'] }),
     wire('sda-bus-2', 'SDA', 'breadboard:17t.d', 'breadboard:27t.d', 'green', { x: 279.99, y: 179.59 }, [
       ['h', 96],
     ]),
@@ -140,7 +184,11 @@ export const chipConformanceLayout: ReadableLayout = {
     ]),
     wire('scl-bus-1', 'SCL', 'breadboard:12t.e', 'breadboard:18t.e', 'yellow', { x: 231.99, y: 189.19 }, [
       ['h', 57.6],
-    ]),
+    ], { allowCrossings: ['scl-bus-bme'] }),
+    wire('scl-bus-bme', 'SCL', 'breadboard:7t.e', 'breadboard:12t.d', 'yellow', { x: 183.99, y: 189.19 }, [
+      ['h', 48],
+      ['v', -9.6],
+    ], { allowCrossings: ['scl-bus-1'] }),
     wire('scl-bus-2', 'SCL', 'breadboard:18t.c', 'breadboard:24t.c', 'yellow', { x: 289.59, y: 169.99 }, [
       ['h', 57.6],
     ]),

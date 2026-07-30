@@ -72,11 +72,19 @@ export function oneWireConnections(instances: string[]): Connection[] {
     )
   }
   connections.push({
-    from: `${instances.join('+')}.DATA`,
+    from: `${instances[0]}.DATA`,
     to: 'UNO.D2',
     color: 'green',
     text: `모든 DS18B20 DATA를 D2에 함께 연결하고 DATA와 5V 사이에 4.7 kΩ 풀업 저항을 연결하세요.`,
   })
+  for (const instance of instances.slice(1)) {
+    connections.push({
+      from: `${instance}.DATA`,
+      to: `${instances[0]}.DATA`,
+      color: 'green',
+      text: `${instance} DATA를 공통 D2 버스에 연결하세요.`,
+    })
+  }
   return connections
 }
 

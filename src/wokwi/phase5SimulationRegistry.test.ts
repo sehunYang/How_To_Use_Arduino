@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
+import { sensors } from '@/data/inventory-seed/sensors'
 import { phase5Recipes } from '@/data/phase5'
+import { buildDiagram } from './buildDiagram'
 import {
   PHASE5_SIMULATION_TIMEOUT_CAP_MS,
   phase5SimulationRegistry,
@@ -38,6 +40,20 @@ describe('Phase 5 Wokwi simulation registry', () => {
         sensorIds: [...entry.scenario.sensorIds].sort(),
       })
     }
+  })
+
+  it('builds a Wokwi diagram for all 32 eligible recipes', () => {
+    const recipesById = new Map(phase5Recipes.map((recipe) => [recipe.id, recipe]))
+    const eligible = phase5SimulationRegistry.filter((entry) => entry.eligible)
+
+    const diagrams = eligible.map((entry) => {
+      const recipe = recipesById.get(entry.recipeId)
+      expect(recipe, `missing Phase 5 recipe ${entry.recipeId}`).toBeDefined()
+      return buildDiagram(recipe!, sensors)
+    })
+
+    expect(diagrams).toHaveLength(32)
+    expect(diagrams.every((diagram) => diagram.parts.length > 1)).toBe(true)
   })
 
   it('records the unsupported sensor and an explicit exclusion reason', () => {

@@ -10,7 +10,15 @@ export const actuators: Actuator[] = [
     pins: [
       { name: 'ANODE', kind: 'digital' },
       { name: 'CATHODE', kind: 'power' },
+      { name: '+', kind: 'digital' },
+      { name: '-', kind: 'power' },
     ],
+    wokwi: {
+      part: 'wokwi-led',
+      pinMap: { ANODE: 'A', CATHODE: 'C', '+': 'A', '-': 'C' },
+      simSupported: true,
+      aliases: ['LED'],
+    },
   },
   {
     id: 'buzzer',
@@ -21,6 +29,12 @@ export const actuators: Actuator[] = [
       { name: 'SIGNAL', kind: 'digital' },
       { name: 'GND', kind: 'power' },
     ],
+    wokwi: {
+      part: 'wokwi-buzzer',
+      pinMap: { SIGNAL: '2', GND: '1' },
+      simSupported: true,
+      aliases: ['BUZZER'],
+    },
   },
   {
     id: 'dc-motor-driver',
@@ -31,9 +45,28 @@ export const actuators: Actuator[] = [
       { name: 'IN1', kind: 'digital' },
       { name: 'IN2', kind: 'digital' },
       { name: 'ENA', kind: 'digital' },
+      { name: 'ENB', kind: 'digital' },
+      { name: 'VM', kind: 'power' },
       { name: 'VCC', kind: 'power' },
       { name: 'GND', kind: 'power' },
     ],
+    // Wokwi has no native dual-DC H-bridge. Its A4988 is an explicit motor-
+    // driver stand-in: it preserves control, enable, motor-supply and ground
+    // endpoints without claiming to simulate the recipe's DC drivetrain.
+    wokwi: {
+      part: 'wokwi-a4988',
+      pinMap: {
+        IN1: 'DIR',
+        IN2: 'STEP',
+        ENA: 'ENABLE',
+        ENB: 'MS1',
+        VM: 'VMOT',
+        VCC: 'VDD',
+        GND: 'GND',
+      },
+      simSupported: false,
+      aliases: ['DRIVER'],
+    },
   },
   {
     id: 'servo-sg90',
@@ -45,6 +78,12 @@ export const actuators: Actuator[] = [
       { name: 'VCC', kind: 'power' },
       { name: 'GND', kind: 'power' },
     ],
+    wokwi: {
+      part: 'wokwi-servo',
+      pinMap: { SIGNAL: 'PWM', VCC: 'V+', GND: 'GND' },
+      simSupported: true,
+      aliases: ['SERVO'],
+    },
   },
   {
     id: 'relay-module',
@@ -55,7 +94,16 @@ export const actuators: Actuator[] = [
       { name: 'IN', kind: 'digital' },
       { name: 'VCC', kind: 'power' },
       { name: 'GND', kind: 'power' },
+      { name: 'NC', kind: 'digital' },
+      { name: 'COM', kind: 'digital' },
+      { name: 'NO', kind: 'digital' },
     ],
+    wokwi: {
+      part: 'wokwi-relay-module',
+      pinMap: { IN: 'IN', VCC: 'VCC', GND: 'GND', NC: 'NC', COM: 'COM', NO: 'NO' },
+      simSupported: true,
+      aliases: ['RELAY'],
+    },
   },
   {
     id: 'dc-fan-5v',
@@ -65,7 +113,17 @@ export const actuators: Actuator[] = [
     pins: [
       { name: 'VCC', kind: 'power' },
       { name: 'GND', kind: 'power' },
+      { name: 'POSITIVE', kind: 'power' },
+      { name: 'NEGATIVE', kind: 'power' },
     ],
+    // A resistor is the honest passive two-terminal stand-in for this load;
+    // the diagram does not claim to simulate fan motion.
+    wokwi: {
+      part: 'wokwi-resistor',
+      pinMap: { VCC: '1', GND: '2', POSITIVE: '1', NEGATIVE: '2' },
+      simSupported: false,
+      aliases: ['FAN'],
+    },
   },
   {
     id: 'lcd1602-i2c',
@@ -78,5 +136,58 @@ export const actuators: Actuator[] = [
       { name: 'SCL', kind: 'i2c' },
       { name: 'SDA', kind: 'i2c' },
     ],
+    wokwi: {
+      part: 'wokwi-lcd1602',
+      pinMap: { VCC: 'VCC', GND: 'GND', SCL: 'SCL', SDA: 'SDA' },
+      simSupported: true,
+      aliases: ['LCD', 'LCD1602'],
+    },
+  },
+]
+
+export interface WokwiAuxiliaryPart {
+  id: string
+  wokwi: {
+    part: string
+    pinMap: Record<string, string>
+    simSupported: false
+    aliases: string[]
+  }
+}
+
+/**
+ * Recipe-only supplies and loads that are not owned actuators. Wokwi does
+ * not provide battery/solar-panel parts, so variable voltage sources use the
+ * real potentiometer part and passive loads use the real resistor/LED parts.
+ * These descriptors preserve wiring topology only; they never assert that
+ * Wokwi executes the physical supply or load behavior.
+ */
+export const wokwiAuxiliaryParts: WokwiAuxiliaryPart[] = [
+  {
+    id: 'panel',
+    wokwi: {
+      part: 'wokwi-potentiometer',
+      pinMap: { POSITIVE: 'SIG', NEGATIVE: 'GND' },
+      simSupported: false,
+      aliases: ['PANEL'],
+    },
+  },
+  {
+    id: 'load',
+    wokwi: {
+      part: 'wokwi-resistor',
+      pinMap: { POSITIVE: '1', NEGATIVE: '2', '+': '1', '-': '2' },
+      simSupported: false,
+      aliases: ['LOAD', 'LAMP'],
+    },
+  },
+  {
+    id: 'battery',
+    wokwi: {
+      part: 'wokwi-slide-potentiometer',
+      pinMap: { '+': 'SIG', '-': 'GND' },
+      simSupported: false,
+      aliases: ['BATTERY', 'SERVO_SUPPLY', 'LED_SUPPLY', 'LAMP_SUPPLY'],
+    },
   },
 ]

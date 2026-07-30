@@ -1,0 +1,5 @@
+name: Phase 5 deterministic smoke - p5-incline-acceleration
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "PHASE5_READY:p5-incline-acceleration"

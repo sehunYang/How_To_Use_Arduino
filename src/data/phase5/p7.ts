@@ -10,8 +10,8 @@ const connections: Connection[] = [
   { from: 'TSL2591.GND', to: 'UNO.GND', color: 'black', text: 'TSL2591 GND를 아두이노 GND에 연결하세요.' },
   { from: 'TSL2591.SDA', to: 'UNO.A4', color: 'green', text: 'TSL2591 SDA를 아두이노 A4 I2C 버스에 함께 연결하세요.' },
   { from: 'TSL2591.SCL', to: 'UNO.A5', color: 'yellow', text: 'TSL2591 SCL을 아두이노 A5 I2C 버스에 함께 연결하세요.' },
-  { from: 'PANEL.POSITIVE', to: 'INA219.VIN+', color: 'orange', text: '태양광 패널 양극을 INA219 VIN+에 연결하세요.' },
-  { from: 'INA219.VIN-', to: 'LOAD.POSITIVE', color: 'purple', text: 'INA219 VIN-를 실험용 부하의 양극에 연결하세요.' },
+  { from: 'PANEL.POSITIVE', to: 'LOAD.POSITIVE', color: 'orange', text: 'Wokwi에서는 태양광 패널 stand-in 출력을 실험용 부하에 연결하세요.' },
+  { from: 'PANEL.NEGATIVE', to: 'LOAD.NEGATIVE', color: 'purple', text: '패널과 부하의 음극을 연결하세요. INA219 전류값은 시나리오 입력으로 제공합니다.' },
 ]
 
 export const p7Recipe = createProjectRecipe({

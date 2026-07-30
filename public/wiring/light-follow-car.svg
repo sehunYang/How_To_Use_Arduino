@@ -3,57 +3,67 @@
 <text x="30" y="585" font-family="sans-serif" font-size="14" fill="#172033">빛을 따라가는 자동차 · 배선 단계 카드</text>
 <g>
   <rect x="40" y="35" width="150" height="70" rx="8" fill="#ffffff" stroke="blue" stroke-width="4"/>
-  <text x="50" y="60" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">1. CDS_LEFT.AO → UNO.A0</text>
+  <text x="50" y="60" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">1. CDS_1.AO → UNO.A0</text>
   <text x="50" y="82" font-family="sans-serif" font-size="11" fill="#455064">왼쪽 CDS의 AO를 A0에 연결하세요.</text>
 </g>
 <g>
   <rect x="230" y="35" width="150" height="70" rx="8" fill="#ffffff" stroke="green" stroke-width="4"/>
-  <text x="240" y="60" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">2. CDS_RIGHT.AO → UNO.A1</text>
+  <text x="240" y="60" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">2. CDS_2.AO → UNO.A1</text>
   <text x="240" y="82" font-family="sans-serif" font-size="11" fill="#455064">오른쪽 CDS의 AO를 A1에 연결하세요.</text>
 </g>
 <g>
   <rect x="420" y="35" width="150" height="70" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
-  <text x="430" y="60" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">3. CDS_LEFT+RIGHT.VCC → UNO.5V</text>
-  <text x="430" y="82" font-family="sans-serif" font-size="11" fill="#455064">두 CDS 모듈 VCC를 5V에 연결하세요.</text>
+  <text x="430" y="60" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">3. CDS_1.VCC → UNO.5V</text>
+  <text x="430" y="82" font-family="sans-serif" font-size="11" fill="#455064">왼쪽 CDS 모듈 VCC를 5V에 연결하세요</text>
 </g>
 <g>
-  <rect x="610" y="35" width="150" height="70" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
-  <text x="620" y="60" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">4. CDS_LEFT+RIGHT.GND → UNO.GND</text>
-  <text x="620" y="82" font-family="sans-serif" font-size="11" fill="#455064">두 CDS 모듈 GND를 공통 GND에 연결</text>
+  <rect x="610" y="35" width="150" height="70" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
+  <text x="620" y="60" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">4. CDS_2.VCC → UNO.5V</text>
+  <text x="620" y="82" font-family="sans-serif" font-size="11" fill="#455064">오른쪽 CDS 모듈 VCC를 5V에 연결하세</text>
 </g>
 <g>
-  <rect x="40" y="140" width="150" height="70" rx="8" fill="#ffffff" stroke="orange" stroke-width="4"/>
-  <text x="50" y="165" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">5. DRIVER.IN1 → UNO.D2</text>
-  <text x="50" y="187" font-family="sans-serif" font-size="11" fill="#455064">왼쪽 모터 방향 입력을 D2에 연결하세요.</text>
+  <rect x="40" y="140" width="150" height="70" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
+  <text x="50" y="165" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">5. CDS_1.GND → UNO.GND</text>
+  <text x="50" y="187" font-family="sans-serif" font-size="11" fill="#455064">왼쪽 CDS 모듈 GND를 공통 GND에 연</text>
 </g>
 <g>
-  <rect x="230" y="140" width="150" height="70" rx="8" fill="#ffffff" stroke="purple" stroke-width="4"/>
-  <text x="240" y="165" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">6. DRIVER.IN2 → UNO.D3</text>
-  <text x="240" y="187" font-family="sans-serif" font-size="11" fill="#455064">오른쪽 모터 방향 입력을 D3에 연결하세요.</text>
+  <rect x="230" y="140" width="150" height="70" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
+  <text x="240" y="165" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">6. CDS_2.GND → UNO.GND</text>
+  <text x="240" y="187" font-family="sans-serif" font-size="11" fill="#455064">오른쪽 CDS 모듈 GND를 공통 GND에 </text>
 </g>
 <g>
-  <rect x="420" y="140" width="150" height="70" rx="8" fill="#ffffff" stroke="yellow" stroke-width="4"/>
-  <text x="430" y="165" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">7. DRIVER.ENA → UNO.D5</text>
-  <text x="430" y="187" font-family="sans-serif" font-size="11" fill="#455064">왼쪽 PWM을 D5에 연결하세요.</text>
+  <rect x="420" y="140" width="150" height="70" rx="8" fill="#ffffff" stroke="orange" stroke-width="4"/>
+  <text x="430" y="165" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">7. DRIVER.IN1 → UNO.D2</text>
+  <text x="430" y="187" font-family="sans-serif" font-size="11" fill="#455064">왼쪽 모터 방향 입력을 D2에 연결하세요.</text>
 </g>
 <g>
-  <rect x="610" y="140" width="150" height="70" rx="8" fill="#ffffff" stroke="white" stroke-width="4"/>
-  <text x="620" y="165" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">8. DRIVER.ENB → UNO.D6</text>
-  <text x="620" y="187" font-family="sans-serif" font-size="11" fill="#455064">오른쪽 PWM을 D6에 연결하세요.</text>
+  <rect x="610" y="140" width="150" height="70" rx="8" fill="#ffffff" stroke="purple" stroke-width="4"/>
+  <text x="620" y="165" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">8. DRIVER.IN2 → UNO.D3</text>
+  <text x="620" y="187" font-family="sans-serif" font-size="11" fill="#455064">오른쪽 모터 방향 입력을 D3에 연결하세요.</text>
 </g>
 <g>
-  <rect x="40" y="245" width="150" height="70" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
-  <text x="50" y="270" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">9. BATTERY.+ → DRIVER.VM</text>
-  <text x="50" y="292" font-family="sans-serif" font-size="11" fill="#455064">모터용 외부 전원 양극을 드라이버 VM에 연</text>
+  <rect x="40" y="245" width="150" height="70" rx="8" fill="#ffffff" stroke="yellow" stroke-width="4"/>
+  <text x="50" y="270" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">9. DRIVER.ENA → UNO.D5</text>
+  <text x="50" y="292" font-family="sans-serif" font-size="11" fill="#455064">왼쪽 PWM을 D5에 연결하세요.</text>
 </g>
 <g>
-  <rect x="230" y="245" width="150" height="70" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
-  <text x="240" y="270" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">10. BATTERY.- → DRIVER.GND</text>
-  <text x="240" y="292" font-family="sans-serif" font-size="11" fill="#455064">외부 전원 음극을 드라이버 GND에 연결하세</text>
+  <rect x="230" y="245" width="150" height="70" rx="8" fill="#ffffff" stroke="white" stroke-width="4"/>
+  <text x="240" y="270" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">10. DRIVER.ENB → UNO.D6</text>
+  <text x="240" y="292" font-family="sans-serif" font-size="11" fill="#455064">오른쪽 PWM을 D6에 연결하세요.</text>
 </g>
 <g>
-  <rect x="420" y="245" width="150" height="70" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
-  <text x="430" y="270" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">11. DRIVER.GND → UNO.GND</text>
-  <text x="430" y="292" font-family="sans-serif" font-size="11" fill="#455064">드라이버와 Uno의 GND를 공통으로 연결하</text>
+  <rect x="420" y="245" width="150" height="70" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
+  <text x="430" y="270" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">11. BATTERY.+ → DRIVER.VM</text>
+  <text x="430" y="292" font-family="sans-serif" font-size="11" fill="#455064">모터용 외부 전원 양극을 드라이버 VM에 연</text>
+</g>
+<g>
+  <rect x="610" y="245" width="150" height="70" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
+  <text x="620" y="270" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">12. BATTERY.- → DRIVER.GND</text>
+  <text x="620" y="292" font-family="sans-serif" font-size="11" fill="#455064">외부 전원 음극을 드라이버 GND에 연결하세</text>
+</g>
+<g>
+  <rect x="40" y="350" width="150" height="70" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
+  <text x="50" y="375" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">13. DRIVER.GND → UNO.GND</text>
+  <text x="50" y="397" font-family="sans-serif" font-size="11" fill="#455064">드라이버와 Uno의 GND를 공통으로 연결하</text>
 </g>
 </svg>

@@ -1,0 +1,117 @@
+{
+  "version": 1,
+  "author": "smart-lighting",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "id": "uno",
+      "type": "wokwi-arduino-uno",
+      "top": 0,
+      "left": 0
+    },
+    {
+      "id": "hc-sr501",
+      "type": "wokwi-pir-motion-sensor",
+      "top": 0,
+      "left": 100
+    },
+    {
+      "id": "cds",
+      "type": "wokwi-photoresistor-sensor",
+      "top": 0,
+      "left": 200
+    },
+    {
+      "id": "relay",
+      "type": "wokwi-relay-module",
+      "top": 0,
+      "left": 300
+    },
+    {
+      "id": "lamp_supply",
+      "type": "wokwi-slide-potentiometer",
+      "top": 0,
+      "left": 400
+    },
+    {
+      "id": "lamp",
+      "type": "wokwi-resistor",
+      "top": 0,
+      "left": 500
+    }
+  ],
+  "connections": [
+    [
+      "hc-sr501:VCC",
+      "uno:5V",
+      "red",
+      []
+    ],
+    [
+      "hc-sr501:GND",
+      "uno:GND",
+      "black",
+      []
+    ],
+    [
+      "hc-sr501:OUT",
+      "uno:D2",
+      "yellow",
+      []
+    ],
+    [
+      "cds:VCC",
+      "uno:5V",
+      "red",
+      []
+    ],
+    [
+      "cds:GND",
+      "uno:GND",
+      "black",
+      []
+    ],
+    [
+      "cds:AO",
+      "uno:A0",
+      "blue",
+      []
+    ],
+    [
+      "relay:VCC",
+      "uno:5V",
+      "red",
+      []
+    ],
+    [
+      "relay:GND",
+      "uno:GND",
+      "black",
+      []
+    ],
+    [
+      "relay:IN",
+      "uno:D7",
+      "orange",
+      []
+    ],
+    [
+      "lamp_supply:SIG",
+      "relay:COM",
+      "red",
+      []
+    ],
+    [
+      "relay:NO",
+      "lamp:1",
+      "purple",
+      []
+    ],
+    [
+      "lamp:2",
+      "lamp_supply:GND",
+      "black",
+      []
+    ]
+  ]
+}

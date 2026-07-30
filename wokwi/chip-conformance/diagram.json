@@ -18,6 +18,18 @@
       "attrs": {}
     },
     {
+      "type": "chip-bme280",
+      "id": "bme280",
+      "top": -120,
+      "left": -90,
+      "rotate": 0,
+      "attrs": {
+        "temperatureRaw": "519888",
+        "pressureRaw": "415148",
+        "humidityRaw": "30000"
+      }
+    },
+    {
       "type": "chip-ina219",
       "id": "ina219",
       "top": -120,
@@ -75,6 +87,50 @@
       "yellow",
       [
         "v-502.31"
+      ]
+    ],
+    [
+      "bme280:VCC",
+      "breadboard:tp.3",
+      "red",
+      [
+        "h-34.8",
+        "v147.42",
+        "h274.09",
+        "v76.69"
+      ]
+    ],
+    [
+      "bme280:GND",
+      "breadboard:tn.18",
+      "black",
+      [
+        "h-24.8",
+        "v196.82",
+        "h436.89",
+        "v27.29"
+      ]
+    ],
+    [
+      "bme280:SDA",
+      "breadboard:8t.b",
+      "green",
+      [
+        "h34.8",
+        "v195.42",
+        "h134.03",
+        "v76.39"
+      ]
+    ],
+    [
+      "bme280:SCL",
+      "breadboard:7t.b",
+      "yellow",
+      [
+        "h24.8",
+        "v173.82",
+        "h134.43",
+        "v88.39"
       ]
     ],
     [
@@ -174,6 +230,15 @@
       ]
     ],
     [
+      "breadboard:8t.c",
+      "breadboard:13t.d",
+      "green",
+      [
+        "h48",
+        "v9.6"
+      ]
+    ],
+    [
       "breadboard:17t.d",
       "breadboard:27t.d",
       "green",
@@ -203,6 +268,15 @@
       "yellow",
       [
         "h57.6"
+      ]
+    ],
+    [
+      "breadboard:7t.e",
+      "breadboard:12t.d",
+      "yellow",
+      [
+        "h48",
+        "v-9.6"
       ]
     ],
     [

@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "author": "S6",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "id": "uno",
+      "type": "wokwi-arduino-uno",
+      "top": 0,
+      "left": 0
+    },
+    {
+      "id": "bme280",
+      "type": "chip-bme280",
+      "top": 0,
+      "left": 100
+    }
+  ],
+  "connections": [
+    [
+      "bme280:VCC",
+      "uno:5V",
+      "red",
+      []
+    ],
+    [
+      "bme280:GND",
+      "uno:GND",
+      "black",
+      []
+    ],
+    [
+      "bme280:SDA",
+      "uno:A4",
+      "green",
+      []
+    ],
+    [
+      "bme280:SCL",
+      "uno:A5",
+      "yellow",
+      []
+    ]
+  ]
+}

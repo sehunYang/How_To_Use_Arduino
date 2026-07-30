@@ -69,8 +69,9 @@ describe('Wokwi part geometry', () => {
     ])
   })
 
-  it('registers both custom chips and keeps only genuinely unavailable breadboards listed', () => {
+  it('registers all custom chips and keeps only genuinely unavailable breadboards listed', () => {
     expect(geometryFor('chip-ina219')).toEqual(geometryFor('chip-tsl2591'))
+    expect(geometryFor('chip-ina219')).toEqual(geometryFor('chip-bme280'))
     expect(geometryFor('chip-ina219')?.pins.map((pin) => pin.name)).toEqual([
       'VCC',
       'GND',
@@ -80,6 +81,7 @@ describe('Wokwi part geometry', () => {
     expect(GEOMETRY_UNAVAILABLE).not.toHaveProperty('wokwi-breadboard-half')
     expect(GEOMETRY_UNAVAILABLE).not.toHaveProperty('chip-ina219')
     expect(GEOMETRY_UNAVAILABLE).not.toHaveProperty('chip-tsl2591')
+    expect(GEOMETRY_UNAVAILABLE).not.toHaveProperty('chip-bme280')
     expect(GEOMETRY_UNAVAILABLE).toHaveProperty('wokwi-breadboard')
     expect(GEOMETRY_UNAVAILABLE).toHaveProperty('wokwi-breadboard-mini')
   })

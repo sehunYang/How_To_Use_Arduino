@@ -77,6 +77,9 @@ jobs:
       - name: Verify generated Wokwi diagrams are current
         run: npm run verify:wokwi-diagram
 
+      - name: Verify 32 generated Phase 5 Wokwi projects and scenarios
+        run: npm run verify:wokwi:phase5-projects
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -104,6 +107,9 @@ jobs:
       - name: Build Arduino Uno firmware + stage Wokwi project assets
         run: npm run build:wokwi
 
+      - name: Build and stage 32 Phase 5 Wokwi firmware projects
+        run: npm run build:wokwi:phase5
+
       - name: L3 Wokwi simulation — pendulum recipe
         uses: wokwi/wokwi-ci-action@v1
         with:
@@ -129,3 +135,8 @@ jobs:
           path: wokwi/chip-conformance
           timeout: 10000
           scenario: scenario.test.yaml
+
+      - name: L3 Wokwi simulation — 32 eligible Phase 5 recipes
+        env:
+          WOKWI_CLI_TOKEN: ${{ secrets.WOKWI_CLI_TOKEN }}
+        run: npm run test:wokwi:phase5

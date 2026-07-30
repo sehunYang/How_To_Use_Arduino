@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "author": "S2",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "id": "uno",
+      "type": "wokwi-arduino-uno",
+      "top": 0,
+      "left": 0
+    },
+    {
+      "id": "hc-sr04",
+      "type": "wokwi-hc-sr04",
+      "top": 0,
+      "left": 100
+    }
+  ],
+  "connections": [
+    [
+      "hc-sr04:VCC",
+      "uno:5V",
+      "red",
+      []
+    ],
+    [
+      "hc-sr04:GND",
+      "uno:GND",
+      "black",
+      []
+    ],
+    [
+      "hc-sr04:TRIG",
+      "uno:D7",
+      "blue",
+      []
+    ],
+    [
+      "hc-sr04:ECHO",
+      "uno:D6",
+      "green",
+      []
+    ]
+  ]
+}

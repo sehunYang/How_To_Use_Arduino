@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "author": "p6-magnetic-field-distance",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "id": "uno",
+      "type": "wokwi-arduino-uno",
+      "top": 0,
+      "left": 0
+    },
+    {
+      "id": "hbe0704",
+      "type": "wokwi-potentiometer",
+      "top": 0,
+      "left": 100
+    }
+  ],
+  "connections": [
+    [
+      "hbe0704:VCC",
+      "uno:5V",
+      "red",
+      []
+    ],
+    [
+      "hbe0704:GND",
+      "uno:GND",
+      "black",
+      []
+    ],
+    [
+      "hbe0704:SIG",
+      "uno:A0",
+      "blue",
+      []
+    ]
+  ]
+}

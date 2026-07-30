@@ -5,7 +5,7 @@
  *
  *   pendulum         -> pendulumRecipe.sketch   (the recipe students are shown)
  *   ina219-current   -> ina219CurrentRecipe.sketch
- *   chip-conformance -> the INA219/TSL2591 verification fixture
+ *   chip-conformance -> the INA219/TSL2591/BME280 verification fixture
  *
  * Output lands in .tools/wokwi/<id>/, which each project's wokwi.toml points at.
  * .tools/ is never committed; CI rebuilds it every run.

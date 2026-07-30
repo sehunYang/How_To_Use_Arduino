@@ -16,3 +16,7 @@ binary = "ina219.chip.wasm"
 [[chip]]
 name = "tsl2591"
 binary = "tsl2591.chip.wasm"
+
+[[chip]]
+name = "bme280"
+binary = "bme280.chip.wasm"

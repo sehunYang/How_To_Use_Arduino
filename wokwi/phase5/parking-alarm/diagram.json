@@ -1,0 +1,81 @@
+{
+  "version": 1,
+  "author": "parking-alarm",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "id": "uno",
+      "type": "wokwi-arduino-uno",
+      "top": 0,
+      "left": 0
+    },
+    {
+      "id": "hc-sr04",
+      "type": "wokwi-hc-sr04",
+      "top": 0,
+      "left": 100
+    },
+    {
+      "id": "buzzer",
+      "type": "wokwi-buzzer",
+      "top": 0,
+      "left": 200
+    },
+    {
+      "id": "led",
+      "type": "wokwi-led",
+      "top": 0,
+      "left": 300
+    }
+  ],
+  "connections": [
+    [
+      "hc-sr04:VCC",
+      "uno:5V",
+      "red",
+      []
+    ],
+    [
+      "hc-sr04:GND",
+      "uno:GND",
+      "black",
+      []
+    ],
+    [
+      "hc-sr04:TRIG",
+      "uno:D8",
+      "blue",
+      []
+    ],
+    [
+      "hc-sr04:ECHO",
+      "uno:D9",
+      "green",
+      []
+    ],
+    [
+      "buzzer:2",
+      "uno:D3",
+      "purple",
+      []
+    ],
+    [
+      "buzzer:1",
+      "uno:GND",
+      "black",
+      []
+    ],
+    [
+      "led:A",
+      "uno:D4",
+      "orange",
+      []
+    ],
+    [
+      "led:C",
+      "uno:GND",
+      "black",
+      []
+    ]
+  ]
+}

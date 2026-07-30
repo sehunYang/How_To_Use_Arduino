@@ -50,6 +50,8 @@ export const WokwiDescriptorSchema = z.object({
   part: z.string().min(1),
   pinMap: z.record(z.string(), z.string()),
   simSupported: z.boolean(),
+  /** Alternative labels used by recipe wiring (for example RELAY or SERVO). */
+  aliases: z.array(z.string().min(1)).optional(),
 })
 export type WokwiDescriptor = z.infer<typeof WokwiDescriptorSchema>
 
@@ -80,5 +82,6 @@ export const ActuatorSchema = z.object({
   category: ActuatorCategorySchema,
   currentDrawMa: z.number().nonnegative(),
   pins: z.array(SensorPinSchema),
+  wokwi: WokwiDescriptorSchema,
 })
 export type Actuator = z.infer<typeof ActuatorSchema>

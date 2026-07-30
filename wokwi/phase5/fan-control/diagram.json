@@ -1,0 +1,81 @@
+{
+  "version": 1,
+  "author": "fan-control",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "id": "uno",
+      "type": "wokwi-arduino-uno",
+      "top": 0,
+      "left": 0
+    },
+    {
+      "id": "bme280",
+      "type": "chip-bme280",
+      "top": 0,
+      "left": 100
+    },
+    {
+      "id": "relay",
+      "type": "wokwi-relay-module",
+      "top": 0,
+      "left": 200
+    },
+    {
+      "id": "fan",
+      "type": "wokwi-resistor",
+      "top": 0,
+      "left": 300
+    }
+  ],
+  "connections": [
+    [
+      "bme280:VCC",
+      "uno:5V",
+      "red",
+      []
+    ],
+    [
+      "bme280:GND",
+      "uno:GND",
+      "black",
+      []
+    ],
+    [
+      "bme280:SDA",
+      "uno:A4",
+      "green",
+      []
+    ],
+    [
+      "bme280:SCL",
+      "uno:A5",
+      "yellow",
+      []
+    ],
+    [
+      "relay:IN",
+      "uno:D7",
+      "orange",
+      []
+    ],
+    [
+      "relay:VCC",
+      "uno:5V",
+      "red",
+      []
+    ],
+    [
+      "relay:GND",
+      "uno:GND",
+      "black",
+      []
+    ],
+    [
+      "fan:1",
+      "relay:NO",
+      "purple",
+      []
+    ]
+  ]
+}

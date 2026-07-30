@@ -1,0 +1,99 @@
+{
+  "version": 1,
+  "author": "photosynthesis-light-control",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "id": "uno",
+      "type": "wokwi-arduino-uno",
+      "top": 0,
+      "left": 0
+    },
+    {
+      "id": "tsl2591",
+      "type": "chip-tsl2591",
+      "top": 0,
+      "left": 100
+    },
+    {
+      "id": "relay",
+      "type": "wokwi-relay-module",
+      "top": 0,
+      "left": 200
+    },
+    {
+      "id": "led_supply",
+      "type": "wokwi-slide-potentiometer",
+      "top": 0,
+      "left": 300
+    },
+    {
+      "id": "led",
+      "type": "wokwi-led",
+      "top": 0,
+      "left": 400
+    }
+  ],
+  "connections": [
+    [
+      "tsl2591:VCC",
+      "uno:5V",
+      "red",
+      []
+    ],
+    [
+      "tsl2591:GND",
+      "uno:GND",
+      "black",
+      []
+    ],
+    [
+      "tsl2591:SDA",
+      "uno:A4",
+      "green",
+      []
+    ],
+    [
+      "tsl2591:SCL",
+      "uno:A5",
+      "yellow",
+      []
+    ],
+    [
+      "relay:VCC",
+      "uno:5V",
+      "red",
+      []
+    ],
+    [
+      "relay:GND",
+      "uno:GND",
+      "black",
+      []
+    ],
+    [
+      "relay:IN",
+      "uno:D7",
+      "orange",
+      []
+    ],
+    [
+      "led_supply:SIG",
+      "relay:COM",
+      "red",
+      []
+    ],
+    [
+      "relay:NO",
+      "led:A",
+      "purple",
+      []
+    ],
+    [
+      "led:C",
+      "led_supply:GND",
+      "black",
+      []
+    ]
+  ]
+}
