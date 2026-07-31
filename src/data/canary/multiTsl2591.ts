@@ -60,7 +60,7 @@ export const multiTsl2591Recipe: Recipe = {
   imageHeight: 600,
   wiring: [
     { from: 'UNO.5V', to: 'BB.tp.1', color: 'red', focus: { x: 100, y: 40, w: 140, h: 60 }, text: '아두이노 5V를 브레드보드 위쪽 빨간 전원 레일에 연결하세요' },
-    { from: 'UNO.GND', to: 'BB.tn.2', color: 'black', focus: { x: 100, y: 100, w: 140, h: 60 }, text: '아두이노 GND를 브레드보드 위쪽 파란 접지 레일에 연결하세요' },
+    { from: 'UNO.GND', to: 'BB.tn.1', color: 'black', focus: { x: 100, y: 100, w: 140, h: 60 }, text: '아두이노 GND를 브레드보드 위쪽 파란 접지 레일의 1번 홀에 연결하세요' },
     { from: 'BB.tp.25', to: 'BB.bp.25', color: 'red', focus: { x: 100, y: 160, w: 140, h: 60 }, text: '브레드보드 위아래 빨간 전원 레일을 서로 연결하세요' },
     { from: 'BB.tn.25', to: 'BB.bn.25', color: 'black', focus: { x: 100, y: 220, w: 140, h: 60 }, text: '브레드보드 위아래 파란 접지 레일을 서로 연결하세요' },
     { from: 'TCA9548A.VIN', to: 'BB.bp.8', color: 'red', focus: { x: 100, y: 280, w: 140, h: 60 }, text: '멀티플렉서 VIN을 아래쪽 빨간 전원 레일에 연결하세요' },

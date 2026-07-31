@@ -120,6 +120,41 @@ describe('WiringIllustration zoom and pan', () => {
     expect(current?.querySelector('[data-wire-halo]')).toHaveAttribute('stroke-width', '4.5')
   })
 
+  it('routes the UNO-to-rail and rail-to-sensor wires without overlapping segments', () => {
+    const { container } = render(<WiringIllustration recipe={pendulumRecipe} activeStep={0} />)
+    const wireLines = Array.from(container.querySelectorAll('[data-wire-line]'))
+    expect(wireLines).toHaveLength(2)
+
+    const segments = (line: Element) => {
+      const points = (line.getAttribute('points') ?? '').split(' ').map((point) => {
+        const [x, y] = point.split(',').map(Number)
+        return { x, y }
+      })
+      return points.slice(1).map((end, index) => ({ start: points[index], end }))
+    }
+    const overlaps = (left: ReturnType<typeof segments>[number], right: ReturnType<typeof segments>[number]) => {
+      if (left.start.x === left.end.x && right.start.x === right.end.x) {
+        if (left.start.x !== right.start.x) return false
+        const overlap = Math.min(Math.max(left.start.y, left.end.y), Math.max(right.start.y, right.end.y))
+          - Math.max(Math.min(left.start.y, left.end.y), Math.min(right.start.y, right.end.y))
+        return overlap > 0.01
+      }
+      if (left.start.y === left.end.y && right.start.y === right.end.y) {
+        if (left.start.y !== right.start.y) return false
+        const overlap = Math.min(Math.max(left.start.x, left.end.x), Math.max(right.start.x, right.end.x))
+          - Math.max(Math.min(left.start.x, left.end.x), Math.min(right.start.x, right.end.x))
+        return overlap > 0.01
+      }
+      return false
+    }
+
+    for (const left of segments(wireLines[0])) {
+      for (const right of segments(wireLines[1])) {
+        expect(overlaps(left, right)).toBe(false)
+      }
+    }
+  })
+
   it('anchors every Phase 5 wire endpoint to a visible pin center', () => {
     for (const recipe of phase5Recipes) {
       const { container, unmount } = render(

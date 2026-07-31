@@ -208,15 +208,9 @@ function escapePoints(point: Point, part: PositionedPart): Point[] {
   if (edge === 'left') return [{ x: part.left - 14, y: point.y }]
   if (edge === 'right') return [{ x: part.left + part.width + 14, y: point.y }]
   if (edge === 'top') {
-    return [
-      { x: point.x, y: part.top - 14 },
-      { x: part.left - 14, y: part.top - 14 },
-    ]
+    return [{ x: point.x, y: part.top - 14 }]
   }
-  return [
-    { x: point.x, y: part.top + part.height + 14 },
-    { x: part.left - 14, y: part.top + part.height + 14 },
-  ]
+  return [{ x: point.x, y: part.top + part.height + 14 }]
 }
 
 export function GeneratedWokwiDiagram({

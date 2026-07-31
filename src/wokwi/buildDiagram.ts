@@ -106,7 +106,12 @@ export function planBreadboardWiring(recipe: Recipe): PlannedWiringConnection[] 
     const holes = new Map<string, string>()
     if (isFiveVolt || isThreeVolt || isGround) {
       const rail = isGround ? 'tn' : isThreeVolt ? 'bp' : 'tp'
-      net.forEach((endpoint, index) => holes.set(endpoint, `BB.${rail}.${index + 1}`))
+      const orderedEndpoints = [...net].sort((left, right) => {
+        const leftIsUno = left.toUpperCase().startsWith('UNO.')
+        const rightIsUno = right.toUpperCase().startsWith('UNO.')
+        return Number(rightIsUno) - Number(leftIsUno)
+      })
+      orderedEndpoints.forEach((endpoint, index) => holes.set(endpoint, `BB.${rail}.${index + 1}`))
     } else {
       const rows = ['a', 'b', 'c', 'd', 'e']
       if (net.length > rows.length) {

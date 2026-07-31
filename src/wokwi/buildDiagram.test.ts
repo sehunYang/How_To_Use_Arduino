@@ -29,10 +29,10 @@ describe('buildDiagram', () => {
     expect(diagram.connections).toHaveLength(6)
     expect(diagram.connections).toEqual(
       expect.arrayContaining([
-        ['mpu6050:VCC', 'bb:tp.1', 'red', []],
-        ['uno:5V', 'bb:tp.2', 'red', []],
-        ['mpu6050:GND', 'bb:tn.1', 'black', []],
-        ['uno:GND', 'bb:tn.2', 'black', []],
+        ['mpu6050:VCC', 'bb:tp.2', 'red', []],
+        ['uno:5V', 'bb:tp.1', 'red', []],
+        ['mpu6050:GND', 'bb:tn.2', 'black', []],
+        ['uno:GND', 'bb:tn.1', 'black', []],
         ['mpu6050:SDA', 'uno:A4', 'green', []],
         ['mpu6050:SCL', 'uno:A5', 'yellow', []],
       ]),
@@ -59,7 +59,7 @@ describe('buildDiagram', () => {
     expect(diagram.connections).toEqual(
       expect.arrayContaining([
         ['uno:5V', 'bb:tp.1', 'red', []],
-        ['uno:GND', 'bb:tn.2', 'black', []],
+        ['uno:GND', 'bb:tn.1', 'black', []],
         ['tca9548a:VCC', 'bb:bp.8', 'red', []],
         ['tca9548a:GND', 'bb:bn.7', 'black', []],
         ['tsl2591_1:VCC', 'bb:bp.3', 'red', []],
@@ -192,10 +192,10 @@ describe('buildDiagram', () => {
 
     expect(diagram.connections).toEqual(
       expect.arrayContaining([
-        ['fake-sensor-11:VCC', 'bb:tp.1', 'red', []],
-        ['uno:5V', 'bb:tp.2', 'red', []],
-        ['fake-sensor-11:GND', 'bb:tn.1', 'black', []],
-        ['uno:GND', 'bb:tn.2', 'black', []],
+        ['fake-sensor-11:VCC', 'bb:tp.2', 'red', []],
+        ['uno:5V', 'bb:tp.1', 'red', []],
+        ['fake-sensor-11:GND', 'bb:tn.2', 'black', []],
+        ['uno:GND', 'bb:tn.1', 'black', []],
         ['fake-sensor-11:signal', 'uno:D2', 'blue', []],
       ]),
     )

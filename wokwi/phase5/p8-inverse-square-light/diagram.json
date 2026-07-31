@@ -31,25 +31,25 @@
   "connections": [
     [
       "tsl2591:VCC",
-      "bb:tp.1",
-      "red",
-      []
-    ],
-    [
-      "uno:5V",
       "bb:tp.2",
       "red",
       []
     ],
     [
+      "uno:5V",
+      "bb:tp.1",
+      "red",
+      []
+    ],
+    [
       "tsl2591:GND",
-      "bb:tn.1",
+      "bb:tn.2",
       "black",
       []
     ],
     [
       "uno:GND",
-      "bb:tn.2",
+      "bb:tn.1",
       "black",
       []
     ],
