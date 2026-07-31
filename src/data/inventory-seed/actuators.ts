@@ -200,6 +200,15 @@ export const wokwiAuxiliaryParts: WokwiAuxiliaryPart[] = [
     },
   },
   {
+    id: 'capacitor',
+    wokwi: {
+      part: 'visual-capacitor',
+      pinMap: { '1': '1', '2': '2', POSITIVE: '1', NEGATIVE: '2' },
+      simSupported: false,
+      aliases: ['CAPACITOR'],
+    },
+  },
+  {
     id: 'battery',
     wokwi: {
       part: 'wokwi-slide-potentiometer',

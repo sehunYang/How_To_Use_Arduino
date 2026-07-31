@@ -34,6 +34,56 @@ describe('Phase 6 recipe expansion', () => {
     }
   })
 
+  it('uses a filtered PWM sweep only for the low-current Ohm law experiment', () => {
+    const ohmsLaw = phase6PhysicsRecipes.find((recipe) => recipe.id === 'ph17-ohms-law')
+    expect(ohmsLaw).toBeDefined()
+    expect(ohmsLaw?.wiring).toEqual(expect.arrayContaining([
+      expect.objectContaining({ from: 'RESISTOR_100.1', to: 'UNO.D9' }),
+      expect.objectContaining({ from: 'RESISTOR_100.2', to: 'CAPACITOR.1' }),
+      expect.objectContaining({ from: 'CAPACITOR.2', to: 'UNO.GND' }),
+      expect.objectContaining({ from: 'INA219.VIN-', to: 'RESISTOR_1000.1' }),
+    ]))
+    expect(ohmsLaw?.wiring.some((step) => step.from.startsWith('BATTERY.'))).toBe(false)
+    expect(ohmsLaw?.sketch).toContain('analogWrite(PWM_OUT, duty)')
+    expect(ohmsLaw?.sketch).toContain('float busV = (readIna(0x02) >> 3) * 0.004f')
+    expect(ohmsLaw?.sketch).toContain('delay(settlingMs)')
+    expect(ohmsLaw?.body).toContain('1 kΩ 이상')
+
+    const unsuitableForUnoPwm = [
+      'ph18-series-parallel-resistance',
+      'ph19-kirchhoff-laws',
+      'ph20-joule-heating',
+      'ph22-battery-internal-resistance',
+      'ph23-solar-iv-mpp',
+      'ph24-solenoid-current-field',
+    ]
+    for (const id of unsuitableForUnoPwm) {
+      const recipe = phase6PhysicsRecipes.find((candidate) => candidate.id === id)
+      expect(recipe?.sketch, id).not.toContain('analogWrite(')
+      expect(recipe?.wiring.some((step) => step.from === 'UNO.D9' || step.to === 'UNO.D9'), id).toBe(false)
+    }
+  })
+
+  it('mounts the RC filter parts on breadboard terminal strips', () => {
+    const ohmsLaw = phase6PhysicsRecipes.find((recipe) => recipe.id === 'ph17-ohms-law')!
+    const diagram = buildDiagram(ohmsLaw, sensors)
+    expect(diagram.parts).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: 'capacitor', type: 'visual-capacitor' }),
+      expect.objectContaining({ id: 'resistor_100', type: 'wokwi-resistor' }),
+      expect.objectContaining({ id: 'resistor_1000', type: 'wokwi-resistor' }),
+    ]))
+    for (const partId of ['capacitor', 'resistor_100', 'resistor_1000']) {
+      const connections = diagram.connections.filter(([from, to]) =>
+        from.startsWith(`${partId}:`) || to.startsWith(`${partId}:`),
+      )
+      expect(connections, partId).toHaveLength(2)
+      expect(
+        connections.every(([from, to]) => from.startsWith('bb:') || to.startsWith('bb:')),
+        partId,
+      ).toBe(true)
+    }
+  })
+
   it('covers every formerly unused pin in a real recipe connection', () => {
     const endpoints = new Set(
       phase6PinRecipes.flatMap((recipe) =>

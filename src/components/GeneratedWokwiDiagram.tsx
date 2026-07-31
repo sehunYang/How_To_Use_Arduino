@@ -62,6 +62,7 @@ const PART_SIZE: Record<string, { width: number; height: number }> = {
   'wokwi-resistor': { width: 96, height: 38 },
   'wokwi-servo': { width: 170.08, height: 119.55 },
   'wokwi-slide-potentiometer': { width: 150, height: 109.61 },
+  'visual-capacitor': { width: 50, height: 70 },
 }
 
 const GEOMETRY_TYPE: Record<string, string> = {
@@ -75,6 +76,7 @@ const GEOMETRY_TYPE: Record<string, string> = {
 }
 
 function displayName(part: DiagramPart): string {
+  if (part.type === 'visual-capacitor') return '470 µF'
   if (part.type === 'wokwi-resistor') {
     const rated = /^resistor_(\d+)$/i.exec(part.id)
     if (rated) return Number(rated[1]) >= 1000
@@ -171,6 +173,7 @@ function boardMountedParts(
       part.type === 'wokwi-resistor'
       || part.type === 'wokwi-led'
       || part.type === 'wokwi-buzzer'
+      || part.type === 'visual-capacitor'
     ))
     .flatMap((part) => {
       const pinPoints = new Map<string, Point>()
@@ -201,10 +204,11 @@ function boardMountedGraphic(mounted: BoardMountedPart) {
   const centerX = (left.x + right.x) / 2
   const resistor = part.type === 'wokwi-resistor'
   const led = part.type === 'wokwi-led'
-  const bodyTop = holeY - (resistor ? 20 : led ? 42 : 48)
-  const bodyHeight = resistor ? 12 : led ? 25 : 32
-  const visualLeft = resistor ? left.x : centerX - (led ? 14 : 16)
-  const visualRight = resistor ? right.x : centerX + (led ? 14 : 16)
+  const capacitor = part.type === 'visual-capacitor'
+  const bodyTop = holeY - (resistor ? 20 : led ? 42 : capacitor ? 46 : 48)
+  const bodyHeight = resistor ? 12 : led ? 25 : capacitor ? 28 : 32
+  const visualLeft = resistor ? left.x : centerX - (led ? 14 : capacitor ? 13 : 16)
+  const visualRight = resistor ? right.x : centerX + (led ? 14 : capacitor ? 13 : 16)
   return (
     <g
       key={part.id}
@@ -217,7 +221,8 @@ function boardMountedGraphic(mounted: BoardMountedPart) {
       data-board-mounted-part={part.id}
       data-mounted-resistor={resistor ? part.id : undefined}
       data-mounted-led={led ? part.id : undefined}
-      data-mounted-buzzer={!resistor && !led ? part.id : undefined}
+      data-mounted-capacitor={capacitor ? part.id : undefined}
+      data-mounted-buzzer={!resistor && !led && !capacitor ? part.id : undefined}
       data-resistor-pin-1={`${start.x},${start.y}`}
       data-resistor-pin-2={`${end.x},${end.y}`}
     >
@@ -242,6 +247,13 @@ function boardMountedGraphic(mounted: BoardMountedPart) {
         <>
           <path d={`M${centerX - 12} ${bodyTop + 18}v-6a12 12 0 0 1 24 0v6z`} fill="#ef4444" stroke="#991b1b" strokeWidth="1.4" />
           <rect x={centerX - 14} y={bodyTop + 18} width="28" height="7" rx="2" fill="#b91c1c" />
+        </>
+      ) : capacitor ? (
+        <>
+          <rect x={centerX - 13} y={bodyTop + 4} width="26" height="24" rx="5" fill="#1f2937" stroke="#050708" strokeWidth="1.5" />
+          <path d={`M${centerX - 13} ${bodyTop + 9}h26`} stroke="#cbd5e1" strokeWidth="4" />
+          <text x={centerX - 8} y={bodyTop + 9} fill="#111827" fontSize="8" fontWeight="bold">+</text>
+          <text x={centerX} y={bodyTop + 22} textAnchor="middle" fill="#f8fafc" fontSize="7">470µF</text>
         </>
       ) : (
         <>

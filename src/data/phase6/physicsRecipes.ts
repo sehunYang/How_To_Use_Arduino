@@ -178,10 +178,71 @@ const electricity: Phase6RecipeDefinition[] = [
   {
     id: 'ph17-ohms-law', title: '옴의 법칙 V-I 특성', difficulty: '초급', minutes: 50, sensors: ['ina219'],
     keywords: ['옴의 법칙', '전압', '전류', '저항'],
-    law: '옴성 저항에서는 전압과 전류가 V=IR의 선형 관계를 따릅니다.',
-    apparatus: 'INA219, 100 Ω·220 Ω·1 kΩ 저항, 0~5 V 가변 저전압 전원, Arduino UNO, 브레드보드',
-    method: '저항값을 확인한 뒤 전압을 낮은 값부터 단계적으로 올리며 부하 전압과 전류를 기록합니다.',
-    graph: 'V-I 그래프의 기울기에서 저항을 구해 색띠값·멀티미터값과 비교합니다.',
+    law: '옴성 저항에서는 전압과 전류가 V=IR의 선형 관계를 따릅니다. UNO의 analogWrite()는 진짜 아날로그 전압이 아니라 PWM이므로, RC 저역통과 필터로 평활한 뒤 실제 전압을 INA219로 측정합니다.',
+    apparatus: 'INA219, 100 Ω RC 필터 저항, 470 µF 전해 커패시터, 1 kΩ·2.2 kΩ·4.7 kΩ 측정 저항, MF 점퍼선, Arduino UNO, 브레드보드',
+    method: 'D9 PWM 듀티를 단계적으로 올리고 RC 출력이 안정될 때까지 기다린 뒤 INA219가 측정한 실제 부하 전압과 전류를 기록합니다. 측정 저항을 1 kΩ, 2.2 kΩ, 4.7 kΩ으로 바꾸어 반복합니다.',
+    graph: 'PWM 듀티가 아니라 INA219가 측정한 실제 V-I 데이터를 그립니다. 각 직선의 V/I 또는 기울기에서 저항을 구해 표시값과 비교합니다.',
+    safety: '커패시터의 +극은 평활 노드, -극은 GND에 연결하세요. UNO D9의 과전류를 막기 위해 측정 저항은 1 kΩ 이상만 사용하고, 100 Ω·220 Ω을 부하로 직접 연결하지 마세요.',
+    connections: [
+      { from: 'INA219.VCC', to: 'UNO.5V', color: 'red', text: 'INA219 VCC를 브레드보드 + 전원 레일에 연결하세요.' },
+      { from: 'INA219.GND', to: 'UNO.GND', color: 'black', text: 'INA219 GND를 브레드보드 - 전원 레일에 연결하세요.' },
+      { from: 'INA219.SDA', to: 'UNO.A4', color: 'green', text: 'INA219 SDA를 UNO A4(SDA)에 직접 연결하세요.' },
+      { from: 'INA219.SCL', to: 'UNO.A5', color: 'yellow', text: 'INA219 SCL을 UNO A5(SCL)에 직접 연결하세요.' },
+      { from: 'RESISTOR_100.1', to: 'UNO.D9', color: 'orange', text: '브레드보드에 꽂은 100 Ω RC 필터 저항 1번 다리를 UNO D9 PWM 출력에 연결하세요.' },
+      { from: 'RESISTOR_100.2', to: 'CAPACITOR.1', color: 'orange', text: '100 Ω 저항 2번 다리와 470 µF 커패시터 +극을 같은 브레드보드 단자 열에 연결해 평활 노드를 만드세요.' },
+      { from: 'RESISTOR_100.2', to: 'INA219.VIN+', color: 'red', text: '평활 노드가 있는 브레드보드 단자 열을 INA219 VIN+에 연결하세요.' },
+      { from: 'CAPACITOR.2', to: 'UNO.GND', color: 'black', text: '470 µF 커패시터 -극을 브레드보드 - 전원 레일에 연결하세요.' },
+      { from: 'INA219.VIN-', to: 'RESISTOR_1000.1', color: 'purple', text: 'INA219 VIN-를 브레드보드에 꽂은 1 kΩ 측정 저항 1번 다리에 연결하세요.' },
+      { from: 'RESISTOR_1000.2', to: 'UNO.GND', color: 'black', text: '1 kΩ 측정 저항 2번 다리를 브레드보드 - 전원 레일에 연결하세요.' },
+    ],
+    sketch: `#include <Wire.h>
+// @baud 9600
+// @pin PWM_OUT=D9
+// @tunable settlingMs
+const byte PWM_OUT = 9;
+const float INA_SHUNT_OHMS = 0.1f;
+unsigned long settlingMs = 800;
+
+int16_t readIna(byte reg) {
+  Wire.beginTransmission(0x40);
+  Wire.write(reg);
+  Wire.endTransmission(false);
+  Wire.requestFrom(0x40, (byte)2);
+  return (int16_t)((Wire.read() << 8) | Wire.read());
+}
+
+void setup() {
+  Serial.begin(9600);
+  Wire.begin();
+  pinMode(PWM_OUT, OUTPUT);
+  analogWrite(PWM_OUT, 0);
+  Serial.println("duty,bus_V,shunt_mV,current_mA");
+}
+
+void loop() {
+  static int duty = 26;
+  analogWrite(PWM_OUT, duty);
+  delay(settlingMs);
+
+  float busV = (readIna(0x02) >> 3) * 0.004f;
+  float shuntMv = readIna(0x01) * 0.01f;
+  float currentMa = shuntMv / INA_SHUNT_OHMS;
+
+  Serial.print(duty);
+  Serial.print(',');
+  Serial.print(busV, 4);
+  Serial.print(',');
+  Serial.print(shuntMv, 4);
+  Serial.print(',');
+  Serial.println(currentMa, 3);
+
+  duty += 26;
+  if (duty > 234) {
+    analogWrite(PWM_OUT, 0);
+    duty = 26;
+    delay(2000);
+  }
+}`,
   },
   {
     id: 'ph18-series-parallel-resistance', title: '직렬·병렬 저항의 등가저항', difficulty: '중급', minutes: 60, sensors: ['ina219'],

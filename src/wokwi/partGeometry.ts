@@ -211,6 +211,13 @@ const hbe0704VisualGeometry: PartGeometry = {
   tolerance: MEASURED_TOLERANCE,
   pins: pins([['VCC', 94, 155], ['GND', 120, 155], ['SIG', 146, 155]]),
 }
+const capacitorVisualGeometry: PartGeometry = {
+  width: 50,
+  height: 70,
+  source: 'measured',
+  tolerance: MEASURED_TOLERANCE,
+  pins: pins([['1', 15, 69], ['2', 35, 69]]),
+}
 
 export const PART_GEOMETRY: Record<string, PartGeometry> = {
   // 72.58mm x 53.34mm. Two 9.5px-pitch headers: digital along y=9, power and
@@ -285,6 +292,7 @@ export const PART_GEOMETRY: Record<string, PartGeometry> = {
   'visual-battery': batteryVisualGeometry,
   'visual-ds18b20': ds18b20VisualGeometry,
   'visual-hbe0704': hbe0704VisualGeometry,
+  'visual-capacitor': capacitorVisualGeometry,
   'visual-tca9548a': tca9548aVisualGeometry(),
 }
 
