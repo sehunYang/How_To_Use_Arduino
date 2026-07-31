@@ -5,7 +5,6 @@ import '@wokwi/elements/dist/esm/hc-sr04-element.js'
 import '@wokwi/elements/dist/esm/lcd1602-element.js'
 import '@wokwi/elements/dist/esm/led-element.js'
 import '@wokwi/elements/dist/esm/mpu6050-element.js'
-import '@wokwi/elements/dist/esm/photoresistor-sensor-element.js'
 import '@wokwi/elements/dist/esm/pir-motion-sensor-element.js'
 import '@wokwi/elements/dist/esm/potentiometer-element.js'
 import '@wokwi/elements/dist/esm/resistor-element.js'
@@ -39,7 +38,6 @@ const NATIVE_PARTS = new Set([
   'wokwi-lcd1602',
   'wokwi-led',
   'wokwi-mpu6050',
-  'wokwi-photoresistor-sensor',
   'wokwi-pir-motion-sensor',
   'wokwi-potentiometer',
   'wokwi-resistor',
@@ -52,7 +50,6 @@ const PART_SIZE: Record<string, { width: number; height: number }> = {
   'wokwi-lcd1602': { width: 190, height: 95 },
   'wokwi-led': { width: 42, height: 48 },
   'wokwi-buzzer': { width: 64.25, height: 75.59 },
-  'wokwi-photoresistor-sensor': { width: 173.67, height: 61.48 },
   'wokwi-pir-motion-sensor': { width: 90.71, height: 92.4 },
   'wokwi-potentiometer': { width: 75.59, height: 75.59 },
   'wokwi-resistor': { width: 59.13, height: 11.34 },
@@ -64,7 +61,7 @@ const GEOMETRY_TYPE: Record<string, string> = {
   'chip-ina219': 'visual-ina219',
   'chip-tsl2591': 'visual-tsl2591',
   'chip-bme280': 'visual-bme280',
-  'wokwi-photoresistor-sensor': 'visual-cds',
+  'visual-cds': 'visual-cds',
   'wokwi-ds18b20': 'visual-ds18b20',
   'custom-tca9548a': 'visual-tca9548a',
 }
@@ -140,7 +137,7 @@ function partGraphic(part: PositionedPart) {
   if (part.type === 'chip-ina219') return <Ina219Part />
   if (part.type === 'chip-tsl2591') return <Tsl2591Part />
   if (part.type === 'chip-bme280') return <Bme280Visual />
-  if (part.type === 'wokwi-photoresistor-sensor') return <CdsVisual />
+  if (part.type === 'visual-cds') return <CdsVisual />
   if (part.type === 'wokwi-ds18b20') return <To92Visual label="DS18B20" />
   if (part.type === 'wokwi-potentiometer' && part.id.startsWith('hbe0704')) {
     return <To92Visual label="HBE0704" />

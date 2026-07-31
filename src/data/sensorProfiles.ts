@@ -121,7 +121,8 @@ export const sensorProfiles: SensorProfile[] = [
     summary: '빛이 밝아질수록 저항이 변하는 광저항을 사용해 주변 밝기를 간단히 비교합니다.',
     output: '아날로그 전압 · Arduino ADC 원시값(보통 0~1023)',
     specs: [
-      { label: '출력 방식', value: '전압 분배기의 아날로그 출력' },
+      { label: '핀 구성', value: 'L1, L2 두 다리(극성 없음)' },
+      { label: '출력 방식', value: '외부 10 kΩ 저항과 구성한 분압 접점의 아날로그 전압' },
       { label: '반응 특성', value: '밝기에 따라 비선형적으로 변화' },
       { label: '적합한 측정', value: '절대 lux보다 밝고 어두움의 상대 비교' },
     ],

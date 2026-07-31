@@ -184,7 +184,7 @@ const cdsVisualGeometry: PartGeometry = {
   height: 170,
   source: 'measured',
   tolerance: MEASURED_TOLERANCE,
-  pins: pins([['VCC', 96, 159], ['GND', 120, 159], ['AO', 144, 159]]),
+  pins: pins([['L1', 96, 159], ['L2', 144, 159]]),
 }
 const ds18b20VisualGeometry: PartGeometry = {
   width: 240,

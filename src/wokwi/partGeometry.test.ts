@@ -115,9 +115,8 @@ describe('Wokwi part geometry', () => {
       { name: 'SDA', x: 151, y: 164 },
     ])
     expect(geometryFor('visual-cds')?.pins).toEqual([
-      { name: 'VCC', x: 96, y: 159 },
-      { name: 'GND', x: 120, y: 159 },
-      { name: 'AO', x: 144, y: 159 },
+      { name: 'L1', x: 96, y: 159 },
+      { name: 'L2', x: 144, y: 159 },
     ])
     expect(geometryFor('visual-ds18b20')?.pins).toEqual([
       { name: 'GND', x: 94, y: 155 },

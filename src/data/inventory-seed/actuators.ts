@@ -182,6 +182,15 @@ export const wokwiAuxiliaryParts: WokwiAuxiliaryPart[] = [
     },
   },
   {
+    id: 'cds-resistor',
+    wokwi: {
+      part: 'wokwi-resistor',
+      pinMap: { '1': '1', '2': '2' },
+      simSupported: false,
+      aliases: ['CDS_RESISTOR'],
+    },
+  },
+  {
     id: 'battery',
     wokwi: {
       part: 'wokwi-slide-potentiometer',

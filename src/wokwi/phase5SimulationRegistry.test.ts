@@ -15,13 +15,20 @@ describe('Phase 5 Wokwi simulation registry', () => {
     expect(new Set(phase5SimulationRegistry.map((entry) => entry.recipeId)).size).toBe(34)
   })
 
-  it('derives 32 eligible entries and two planned exclusions from sensor support', () => {
+  it('derives eligible entries and truthful exclusions from sensor support', () => {
     const eligible = phase5SimulationRegistry.filter((entry) => entry.eligible)
     const planned = phase5SimulationRegistry.filter((entry) => !entry.eligible)
 
-    expect(eligible).toHaveLength(32)
-    expect(planned).toHaveLength(2)
-    expect(planned.map((entry) => entry.recipeId)).toEqual(['S9', 'e5-spatial-light-map'])
+    expect(eligible).toHaveLength(28)
+    expect(planned).toHaveLength(6)
+    expect(planned.map((entry) => entry.recipeId)).toEqual([
+      'S4',
+      'S9',
+      'e5-spatial-light-map',
+      'night-activity',
+      'light-follow-car',
+      'smart-lighting',
+    ])
   })
 
   it('provides unique deterministic scenarios within the timeout cap', () => {
@@ -42,7 +49,7 @@ describe('Phase 5 Wokwi simulation registry', () => {
     }
   })
 
-  it('builds a Wokwi diagram for all 32 eligible recipes', () => {
+  it('builds a Wokwi diagram for every eligible recipe', () => {
     const recipesById = new Map(phase5Recipes.map((recipe) => [recipe.id, recipe]))
     const eligible = phase5SimulationRegistry.filter((entry) => entry.eligible)
 
@@ -52,7 +59,7 @@ describe('Phase 5 Wokwi simulation registry', () => {
       return buildDiagram(recipe!, sensors)
     })
 
-    expect(diagrams).toHaveLength(32)
+    expect(diagrams).toHaveLength(28)
     expect(diagrams.every((diagram) => diagram.parts.length > 1)).toBe(true)
   })
 
@@ -61,8 +68,8 @@ describe('Phase 5 Wokwi simulation registry', () => {
 
     for (const entry of planned) {
       expect(entry.status).toBe('planned')
-      expect(entry.unsupportedSensorIds).toEqual(['tca9548a'])
-      expect(entry.exclusionReason).toContain('tca9548a')
+      expect(entry.unsupportedSensorIds.length).toBeGreaterThan(0)
+      expect(entry.exclusionReason).toContain(entry.unsupportedSensorIds[0])
     }
   })
 })

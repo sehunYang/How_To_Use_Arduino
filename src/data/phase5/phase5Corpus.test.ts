@@ -40,7 +40,7 @@ describe('complete Phase 5 corpus', () => {
     )).toEqual([])
   })
 
-  it('derives the planned 32/34 Wokwi-capable set from sensor descriptors', () => {
+  it('derives the Wokwi-capable set from truthful sensor descriptors', () => {
     const sensorById = new Map(sensors.map((sensor) => [sensor.id, sensor]))
     const supported = phase5Recipes.filter((recipe) =>
       recipe.sensors.every((sensorId) => sensorById.get(sensorId)?.wokwi.simSupported === true),
@@ -49,7 +49,38 @@ describe('complete Phase 5 corpus', () => {
       .filter((recipe) => !supported.includes(recipe))
       .map((recipe) => recipe.id)
 
-    expect(supported).toHaveLength(32)
-    expect(unsupported).toEqual(['S9', 'e5-spatial-light-map'])
+    expect(supported).toHaveLength(28)
+    expect(unsupported).toEqual([
+      'S4',
+      'S9',
+      'e5-spatial-light-map',
+      'night-activity',
+      'light-follow-car',
+      'smart-lighting',
+    ])
+  })
+
+  it('keeps recipes aligned with the corrected physical pinouts', () => {
+    const endpoints = (recipe: (typeof phase5Recipes)[number]) =>
+      recipe.wiring.flatMap((step) => [step.from, step.to])
+
+    for (const recipe of phase5Recipes.filter((entry) => entry.sensors.includes('cds'))) {
+      const refs = endpoints(recipe)
+      expect(refs.some((ref) => /^CDS(?:_\d+)?\.(?:VCC|GND|AO)$/.test(ref)), recipe.id).toBe(false)
+      expect(refs.some((ref) => /^CDS(?:_\d+)?\.L1$/.test(ref)), recipe.id).toBe(true)
+      expect(refs.some((ref) => /^CDS(?:_\d+)?\.L2$/.test(ref)), recipe.id).toBe(true)
+      expect(refs.some((ref) => /^CDS_RESISTOR(?:_\d+)?\.[12]$/.test(ref)), recipe.id).toBe(true)
+    }
+
+    for (const recipe of phase5Recipes.filter((entry) => entry.sensors.includes('ina219'))) {
+      const refs = endpoints(recipe)
+      expect(refs).toContain('INA219.VIN+')
+      expect(refs).toContain('INA219.VIN-')
+    }
+
+    for (const recipe of phase5Recipes.filter((entry) => entry.sensors.includes('tsl2591'))) {
+      expect(endpoints(recipe).some((ref) => /^TSL2591(?:_\d+)?\.VCC$/.test(ref)), recipe.id)
+        .toBe(false)
+    }
   })
 })

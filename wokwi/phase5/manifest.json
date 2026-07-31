@@ -1,10 +1,14 @@
 {
   "version": 1,
   "generatedFrom": "phase5SimulationRegistry",
-  "projectCount": 32,
+  "projectCount": 28,
   "exclusions": [
+    "S4",
     "S9",
-    "e5-spatial-light-map"
+    "e5-spatial-light-map",
+    "night-activity",
+    "light-follow-car",
+    "smart-lighting"
   ],
   "projects": [
     {
@@ -29,14 +33,6 @@
       "timeoutMs": 20000,
       "scenario": "scenario.test.yaml",
       "command": "wokwi-cli wokwi/phase5/S3 --scenario scenario.test.yaml --timeout 20000",
-      "chips": []
-    },
-    {
-      "id": "S4",
-      "path": "wokwi/phase5/S4",
-      "timeoutMs": 20000,
-      "scenario": "scenario.test.yaml",
-      "command": "wokwi-cli wokwi/phase5/S4 --scenario scenario.test.yaml --timeout 20000",
       "chips": []
     },
     {
@@ -210,14 +206,6 @@
       ]
     },
     {
-      "id": "night-activity",
-      "path": "wokwi/phase5/night-activity",
-      "timeoutMs": 20000,
-      "scenario": "scenario.test.yaml",
-      "command": "wokwi-cli wokwi/phase5/night-activity --scenario scenario.test.yaml --timeout 20000",
-      "chips": []
-    },
-    {
       "id": "photosynthesis-light-control",
       "path": "wokwi/phase5/photosynthesis-light-control",
       "timeoutMs": 20000,
@@ -244,14 +232,6 @@
       "chips": []
     },
     {
-      "id": "light-follow-car",
-      "path": "wokwi/phase5/light-follow-car",
-      "timeoutMs": 20000,
-      "scenario": "scenario.test.yaml",
-      "command": "wokwi-cli wokwi/phase5/light-follow-car --scenario scenario.test.yaml --timeout 20000",
-      "chips": []
-    },
-    {
       "id": "automatic-door",
       "path": "wokwi/phase5/automatic-door",
       "timeoutMs": 20000,
@@ -273,14 +253,6 @@
       "timeoutMs": 20000,
       "scenario": "scenario.test.yaml",
       "command": "wokwi-cli wokwi/phase5/rpm-meter --scenario scenario.test.yaml --timeout 20000",
-      "chips": []
-    },
-    {
-      "id": "smart-lighting",
-      "path": "wokwi/phase5/smart-lighting",
-      "timeoutMs": 20000,
-      "scenario": "scenario.test.yaml",
-      "command": "wokwi-cli wokwi/phase5/smart-lighting --scenario scenario.test.yaml --timeout 20000",
       "chips": []
     }
   ]

@@ -62,17 +62,16 @@ export function To92Visual({ label }: { label: 'DS18B20' | 'HBE0704' }) {
 
 export function CdsVisual() {
   return (
-    <FullFrame label="CDS 조도 센서">
+    <FullFrame label="CDS 2선 광저항">
       <defs><radialGradient id="cds-face"><stop stopColor="#f4e8a5" /><stop offset="1" stopColor="#c4a64c" /></radialGradient></defs>
       <circle cx="120" cy="64" r="53" fill="url(#cds-face)" stroke="#8e7430" strokeWidth="4" />
       <path d="M80 42h18v13h44v13H98v13h44v13H98v10" fill="none" stroke="#b0602d" strokeWidth="7" strokeLinejoin="round" />
       <path d="M80 42v62" fill="none" stroke="#b0602d" strokeWidth="7" />
-      <rect x="83" y="108" width="74" height="31" rx="5" fill="#246b45" stroke="#174b30" strokeWidth="3" />
-      <g fill="#eef7f0" fontSize="7" textAnchor="middle">
-        <text x="96" y="128">VCC</text><text x="120" y="128">GND</text><text x="144" y="128">AO</text>
+      <g stroke="#bbbcae" strokeWidth="7" strokeLinecap="round"><path d="M96 103v56" /><path d="M144 103v56" /></g>
+      <g stroke="#f0f0e8" strokeWidth="2" opacity=".65"><path d="M94 107v48" /><path d="M142 107v48" /></g>
+      <g fill="#596064" fontSize="8" fontWeight="700" textAnchor="middle">
+        <text x="96" y="169">L1</text><text x="144" y="169">L2</text>
       </g>
-      <g stroke="#bbbcae" strokeWidth="7" strokeLinecap="round"><path d="M96 136v23" /><path d="M120 136v23" /><path d="M144 136v23" /></g>
-      <g stroke="#f0f0e8" strokeWidth="2" opacity=".65"><path d="M94 139v16" /><path d="M118 139v16" /><path d="M142 139v16" /></g>
     </FullFrame>
   )
 }

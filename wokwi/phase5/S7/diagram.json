@@ -14,6 +14,12 @@
       "type": "chip-ina219",
       "top": 0,
       "left": 100
+    },
+    {
+      "id": "load",
+      "type": "wokwi-resistor",
+      "top": 0,
+      "left": 200
     }
   ],
   "connections": [
@@ -39,6 +45,24 @@
       "ina219:SCL",
       "uno:A5",
       "yellow",
+      []
+    ],
+    [
+      "ina219:VIN+",
+      "uno:5V",
+      "red",
+      []
+    ],
+    [
+      "ina219:VIN-",
+      "load:1",
+      "orange",
+      []
+    ],
+    [
+      "load:2",
+      "uno:GND",
+      "black",
       []
     ]
   ]

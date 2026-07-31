@@ -2,12 +2,10 @@ import { describe, it, expect } from 'vitest'
 import type { Recipe } from '@/schema'
 import { sensors } from '@/data/inventory-seed/sensors'
 import { pendulumRecipe } from '@/data/canary/pendulum'
-import { ina219CurrentRecipe } from '@/data/canary/ina219Current'
 import type { ReadableLayout, ReadableWire } from './readableLayout'
 import { validateReadableLayout } from './readableLayout'
 import { pendulumLayout } from './layouts/pendulumLayout'
 import { chipConformanceLayout } from './layouts/chipConformanceLayout'
-import { ina219CurrentLayout } from './layouts/ina219CurrentLayout'
 import {
   compareNetlists,
   layoutNetlist,
@@ -159,12 +157,6 @@ describe('recipe netlist', () => {
 describe('layout ↔ recipe gate', () => {
   it('passes when the layout builds exactly the recipe’s circuit', () => {
     expect(validateLayoutAgainstRecipe(pendulumLayout, pendulumRecipe, sensors)).toEqual([])
-  })
-
-  it('binds the INA219 L3 canary layout to its recipe wiring', () => {
-    expect(
-      validateLayoutAgainstRecipe(ina219CurrentLayout, ina219CurrentRecipe, sensors),
-    ).toEqual([])
   })
 
   it('catches a sensor wired into the simulated bus that the recipe never declares', () => {

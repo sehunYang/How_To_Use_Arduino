@@ -21,14 +21,21 @@ const excluded = phase5SimulationRegistry
   .map((entry) => entry.recipeId)
 
 describe('Phase 5 Wokwi project generation', () => {
-  it('generates exactly 32 deterministic projects and excludes only S9/E5', () => {
+  it('generates deterministic projects for every simulation-eligible recipe', () => {
     const projects = buildPhase5WokwiProjects(eligible, phase5Recipes, sensors)
     const manifest = buildPhase5WokwiManifest(projects, excluded)
 
-    expect(projects).toHaveLength(32)
-    expect(manifest.projectCount).toBe(32)
-    expect(manifest.exclusions).toEqual(['S9', 'e5-spatial-light-map'])
-    expect(new Set(projects.map((project) => project.id)).size).toBe(32)
+    expect(projects).toHaveLength(28)
+    expect(manifest.projectCount).toBe(28)
+    expect(manifest.exclusions).toEqual([
+      'S4',
+      'S9',
+      'e5-spatial-light-map',
+      'night-activity',
+      'light-follow-car',
+      'smart-lighting',
+    ])
+    expect(new Set(projects.map((project) => project.id)).size).toBe(28)
     expect(projects.some((project) => excluded.includes(project.id))).toBe(false)
   })
 

@@ -162,7 +162,7 @@ describe('WiringIllustration zoom and pan', () => {
   it('reuses the current sensor SVGs and their measured connector coordinates', () => {
     const expected = [
       ['bme280', 'chip-bme280', 'BME280 온습도 기압 센서 모듈'],
-      ['cds', 'wokwi-photoresistor-sensor', 'CDS 조도 센서'],
+      ['cds', 'visual-cds', 'CDS 2선 광저항'],
       ['ds18b20', 'wokwi-ds18b20', 'DS18B20 TO-92 센서'],
       ['hbe0704', 'wokwi-potentiometer', 'HBE0704 TO-92 센서'],
       ['ina219', 'chip-ina219', 'INA219'],

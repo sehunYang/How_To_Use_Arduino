@@ -1,7 +1,7 @@
 {
   "name": "INA219 Current Sensor",
   "author": "sehunYang",
-  "pins": ["VCC", "GND", "SCL", "SDA"],
+  "pins": ["VCC", "GND", "SCL", "SDA", "VIN+", "VIN-"],
   "display": {
     "width": 112,
     "height": 73

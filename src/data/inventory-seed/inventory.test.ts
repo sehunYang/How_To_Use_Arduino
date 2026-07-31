@@ -65,7 +65,7 @@ describe('sensor inventory seed', () => {
   })
 
   it('uses exact Wokwi endpoint names for analog and ultrasonic stand-ins', () => {
-    expect(sensors.find((s) => s.id === 'cds')?.wokwi.pinMap.AO).toBe('AO')
+    expect(sensors.find((s) => s.id === 'cds')?.wokwi.pinMap).toEqual({ L1: 'L1', L2: 'L2' })
     expect(sensors.find((s) => s.id === 'hc-sr04')?.wokwi.pinMap).toMatchObject({
       TRIG: 'TRIG',
       ECHO: 'ECHO',
@@ -74,7 +74,7 @@ describe('sensor inventory seed', () => {
   })
 
   it('every sensor with a native Wokwi part has simSupported=true and a real part id', () => {
-    const nativeIds = ['mpu6050', 'ds18b20', 'cds', 'hc-sr501', 'hc-sr04']
+    const nativeIds = ['mpu6050', 'ds18b20', 'hc-sr501', 'hc-sr04']
     for (const id of nativeIds) {
       const sensor = sensors.find((s) => s.id === id)!
       expect(sensor.wokwi.simSupported, id).toBe(true)
@@ -85,9 +85,9 @@ describe('sensor inventory seed', () => {
   it('sim-coverage-derivable set includes all three packaged custom chips', () => {
     const supported = sensors.filter((s) => s.wokwi.simSupported)
     const unsupported = sensors.filter((s) => !s.wokwi.simSupported)
-    expect(supported).toHaveLength(9)
+    expect(supported).toHaveLength(8)
     expect(supported.find((s) => s.id === 'bme280')?.wokwi.part).toBe('chip-bme280')
-    expect(unsupported.map((s) => s.id)).toEqual(['tca9548a'])
+    expect(unsupported.map((s) => s.id)).toEqual(['tca9548a', 'cds'])
   })
 })
 

@@ -12,8 +12,12 @@ const connections: Connection[] = [
   { from: 'TSL2591_2.SCL', to: 'TCA9548A.SC1', color: 'yellow', text: '두 번째 TSL2591 SCL을 TCA9548A SC1에 연결하세요.' },
   { from: 'TSL2591_3.SDA', to: 'TCA9548A.SD2', color: 'green', text: '세 번째 TSL2591 SDA를 TCA9548A SD2에 연결하세요.' },
   { from: 'TSL2591_3.SCL', to: 'TCA9548A.SC2', color: 'yellow', text: '세 번째 TSL2591 SCL을 TCA9548A SC2에 연결하세요.' },
-  { from: 'TSL2591_ALL.VIN', to: 'UNO.5V', color: 'red', text: '세 TSL2591 모듈의 VIN을 공통 5V 레일에 연결하세요.' },
-  { from: 'TSL2591_ALL.GND', to: 'UNO.GND', color: 'black', text: '세 TSL2591 모듈의 GND를 공통 GND 레일에 연결하세요.' },
+  { from: 'TSL2591_1.VIN', to: 'UNO.5V', color: 'red', text: '첫 번째 TSL2591 VIN을 공통 5V 레일에 연결하세요.' },
+  { from: 'TSL2591_1.GND', to: 'UNO.GND', color: 'black', text: '첫 번째 TSL2591 GND를 공통 GND 레일에 연결하세요.' },
+  { from: 'TSL2591_2.VIN', to: 'UNO.5V', color: 'red', text: '두 번째 TSL2591 VIN을 공통 5V 레일에 연결하세요.' },
+  { from: 'TSL2591_2.GND', to: 'UNO.GND', color: 'black', text: '두 번째 TSL2591 GND를 공통 GND 레일에 연결하세요.' },
+  { from: 'TSL2591_3.VIN', to: 'UNO.5V', color: 'red', text: '세 번째 TSL2591 VIN을 공통 5V 레일에 연결하세요.' },
+  { from: 'TSL2591_3.GND', to: 'UNO.GND', color: 'black', text: '세 번째 TSL2591 GND를 공통 GND 레일에 연결하세요.' },
 ]
 
 export const e5Recipe = createProjectRecipe({

@@ -411,21 +411,22 @@ PIR 센서는 사람 자체를 식별하지 않고, 렌즈 구역 사이에서 �
     sensors: ['cds'],
     coreKeywords: ['CDS', '조도', '아날로그', '분압'],
     wiring: [
-      wire('CDS.VCC', 'UNO.5V', 'red', '조도센서 모듈 VCC를 5V에 연결하세요.', 0),
-      wire('CDS.GND', 'UNO.GND', 'black', '조도센서 모듈 GND를 GND에 연결하세요.', 1),
-      wire('CDS.AO', 'UNO.A0', 'green', '아날로그 출력 AO를 A0에 연결하세요.', 2),
+      wire('CDS.L1', 'UNO.5V', 'red', 'CDS의 한쪽 다리 L1을 5V에 연결하세요.', 0),
+      wire('CDS.L2', 'CDS_RESISTOR.1', 'green', 'CDS의 다른 다리 L2를 10 kΩ 분압 저항 한쪽과 연결하세요.', 1),
+      wire('CDS_RESISTOR.1', 'UNO.A0', 'green', 'L2와 저항이 만나는 분압 접점을 A0에 연결하세요.', 2),
+      wire('CDS_RESISTOR.2', 'UNO.GND', 'black', '분압 저항의 다른 쪽을 GND에 연결하세요.', 3),
     ],
     sketch: s4Sketch,
     tunables: [{ anchor: 'samples', name: '평균 표본 수', hint: '늘리면 값은 안정되지만 반응은 느려집니다.' }],
     body: `## 밝기에 따른 저항 변화 읽기
 
-CDS의 저항은 빛에 따라 변하고 모듈의 분압 회로가 이를 0~5 V 전압으로 바꿉니다. 아두이노 ADC는 그 전압을 0~1023 값으로 변환합니다.
+CDS의 저항은 빛에 따라 변합니다. CDS와 외부 10 kΩ 저항으로 분압 회로를 만들면 아두이노 ADC가 접점 전압을 0~1023 값으로 변환합니다.
 
 :::toggle 값 해석
 ADC 값은 회로에서 CDS가 위쪽과 아래쪽 중 어디에 있는지에 따라 밝을수록 커지거나 작아집니다. 보정하지 않은 ADC 값을 lux라고 부르면 안 됩니다.
 :::`,
     applicationGuide: '같은 거리에서 종이 필터를 겹치며 ADC 값의 상대 변화를 비교하세요.',
-    troubleshooting: guidance('CDS', 'AO를 사용했는지 확인하고 여러 값을 평균내며 주변광을 일정하게 유지하세요.'),
+    troubleshooting: guidance('CDS', 'L2와 10 kΩ 저항이 만나는 접점을 A0에 연결했는지 확인하고 여러 값을 평균내세요.'),
   }),
   example({
     id: 'S5',
@@ -478,7 +479,12 @@ BME280은 온도, 상대습도, 절대기압을 함께 측정합니다. 상대�
     minutes: 40,
     sensors: ['ina219'],
     coreKeywords: ['INA219', '전압', '전류', '전력', '션트'],
-    wiring: i2cWiring('INA219'),
+    wiring: [
+      ...i2cWiring('INA219'),
+      wire('INA219.VIN+', 'UNO.5V', 'red', '측정 전원의 양극을 INA219 VIN+에 연결하세요.', 4),
+      wire('INA219.VIN-', 'LOAD.POSITIVE', 'orange', 'INA219 VIN-를 측정 부하의 양극에 연결하세요.', 5),
+      wire('LOAD.NEGATIVE', 'UNO.GND', 'black', '부하 음극을 공통 GND에 연결해 직렬 경로를 완성하세요.', 6),
+    ],
     sketch: s7Sketch,
     tunables: [{ anchor: 'samplingIntervalMs', name: '측정 간격', hint: '부하 변화 속도에 맞춰 조절하세요.' }],
     body: `## 부하의 전력 측정하기

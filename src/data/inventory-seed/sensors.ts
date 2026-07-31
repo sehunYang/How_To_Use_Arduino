@@ -27,7 +27,7 @@ export const sensors: Sensor[] = [
       { name: 'VIN-', kind: 'power' },
     ],
     currentDrawMa: 1,
-    wokwi: { part: 'chip-ina219', pinMap: { VCC: 'VCC', GND: 'GND', SCL: 'SCL', SDA: 'SDA' }, simSupported: true },
+    wokwi: { part: 'chip-ina219', pinMap: { VCC: 'VCC', GND: 'GND', SCL: 'SCL', SDA: 'SDA', 'VIN+': 'VIN+', 'VIN-': 'VIN-' }, simSupported: true },
     muxChannels: 0,
   },
   {
@@ -129,12 +129,11 @@ export const sensors: Sensor[] = [
     interface: 'analog',
     addressing: { mode: 'none' },
     pins: [
-      { name: 'VCC', kind: 'power' },
-      { name: 'GND', kind: 'power' },
-      { name: 'AO', kind: 'analog' },
+      { name: 'L1', kind: 'analog' },
+      { name: 'L2', kind: 'analog' },
     ],
-    currentDrawMa: 5,
-    wokwi: { part: 'wokwi-photoresistor-sensor', pinMap: { VCC: 'VCC', GND: 'GND', AO: 'AO' }, simSupported: true },
+    currentDrawMa: 0.5,
+    wokwi: { part: 'visual-cds', pinMap: { L1: 'L1', L2: 'L2' }, simSupported: false },
     muxChannels: 0,
   },
   {

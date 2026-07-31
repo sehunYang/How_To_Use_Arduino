@@ -85,13 +85,19 @@
     ],
     [
       "panel:SIG",
+      "ina219:VIN+",
+      "orange",
+      []
+    ],
+    [
+      "ina219:VIN-",
       "load:1",
       "orange",
       []
     ],
     [
-      "panel:GND",
       "load:2",
+      "panel:GND",
       "purple",
       []
     ]
