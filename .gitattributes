@@ -1,0 +1,15 @@
+# 생성된 산출물은 줄바꿈을 LF로 고정합니다.
+#
+# 이 파일들은 스크립트가 LF로 써 내고, 검사는 디스크에 있는 내용을 생성기 출력과
+# 그대로 비교합니다(`src/wokwi/phase5ProjectGenerator.test.ts`의 "keeps the
+# committed generated tree complete and current", `generate-phase5-wokwi.ts
+# --check`). 저장소에는 LF로 담기지만 core.autocrlf=true인 Windows에서 내려받으면
+# 작업 폴더에서 CRLF로 바뀌고, 그러면 내용이 같은데도 검사가 실패합니다. 새로
+# 복제한 환경에서도 검사가 통과하도록 여기서 LF로 못 박습니다.
+#
+# wokwi/ 아래에는 .ino, .json, .toml, .yaml만 있고 바이너리는 없습니다.
+wokwi/** text eol=lf
+
+# 배선 그림은 `npm run build`의 첫 단계가 매번 다시 만듭니다. CRLF로 내려받으면
+# 빌드할 때마다 내용 변화 없이 줄바꿈만 달라진 수정본이 생깁니다.
+public/wiring/*.svg text eol=lf
