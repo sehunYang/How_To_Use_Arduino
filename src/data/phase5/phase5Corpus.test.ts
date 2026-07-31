@@ -24,13 +24,13 @@ describe('complete Phase 5 corpus', () => {
       expect(recipe.status, recipe.id).toBe('draft')
       expect(recipe.reviewedOnDevice, recipe.id).toBeNull()
       expect(recipe.commentReviewed, recipe.id).toBeNull()
-      expect(recipe.body, recipe.id).toContain('## 실험 실행 계획')
+      expect(recipe.body, recipe.id).toContain('## 한눈에 보기')
+      expect(recipe.body, recipe.id).toContain('## 1. 과학 이론 쉽게 이해하기')
+      expect(recipe.body, recipe.id).toContain('실험 실행 계획')
       expect(recipe.body, recipe.id).not.toContain('## 측정 기록표')
       expect(recipe.body, recipe.id).not.toContain('## 계산과 그래프')
       expect(recipe.body, recipe.id).not.toContain('표본 표준편차')
       expect(recipe.body, recipe.id).not.toContain('relative error')
-      expect(recipe.body, recipe.id).toContain('## 과학 이론 쉽게 이해하기')
-      expect(recipe.body.trim(), recipe.id).toMatch(/## 과학 이론 쉽게 이해하기\n\n[^#]+$/)
     }
   })
 

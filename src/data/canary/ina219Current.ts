@@ -1,4 +1,6 @@
 import type { Recipe } from '@/schema'
+import { withInquiryWorkbook } from '@/data/inquiryGuide'
+import { canaryPlans } from '@/data/inquiry/plansCanary'
 
 const sketch = `#include <Wire.h>
 
@@ -42,7 +44,7 @@ void loop() {
 }
 `
 
-export const ina219CurrentRecipe: Recipe = {
+export const ina219CurrentRecipe: Recipe = withInquiryWorkbook(canaryPlans)({
   id: 'ina219-current',
   type: 'sensor-example',
   title: 'INA219로 전류 변화 읽기',
@@ -90,4 +92,4 @@ INA219의 전류 레지스터를 I2C로 읽어 부하 변화가 측정값에 반
   reviewedOnDevice: null,
   commentReviewed: null,
   updatedAt: '2026-07-27T00:00:00.000Z',
-}
+})

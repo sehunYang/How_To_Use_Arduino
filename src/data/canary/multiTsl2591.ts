@@ -1,4 +1,6 @@
 import type { Recipe } from '@/schema'
+import { withInquiryWorkbook } from '@/data/inquiryGuide'
+import { canaryPlans } from '@/data/inquiry/plansCanary'
 
 const sketch = `#include <Wire.h>
 #include <TCA9548A.h>
@@ -45,7 +47,7 @@ void loop() {
  * bus without TCA9548A. This is the draft-status canary (plan errata: 3→4
  * gate needs both a draft and a published fixture exercised).
  */
-export const multiTsl2591Recipe: Recipe = {
+export const multiTsl2591Recipe: Recipe = withInquiryWorkbook(canaryPlans)({
   id: 'multi-tsl2591',
   type: 'sensor-example',
   title: '주소가 같은 센서 여러 개 연결하기',
@@ -106,4 +108,4 @@ INA219는 A0/A1 점퍼로 주소를 바꿀 수 있지만, TSL2591은 그럴 수 
   reviewedOnDevice: null,
   commentReviewed: null,
   updatedAt: '2026-01-01T00:00:00.000Z',
-}
+})

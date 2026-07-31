@@ -1,4 +1,6 @@
 import type { Recipe } from '@/schema'
+import { withInquiryWorkbook } from '@/data/inquiryGuide'
+import { canaryPlans } from '@/data/inquiry/plansCanary'
 
 const sketch = `#include <Wire.h>
 #include <MPU6050.h>
@@ -37,7 +39,7 @@ void loop() {
 }
 `
 
-export const pendulumRecipe: Recipe = {
+export const pendulumRecipe: Recipe = withInquiryWorkbook(canaryPlans)({
   id: 'pendulum',
   type: 'project',
   title: '단진자의 주기 측정하기',
@@ -86,4 +88,4 @@ VCC를 3.3V가 아니라 5V에 꽂으세요. 이 보드는 5V 기준으로 동�
   reviewedOnDevice: null,
   commentReviewed: null,
   updatedAt: '2026-01-01T00:00:00.000Z',
-}
+})
