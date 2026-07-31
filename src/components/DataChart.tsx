@@ -6,21 +6,18 @@
  * PNG는 화면에 보이는 그림을 그대로 복사한 것이라 둘이 달라지면 안 되고, 어두운 바탕
  * 그림은 인쇄물이나 보고서에 쓸 수 없기 때문입니다.
  *
- * 계열 색은 고정된 순서로만 배정합니다(파랑 → 주황 → 초록). 계열을 빼거나 더해도
- * 남은 계열의 색이 바뀌지 않아야 "파란 점이 온도"라는 기억이 계속 맞습니다.
- * 색만으로 구분하지 않도록 점 모양(원·마름모·삼각형)도 함께 다르게 그립니다.
+ * 색은 두 가지 방식으로 배정합니다. 서로 다른 측정값(온도·습도)은 순서가 없으므로
+ * 구별되는 색 세 가지를 고정된 순서로 쓰고, 실험 회차는 1회차·2회차처럼 순서가 있으므로
+ * 같은 파랑을 옅은 쪽에서 짙은 쪽으로 단계지어 씁니다. 어느 쪽이든 색만으로 구분하지
+ * 않도록 점 모양도 함께 다르게 그리고, 값은 언제나 아래 표에서 확인할 수 있습니다.
  */
 import { useCallback, useId, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent, type RefObject } from 'react'
+import { CONTEXT_COLOR, seriesPaletteColors, type SeriesPalette } from '@/lib/chartPalette'
 import { createAxisScale, estimateTextWidth, extent } from '@/lib/chartScale'
 import { formatMeasurement, type MeasurementPoint } from '@/lib/dataStats'
 
 export const CHART_WIDTH = 760
 export const CHART_HEIGHT = 470
-
-/** 산점도는 모든 계열 쌍이 서로 구분되어야 해서 세 개까지만 함께 그립니다. */
-export const SERIES_COLORS = ['#2a78d6', '#eb6834', '#1baf7a'] as const
-export const MAX_SERIES = SERIES_COLORS.length
-export const SERIES_SHAPE_NAMES = ['원', '마름모', '삼각형'] as const
 
 const SURFACE = '#ffffff'
 const INK = '#111111'
@@ -37,6 +34,14 @@ const TICK_LENGTH = 6
 const MARKER_RADIUS = 4
 /** 점(반지름)과 바탕색 테두리(2)를 합친 크기. 축 위의 점을 온전히 그리는 여백입니다. */
 const MARKER_CLIP_PADDING = MARKER_RADIUS + 3
+const CONTEXT_RADIUS = 2.5
+/** 상자 폭의 최댓값과, 이웃한 상자 사이에 남길 자리의 비율 */
+const MAX_BOX_WIDTH = 16
+const BOX_WIDTH_RATIO = 0.6
+/** 수염 끝 가로선은 상자 폭의 절반. 관례를 따르면 상자와 수염이 한눈에 구별됩니다. */
+const WHISKER_CAP_RATIO = 0.5
+/** 상자 위에 얹는 평균 점. 값의 퍼짐이 작을 때 점이 상자를 덮지 않도록 작게 그립니다. */
+const MEAN_RADIUS = 2.5
 const LABEL_FONT_SIZE = 13
 /**
  * 꺾은선에서 이웃한 점 사이가 이보다 좁으면 점을 그리지 않고 선만 남깁니다.
@@ -48,10 +53,30 @@ const HOVER_RADIUS = 40
 
 export type ChartKind = 'scatter' | 'line'
 
+/**
+ * 상자그림 한 칸을 그리는 다섯 수치. 수염은 최솟값과 최댓값까지 그립니다.
+ * 회차가 서너 번뿐인 학교 실험에서는 1.5배 사분위범위로 이상값을 가려내는 규칙이
+ * 뜻을 잃기 때문에, 모든 측정값을 수염 안에 담아 그대로 보여 줍니다.
+ */
+export interface ChartBox {
+  min: number
+  quartile1: number
+  median: number
+  quartile3: number
+  max: number
+}
+
+export interface ChartPoint extends MeasurementPoint {
+  /** 있으면 점 자리에 상자그림을 함께 그립니다. `y`는 상자 위에 얹는 평균입니다. */
+  box?: ChartBox | null
+  /** 점을 가리켰을 때 값과 함께 보여 줄 한 줄 설명 */
+  note?: string
+}
+
 export interface ChartSeries {
   key: string
   label: string
-  points: readonly MeasurementPoint[]
+  points: readonly ChartPoint[]
 }
 
 export interface TrendLine {
@@ -61,23 +86,29 @@ export interface TrendLine {
   annotation: string
 }
 
-function SeriesMarker({ shapeIndex, x, y }: { shapeIndex: number; x: number; y: number }) {
-  const fill = SERIES_COLORS[shapeIndex]
+function SeriesMarker({ shapeIndex, color, x, y }: { shapeIndex: number; color: string; x: number; y: number }) {
   // 겹친 점끼리도 구분되도록 바탕색 테두리를 두릅니다.
   const ring = { stroke: SURFACE, strokeWidth: 2 }
+  const size = MARKER_RADIUS + 1
 
-  if (shapeIndex === 0) return <circle cx={x} cy={y} r={MARKER_RADIUS} fill={fill} {...ring} />
   if (shapeIndex === 1) {
-    const d = `M ${x} ${y - MARKER_RADIUS - 1} L ${x + MARKER_RADIUS + 1} ${y} L ${x} ${y + MARKER_RADIUS + 1} L ${x - MARKER_RADIUS - 1} ${y} Z`
-    return <path d={d} fill={fill} {...ring} />
+    return <path d={`M ${x} ${y - size} L ${x + size} ${y} L ${x} ${y + size} L ${x - size} ${y} Z`} fill={color} {...ring} />
   }
-  const d = `M ${x} ${y - MARKER_RADIUS - 1.5} L ${x + MARKER_RADIUS + 1} ${y + MARKER_RADIUS} L ${x - MARKER_RADIUS - 1} ${y + MARKER_RADIUS} Z`
-  return <path d={d} fill={fill} {...ring} />
+  if (shapeIndex === 2) {
+    return <path d={`M ${x} ${y - size - 0.5} L ${x + size} ${y + MARKER_RADIUS} L ${x - size} ${y + MARKER_RADIUS} Z`} fill={color} {...ring} />
+  }
+  if (shapeIndex === 3) {
+    return <rect x={x - MARKER_RADIUS} y={y - MARKER_RADIUS} width={MARKER_RADIUS * 2} height={MARKER_RADIUS * 2} fill={color} {...ring} />
+  }
+  if (shapeIndex === 4) {
+    return <path d={`M ${x} ${y + size + 0.5} L ${x + size} ${y - MARKER_RADIUS} L ${x - size} ${y - MARKER_RADIUS} Z`} fill={color} {...ring} />
+  }
+  return <circle cx={x} cy={y} r={MARKER_RADIUS} fill={color} {...ring} />
 }
 
 interface HoveredPoint {
   seriesLabel: string
-  point: MeasurementPoint
+  point: ChartPoint
   cx: number
   cy: number
 }
@@ -88,13 +119,29 @@ export interface DataChartProps {
   yLabel: string
   kind: ChartKind
   trendLine?: TrendLine | null
+  /** 계열이 측정값 종류인지 실험 회차인지에 따라 색 배정 방식을 고릅니다. */
+  palette?: SeriesPalette
+  /** 평균 뒤에 옅게 깔아 둘 원본 측정값 */
+  contextPoints?: readonly MeasurementPoint[]
+  contextLabel?: string
   /** 화면 낭독기가 읽어 줄 그래프 설명 */
   description: string
   /** PNG 저장 버튼이 그림을 복사할 수 있도록 SVG를 밖으로 전달합니다. */
   chartRef?: RefObject<SVGSVGElement | null>
 }
 
-export function DataChart({ series, xLabel, yLabel, kind, trendLine, description, chartRef }: DataChartProps) {
+export function DataChart({
+  series,
+  xLabel,
+  yLabel,
+  kind,
+  trendLine,
+  palette = 'variable',
+  contextPoints,
+  contextLabel,
+  description,
+  chartRef,
+}: DataChartProps) {
   const clipId = useId()
   const markerClipId = useId()
   const ownRef = useRef<SVGSVGElement>(null)
@@ -109,13 +156,20 @@ export function DataChart({ series, xLabel, yLabel, kind, trendLine, description
   )
 
   const geometry = useMemo(() => {
-    const visibleSeries = series.slice(0, MAX_SERIES)
-    const showLegend = visibleSeries.length > 1
+    const colors = seriesPaletteColors(palette)
+    const visibleSeries = series.slice(0, colors.length)
+    const hasContext = Boolean(contextPoints && contextPoints.length > 0)
+    const showLegend = visibleSeries.length > 1 || hasContext
     const plotTop = showLegend || trendLine ? PLOT_TOP_WITH_BAND : PLOT_TOP_PLAIN
 
     const allPoints = visibleSeries.flatMap((entry) => entry.points)
-    const xExtent = extent(allPoints.map((point) => point.x))
-    const yExtent = extent(allPoints.map((point) => point.y))
+    const xExtent = extent([...allPoints, ...(contextPoints ?? [])].map((point) => point.x))
+    // 오차 막대 끝이 잘리지 않도록 세로 범위에 막대 길이를 함께 넣습니다.
+    const yExtent = extent([
+      // 수염 끝이 잘리지 않도록 세로 범위에 상자의 최솟값과 최댓값을 함께 넣습니다.
+      ...allPoints.flatMap((point) => (point.box ? [point.box.min, point.box.max] : [point.y])),
+      ...(contextPoints ?? []).map((point) => point.y),
+    ])
     const xScale = createAxisScale(xExtent.min, xExtent.max)
     const yScale = createAxisScale(yExtent.min, yExtent.max, 7)
 
@@ -130,6 +184,14 @@ export function DataChart({ series, xLabel, yLabel, kind, trendLine, description
       return ordered.map((point) => ({ point, cx: toScreenX(point.x), cy: toScreenY(point.y) }))
     })
 
+    const projectedContext = (contextPoints ?? []).map((point) => ({
+      cx: toScreenX(point.x),
+      cy: toScreenY(point.y),
+    }))
+
+    const boxCount = Math.max(...visibleSeries.map((entry) => entry.points.length), 1)
+    const boxWidth = Math.min(MAX_BOX_WIDTH, ((PLOT_RIGHT - PLOT_LEFT) / boxCount) * BOX_WIDTH_RATIO)
+
     const trendSegment = trendLine
       ? {
           x1: toScreenX(xScale.min),
@@ -139,19 +201,61 @@ export function DataChart({ series, xLabel, yLabel, kind, trendLine, description
         }
       : null
 
-    return { visibleSeries, showLegend, plotTop, xScale, yScale, toScreenX, toScreenY, projected, trendSegment }
-  }, [series, kind, trendLine])
+    return {
+      colors,
+      visibleSeries,
+      hasContext,
+      showLegend,
+      plotTop,
+      xScale,
+      yScale,
+      toScreenX,
+      toScreenY,
+      projected,
+      projectedContext,
+      boxWidth,
+      trendSegment,
+    }
+  }, [series, kind, trendLine, palette, contextPoints])
 
-  const { visibleSeries, showLegend, plotTop, xScale, yScale, toScreenX, toScreenY, projected, trendSegment } = geometry
+  const {
+    colors,
+    visibleSeries,
+    hasContext,
+    showLegend,
+    plotTop,
+    xScale,
+    yScale,
+    toScreenY,
+    toScreenX,
+    projected,
+    projectedContext,
+    boxWidth,
+    trendSegment,
+  } = geometry
 
-  const legendPositions = useMemo(() => {
+  const legendEntries = useMemo(() => {
+    const entries: { key: string; label: string; color: string; shapeIndex: number }[] = visibleSeries.map((entry, index) => ({
+      key: entry.key,
+      label: entry.label,
+      color: colors[index],
+      shapeIndex: index,
+    }))
+    if (hasContext) {
+      entries.push({
+        key: '__context',
+        label: contextLabel ?? '회차별 측정값',
+        color: CONTEXT_COLOR,
+        shapeIndex: 0,
+      })
+    }
     let offset = PLOT_LEFT
-    return visibleSeries.map((entry) => {
+    return entries.map((entry) => {
       const position = offset
       offset += estimateTextWidth(entry.label, LABEL_FONT_SIZE) + 44
-      return position
+      return { ...entry, x: position }
     })
-  }, [visibleSeries])
+  }, [visibleSeries, colors, hasContext, contextLabel])
 
   const handlePointerMove = useCallback(
     (event: ReactPointerEvent<SVGRectElement>) => {
@@ -258,16 +362,10 @@ export function DataChart({ series, xLabel, yLabel, kind, trendLine, description
       </text>
 
       {showLegend &&
-        visibleSeries.map((entry, index) => (
+        legendEntries.map((entry) => (
           <g key={entry.key}>
-            <SeriesMarker shapeIndex={index} x={legendPositions[index] + 7} y={TOP_BAND_MIDDLE} />
-            <text
-              x={legendPositions[index] + 20}
-              y={TOP_BAND_MIDDLE}
-              dominantBaseline="middle"
-              fontSize={LABEL_FONT_SIZE}
-              fill={INK_SECONDARY}
-            >
+            <SeriesMarker shapeIndex={entry.shapeIndex} color={entry.color} x={entry.x + 7} y={TOP_BAND_MIDDLE} />
+            <text x={entry.x + 20} y={TOP_BAND_MIDDLE} dominantBaseline="middle" fontSize={LABEL_FONT_SIZE} fill={INK_SECONDARY}>
               {entry.label}
             </text>
           </g>
@@ -293,22 +391,58 @@ export function DataChart({ series, xLabel, yLabel, kind, trendLine, description
       )}
 
       <g clipPath={`url(#${markerClipId})`}>
+        {projectedContext.map((entry, index) => (
+          <circle key={index} cx={entry.cx} cy={entry.cy} r={CONTEXT_RADIUS} fill={CONTEXT_COLOR} />
+        ))}
+
         {projected.map((points, seriesIndex) => (
           <g key={visibleSeries[seriesIndex].key}>
+            {points.map((entry, pointIndex) =>
+              entry.point.box ? (
+                <BoxMark
+                  key={pointIndex}
+                  box={entry.point.box}
+                  color={colors[seriesIndex]}
+                  cx={entry.cx}
+                  width={boxWidth}
+                  toScreenY={toScreenY}
+                />
+              ) : null,
+            )}
+
             {kind === 'line' && points.length > 1 && (
               <polyline
                 points={points.map((entry) => `${entry.cx},${entry.cy}`).join(' ')}
                 fill="none"
-                stroke={SERIES_COLORS[seriesIndex]}
+                stroke={colors[seriesIndex]}
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
             )}
+
             {(kind === 'scatter' || (PLOT_RIGHT - PLOT_LEFT) / Math.max(1, points.length - 1) >= MIN_MARKER_SPACING) &&
-              points.map((entry, pointIndex) => (
-                <SeriesMarker key={pointIndex} shapeIndex={seriesIndex} x={entry.cx} y={entry.cy} />
-              ))}
+              points.map((entry, pointIndex) =>
+                entry.point.box ? (
+                  <circle
+                    key={pointIndex}
+                    cx={entry.cx}
+                    cy={entry.cy}
+                    r={MEAN_RADIUS}
+                    fill={colors[seriesIndex]}
+                    stroke={SURFACE}
+                    strokeWidth="1.5"
+                  />
+                ) : (
+                  <SeriesMarker
+                    key={pointIndex}
+                    shapeIndex={seriesIndex}
+                    color={colors[seriesIndex]}
+                    x={entry.cx}
+                    y={entry.cy}
+                  />
+                ),
+              )}
           </g>
         ))}
       </g>
@@ -328,11 +462,51 @@ export function DataChart({ series, xLabel, yLabel, kind, trendLine, description
   )
 }
 
+function BoxMark({
+  box,
+  color,
+  cx,
+  width,
+  toScreenY,
+}: {
+  box: ChartBox
+  color: string
+  cx: number
+  width: number
+  toScreenY: (value: number) => number
+}) {
+  const half = width / 2
+  const capHalf = half * WHISKER_CAP_RATIO
+  const top = toScreenY(box.quartile3)
+  const bottom = toScreenY(box.quartile1)
+
+  return (
+    <g stroke={color} strokeWidth="1.5" fill="none">
+      {/* 수염: 상자 위아래로 최댓값·최솟값까지 */}
+      <line x1={cx} y1={toScreenY(box.max)} x2={cx} y2={top} />
+      <line x1={cx} y1={bottom} x2={cx} y2={toScreenY(box.min)} />
+      <line x1={cx - capHalf} y1={toScreenY(box.max)} x2={cx + capHalf} y2={toScreenY(box.max)} />
+      <line x1={cx - capHalf} y1={toScreenY(box.min)} x2={cx + capHalf} y2={toScreenY(box.min)} />
+      {/* 상자: 제1사분위수부터 제3사분위수까지. 옅은 채움이라 뒤의 측정값이 비칩니다. */}
+      <rect
+        x={cx - half}
+        y={top}
+        width={width}
+        height={Math.max(bottom - top, 1)}
+        fill={color}
+        fillOpacity="0.12"
+      />
+      <line x1={cx - half} y1={toScreenY(box.median)} x2={cx + half} y2={toScreenY(box.median)} strokeWidth="2" />
+    </g>
+  )
+}
+
 function HoverLabel({ hovered, xLabel, yLabel }: { hovered: HoveredPoint; xLabel: string; yLabel: string }) {
   const lines = [
     hovered.seriesLabel,
     `${xLabel}: ${formatMeasurement(hovered.point.x)}`,
     `${yLabel}: ${formatMeasurement(hovered.point.y)}`,
+    ...(hovered.point.note ? [hovered.point.note] : []),
   ]
   const width = Math.max(...lines.map((line) => estimateTextWidth(line, LABEL_FONT_SIZE))) + 20
   const height = lines.length * 18 + 12

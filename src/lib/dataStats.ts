@@ -98,19 +98,41 @@ export interface MeasurementPoint {
   y: number
 }
 
-/** 두 열을 같은 행끼리 짝지어 점으로 만듭니다. 한쪽이라도 비어 있으면 건너뜁니다. */
-export function pairColumns(xColumn: NumericColumn, yColumn: NumericColumn): MeasurementPoint[] {
+/** 두 값 목록을 같은 순번끼리 짝지어 점으로 만듭니다. 한쪽이라도 비어 있으면 건너뜁니다. */
+export function pairValues(
+  xValues: readonly (number | null)[],
+  yValues: readonly (number | null)[],
+): MeasurementPoint[] {
   const points: MeasurementPoint[] = []
-  const length = Math.min(xColumn.values.length, yColumn.values.length)
+  const length = Math.min(xValues.length, yValues.length)
 
   for (let index = 0; index < length; index += 1) {
-    const x = xColumn.values[index]
-    const y = yColumn.values[index]
+    const x = xValues[index]
+    const y = yValues[index]
     if (x === null || y === null) continue
     points.push({ x, y })
   }
 
   return points
+}
+
+/** 두 열을 같은 행끼리 짝지어 점으로 만듭니다. */
+export function pairColumns(xColumn: NumericColumn, yColumn: NumericColumn): MeasurementPoint[] {
+  return pairValues(xColumn.values, yColumn.values)
+}
+
+/**
+ * 이름으로 찾은 열의 값을 행 순서대로 읽습니다.
+ * 회차마다 열 순서가 달라도 같은 측정값을 짝지을 수 있어야 하므로 번호가 아닌 이름으로 찾습니다.
+ */
+export function readNamedColumn(
+  header: readonly string[],
+  rows: readonly string[][],
+  name: string,
+): (number | null)[] {
+  const index = header.indexOf(name)
+  if (index < 0) return rows.map(() => null)
+  return rows.map((row) => parseMeasurement(row[index] ?? ''))
 }
 
 export interface RelationSummary {

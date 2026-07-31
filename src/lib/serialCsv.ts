@@ -129,8 +129,16 @@ function escapeCsvField(field: string) {
     : spreadsheetSafeField
 }
 
-function csvLine(fields: string[]) {
+function csvLine(fields: readonly string[]) {
   return fields.map(escapeCsvField).join(',')
+}
+
+/**
+ * 헤더와 값 행을 CSV 한 덩어리로 묶습니다. 회차를 여러 번 붙여넣었을 때
+ * 회차 열을 앞에 붙인 표를 다시 만들 수 있도록 밖으로 내보냅니다.
+ */
+export function buildCsv(header: readonly string[], rows: readonly (readonly string[])[]) {
+  return [csvLine(header), ...rows.map(csvLine)].join('\r\n')
 }
 
 function looksLikeDiagnostic(line: string) {
@@ -232,7 +240,7 @@ export function convertSerialTextToCsv(input: string): SerialCsvResult {
 
   return {
     ok: true,
-    csv: [csvLine(header), ...dataRows.map(csvLine)].join('\r\n'),
+    csv: buildCsv(header, dataRows),
     header,
     rows: dataRows,
     columnCount: header.length,
