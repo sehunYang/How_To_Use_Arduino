@@ -100,7 +100,8 @@ describe('WiringIllustration zoom and pan', () => {
     const firstPart = diagram?.querySelector('[data-part-id]')
     const firstOverlay = diagram?.querySelector('[data-part-overlay]')
     const previous = wireLayer?.querySelector('[data-wire-current="false"]')
-    const current = wireLayer?.querySelector('[data-wire-current="true"]')
+    const currentWires = Array.from(wireLayer?.querySelectorAll('[data-wire-current="true"]') ?? [])
+    const current = currentWires[0]
 
     expect(wireLayer).not.toBeNull()
     expect(firstPart).not.toBeNull()
@@ -116,6 +117,8 @@ describe('WiringIllustration zoom and pan', () => {
     expect(previous?.querySelector('[data-wire-blink]')).toBeNull()
     expect(current?.querySelector('[data-wire-blink]')).toHaveAttribute('dur', '3s')
     expect(current?.querySelector('[data-wire-blink]')).toHaveAttribute('repeatCount', 'indefinite')
+    expect(currentWires.map((wire) => wire.querySelector('[data-wire-blink]')?.getAttribute('begin')))
+      .toEqual(['0s', '-1.5s'])
     expect(current?.querySelector('[data-wire-line]')).toHaveAttribute('stroke-width', '2.5')
     expect(current?.querySelector('[data-wire-halo]')).toHaveAttribute('stroke-width', '4.5')
   })

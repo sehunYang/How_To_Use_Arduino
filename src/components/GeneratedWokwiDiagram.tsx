@@ -258,6 +258,7 @@ export function GeneratedWokwiDiagram({
     ]
     const points = route.map((point) => `${point.x},${point.y}`).join(' ')
     const current = index >= visible.length - currentCount
+    const currentPhase = current ? index - (visible.length - currentCount) : 0
     return (
       <g
         key={`${from}-${to}-${index}`}
@@ -275,6 +276,7 @@ export function GeneratedWokwiDiagram({
             attributeName="opacity"
             values="1;0.22;1"
             dur="3s"
+            begin={currentPhase % 2 === 0 ? '0s' : '-1.5s'}
             repeatCount="indefinite"
           />
         )}
