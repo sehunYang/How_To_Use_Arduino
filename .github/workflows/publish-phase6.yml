@@ -1,0 +1,33 @@
+name: Publish Phase 6 Recipes
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Publish and index 41 reviewed Phase 6 recipes
+        env:
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          FIREBASE_APPCHECK_DEBUG_TOKEN: ${{ secrets.FIREBASE_APPCHECK_DEBUG_TOKEN }}
+          FIREBASE_CI_EMAIL: ${{ secrets.FIREBASE_CI_EMAIL }}
+          FIREBASE_CI_PASSWORD: ${{ secrets.FIREBASE_CI_PASSWORD }}
+          FIREBASE_ADMIN_EMAIL: ${{ secrets.FIREBASE_ADMIN_EMAIL }}
+          FIREBASE_ADMIN_PASSWORD: ${{ secrets.FIREBASE_ADMIN_PASSWORD }}
+        run: npm run publish:phase6

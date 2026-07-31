@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 /**
- * Records the completed Phase 5 human reviews, writes the CI verification
- * ledger, publishes all 34 recipes, and refreshes the public search index.
+ * Records completed human reviews, writes the CI verification ledger,
+ * publishes the selected phase, and refreshes the public search index.
  *
  * The two sign-ins are intentional: Firestore rules reserve simStatus writes
  * for the ci:true identity and recipe/index writes for the admin:true identity.
@@ -12,6 +12,7 @@ import 'firebase/compat/auth'
 import 'firebase/compat/firestore'
 import { recipeVerifyHash, validatePublish } from '../src/admin/authoring'
 import { phase5Recipes } from '../src/data/phase5'
+import { phase6Recipes } from '../src/data/phase6'
 import { actuators } from '../src/data/inventory-seed/actuators'
 import { sensors } from '../src/data/inventory-seed/sensors'
 import { createCiAppCheckProvider } from '../src/firebase/ciAppCheckProvider'
@@ -20,6 +21,11 @@ import { buildIndexEntry } from '../src/search/buildIndexEntry'
 import type { Recipe, SearchIndexEntry, SimStatus } from '../src/schema'
 
 const SIMULATION_UNSUPPORTED = new Set(['S9', 'e5-spatial-light-map'])
+const publishingPhase6 = process.argv.includes('--phase6')
+const phaseLabel = publishingPhase6 ? 'Phase 6' : 'Phase 5'
+const versionPrefix = publishingPhase6 ? 'phase6' : 'phase5'
+const sourceRecipes = publishingPhase6 ? phase6Recipes : phase5Recipes
+const expectedCount = publishingPhase6 ? 41 : 34
 
 function required(name: string): string {
   const value = process.env[name]?.trim()
@@ -63,7 +69,7 @@ async function writeVerificationLedger(
   recipes: Recipe[],
   statuses: Map<string, SimStatus>,
 ): Promise<void> {
-  const app = createApp('phase5-publish-ci')
+  const app = createApp(`${versionPrefix}-publish-ci`)
   try {
     const credential = await app.auth().signInWithEmailAndPassword(
       required('FIREBASE_CI_EMAIL'),
@@ -86,7 +92,7 @@ async function writeVerificationLedger(
 }
 
 async function publishRecipes(recipes: Recipe[]): Promise<void> {
-  const app = createApp('phase5-publish-admin')
+  const app = createApp(`${versionPrefix}-publish-admin`)
   try {
     const credential = await app.auth().signInWithEmailAndPassword(
       required('FIREBASE_ADMIN_EMAIL'),
@@ -105,8 +111,8 @@ async function publishRecipes(recipes: Recipe[]): Promise<void> {
       const existing = indexSnapshot.exists && Array.isArray(indexSnapshot.data()?.entries)
         ? indexSnapshot.data()?.entries as SearchIndexEntry[]
         : []
-      const phase5Ids = new Set(recipes.map((recipe) => recipe.id))
-      const entries = existing.filter((entry) => !phase5Ids.has(entry.id))
+      const phaseIds = new Set(recipes.map((recipe) => recipe.id))
+      const entries = existing.filter((entry) => !phaseIds.has(entry.id))
 
       for (const recipe of recipes) {
         const entry = buildIndexEntry(recipe)
@@ -114,7 +120,7 @@ async function publishRecipes(recipes: Recipe[]): Promise<void> {
         entries.push(entry)
         const recipeRef = db.collection('recipes').doc(recipe.id)
         const versionRef = recipeRef.collection('versions').doc(
-          `phase5-publish-${savedAt.replace(/[:.]/g, '-')}`,
+          `${versionPrefix}-publish-${savedAt.replace(/[:.]/g, '-')}`,
         )
         transaction.set(recipeRef, withoutUndefined(recipe))
         transaction.set(versionRef, { recipe: withoutUndefined(recipe), savedAt })
@@ -141,7 +147,7 @@ async function publishRecipes(recipes: Recipe[]): Promise<void> {
       )
     }
     console.log(
-      `Published and indexed ${recipes.length} Phase 5 recipes `
+      `Published and indexed ${recipes.length} ${phaseLabel} recipes `
       + `(public published total: ${publishedSnapshot.size}).`,
     )
   } finally {
@@ -150,15 +156,15 @@ async function publishRecipes(recipes: Recipe[]): Promise<void> {
 }
 
 async function main(): Promise<void> {
-  if (phase5Recipes.length !== 34) {
-    throw new Error(`Expected 34 Phase 5 recipes, received ${phase5Recipes.length}.`)
+  if (sourceRecipes.length !== expectedCount) {
+    throw new Error(`Expected ${expectedCount} ${phaseLabel} recipes, received ${sourceRecipes.length}.`)
   }
 
   const reviewedAt = new Date().toISOString()
   const inventory = { sensors, actuators }
   const inventoryVersion = computeInventoryVersion(inventory)
   const statuses = new Map<string, SimStatus>()
-  const recipes = phase5Recipes.map((recipe): Recipe => {
+  const recipes = sourceRecipes.map((recipe): Recipe => {
     const verifyHash = recipeVerifyHash(recipe, inventoryVersion)
     const published: Recipe = {
       ...recipe,
@@ -170,7 +176,10 @@ async function main(): Promise<void> {
     const status: SimStatus = {
       verifyHash,
       compilePass: true,
-      simPass: SIMULATION_UNSUPPORTED.has(recipe.id) ? null : true,
+      // Phase 6 has compile and static/netlist evidence but has not yet been
+      // executed as a generated Wokwi project. Record that distinction
+      // honestly instead of manufacturing a simulation pass.
+      simPass: publishingPhase6 || SIMULATION_UNSUPPORTED.has(recipe.id) ? null : true,
       logicPass: true,
       staticIssues: [],
       verifiedAt: reviewedAt,
@@ -185,7 +194,7 @@ async function main(): Promise<void> {
   })
 
   await writeVerificationLedger(recipes, statuses)
-  console.log(`Recorded verification status for ${statuses.size} Phase 5 recipes.`)
+  console.log(`Recorded verification status for ${statuses.size} ${phaseLabel} recipes.`)
   await publishRecipes(recipes)
 }
 

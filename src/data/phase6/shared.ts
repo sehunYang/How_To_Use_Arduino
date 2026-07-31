@@ -71,6 +71,7 @@ function defaultConnections(definition: Phase6RecipeDefinition): Connection[] {
     return count === 1 ? base : `${base}_${count}`
   })
   const connections: Connection[] = []
+  const ds18b20Tokens = tokens.filter((token) => token.replace(/_\d+$/, '') === 'DS18B20')
 
   tokens.forEach((token, index) => {
     const base = token.replace(/_\d+$/, '')
@@ -89,7 +90,9 @@ function defaultConnections(definition: Phase6RecipeDefinition): Connection[] {
       connections.push(
         { from: `${token}.VCC`, to: 'UNO.5V', color: 'red', text: `${token} VCC를 브레드보드 + 전원 레일에 연결하세요.` },
         { from: `${token}.GND`, to: 'UNO.GND', color: 'black', text: `${token} GND를 브레드보드 - 전원 레일에 연결하세요.` },
-        { from: `${token}.DATA`, to: 'UNO.D2', color: 'green', text: `${token} DATA를 UNO D2 공통 1-Wire 버스에 연결하세요.` },
+        token === ds18b20Tokens[0]
+          ? { from: `${token}.DATA`, to: 'UNO.D2', color: 'green', text: `${token} DATA를 UNO D2 공통 1-Wire 버스에 연결하세요.` }
+          : { from: `${token}.DATA`, to: `${ds18b20Tokens[0]}.DATA`, color: 'green', text: `${token} DATA를 첫 DS18B20 DATA와 같은 브레드보드 열에 연결하세요.` },
       )
     } else if (base === 'HC-SR04') {
       connections.push(
@@ -271,7 +274,21 @@ void loop(){Serial.print(millis());Serial.print(',');Serial.println(analogRead(A
 
 export function createPhase6Recipe(definition: Phase6RecipeDefinition): Recipe {
   const connections = definition.connections ?? defaultConnections(definition)
-  const sketch = definition.sketch ?? genericSketch(definition)
+  const authoredSketch = definition.sketch ?? genericSketch(definition)
+  const declaredPins = new Set(
+    [...authoredSketch.matchAll(/\/\/ @pin [^=\r\n]+=([A-Z]\d+)/g)].map((match) => match[1]),
+  )
+  const boardPins = [...new Set(
+    connections
+      .flatMap((connection) => [connection.from, connection.to])
+      .filter((endpoint) => /^UNO\.(?:A\d+|D\d+)$/.test(endpoint))
+      .map((endpoint) => endpoint.slice('UNO.'.length)),
+  )]
+  const missingPinManifest = boardPins
+    .filter((pin) => !declaredPins.has(pin))
+    .map((pin) => `// @pin ${pin}=${pin}`)
+    .join('\n')
+  const sketch = missingPinManifest ? `${missingPinManifest}\n${authoredSketch}` : authoredSketch
   const tunableAnchor = /\/\/ @tunable\s+([A-Za-z_]\w*)/.exec(sketch)?.[1] ?? 'samplingIntervalMs'
   return {
     id: definition.id,
@@ -286,7 +303,7 @@ export function createPhase6Recipe(definition: Phase6RecipeDefinition): Recipe {
     coreKeywords: definition.keywords,
     imageUrl: `wiring/${definition.id}.svg`,
     imageWidth: 1100,
-    imageHeight: 800,
+    imageHeight: Math.max(800, 138 + Math.floor((connections.length - 1) / 5) * 105),
     wiring: makeWiring(connections),
     sketch,
     baudRate: 9600,

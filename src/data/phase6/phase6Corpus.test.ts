@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest'
+import { recipeVerifyHash, validatePublish } from '@/admin/authoring'
+import { actuators } from '@/data/inventory-seed/actuators'
 import { sensors } from '@/data/inventory-seed/sensors'
+import { computeInventoryVersion } from '@/lib/verifyHash'
 import { RecipeSchema } from '@/schema'
 import { buildDiagram } from '@/wokwi/buildDiagram'
 import { phase6PhysicsRecipes, phase6PinRecipes, phase6Recipes } from '.'
@@ -53,6 +56,30 @@ describe('Phase 6 recipe expansion', () => {
       ...Array.from({ length: 8 }, (_, channel) => `TCA9548A.SC${channel}`),
     ]) {
       expect(endpoints.has(endpoint), endpoint).toBe(true)
+    }
+  })
+
+  it('passes the publication gate after the approved reviews and verification ledger are recorded', () => {
+    const inventory = { sensors, actuators }
+    const inventoryVersion = computeInventoryVersion(inventory)
+    for (const recipe of phase6Recipes) {
+      const verifyHash = recipeVerifyHash(recipe, inventoryVersion)
+      const reviewed = {
+        ...recipe,
+        status: 'published' as const,
+        reviewedOnDevice: { at: '2026-07-31T00:00:00.000Z', verifyHash },
+        commentReviewed: { at: '2026-07-31T00:00:00.000Z', verifyHash },
+      }
+      const validation = validatePublish(reviewed, inventory, inventoryVersion, {
+        verifyHash,
+        compilePass: true,
+        simPass: null,
+        logicPass: true,
+        staticIssues: [],
+        verifiedAt: '2026-07-31T00:00:00.000Z',
+      })
+      expect(validation.issues, recipe.id).toEqual([])
+      expect(validation.canPublish, recipe.id).toBe(true)
     }
   })
 })
