@@ -87,7 +87,7 @@ export function Tca9548aPart() {
   const bottomPins = ['VIN', 'GND', 'SDA', 'SCL', 'RST', 'A0', 'A1', 'A2', 'SD0', 'SC0', 'SD1', 'SC1']
 
   return (
-    <svg viewBox="0 0 240 150" role="img" aria-label="TCA9548A 24핀 I2C 멀티플렉서 모듈" className="size-full">
+    <svg viewBox="0 0 240 150" role="img" aria-label="TCA9548A 24핀 I2C 채널 선택 장치" className="size-full">
       <rect width="240" height="150" rx="4" fill="#6d2b78" />
       <MountingHole x={22} y={75} />
       <MountingHole x={218} y={75} />

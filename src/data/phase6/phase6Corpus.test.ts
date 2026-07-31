@@ -33,6 +33,17 @@ describe('Phase 6 recipe expansion', () => {
     }
   })
 
+  it('renders authored scientific equations as LaTeX without nested delimiters', () => {
+    const rcRecipe = phase6PhysicsRecipes.find((recipe) => recipe.id === 'ph21-rc-time-constant')
+    expect(rcRecipe?.body).toContain('$V=V_0\\left(1-e^{-t/(RC)}\\right)$')
+    expect(rcRecipe?.body).toContain('$V=V_0e^{-t/(RC)}$')
+
+    for (const recipe of phase6Recipes) {
+      expect(recipe.body, recipe.id).not.toContain('$$')
+      expect(recipe.body, recipe.id).not.toMatch(/V=V₀|e\^-|T=2π|ΔP≈|I=I₀|A=-log₁₀/)
+    }
+  })
+
   it('resolves every endpoint into a complete breadboard diagram', () => {
     for (const recipe of phase6Recipes) {
       const diagram = buildDiagram(recipe, sensors)

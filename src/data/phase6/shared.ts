@@ -121,8 +121,8 @@ function defaultConnections(definition: Phase6RecipeDefinition): Connection[] {
   const firstDs18b20 = tokens.find((token) => token.replace(/_\d+$/, '') === 'DS18B20')
   if (firstDs18b20) {
     connections.push(
-      { from: `${firstDs18b20}.DATA`, to: 'RESISTOR_4700.1', color: 'green', text: `${firstDs18b20} DATA와 4.7 kΩ 풀업 저항 1번 단자를 같은 브레드보드 열에 연결하세요.` },
-      { from: 'RESISTOR_4700.2', to: 'UNO.5V', color: 'red', text: '4.7 kΩ 풀업 저항 2번 단자를 브레드보드 + 전원 레일에 연결하세요.' },
+      { from: `${firstDs18b20}.DATA`, to: 'RESISTOR_4700.1', color: 'green', text: `${firstDs18b20} DATA와 신호선을 기본 HIGH 상태로 유지하는 4.7 kΩ 저항 1번 단자를 같은 브레드보드 열에 연결하세요.` },
+      { from: 'RESISTOR_4700.2', to: 'UNO.5V', color: 'red', text: '신호선을 기본 HIGH 상태로 유지하는 4.7 kΩ 저항 2번 단자를 브레드보드 + 전원 레일에 연결하세요.' },
     )
   }
   return connections

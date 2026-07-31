@@ -14,7 +14,7 @@ export const e2Recipe = createProjectRecipe({
   tunable: { anchor: 'samplingIntervalMs', name: '기록 간격 (ms)', hint: 'DS18B20의 변환 시간을 고려해 750~1000 ms 이상을 권장합니다.' },
   overview: '안전한 용해 과정 전후의 온도를 연속 기록해 발열 또는 흡열 여부와 최대 온도 변화를 확인합니다.',
   procedure: '같은 질량의 물을 단열 컵에 넣고 초기 온도가 안정되면 기록을 시작하세요. 교사가 승인한 안전한 물질을 정해진 양만 넣고 일정하게 저으며 최고 또는 최저 온도까지 기록하세요.',
-  science: '용액이 얻거나 잃은 열은 대략 q = mcΔT로 추정할 수 있지만 컵, 센서, 공기와의 열교환도 포함됩니다. 온도가 오르면 용액 관점에서 발열, 내려가면 흡열 과정의 증거입니다.',
+  science: '용액이 얻거나 잃은 열은 대략 $q=mc\\Delta T$로 추정할 수 있지만 컵, 센서, 공기와의 열교환도 포함됩니다. 온도가 오르면 용액 관점에서 발열, 내려가면 흡열 과정의 증거입니다.',
   applicationGuide: '물의 질량과 물질 양을 기록해 물질 1 g당 겉보기 열량을 비교하되, 화학물질은 교사 지시와 안전자료를 따르세요.',
   troubleshooting: [
     contactTroubleshooting,

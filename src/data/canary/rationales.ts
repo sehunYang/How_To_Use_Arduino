@@ -9,22 +9,22 @@ export const canaryRationales: SensorRationale[] = [
   {
     sensorId: 'tsl2591',
     subject: null,
-    whyText: '조도를 정밀하게 측정할 수 있지만 I2C 주소가 고정되어 있어, 여러 개를 쓰려면 멀티플렉서와 함께 배워야 합니다.',
+    whyText: '조도를 정밀하게 측정할 수 있지만 I2C 주소가 고정되어 있어, 여러 개를 쓰려면 연결할 센서를 번갈아 골라 주는 장치(멀티플렉서)와 함께 배워야 합니다.',
   },
   {
     sensorId: 'tca9548a',
     subject: null,
-    whyText: '주소가 고정된 센서를 여러 개 동시에 연결하려면 이 멀티플렉서가 반드시 필요합니다.',
+    whyText: '주소가 고정된 센서를 여러 개 동시에 연결하려면 이 채널 선택 장치가 반드시 필요합니다.',
   },
   {
     sensorId: 'ina219',
     subject: null,
-    whyText: '전압 강하를 이용해 회로의 전류와 전력을 디지털 값으로 측정할 수 있습니다.',
+    whyText: '부품을 지날 때 생기는 전압 차이를 이용해 회로의 전류와 전력을 디지털 값으로 측정할 수 있습니다.',
   },
   {
     sensorId: 'bme280',
     subject: null,
-    whyText: '온도·습도·기압을 한 모듈에서 함께 측정해 환경 변화와 상태 방정식을 탐구할 수 있습니다.',
+    whyText: '온도·습도·기압을 한 모듈에서 함께 측정해 세 환경값의 관계를 탐구할 수 있습니다.',
   },
   {
     sensorId: 'ds18b20',

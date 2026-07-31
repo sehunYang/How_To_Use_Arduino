@@ -14,7 +14,7 @@
 <g>
   <rect x="420" y="35" width="150" height="70" rx="8" fill="#ffffff" stroke="blue" stroke-width="4"/>
   <text x="430" y="60" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">3. CDS_RESISTOR_1.1 → UNO.A0</text>
-  <text x="430" y="82" font-family="sans-serif" font-size="11" fill="#455064">왼쪽 분압 접점을 A0에 연결하세요.</text>
+  <text x="430" y="82" font-family="sans-serif" font-size="11" fill="#455064">왼쪽 두 저항 사이의 전압 측정 지점을 A0</text>
 </g>
 <g>
   <rect x="610" y="35" width="150" height="70" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
@@ -34,7 +34,7 @@
 <g>
   <rect x="420" y="140" width="150" height="70" rx="8" fill="#ffffff" stroke="green" stroke-width="4"/>
   <text x="430" y="165" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">7. CDS_RESISTOR_2.1 → UNO.A1</text>
-  <text x="430" y="187" font-family="sans-serif" font-size="11" fill="#455064">오른쪽 분압 접점을 A1에 연결하세요.</text>
+  <text x="430" y="187" font-family="sans-serif" font-size="11" fill="#455064">오른쪽 두 저항 사이의 전압 측정 지점을 A</text>
 </g>
 <g>
   <rect x="610" y="140" width="150" height="70" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>

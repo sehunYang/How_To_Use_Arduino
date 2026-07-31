@@ -15,8 +15,8 @@ const interfaceLabels: Record<string, string> = {
 
 function addressingText(sensor: Sensor) {
   if (sensor.addressing.mode === 'none') return '주소를 사용하지 않음'
-  if (sensor.addressing.mode === 'onewire') return `고유 1-Wire 주소 · 한 버스 최대 ${sensor.addressing.maxOnBus}개`
-  return `${sensor.addressing.addresses.join(', ')} · 한 버스 최대 ${sensor.addressing.maxOnBus}개`
+  if (sensor.addressing.mode === 'onewire') return `고유 1-Wire 주소 · 한 통신선에 최대 ${sensor.addressing.maxOnBus}개`
+  return `${sensor.addressing.addresses.join(', ')} · 한 통신선에 최대 ${sensor.addressing.maxOnBus}개`
 }
 
 export function SensorDetailPage() {

@@ -48,7 +48,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </header>
       <div className="app-layout mx-auto max-w-screen-2xl">
         <aside className="hidden min-h-[calc(100dvh-4rem)] border-r border-border p-page md:block">
-          <nav aria-label="학습 문서 트리" className="sticky top-20">
+          <nav aria-label="학습 메뉴" className="sticky top-20">
             <button
               className="flex w-full items-center justify-between rounded-card px-3 py-2 font-semibold hover:bg-muted-background"
               aria-expanded={treeOpen}

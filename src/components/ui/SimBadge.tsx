@@ -15,9 +15,9 @@ export function SimBadge({
   return (
     <span
       className={`rounded-full px-3 py-1 text-caption font-semibold ${verified ? 'bg-success-background text-success' : 'bg-muted-background text-muted'}`}
-      aria-label={verified ? '시뮬레이션 검증됨' : '시뮬레이션 미검증'}
+      aria-label={verified ? 'Wokwi에서 실행 확인됨' : '시뮬레이션 미검증'}
     >
-      {verified ? '✓ 시뮬레이션 검증됨' : '○ 미검증'}
+      {verified ? '✓ Wokwi에서 실행 확인됨' : '○ 미검증'}
     </span>
   )
 }

@@ -49,9 +49,9 @@
     ],
     "actuators": [],
     "coreKeywords": [
-      "멀티플렉서",
+      "채널 선택 장치",
       "조도",
-      "다중연결",
+      "다중 연결",
       "I2C"
     ],
     "imageUrl": "wiring/circuit.svg",

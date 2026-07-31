@@ -28,7 +28,7 @@ export const p7Recipe = createProjectRecipe({
   tunable: { anchor: 'panelAreaCm2', name: '패널 면적 (cm²)', hint: '빛을 받는 유효 면적을 자로 재어 입력하세요.' },
   overview: '광원에 대한 패널 각도를 바꾸며 INA219의 전기 출력과 TSL2591의 입사 광량을 동시에 기록합니다.',
   procedure: '광원-패널 거리와 부하를 고정하고 패널 법선과 광선 사이 각도를 일정 간격으로 바꾸세요. 각 각도에서 값이 안정된 뒤 전압×전류를 구하고 광량도 함께 기록하세요.',
-  science: '평행광이 평면에 주는 복사 에너지는 이상적으로 cosθ에 비례합니다. 전기 효율은 출력 전력/입사 전력이며, 조도(lux)는 사람 눈 가중치라 복사조도(W/m²)의 완전한 대체값은 아닙니다.',
+  science: '평행광이 평면에 주는 복사 에너지는 이상적으로 $\\cos\\theta$에 비례합니다. 전기 효율은 출력 전력/입사 전력이며, 조도(lux)는 사람 눈 가중치라 복사조도($\\mathrm{W/m^2}$)의 완전한 대체값은 아닙니다.',
   applicationGuide: '패널 3장을 동시에 비교하려면 INA219 A0·A1 점퍼를 납땜해 주소를 다르게 하거나, 납땜이 어려우면 TCA9548A를 쓰세요.',
   troubleshooting: [
     i2cTroubleshooting,

@@ -16,14 +16,14 @@ function samplingPlan(recipe: Recipe) {
 
 function latexize(source: string) {
   const replacements: Array<[RegExp, string]> = [
-    [/\bV=IR\b/g, '$V=IR$'],
-    [/\bP=VI=I²R\b/g, '$P=VI=I^2R$'],
-    [/\bP=VI\b/g, '$P=VI$'],
-    [/\bV=E-Ir\b/g, '$V=E-Ir$'],
-    [/\bB≈μ₀nI\b/g, '$B\\approx\\mu_0 nI$'],
-    [/\bF=ma\b/g, '$F=ma$'],
-    [/\bRₑq=ΣR\b/g, '$R_{\\mathrm{eq}}=\\sum R_i$'],
-    [/\b1\/Rₑq=Σ\(1\/R\)/g, '$\\frac{1}{R_{\\mathrm{eq}}}=\\sum_i\\frac{1}{R_i}$'],
+    [/(?<!\$)\bV=IR\b(?!\$)/g, '$V=IR$'],
+    [/(?<!\$)\bP=VI=I²R\b(?!\$)/g, '$P=VI=I^2R$'],
+    [/(?<!\$)\bP=VI\b(?!\$)/g, '$P=VI$'],
+    [/(?<!\$)\bV=E-Ir\b(?!\$)/g, '$V=E-Ir$'],
+    [/(?<!\$)\bB≈μ₀nI\b(?!\$)/g, '$B\\approx\\mu_0 nI$'],
+    [/(?<!\$)\bF=ma\b(?!\$)/g, '$F=ma$'],
+    [/(?<!\$)\bRₑq=ΣR\b(?!\$)/g, '$R_{\\mathrm{eq}}=\\sum R_i$'],
+    [/(?<!\$)\b1\/Rₑq=Σ\(1\/R\)(?!\$)/g, '$\\frac{1}{R_{\\mathrm{eq}}}=\\sum_i\\frac{1}{R_i}$'],
   ]
   return replacements.reduce((result, [pattern, replacement]) => result.replace(pattern, replacement), source)
 }
@@ -66,7 +66,7 @@ export function withInquiryWorkbook(recipe: Recipe): Recipe {
 | 조건 변경 후 안정화 | ${settlingSeconds}초 |  | □ |
 | 예상 순수 측정 시간 | 약 ${durationMinutes}분 |  | □ |
 
-1. 전원을 넣고 센서값을 **60초간 예비 관찰**하여 영점, 포화, 단선 여부를 확인합니다.
+1. 전원을 넣고 센서값을 **60초간 예비 관찰**하여 영점, 측정 범위를 넘어 최댓값에 머무는 현상, 단선 여부를 확인합니다.
 2. 독립 변인의 최솟값과 최댓값을 먼저 안전하게 확인한 뒤, 그 사이를 ${levels}단계로 등분합니다.
 3. 각 조건에서 ${settlingSeconds}초 기다린 후 ${intervalSeconds}초 간격으로 ${samples}개를 저장합니다.
 4. 조건 순서를 **낮음 → 높음**으로 1회, **높음 → 낮음**으로 1회 실시하고 나머지 1회는 무작위 순서로 측정합니다.

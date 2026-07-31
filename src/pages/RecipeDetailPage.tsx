@@ -34,9 +34,9 @@ function jumperWireLabel(from: string, to: string): string {
   const femaleSocketCount = endpoints.filter(
     (endpoint) => endpoint === 'UNO' || endpoint === 'BB' || endpoint.includes('BREADBOARD'),
   ).length
-  if (femaleSocketCount === 2) return 'MM(수-수) 점퍼선'
-  if (femaleSocketCount === 1) return 'MF(수-암) 점퍼선'
-  return 'FF(암-암) 점퍼선'
+  if (femaleSocketCount === 2) return '수-수(MM) 점퍼선'
+  if (femaleSocketCount === 1) return '수-암(MF) 점퍼선'
+  return '암-암(FF) 점퍼선'
 }
 
 function EndpointLabel({ value }: { value: string }) {
@@ -261,7 +261,7 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
 
       <section className="mt-12" aria-labelledby="code-title"><h2 id="code-title" className="text-2xl font-semibold">2. 코드 넣기</h2><div className="mt-4 overflow-hidden rounded-card border border-border"><CodeBlock code={recipe.sketch} tunables={recipe.tunables} /></div></section>
       <section className="prose mt-12 max-w-3xl" aria-labelledby="guide-title"><h2 id="guide-title" className="text-2xl font-semibold">3. 탐구 가이드</h2><SafeMarkdown source={recipe.body} /></section>
-      <section className="mt-12 max-w-3xl" aria-labelledby="application-title"><h2 id="application-title" className="text-2xl font-semibold">응용해 보기</h2><p className="mt-3 text-muted">{recipe.applicationGuide}</p></section>
+      <section className="mt-12 max-w-3xl" aria-labelledby="application-title"><h2 id="application-title" className="text-2xl font-semibold">응용해 보기</h2><div className="mt-3 text-muted"><SafeMarkdown source={recipe.applicationGuide} /></div></section>
       <section className="mt-12 max-w-3xl" aria-labelledby="trouble-title"><h2 id="trouble-title" className="text-2xl font-semibold">문제가 생겼나요?</h2><div className="mt-4 space-y-3">{recipe.troubleshooting.map((item) => <details key={item.symptom} className="rounded-card border border-border p-4"><summary className="cursor-pointer font-semibold">{item.symptom}</summary><p className="mt-3 text-muted">원인: {item.cause}</p><p className="mt-2">해결: {item.fix}</p></details>)}</div></section>
     </article>
   )
