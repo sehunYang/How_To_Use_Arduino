@@ -43,7 +43,7 @@
   "connections": [
     [
       "ina219:VCC",
-      "bb:tp.2",
+      "bb:tp.5",
       "red",
       []
     ],
@@ -55,7 +55,7 @@
     ],
     [
       "ina219:GND",
-      "bb:tn.2",
+      "bb:tn.5",
       "black",
       []
     ],
@@ -79,25 +79,25 @@
     ],
     [
       "ina219:SCL",
-      "bb:2t.a",
+      "bb:5t.a",
       "yellow",
       []
     ],
     [
       "uno:A5",
-      "bb:2t.b",
+      "bb:5t.b",
       "yellow",
       []
     ],
     [
       "tsl2591:VCC",
-      "bb:tp.3",
+      "bb:tp.9",
       "red",
       []
     ],
     [
       "tsl2591:GND",
-      "bb:tn.3",
+      "bb:tn.9",
       "black",
       []
     ],
@@ -109,43 +109,43 @@
     ],
     [
       "tsl2591:SCL",
-      "bb:2t.c",
+      "bb:5t.c",
       "yellow",
       []
     ],
     [
       "panel:SIG",
-      "bb:3t.a",
+      "bb:9t.a",
       "orange",
       []
     ],
     [
       "ina219:VIN+",
-      "bb:3t.b",
+      "bb:9t.b",
       "orange",
       []
     ],
     [
       "ina219:VIN-",
-      "bb:4t.a",
+      "bb:13t.a",
       "orange",
       []
     ],
     [
       "load:1",
-      "bb:4t.b",
+      "bb:13t.b",
       "orange",
       []
     ],
     [
       "load:2",
-      "bb:5t.a",
+      "bb:17t.a",
       "purple",
       []
     ],
     [
       "panel:GND",
-      "bb:5t.b",
+      "bb:17t.b",
       "purple",
       []
     ]

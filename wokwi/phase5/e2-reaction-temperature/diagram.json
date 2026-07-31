@@ -25,7 +25,7 @@
   "connections": [
     [
       "ds18b20:VCC",
-      "bb:tp.2",
+      "bb:tp.5",
       "red",
       []
     ],
@@ -37,7 +37,7 @@
     ],
     [
       "ds18b20:GND",
-      "bb:tn.2",
+      "bb:tn.5",
       "black",
       []
     ],

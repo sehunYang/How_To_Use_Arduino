@@ -31,7 +31,7 @@
   "connections": [
     [
       "ina219:VCC",
-      "bb:tp.2",
+      "bb:tp.5",
       "red",
       []
     ],
@@ -43,7 +43,7 @@
     ],
     [
       "ina219:GND",
-      "bb:tn.2",
+      "bb:tn.5",
       "black",
       []
     ],
@@ -67,7 +67,7 @@
     ],
     [
       "ina219:VIN+",
-      "bb:tp.3",
+      "bb:tp.9",
       "red",
       []
     ],
@@ -85,7 +85,7 @@
     ],
     [
       "load:2",
-      "bb:tn.3",
+      "bb:tn.9",
       "black",
       []
     ]

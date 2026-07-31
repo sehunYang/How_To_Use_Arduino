@@ -31,7 +31,7 @@
   "connections": [
     [
       "mpu6050:VCC",
-      "bb:tp.2",
+      "bb:tp.5",
       "red",
       []
     ],
@@ -43,7 +43,7 @@
     ],
     [
       "mpu6050:GND",
-      "bb:tn.2",
+      "bb:tn.5",
       "black",
       []
     ],
@@ -67,13 +67,13 @@
     ],
     [
       "hc-sr04:VCC",
-      "bb:tp.3",
+      "bb:tp.9",
       "red",
       []
     ],
     [
       "hc-sr04:GND",
-      "bb:tn.3",
+      "bb:tn.9",
       "black",
       []
     ],

@@ -37,7 +37,7 @@
   "connections": [
     [
       "hc-sr501:VCC",
-      "bb:tp.2",
+      "bb:tp.5",
       "red",
       []
     ],
@@ -49,7 +49,7 @@
     ],
     [
       "hc-sr501:GND",
-      "bb:tn.2",
+      "bb:tn.5",
       "black",
       []
     ],
@@ -85,13 +85,13 @@
     ],
     [
       "servo:GND",
-      "bb:tn.4",
+      "bb:tn.13",
       "black",
       []
     ],
     [
       "servo_supply:GND",
-      "bb:tn.3",
+      "bb:tn.9",
       "black",
       []
     ]

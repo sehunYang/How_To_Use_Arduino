@@ -45,9 +45,9 @@ describe('Phase 3 student flow', () => {
   it('names exact breadboard holes in the wiring instructions', () => {
     renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
 
-    expect(screen.getByText('MPU6050.VCC → BB.tp.2')).toBeInTheDocument()
+    expect(screen.getByText('MPU6050.VCC → BB.tp.5')).toBeInTheDocument()
     expect(screen.getByText('UNO.5V → BB.tp.1')).toBeInTheDocument()
-    expect(screen.getByText('MPU6050.GND → BB.tn.2')).toBeInTheDocument()
+    expect(screen.getByText('MPU6050.GND → BB.tn.5')).toBeInTheDocument()
     expect(screen.getByText('UNO.GND → BB.tn.1')).toBeInTheDocument()
     expect(screen.getByText('MPU6050.SDA → UNO.A4')).toBeInTheDocument()
   })

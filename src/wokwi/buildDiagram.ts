@@ -90,8 +90,8 @@ export function planBreadboardWiring(recipe: Recipe): PlannedWiringConnection[] 
   }
 
   const boardNet = new Map<string[], { holes: Map<string, string>; connected: Set<string> }>()
-  let terminalColumn = 1
-  for (const net of new Set(netByEndpoint.values())) {
+  const nets = [...new Set(netByEndpoint.values())]
+  const netTraits = (net: string[]) => {
     const hasExplicitBoard = net.some((endpoint) => endpoint.toUpperCase().startsWith('BB.'))
     const unoPins = net
       .filter((endpoint) => endpoint.toUpperCase().startsWith('UNO.'))
@@ -101,6 +101,23 @@ export function planBreadboardWiring(recipe: Recipe): PlannedWiringConnection[] 
     const isGround = unoPins.includes('GND')
     const hasUno = unoPins.length > 0
     const needsJunction = net.length > 2 || !hasUno
+    return { hasExplicitBoard, isFiveVolt, isThreeVolt, isGround, needsJunction }
+  }
+  const terminalNets = nets.filter((net) => {
+    const traits = netTraits(net)
+    return !traits.hasExplicitBoard
+      && !traits.isFiveVolt
+      && !traits.isThreeVolt
+      && !traits.isGround
+      && traits.needsJunction
+  })
+  const terminalPitch = terminalNets.length <= 1
+    ? 4
+    : Math.max(1, Math.min(4, Math.floor(29 / (terminalNets.length - 1))))
+  let terminalIndex = 0
+
+  for (const net of nets) {
+    const { hasExplicitBoard, isFiveVolt, isThreeVolt, isGround, needsJunction } = netTraits(net)
     if (hasExplicitBoard || (!isFiveVolt && !isThreeVolt && !isGround && !needsJunction)) continue
 
     const holes = new Map<string, string>()
@@ -111,7 +128,12 @@ export function planBreadboardWiring(recipe: Recipe): PlannedWiringConnection[] 
         const rightIsUno = right.toUpperCase().startsWith('UNO.')
         return Number(rightIsUno) - Number(leftIsUno)
       })
-      orderedEndpoints.forEach((endpoint, index) => holes.set(endpoint, `BB.${rail}.${index + 1}`))
+      const railPitch = orderedEndpoints.length <= 1
+        ? 4
+        : Math.max(1, Math.min(4, Math.floor(24 / (orderedEndpoints.length - 1))))
+      orderedEndpoints.forEach((endpoint, index) => {
+        holes.set(endpoint, `BB.${rail}.${1 + index * railPitch}`)
+      })
     } else {
       const rows = ['a', 'b', 'c', 'd', 'e']
       if (net.length > rows.length) {
@@ -120,8 +142,9 @@ export function planBreadboardWiring(recipe: Recipe): PlannedWiringConnection[] 
           + 'a single breadboard column supports at most 5',
         )
       }
+      const terminalColumn = 1 + terminalIndex * terminalPitch
       net.forEach((endpoint, index) => holes.set(endpoint, `BB.${terminalColumn}t.${rows[index]}`))
-      terminalColumn += 1
+      terminalIndex += 1
     }
     boardNet.set(net, { holes, connected: new Set() })
   }

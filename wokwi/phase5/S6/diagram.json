@@ -25,7 +25,7 @@
   "connections": [
     [
       "bme280:VCC",
-      "bb:tp.2",
+      "bb:tp.5",
       "red",
       []
     ],
@@ -37,7 +37,7 @@
     ],
     [
       "bme280:GND",
-      "bb:tn.2",
+      "bb:tn.5",
       "black",
       []
     ],

@@ -29,9 +29,9 @@ describe('buildDiagram', () => {
     expect(diagram.connections).toHaveLength(6)
     expect(diagram.connections).toEqual(
       expect.arrayContaining([
-        ['mpu6050:VCC', 'bb:tp.2', 'red', []],
+        ['mpu6050:VCC', 'bb:tp.5', 'red', []],
         ['uno:5V', 'bb:tp.1', 'red', []],
-        ['mpu6050:GND', 'bb:tn.2', 'black', []],
+        ['mpu6050:GND', 'bb:tn.5', 'black', []],
         ['uno:GND', 'bb:tn.1', 'black', []],
         ['mpu6050:SDA', 'uno:A4', 'green', []],
         ['mpu6050:SCL', 'uno:A5', 'yellow', []],
@@ -68,12 +68,12 @@ describe('buildDiagram', () => {
         ['tca9548a:SCL', 'uno:A5', 'yellow', []],
         ['tsl2591_1:SDA', 'bb:1t.a', 'green', []],
         ['tca9548a:SD0', 'bb:1t.b', 'green', []],
-        ['tsl2591_1:SCL', 'bb:2t.a', 'yellow', []],
-        ['tca9548a:SC0', 'bb:2t.b', 'yellow', []],
-        ['tsl2591_2:SDA', 'bb:3t.a', 'green', []],
-        ['tca9548a:SD1', 'bb:3t.b', 'green', []],
-        ['tsl2591_2:SCL', 'bb:4t.a', 'yellow', []],
-        ['tca9548a:SC1', 'bb:4t.b', 'yellow', []],
+        ['tsl2591_1:SCL', 'bb:5t.a', 'yellow', []],
+        ['tca9548a:SC0', 'bb:5t.b', 'yellow', []],
+        ['tsl2591_2:SDA', 'bb:9t.a', 'green', []],
+        ['tca9548a:SD1', 'bb:9t.b', 'green', []],
+        ['tsl2591_2:SCL', 'bb:13t.a', 'yellow', []],
+        ['tca9548a:SC1', 'bb:13t.b', 'yellow', []],
       ]),
     )
   })
@@ -192,9 +192,9 @@ describe('buildDiagram', () => {
 
     expect(diagram.connections).toEqual(
       expect.arrayContaining([
-        ['fake-sensor-11:VCC', 'bb:tp.2', 'red', []],
+        ['fake-sensor-11:VCC', 'bb:tp.5', 'red', []],
         ['uno:5V', 'bb:tp.1', 'red', []],
-        ['fake-sensor-11:GND', 'bb:tn.2', 'black', []],
+        ['fake-sensor-11:GND', 'bb:tn.5', 'black', []],
         ['uno:GND', 'bb:tn.1', 'black', []],
         ['fake-sensor-11:signal', 'uno:D2', 'blue', []],
       ]),

@@ -37,7 +37,7 @@
   "connections": [
     [
       "hc-sr04:VCC",
-      "bb:tp.2",
+      "bb:tp.5",
       "red",
       []
     ],
@@ -49,7 +49,7 @@
     ],
     [
       "hc-sr04:GND",
-      "bb:tn.2",
+      "bb:tn.5",
       "black",
       []
     ],
@@ -79,7 +79,7 @@
     ],
     [
       "buzzer:1",
-      "bb:tn.4",
+      "bb:tn.13",
       "black",
       []
     ],
@@ -91,7 +91,7 @@
     ],
     [
       "led:C",
-      "bb:tn.3",
+      "bb:tn.9",
       "black",
       []
     ]

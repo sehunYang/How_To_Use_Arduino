@@ -37,7 +37,7 @@
   "connections": [
     [
       "ds18b20_1:VCC",
-      "bb:tp.2",
+      "bb:tp.5",
       "red",
       []
     ],
@@ -49,7 +49,7 @@
     ],
     [
       "ds18b20_1:GND",
-      "bb:tn.2",
+      "bb:tn.5",
       "black",
       []
     ],
@@ -61,25 +61,25 @@
     ],
     [
       "ds18b20_2:VCC",
-      "bb:tp.4",
+      "bb:tp.13",
       "red",
       []
     ],
     [
       "ds18b20_2:GND",
-      "bb:tn.4",
+      "bb:tn.13",
       "black",
       []
     ],
     [
       "ds18b20_3:VCC",
-      "bb:tp.3",
+      "bb:tp.9",
       "red",
       []
     ],
     [
       "ds18b20_3:GND",
-      "bb:tn.3",
+      "bb:tn.9",
       "black",
       []
     ],

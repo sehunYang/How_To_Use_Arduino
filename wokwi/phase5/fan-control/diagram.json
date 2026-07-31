@@ -37,7 +37,7 @@
   "connections": [
     [
       "bme280:VCC",
-      "bb:tp.2",
+      "bb:tp.5",
       "red",
       []
     ],
@@ -49,7 +49,7 @@
     ],
     [
       "bme280:GND",
-      "bb:tn.2",
+      "bb:tn.5",
       "black",
       []
     ],
@@ -79,13 +79,13 @@
     ],
     [
       "relay:VCC",
-      "bb:tp.3",
+      "bb:tp.9",
       "red",
       []
     ],
     [
       "relay:GND",
-      "bb:tn.3",
+      "bb:tn.9",
       "black",
       []
     ],

@@ -31,7 +31,7 @@
   "connections": [
     [
       "tsl2591:VCC",
-      "bb:tp.2",
+      "bb:tp.5",
       "red",
       []
     ],
@@ -43,7 +43,7 @@
     ],
     [
       "tsl2591:GND",
-      "bb:tn.2",
+      "bb:tn.5",
       "black",
       []
     ],
@@ -67,25 +67,25 @@
     ],
     [
       "tsl2591:SCL",
-      "bb:2t.a",
+      "bb:5t.a",
       "yellow",
       []
     ],
     [
       "uno:A5",
-      "bb:2t.b",
+      "bb:5t.b",
       "yellow",
       []
     ],
     [
       "bme280:VCC",
-      "bb:tp.3",
+      "bb:tp.9",
       "red",
       []
     ],
     [
       "bme280:GND",
-      "bb:tn.3",
+      "bb:tn.9",
       "black",
       []
     ],
@@ -97,7 +97,7 @@
     ],
     [
       "bme280:SCL",
-      "bb:2t.c",
+      "bb:5t.c",
       "yellow",
       []
     ]
