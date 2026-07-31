@@ -59,4 +59,10 @@ describe('student content components', () => {
     expect(container.querySelector('.katex')).not.toBeNull()
     expect(container.querySelector('math')).not.toBeNull()
   })
+
+  it('visually separates inquiry guide section headings', () => {
+    render(<SafeMarkdown source={'## 탐구 목표\n\n내용\n\n### 준비 단계\n\n설명'} />)
+    expect(screen.getByRole('heading', { name: '탐구 목표' })).toHaveClass('text-2xl', 'font-bold', 'border-accent')
+    expect(screen.getByRole('heading', { name: '준비 단계' })).toHaveClass('text-xl', 'font-bold')
+  })
 })

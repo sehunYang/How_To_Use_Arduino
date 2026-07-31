@@ -53,6 +53,12 @@ function Markdown({ source }: { source: string }) {
       rehypePlugins={[rehypeSanitize, rehypeKatex]}
       components={{
         a: ({ children, ...props }) => <a {...props} target="_blank" rel="noopener noreferrer">{children}</a>,
+        h2: ({ children, ...props }) => (
+          <h2 {...props} className="mt-10 border-l-4 border-accent pl-4 text-2xl font-bold tracking-tight text-foreground">{children}</h2>
+        ),
+        h3: ({ children, ...props }) => (
+          <h3 {...props} className="mt-8 text-xl font-bold text-foreground">{children}</h3>
+        ),
         table: ({ children, ...props }) => (
           <div className="my-5 overflow-x-auto rounded-card border border-border">
             <table {...props} className="m-0 min-w-2xl border-collapse text-sm">{children}</table>
