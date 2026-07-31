@@ -26,30 +26,30 @@ export const ina219CurrentLayout: ReadableLayout = {
     },
   ],
   wires: [
-    wire('power-ina', '5V', 'ina219:VCC', 'uno:5V', 'red', { x: 203, y: 392 }, [
+    wire('power-ina', '5V', 'ina219:VCC', 'uno:5V', 'red', { x: 188, y: 392 }, [
       ['v', 30],
-      ['h', -123],
+      ['h', -108],
       ['v', -202],
       ['h', 280],
       ['v', -28.5],
     ], { allowCrossings: ['ground-ina', 'sda-ina', 'scl-ina'] }),
-    wire('ground-ina', 'GND', 'ina219:GND', 'uno:GND.2', 'black', { x: 214, y: 392 }, [
+    wire('ground-ina', 'GND', 'ina219:GND', 'uno:GND.2', 'black', { x: 199, y: 392 }, [
       ['v', 50],
-      ['h', -154],
+      ['h', -139],
       ['v', -197],
       ['h', 309.5],
       ['v', -53.5],
     ], { allowCrossings: ['power-ina', 'sda-ina', 'scl-ina'] }),
-    wire('sda-ina', 'SDA', 'ina219:SDA', 'uno:A4', 'green', { x: 236, y: 392 }, [
+    wire('sda-ina', 'SDA', 'ina219:SDA', 'uno:A4', 'green', { x: 221, y: 392 }, [
       ['v', 70],
-      ['h', 284],
+      ['h', 299],
       ['v', -167],
       ['h', -74],
       ['v', -103.5],
     ], { allowCrossings: ['power-ina', 'ground-ina', 'scl-ina'] }),
-    wire('scl-ina', 'SCL', 'ina219:SCL', 'uno:A5', 'yellow', { x: 225, y: 392 }, [
+    wire('scl-ina', 'SCL', 'ina219:SCL', 'uno:A5', 'yellow', { x: 210, y: 392 }, [
       ['v', 90],
-      ['h', 275],
+      ['h', 290],
       ['v', -212],
       ['h', -44.5],
       ['v', -78.5],

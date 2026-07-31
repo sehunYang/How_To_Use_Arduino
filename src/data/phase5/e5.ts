@@ -2,7 +2,7 @@ import { contactTroubleshooting, createProjectRecipe, i2cTroubleshooting, type C
 import { e5Sketch } from './sketches'
 
 const connections: Connection[] = [
-  { from: 'TCA9548A.VCC', to: 'UNO.5V', color: 'red', text: 'TCA9548A VCC를 아두이노 5V에 연결하세요.' },
+  { from: 'TCA9548A.VIN', to: 'UNO.5V', color: 'red', text: 'TCA9548A VIN을 아두이노 5V에 연결하세요.' },
   { from: 'TCA9548A.GND', to: 'UNO.GND', color: 'black', text: 'TCA9548A GND를 아두이노 GND에 연결하세요.' },
   { from: 'TCA9548A.SDA', to: 'UNO.A4', color: 'green', text: 'TCA9548A SDA를 아두이노 A4에 연결하세요.' },
   { from: 'TCA9548A.SCL', to: 'UNO.A5', color: 'yellow', text: 'TCA9548A SCL을 아두이노 A5에 연결하세요.' },
@@ -12,7 +12,7 @@ const connections: Connection[] = [
   { from: 'TSL2591_2.SCL', to: 'TCA9548A.SC1', color: 'yellow', text: '두 번째 TSL2591 SCL을 TCA9548A SC1에 연결하세요.' },
   { from: 'TSL2591_3.SDA', to: 'TCA9548A.SD2', color: 'green', text: '세 번째 TSL2591 SDA를 TCA9548A SD2에 연결하세요.' },
   { from: 'TSL2591_3.SCL', to: 'TCA9548A.SC2', color: 'yellow', text: '세 번째 TSL2591 SCL을 TCA9548A SC2에 연결하세요.' },
-  { from: 'TSL2591_ALL.VCC', to: 'UNO.5V', color: 'red', text: '세 TSL2591 모듈의 VCC를 공통 5V 레일에 연결하세요.' },
+  { from: 'TSL2591_ALL.VIN', to: 'UNO.5V', color: 'red', text: '세 TSL2591 모듈의 VIN을 공통 5V 레일에 연결하세요.' },
   { from: 'TSL2591_ALL.GND', to: 'UNO.GND', color: 'black', text: '세 TSL2591 모듈의 GND를 공통 GND 레일에 연결하세요.' },
 ]
 

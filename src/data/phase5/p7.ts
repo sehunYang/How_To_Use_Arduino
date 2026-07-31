@@ -6,7 +6,7 @@ const connections: Connection[] = [
   { from: 'INA219.GND', to: 'UNO.GND', color: 'black', text: 'INA219 GND를 아두이노 GND에 연결하세요.' },
   { from: 'INA219.SDA', to: 'UNO.A4', color: 'green', text: 'INA219 SDA를 아두이노 A4에 연결하세요.' },
   { from: 'INA219.SCL', to: 'UNO.A5', color: 'yellow', text: 'INA219 SCL을 아두이노 A5에 연결하세요.' },
-  { from: 'TSL2591.VCC', to: 'UNO.5V', color: 'red', text: 'TSL2591 VCC를 아두이노 5V에 연결하세요.' },
+  { from: 'TSL2591.VIN', to: 'UNO.5V', color: 'red', text: 'TSL2591 VIN을 아두이노 5V에 연결하세요.' },
   { from: 'TSL2591.GND', to: 'UNO.GND', color: 'black', text: 'TSL2591 GND를 아두이노 GND에 연결하세요.' },
   { from: 'TSL2591.SDA', to: 'UNO.A4', color: 'green', text: 'TSL2591 SDA를 아두이노 A4 I2C 버스에 함께 연결하세요.' },
   { from: 'TSL2591.SCL', to: 'UNO.A5', color: 'yellow', text: 'TSL2591 SCL을 아두이노 A5 I2C 버스에 함께 연결하세요.' },

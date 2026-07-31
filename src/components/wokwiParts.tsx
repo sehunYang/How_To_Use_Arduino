@@ -13,19 +13,12 @@ function MountingHole({ x, y }: { x: number; y: number }) {
   )
 }
 
-function HeaderPins() {
-  const labels = ['VCC', 'GND', 'SCL', 'SDA']
+function PinHole({ x, y, label, labelY }: { x: number; y: number; label: string; labelY: number }) {
   return (
     <g>
-      {[0, 1, 2, 3].map((index) => (
-        <g key={index}>
-          <rect x={39 + index * 11} y="60" width="8" height="12" rx="1" fill="#25282a" />
-          <rect x={41 + index * 11} y="61" width="4" height="11" fill="#dfad45" />
-          <text x={43 + index * 11} y="57.5" textAnchor="middle" fontSize="3.8" fill={WOKWI_SILK}>
-            {labels[index]}
-          </text>
-        </g>
-      ))}
+      <circle cx={x} cy={y} r="4.3" fill={WOKWI_GOLD} />
+      <circle cx={x} cy={y} r="2.2" fill={WOKWI_HOLE} />
+      <text x={x} y={labelY} textAnchor="middle" fontSize="4.2" fill={WOKWI_SILK}>{label}</text>
     </g>
   )
 }
@@ -47,89 +40,82 @@ function SensorBoard({
       <MountingHole x={9} y={63} />
       <MountingHole x={103} y={63} />
       {children}
-      <HeaderPins />
     </svg>
   )
 }
 
 export function Ina219Part() {
+  const header = ['VCC', 'GND', 'SCL', 'SDA', 'VIN+', 'VIN-']
   return (
     <SensorBoard boardColor="#17639a" label="INA219 전류 센서 모듈">
-      <path d="M22 17h31v11m1 13h31" fill="none" stroke={WOKWI_GOLD} strokeWidth="2" />
-      <rect x="16" y="21" width="19" height="28" rx="2" fill="#1f7b4c" />
-      <circle cx="25.5" cy="29" r="4" fill="#90aeb1" />
-      <circle cx="25.5" cy="41" r="4" fill="#90aeb1" />
-      <rect x="43" y="26" width="27" height="21" rx="2" fill="#23272a" />
-      <rect x="47" y="30" width="19" height="13" rx="1" fill="#353a3d" />
-      <rect x="74" y="19" width="27" height="17" rx="2" fill="#d2d5d5" />
-      <rect x="77" y="23" width="21" height="9" fill="#aeb2b2" />
-      <text x="56" y="12" textAnchor="middle" fontSize="7" fontWeight="700" fill={WOKWI_SILK}>INA219</text>
-      <text x="88" y="51" textAnchor="middle" fontSize="5" fill={WOKWI_SILK}>CURRENT</text>
+      <text x="16" y="20" fontSize="6" fontWeight="700" fill={WOKWI_SILK}>INA219 DC</text>
+      <text x="16" y="27" fontSize="5" fill={WOKWI_SILK}>Current Sensor</text>
+      <rect x="47" y="10" width="24" height="13" rx="2" fill="#263035" />
+      <rect x="52" y="13" width="14" height="7" fill="#d7d2c2" />
+      <text x="59" y="19" textAnchor="middle" fontSize="4" fill="#404040">R100</text>
+      <rect x="48" y="29" width="20" height="16" rx="2" fill="#202427" />
+      <circle cx="52" cy="33" r="1.3" fill="#d8d8d5" />
+      <path d="M21 34h23m27 0h22M59 23v6" fill="none" stroke={WOKWI_GOLD} strokeWidth="1.3" />
+      <PinHole x={50} y={7} label="VIN-" labelY={5} />
+      <PinHole x={68} y={7} label="VIN+" labelY={5} />
+      {header.map((label, index) => (
+        <PinHole key={label} x={28 + index * 11} y={72} label={label} labelY={64} />
+      ))}
     </SensorBoard>
   )
 }
 
 export function Tsl2591Part() {
+  const header = ['VIN', 'GND', '3VO', 'INT', 'SDA', 'SCL']
   return (
     <SensorBoard boardColor="#17639a" label="TSL2591 조도 센서 모듈">
-      <path d="M22 19h28v9m0 17h39" fill="none" stroke={WOKWI_GOLD} strokeWidth="2" />
-      <rect x="40" y="18" width="34" height="33" rx="2" fill="#cda044" />
-      <rect x="45" y="23" width="24" height="23" rx="2" fill="#292d30" />
-      <circle cx="57" cy="34.5" r="8" fill="#0d0f10" />
-      <circle cx="57" cy="34.5" r="5" fill="#574666" />
-      <rect x="80" y="17" width="15" height="9" rx="1" fill="#555a5b" />
-      <rect x="83" y="20" width="9" height="3" fill="#bdc1bc" />
-      <text x="57" y="12" textAnchor="middle" fontSize="7" fontWeight="700" fill={WOKWI_SILK}>TSL2591</text>
-      <text x="88" y="54" textAnchor="middle" fontSize="5" fill={WOKWI_SILK}>LIGHT</text>
+      <text x="56" y="12" textAnchor="middle" fontSize="8" fontWeight="700" fill={WOKWI_SILK}>TSL2591</text>
+      <text x="56" y="20" textAnchor="middle" fontSize="6" fill={WOKWI_SILK}>Lux Sensor</text>
+      <rect x="47" y="27" width="20" height="20" rx="2" fill="#d8aa42" />
+      <rect x="51" y="31" width="12" height="12" rx="2" fill="#24282b" />
+      <circle cx="57" cy="37" r="4" fill="#554261" />
+      <path d="M27 29h14v16H27m46-16h14v16H73" fill="none" stroke={WOKWI_GOLD} strokeWidth="1.2" />
+      {header.map((label, index) => (
+        <PinHole key={label} x={28 + index * 11} y={72} label={label} labelY={64} />
+      ))}
     </SensorBoard>
   )
 }
 
 export function Tca9548aPart() {
-  const channels = [
-    { side: 'left', channel: 0, y: 45 },
-    { side: 'right', channel: 1, y: 45 },
-    { side: 'left', channel: 2, y: 81 },
-  ] as const
+  const topPins = ['SC7', 'SD7', 'SC6', 'SD6', 'SC5', 'SD5', 'SC4', 'SD4', 'SC3', 'SD3', 'SC2', 'SD2']
+  const bottomPins = ['VIN', 'GND', 'SDA', 'SCL', 'RST', 'A0', 'A1', 'A2', 'SD0', 'SC0', 'SD1', 'SC1']
 
   return (
-    <svg viewBox="0 0 220 130" role="img" aria-label="TCA9548A I2C 멀티플렉서 모듈" className="size-full">
-      <rect width="220" height="130" rx="4" fill="#234f86" />
-      <MountingHole x={11} y={11} />
-      <MountingHole x={209} y={11} />
-      <MountingHole x={11} y={119} />
-      <MountingHole x={209} y={119} />
-      <rect x="88" y="40" width="44" height="44" rx="3" fill="#24282b" />
-      <circle cx="94" cy="46" r="2" fill="#d8d8d5" />
-      {[0, 1, 2, 3, 4, 5, 6, 7].map((index) => (
+    <svg viewBox="0 0 240 150" role="img" aria-label="TCA9548A 24핀 I2C 멀티플렉서 모듈" className="size-full">
+      <rect width="240" height="150" rx="4" fill="#6d2b78" />
+      <MountingHole x={22} y={75} />
+      <MountingHole x={218} y={75} />
+      <rect x="95" y="52" width="50" height="38" rx="3" fill="#24282b" />
+      <circle cx="101" cy="58" r="2" fill="#d8d8d5" />
+      {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((index) => (
         <g key={index}>
-          <rect x={82 + index * 8} y="44" width="6" height="2.5" fill="#c9c6bd" />
-          <rect x={82 + index * 8} y="77.5" width="6" height="2.5" fill="#c9c6bd" />
+          <rect x={92 + index * 5} y="49" width="3" height="4" fill="#c9c6bd" />
+          <rect x={92 + index * 5} y="89" width="3" height="4" fill="#c9c6bd" />
         </g>
       ))}
-      <text x="110" y="23" textAnchor="middle" fontSize="10" fontWeight="700" fill={WOKWI_SILK}>TCA9548A</text>
-      <text x="110" y="96" textAnchor="middle" fontSize="6" fill={WOKWI_SILK}>8-CHANNEL I2C MULTIPLEXER</text>
-      {channels.map(({ side, channel, y }) => {
-        const left = side === 'left'
-        const x = left ? 0 : 208
-        return (
-          <g key={channel}>
-            <rect x={x} y={y - 7} width="12" height="31" rx="2" fill="#25282a" />
-            <rect x={left ? 0 : 216} y={y} width="4" height="4" fill={WOKWI_GOLD} />
-            <rect x={left ? 0 : 216} y={y + 12} width="4" height="4" fill={WOKWI_GOLD} />
-            <text x={left ? 16 : 204} y={y + 3.5} textAnchor={left ? 'start' : 'end'} fontSize="6" fill={WOKWI_SILK}>SC{channel}</text>
-            <text x={left ? 16 : 204} y={y + 15.5} textAnchor={left ? 'start' : 'end'} fontSize="6" fill={WOKWI_SILK}>SD{channel}</text>
-          </g>
-        )
-      })}
-      {['VCC', 'GND', 'SCL', 'SDA'].map((label, index) => (
+      <text x="48" y="82" transform="rotate(-90 48 82)" textAnchor="middle" fontSize="9" fontWeight="700" fill={WOKWI_SILK}>TCA9548A</text>
+      <text x="120" y="105" textAnchor="middle" fontSize="6" fill={WOKWI_SILK}>8-CHANNEL I2C MULTIPLEXER</text>
+      {topPins.map((label, index) => (
         <g key={label}>
-          <rect x={88 + index * 12} y="0" width="8" height="12" rx="1" fill="#25282a" />
-          <rect x={90 + index * 12} y="0" width="4" height="10" fill={WOKWI_GOLD} />
-          <text x={92 + index * 12} y="17" textAnchor="middle" fontSize="5" fill={WOKWI_SILK}>{label}</text>
+          <circle cx={15 + index * 19} cy="5" r="4.2" fill={WOKWI_GOLD} />
+          <circle cx={15 + index * 19} cy="5" r="2.1" fill={WOKWI_HOLE} />
+          <text x={15 + index * 19} y="15" textAnchor="middle" fontSize="4.5" fill={WOKWI_SILK}>{label}</text>
         </g>
       ))}
-      <path d="M31 45h48v16h9m44 0h57V45" fill="none" stroke={WOKWI_GOLD} strokeWidth="1.5" opacity=".75" />
+      {bottomPins.map((label, index) => (
+        <g key={label}>
+          <circle cx={15 + index * 19} cy="145" r="4.2" fill={WOKWI_GOLD} />
+          <circle cx={15 + index * 19} cy="145" r="2.1" fill={WOKWI_HOLE} />
+          <text x={15 + index * 19} y="137" textAnchor="middle" fontSize="4.5" fill={WOKWI_SILK}>{label}</text>
+        </g>
+      ))}
+      <path d="M63 24h48v22m66-22h-48v22M63 122h48V96m66 26h-48V96" fill="none" stroke={WOKWI_GOLD} strokeWidth="1.4" opacity=".7" />
     </svg>
   )
 }

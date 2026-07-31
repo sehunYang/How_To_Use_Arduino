@@ -2,7 +2,7 @@ import { contactTroubleshooting, createProjectRecipe, i2cTroubleshooting, type C
 import { p8Sketch } from './sketches'
 
 const connections: Connection[] = [
-  { from: 'TSL2591.VCC', to: 'UNO.5V', color: 'red', text: 'TSL2591 VCC를 아두이노 5V에 연결하세요.' },
+  { from: 'TSL2591.VIN', to: 'UNO.5V', color: 'red', text: 'TSL2591 VIN을 아두이노 5V에 연결하세요.' },
   { from: 'TSL2591.GND', to: 'UNO.GND', color: 'black', text: 'TSL2591 GND를 아두이노 GND에 연결하세요.' },
   { from: 'TSL2591.SDA', to: 'UNO.A4', color: 'green', text: 'TSL2591 SDA를 아두이노 A4에 연결하세요.' },
   { from: 'TSL2591.SCL', to: 'UNO.A5', color: 'yellow', text: 'TSL2591 SCL을 아두이노 A5에 연결하세요.' },

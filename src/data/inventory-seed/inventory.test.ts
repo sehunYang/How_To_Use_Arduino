@@ -30,12 +30,27 @@ describe('sensor inventory seed', () => {
       strapPins: ['A0', 'A1'],
       maxOnBus: 4,
     })
+    expect(ina219.pins.map((pin) => pin.name)).toEqual(['VCC', 'GND', 'SCL', 'SDA', 'VIN+', 'VIN-'])
   })
 
   it('TSL2591 is fixed at a single address and sim-supported by a custom chip', () => {
     const tsl2591 = sensors.find((s) => s.id === 'tsl2591')!
     expect(tsl2591.addressing).toEqual({ mode: 'fixed', addresses: ['0x29'], maxOnBus: 1 })
     expect(tsl2591.wokwi.simSupported).toBe(true)
+    expect(tsl2591.pins.map((pin) => pin.name)).toEqual(['VIN', 'GND', 'SCL', 'SDA', '3VO', 'INT'])
+  })
+
+  it('records every physical MPU6050 and 24-pin TCA9548A connection', () => {
+    expect(sensors.find((s) => s.id === 'mpu6050')?.pins.map((pin) => pin.name)).toEqual([
+      'VCC', 'GND', 'SCL', 'SDA', 'XDA', 'XCL', 'AD0', 'INT',
+    ])
+    const muxPins = sensors.find((s) => s.id === 'tca9548a')?.pins.map((pin) => pin.name) ?? []
+    expect(muxPins).toHaveLength(24)
+    expect(muxPins).toEqual(expect.arrayContaining([
+      'VIN', 'GND', 'SDA', 'SCL', 'RST', 'A0', 'A1', 'A2',
+      'SD0', 'SC0', 'SD1', 'SC1', 'SD2', 'SC2', 'SD3', 'SC3',
+      'SD4', 'SC4', 'SD5', 'SC5', 'SD6', 'SC6', 'SD7', 'SC7',
+    ]))
   })
 
   it('DS18B20 is onewire with a large maxOnBus', () => {

@@ -96,6 +96,7 @@ function normalizedPin(type: string, pin: string): string {
     const digital = /^D(\d+)$/.exec(pin)
     if (digital) return digital[1]
   }
+  if ((type === 'chip-tsl2591' || type === 'custom-tca9548a') && pin === 'VCC') return 'VIN'
   return pin
 }
 
@@ -332,7 +333,7 @@ export function GeneratedWokwiDiagram({
                     strokeWidth="3"
                     paintOrder="stroke"
                   >
-                    {pin}
+                    {normalizedPin(part.type, pin)}
                   </text>
                 )}
               </g>

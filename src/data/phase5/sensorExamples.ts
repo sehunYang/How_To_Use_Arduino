@@ -51,8 +51,9 @@ function wire(from: string, to: string, color: string, text: string, index: numb
 }
 
 function i2cWiring(part: string): WiringStep[] {
+  const powerPin = part === 'TSL2591' || part === 'TCA9548A' ? 'VIN' : 'VCC'
   return [
-    wire(`${part}.VCC`, 'UNO.5V', 'red', `${part} VCC를 아두이노 5V에 연결하세요.`, 0),
+    wire(`${part}.${powerPin}`, 'UNO.5V', 'red', `${part} ${powerPin}을 아두이노 5V에 연결하세요.`, 0),
     wire(`${part}.GND`, 'UNO.GND', 'black', `${part} GND를 아두이노 GND에 연결하세요.`, 1),
     wire(`${part}.SDA`, 'UNO.A4', 'green', `${part} SDA를 아두이노 A4에 연결하세요.`, 2),
     wire(`${part}.SCL`, 'UNO.A5', 'yellow', `${part} SCL을 아두이노 A5에 연결하세요.`, 3),
@@ -523,11 +524,11 @@ TSL2591은 전체광 채널과 적외선 채널을 함께 읽어 사람 눈의 �
     coreKeywords: ['TCA9548A', 'TSL2591', 'I2C', '주소충돌', '멀티플렉서'],
     wiring: [
       ...i2cWiring('TCA9548A'),
-      wire('TSL2591_1.VCC', 'TCA9548A.VCC', 'red', '첫 번째 TSL2591에 공통 전원을 연결하세요.', 4),
+      wire('TSL2591_1.VIN', 'TCA9548A.VIN', 'red', '첫 번째 TSL2591에 공통 전원을 연결하세요.', 4),
       wire('TSL2591_1.GND', 'TCA9548A.GND', 'black', '첫 번째 TSL2591에 공통 접지를 연결하세요.', 5),
       wire('TSL2591_1.SDA', 'TCA9548A.SD0', 'green', '첫 번째 센서 SDA를 채널 0의 SD0에 연결하세요.', 6),
       wire('TSL2591_1.SCL', 'TCA9548A.SC0', 'yellow', '첫 번째 센서 SCL을 채널 0의 SC0에 연결하세요.', 7),
-      wire('TSL2591_2.VCC', 'TCA9548A.VCC', 'red', '두 번째 TSL2591에 공통 전원을 연결하세요.', 8),
+      wire('TSL2591_2.VIN', 'TCA9548A.VIN', 'red', '두 번째 TSL2591에 공통 전원을 연결하세요.', 8),
       wire('TSL2591_2.GND', 'TCA9548A.GND', 'black', '두 번째 TSL2591에 공통 접지를 연결하세요.', 9),
       wire('TSL2591_2.SDA', 'TCA9548A.SD1', 'green', '두 번째 센서 SDA를 채널 1의 SD1에 연결하세요.', 10),
       wire('TSL2591_2.SCL', 'TCA9548A.SC1', 'yellow', '두 번째 센서 SCL을 채널 1의 SC1에 연결하세요.', 11),

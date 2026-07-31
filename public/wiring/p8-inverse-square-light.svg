@@ -3,8 +3,8 @@
 <text x="30" y="585" font-family="sans-serif" font-size="14" fill="#172033">거리에 따른 빛의 세기 (역제곱 법칙) · 배선 단계 카드</text>
 <g>
   <rect x="40" y="35" width="150" height="70" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
-  <text x="50" y="60" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">1. TSL2591.VCC → UNO.5V</text>
-  <text x="50" y="82" font-family="sans-serif" font-size="11" fill="#455064">TSL2591 VCC를 아두이노 5V에 연결</text>
+  <text x="50" y="60" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">1. TSL2591.VIN → UNO.5V</text>
+  <text x="50" y="82" font-family="sans-serif" font-size="11" fill="#455064">TSL2591 VIN을 아두이노 5V에 연결</text>
 </g>
 <g>
   <rect x="230" y="35" width="150" height="70" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>

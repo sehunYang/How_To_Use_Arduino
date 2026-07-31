@@ -87,18 +87,23 @@ describe('Wokwi part geometry', () => {
   })
 
   it('uses the real breakout header as the visual SVG wiring anchor', () => {
-    for (const chip of ['ina219', 'tsl2591']) {
-      expect(geometryFor(`visual-${chip}`)).toMatchObject({
-        width: 112,
-        height: 73,
-        pins: [
-          { name: 'VCC', x: 43, y: 72 },
-          { name: 'GND', x: 54, y: 72 },
-          { name: 'SCL', x: 65, y: 72 },
-          { name: 'SDA', x: 76, y: 72 },
-        ],
-      })
-    }
+    expect(geometryFor('visual-ina219')?.pins).toEqual([
+      { name: 'VCC', x: 28, y: 72 },
+      { name: 'GND', x: 39, y: 72 },
+      { name: 'SCL', x: 50, y: 72 },
+      { name: 'SDA', x: 61, y: 72 },
+      { name: 'VIN+', x: 72, y: 72 },
+      { name: 'VIN-', x: 83, y: 72 },
+    ])
+    expect(geometryFor('visual-tsl2591')?.pins).toEqual([
+      { name: 'VIN', x: 28, y: 72 },
+      { name: 'GND', x: 39, y: 72 },
+      { name: '3VO', x: 50, y: 72 },
+      { name: 'INT', x: 61, y: 72 },
+      { name: 'SDA', x: 72, y: 72 },
+      { name: 'SCL', x: 83, y: 72 },
+    ])
+    expect(geometryFor('visual-tca9548a')?.pins).toHaveLength(24)
   })
 
   it('anchors replaced sensor artwork to the connector ends drawn in each SVG', () => {

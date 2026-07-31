@@ -64,23 +64,17 @@ function breakoutBoardGeometry(pinNames: string[]): PartGeometry {
 }
 
 function tca9548aVisualGeometry(): PartGeometry {
+  const topNames = ['SC7', 'SD7', 'SC6', 'SD6', 'SC5', 'SD5', 'SC4', 'SD4', 'SC3', 'SD3', 'SC2', 'SD2']
+  const bottomNames = ['VIN', 'GND', 'SDA', 'SCL', 'RST', 'A0', 'A1', 'A2', 'SD0', 'SC0', 'SD1', 'SC1']
   return {
-    width: 220,
-    height: 130,
+    width: 240,
+    height: 150,
     source: 'measured',
     tolerance: MEASURED_TOLERANCE,
-    pins: pins([
-      ['VCC', 92, 0],
-      ['GND', 104, 0],
-      ['SCL', 116, 0],
-      ['SDA', 128, 0],
-      ['SC0', 0, 45],
-      ['SD0', 0, 57],
-      ['SC1', 220, 45],
-      ['SD1', 220, 57],
-      ['SC2', 0, 81],
-      ['SD2', 0, 93],
-    ]),
+    pins: [
+      ...topNames.map((name, index) => ({ name, x: 15 + index * 19, y: 5 })),
+      ...bottomNames.map((name, index) => ({ name, x: 15 + index * 19, y: 145 })),
+    ],
   }
 }
 
@@ -168,7 +162,10 @@ const conformanceChipGeometry = customChipGeometry(
   ['VCC', 'GND', 'SCL', 'SDA'],
   { width: 112, height: 73 },
 )
-const sensorBreakoutGeometry = breakoutBoardGeometry(['VCC', 'GND', 'SCL', 'SDA'])
+const ina219VisualGeometry = breakoutBoardGeometry(['VCC', 'GND', 'SCL', 'SDA', 'VIN+', 'VIN-'])
+ina219VisualGeometry.pins.forEach((pin, index) => { pin.x = 28 + index * 11 })
+const tsl2591VisualGeometry = breakoutBoardGeometry(['VIN', 'GND', '3VO', 'INT', 'SDA', 'SCL'])
+tsl2591VisualGeometry.pins.forEach((pin, index) => { pin.x = 28 + index * 11 })
 const bme280VisualGeometry: PartGeometry = {
   width: 240,
   height: 170,
@@ -270,8 +267,8 @@ export const PART_GEOMETRY: Record<string, PartGeometry> = {
   'chip-ina219': conformanceChipGeometry,
   'chip-tsl2591': conformanceChipGeometry,
   'chip-bme280': conformanceChipGeometry,
-  'visual-ina219': sensorBreakoutGeometry,
-  'visual-tsl2591': sensorBreakoutGeometry,
+  'visual-ina219': ina219VisualGeometry,
+  'visual-tsl2591': tsl2591VisualGeometry,
   'visual-bme280': bme280VisualGeometry,
   'visual-cds': cdsVisualGeometry,
   'visual-ds18b20': ds18b20VisualGeometry,
@@ -294,7 +291,11 @@ export function pinPosition(part: ReadablePart, pinName: string): Point | null {
   const geometry = geometryFor(part.type)
   if (!geometry) return null
 
-  const pin = geometry.pins.find((entry) => entry.name === pinName)
+  const visualAlias =
+    (part.type === 'visual-tsl2591' || part.type === 'visual-tca9548a') && pinName === 'VCC'
+      ? 'VIN'
+      : pinName
+  const pin = geometry.pins.find((entry) => entry.name === visualAlias)
   if (!pin) return null
 
   return { x: part.left + pin.x, y: part.top + pin.y }

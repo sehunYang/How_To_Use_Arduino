@@ -3,8 +3,8 @@
 <text x="30" y="585" font-family="sans-serif" font-size="14" fill="#172033">TCA9548A로 주소가 같은 TSL2591 두 개 연결하기 · 배선 단계 카드</text>
 <g>
   <rect x="30" y="30" width="150" height="60" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
-  <text x="40" y="55" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">1. TCA9548A.VCC → UNO.5V</text>
-  <text x="40" y="77" font-family="sans-serif" font-size="11" fill="#455064">TCA9548A VCC를 아두이노 5V에 연</text>
+  <text x="40" y="55" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">1. TCA9548A.VIN → UNO.5V</text>
+  <text x="40" y="77" font-family="sans-serif" font-size="11" fill="#455064">TCA9548A VIN을 아두이노 5V에 연</text>
 </g>
 <g>
   <rect x="215" y="30" width="150" height="60" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
@@ -23,7 +23,7 @@
 </g>
 <g>
   <rect x="30" y="120" width="150" height="60" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
-  <text x="40" y="145" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">5. TSL2591_1.VCC → TCA9548A.VCC</text>
+  <text x="40" y="145" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">5. TSL2591_1.VIN → TCA9548A.VIN</text>
   <text x="40" y="167" font-family="sans-serif" font-size="11" fill="#455064">첫 번째 TSL2591에 공통 전원을 연결하</text>
 </g>
 <g>
@@ -43,7 +43,7 @@
 </g>
 <g>
   <rect x="30" y="210" width="150" height="60" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
-  <text x="40" y="235" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">9. TSL2591_2.VCC → TCA9548A.VCC</text>
+  <text x="40" y="235" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">9. TSL2591_2.VIN → TCA9548A.VIN</text>
   <text x="40" y="257" font-family="sans-serif" font-size="11" fill="#455064">두 번째 TSL2591에 공통 전원을 연결하</text>
 </g>
 <g>

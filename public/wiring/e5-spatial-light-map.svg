@@ -3,8 +3,8 @@
 <text x="30" y="585" font-family="sans-serif" font-size="14" fill="#172033">위치별 광량 분포 측정 · 배선 단계 카드</text>
 <g>
   <rect x="40" y="35" width="150" height="70" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
-  <text x="50" y="60" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">1. TCA9548A.VCC → UNO.5V</text>
-  <text x="50" y="82" font-family="sans-serif" font-size="11" fill="#455064">TCA9548A VCC를 아두이노 5V에 연</text>
+  <text x="50" y="60" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">1. TCA9548A.VIN → UNO.5V</text>
+  <text x="50" y="82" font-family="sans-serif" font-size="11" fill="#455064">TCA9548A VIN을 아두이노 5V에 연</text>
 </g>
 <g>
   <rect x="230" y="35" width="150" height="70" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
@@ -53,8 +53,8 @@
 </g>
 <g>
   <rect x="420" y="245" width="150" height="70" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
-  <text x="430" y="270" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">11. TSL2591_ALL.VCC → UNO.5V</text>
-  <text x="430" y="292" font-family="sans-serif" font-size="11" fill="#455064">세 TSL2591 모듈의 VCC를 공통 5V</text>
+  <text x="430" y="270" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">11. TSL2591_ALL.VIN → UNO.5V</text>
+  <text x="430" y="292" font-family="sans-serif" font-size="11" fill="#455064">세 TSL2591 모듈의 VIN을 공통 5V</text>
 </g>
 <g>
   <rect x="610" y="245" width="150" height="70" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>

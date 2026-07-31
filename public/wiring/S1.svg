@@ -4,7 +4,7 @@
 <g>
   <rect x="30" y="30" width="150" height="60" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
   <text x="40" y="55" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">1. MPU6050.VCC → UNO.5V</text>
-  <text x="40" y="77" font-family="sans-serif" font-size="11" fill="#455064">MPU6050 VCC를 아두이노 5V에 연결</text>
+  <text x="40" y="77" font-family="sans-serif" font-size="11" fill="#455064">MPU6050 VCC을 아두이노 5V에 연결</text>
 </g>
 <g>
   <rect x="215" y="30" width="150" height="60" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>

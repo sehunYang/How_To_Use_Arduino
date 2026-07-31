@@ -47,8 +47,9 @@ export function makeWiring(connections: Connection[]): WiringStep[] {
 }
 
 export function i2cConnections(component: string): Connection[] {
+  const powerPin = component === 'TSL2591' || component === 'TCA9548A' ? 'VIN' : 'VCC'
   return [
-    { from: `${component}.VCC`, to: 'UNO.5V', color: 'red', text: `${component} VCC를 아두이노 5V에 연결하세요.` },
+    { from: `${component}.${powerPin}`, to: 'UNO.5V', color: 'red', text: `${component} ${powerPin}을 아두이노 5V에 연결하세요.` },
     { from: `${component}.GND`, to: 'UNO.GND', color: 'black', text: `${component} GND를 아두이노 GND에 연결하세요.` },
     { from: `${component}.SDA`, to: 'UNO.A4', color: 'green', text: `${component} SDA를 아두이노 A4에 연결하세요.` },
     { from: `${component}.SCL`, to: 'UNO.A5', color: 'yellow', text: `${component} SCL을 아두이노 A5에 연결하세요.` },
