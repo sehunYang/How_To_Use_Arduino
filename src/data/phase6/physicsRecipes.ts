@@ -180,7 +180,7 @@ const electricity: Phase6RecipeDefinition[] = [
     keywords: ['옴의 법칙', '전압', '전류', '저항'],
     law: '옴성 저항에서는 전압과 전류가 $V=IR$의 선형 관계를 따릅니다. UNO의 analogWrite()는 진짜 아날로그 전압이 아니라 PWM이므로, RC 저역통과 필터로 평활한 뒤 실제 전압을 INA219로 측정합니다.',
     apparatus: 'INA219, 100 Ω RC 필터 저항, 470 µF 전해 커패시터, 1 kΩ·2.2 kΩ·4.7 kΩ 측정 저항, 수-암(MF) 점퍼선, Arduino UNO, 브레드보드',
-    method: 'D9 PWM 듀티를 단계적으로 올리고 RC 출력이 안정될 때까지 기다린 뒤 INA219가 측정한 실제 부하 전압과 전류를 기록합니다. 측정 저항을 1 kΩ, 2.2 kΩ, 4.7 kΩ으로 바꾸어 반복합니다.',
+    method: '먼저 1 kΩ 저항을 연결하고 코드의 conditionId를 R1K로 맞춥니다. D9 PWM 듀티를 단계적으로 올리고 RC 출력이 안정될 때까지 기다린 뒤 INA219가 측정한 실제 부하 전압과 전류를 기록합니다. 전원을 끈 뒤 측정 저항을 2.2 kΩ, 4.7 kΩ으로 바꿀 때마다 conditionId도 각각 R2K2, R4K7로 바꾸어 반복합니다.',
     graph: 'PWM 듀티가 아니라 INA219가 측정한 실제 V-I 데이터를 그립니다. 각 직선의 V/I 또는 기울기에서 저항을 구해 표시값과 비교합니다.',
     safety: '커패시터의 +극은 평활 노드, -극은 GND에 연결하세요. UNO D9의 과전류를 막기 위해 측정 저항은 1 kΩ 이상만 사용하고, 100 Ω·220 Ω을 부하로 직접 연결하지 마세요.',
     connections: [
@@ -201,6 +201,7 @@ const electricity: Phase6RecipeDefinition[] = [
 // @tunable settlingMs
 const byte PWM_OUT = 9;
 const float INA_SHUNT_OHMS = 0.1f;
+const char* conditionId = "R1K"; // R1K, R2K2, R4K7 중 실제 연결한 저항과 맞추세요.
 unsigned long settlingMs = 800;
 
 int16_t readIna(byte reg) {
@@ -216,7 +217,7 @@ void setup() {
   Wire.begin();
   pinMode(PWM_OUT, OUTPUT);
   analogWrite(PWM_OUT, 0);
-  Serial.println("duty,bus_V,shunt_mV,current_mA");
+  Serial.println("condition_id,duty,bus_V,shunt_mV,current_mA");
 }
 
 void loop() {
@@ -228,6 +229,8 @@ void loop() {
   float shuntMv = readIna(0x01) * 0.01f;
   float currentMa = shuntMv / INA_SHUNT_OHMS;
 
+  Serial.print(conditionId);
+  Serial.print(',');
   Serial.print(duty);
   Serial.print(',');
   Serial.print(busV, 4);
@@ -248,52 +251,190 @@ void loop() {
     id: 'ph18-series-parallel-resistance', title: '직렬·병렬 저항의 등가저항', difficulty: '중급', minutes: 60, sensors: ['ina219'],
     keywords: ['직렬회로', '병렬회로', '등가저항', '전류'],
     law: '직렬은 $R_{\\mathrm{eq}}=\\sum_i R_i$, 병렬은 $1/R_{\\mathrm{eq}}=\\sum_i(1/R_i)$를 만족합니다.',
-    apparatus: 'INA219, 220 Ω 저항 2개, 1 kΩ 저항 2개, 저전압 전원, Arduino UNO, 브레드보드',
-    method: '브레드보드에서 같은 저항들을 직렬과 병렬로 각각 구성하고 동일 전압에서 전체 전류를 측정합니다.',
+    apparatus: 'INA219, 220 Ω 저항 1개, 1 kΩ 저항 1개, 3~5 V 저전압 전원, Arduino UNO, 브레드보드',
+    method: '그림처럼 220 Ω과 1 kΩ을 직렬로 연결하고 코드의 conditionId를 SERIES_220_1000으로 맞춰 측정합니다. 전원을 끈 뒤 두 저항의 양 끝을 각각 같은 두 마디에 꽂아 병렬로 다시 배선하고 conditionId를 PARALLEL_220_1000으로 바꿔 측정합니다. 두 조건에서 INA219는 항상 전원과 저항망 사이에 직렬로 둡니다.',
     graph: 'V/I로 계산한 등가저항을 이론값과 비교하고 저항 허용오차가 결과 범위에 포함되는지 판단합니다.',
+    connections: [
+      { from: 'INA219.VCC', to: 'UNO.5V', color: 'red', text: 'INA219 VCC를 브레드보드 + 전원 레일에 연결하세요.' },
+      { from: 'INA219.GND', to: 'UNO.GND', color: 'black', text: 'INA219 GND를 브레드보드 - 전원 레일에 연결하세요.' },
+      { from: 'INA219.SDA', to: 'UNO.A4', color: 'green', text: 'INA219 SDA를 UNO A4에 연결하세요.' },
+      { from: 'INA219.SCL', to: 'UNO.A5', color: 'yellow', text: 'INA219 SCL을 UNO A5에 연결하세요.' },
+      { from: 'BATTERY.+', to: 'INA219.VIN+', color: 'red', text: '저전압 전원 +를 INA219 VIN+에 연결하세요.' },
+      { from: 'INA219.VIN-', to: 'RESISTOR_220.1', color: 'orange', text: '기본 SERIES 조건에서 INA219 VIN-를 220 Ω 저항 1번 다리에 연결하세요.' },
+      { from: 'RESISTOR_220.2', to: 'RESISTOR_1000.1', color: 'purple', text: '기본 SERIES 조건에서 220 Ω 저항과 1 kΩ 저항을 직렬로 연결하세요.' },
+      { from: 'RESISTOR_1000.2', to: 'BATTERY.-', color: 'black', text: '1 kΩ 저항의 남은 다리를 전원 -에 연결하세요.' },
+      { from: 'BATTERY.-', to: 'UNO.GND', color: 'black', text: '전원 -와 UNO GND를 공통 접지하세요.' },
+    ],
+    sketch: `#include <Wire.h>
+// @baud 9600
+// @tunable samplingIntervalMs
+const float INA_SHUNT_OHMS = 0.1f;
+const char* conditionId = "SERIES_220_1000"; // 병렬 재배선 뒤 PARALLEL_220_1000으로 바꾸세요.
+unsigned long samplingIntervalMs = 500;
+int16_t readIna(byte reg){Wire.beginTransmission(0x40);Wire.write(reg);Wire.endTransmission(false);Wire.requestFrom(0x40,(byte)2);return (int16_t)((Wire.read()<<8)|Wire.read());}
+void setup(){Serial.begin(9600);Wire.begin();Serial.println("condition_id,time_ms,bus_V,current_mA,equivalent_ohm");}
+void loop(){
+  float busV=(readIna(0x02)>>3)*0.004f,shuntMv=readIna(0x01)*0.01f,currentMa=shuntMv/INA_SHUNT_OHMS;
+  float equivalentOhm=currentMa==0?NAN:busV/(currentMa/1000.0f);
+  Serial.print(conditionId);Serial.print(',');Serial.print(millis());Serial.print(',');Serial.print(busV,4);Serial.print(',');Serial.print(currentMa,3);Serial.print(',');Serial.println(equivalentOhm,2);
+  delay(samplingIntervalMs);
+}`,
   },
   {
     id: 'ph19-kirchhoff-laws', title: '키르히호프 전압·전류 법칙', difficulty: '고급', minutes: 75, sensors: ['ina219'],
     keywords: ['키르히호프', '마디', '폐회로', '전류보존'],
     law: '마디에서 전류의 대수합은 0이고 폐회로에서 전위차의 대수합은 0입니다.',
     apparatus: 'INA219, 220 Ω·470 Ω·1 kΩ 저항, 저전압 전원, 측정점 전환 점퍼, Arduino UNO, 브레드보드',
-    method: '두 갈래 병렬 회로를 구성하고 INA219를 전체·각 가지에 순차 이동해 전류와 전압강하를 측정합니다.',
+    method: '그림처럼 220 Ω과 470 Ω의 두 갈래 병렬 회로를 구성합니다. 먼저 INA219를 분기 전 공통선에 두고 conditionId=TOTAL로 전체 전류를 기록합니다. 전원을 끈 뒤 INA219를 220 Ω 가지와 470 Ω 가지에 차례로 직렬 이동하고 conditionId를 BRANCH_220, BRANCH_470으로 바꿔 기록합니다. 각 조건에서 저항 양단 전압도 함께 기록해 전체 전류와 두 가지 전류의 합, 각 고리 전압강하를 비교합니다.',
     graph: '마디 전류의 측정값-예측값 차이와 고리 전압의 측정값-예측값 차이를 계산해 측정 불확도 범위에서 0인지 확인합니다.',
+    connections: [
+      { from: 'INA219.VCC', to: 'UNO.5V', color: 'red', text: 'INA219 VCC를 UNO 5V에 연결하세요.' },
+      { from: 'INA219.GND', to: 'UNO.GND', color: 'black', text: 'INA219 GND를 UNO GND에 연결하세요.' },
+      { from: 'INA219.SDA', to: 'UNO.A4', color: 'green', text: 'INA219 SDA를 UNO A4에 연결하세요.' },
+      { from: 'INA219.SCL', to: 'UNO.A5', color: 'yellow', text: 'INA219 SCL을 UNO A5에 연결하세요.' },
+      { from: 'BATTERY.+', to: 'INA219.VIN+', color: 'red', text: 'TOTAL 조건에서 전원 +를 INA219 VIN+에 연결하세요.' },
+      { from: 'INA219.VIN-', to: 'RESISTOR_220.1', color: 'orange', text: 'INA219 VIN- 뒤 분기 마디를 220 Ω 가지 입력에 연결하세요.' },
+      { from: 'INA219.VIN-', to: 'RESISTOR_470.1', color: 'orange', text: '같은 분기 마디를 470 Ω 가지 입력에도 연결하세요.' },
+      { from: 'RESISTOR_220.2', to: 'BATTERY.-', color: 'black', text: '220 Ω 가지 출력을 전원 - 귀환 마디에 연결하세요.' },
+      { from: 'RESISTOR_470.2', to: 'BATTERY.-', color: 'black', text: '470 Ω 가지 출력도 같은 전원 - 귀환 마디에 연결하세요.' },
+      { from: 'BATTERY.-', to: 'UNO.GND', color: 'black', text: '전원 -와 UNO GND를 공통 접지하세요.' },
+    ],
+    sketch: `#include <Wire.h>
+// @baud 9600
+// @tunable samplingIntervalMs
+const float INA_SHUNT_OHMS=0.1f;
+const char* conditionId="TOTAL"; // TOTAL, BRANCH_220, BRANCH_470 중 INA219 위치와 맞추세요.
+unsigned long samplingIntervalMs=500;
+int16_t readIna(byte reg){Wire.beginTransmission(0x40);Wire.write(reg);Wire.endTransmission(false);Wire.requestFrom(0x40,(byte)2);return (int16_t)((Wire.read()<<8)|Wire.read());}
+void setup(){Serial.begin(9600);Wire.begin();Serial.println("condition_id,time_ms,bus_V,shunt_mV,current_mA");}
+void loop(){float busV=(readIna(2)>>3)*0.004f,shuntMv=readIna(1)*0.01f,currentMa=shuntMv/INA_SHUNT_OHMS;Serial.print(conditionId);Serial.print(',');Serial.print(millis());Serial.print(',');Serial.print(busV,4);Serial.print(',');Serial.print(shuntMv,4);Serial.print(',');Serial.println(currentMa,3);delay(samplingIntervalMs);}`,
   },
   {
     id: 'ph20-joule-heating', title: '전력과 줄열', difficulty: '고급', minutes: 80, sensors: ['ina219', 'ds18b20'],
     keywords: ['줄열', '전력', '온도', '에너지보존'],
     law: '저항에서 발생하는 전력은 $P=VI=I^2R$이며 공급 에너지는 시간 적분 $E=\\int P\\,dt$로 구합니다.',
-    apparatus: 'INA219, DS18B20, 정격 5 W 이상 전력저항, 단열 용기, 저전압 전원, Arduino UNO, 브레드보드',
-    method: '저항 정격의 절반 이하에서 전압·전류·온도를 동시에 기록하고 전원 차단 후 냉각도 측정합니다.',
+    apparatus: 'INA219, DS18B20, 10 Ω·정격 5 W 이상 전력저항, 단열 용기, 3~5 V 전류 제한 전원, 열전도 테이프, Arduino UNO, 브레드보드',
+    method: 'DS18B20 프로브를 10 Ω 전력저항 몸체에 열전도 테이프로 고정합니다. 전원-INA219-전력저항을 직렬 연결하고 conditionId=HEATING으로 전압·전류·온도를 기록합니다. 저항 소비전력이 2.5 W 이하인지 확인한 뒤, 전원을 끄고 conditionId=COOLING으로 바꾸어 냉각 구간도 계속 기록합니다.',
     graph: '누적 전기에너지와 온도상승을 비교해 유효 열용량과 주변 손실을 추정합니다.',
     safety: '일반 1/4 W 저항을 가열 소자로 쓰지 말고 전력저항의 표면을 만지지 마세요.',
+    connections: [
+      { from: 'INA219.VCC', to: 'UNO.5V', color: 'red', text: 'INA219 VCC를 UNO 5V에 연결하세요.' },
+      { from: 'INA219.GND', to: 'UNO.GND', color: 'black', text: 'INA219 GND를 UNO GND에 연결하세요.' },
+      { from: 'INA219.SDA', to: 'UNO.A4', color: 'green', text: 'INA219 SDA를 UNO A4에 연결하세요.' },
+      { from: 'INA219.SCL', to: 'UNO.A5', color: 'yellow', text: 'INA219 SCL을 UNO A5에 연결하세요.' },
+      { from: 'DS18B20.VCC', to: 'UNO.5V', color: 'red', text: 'DS18B20 VCC를 UNO 5V에 연결하세요.' },
+      { from: 'DS18B20.GND', to: 'UNO.GND', color: 'black', text: 'DS18B20 GND를 UNO GND에 연결하세요.' },
+      { from: 'DS18B20.DATA', to: 'UNO.D2', color: 'green', text: 'DS18B20 DATA를 UNO D2에 연결하세요.' },
+      { from: 'DS18B20.DATA', to: 'RESISTOR_4700.1', color: 'green', text: 'DS18B20 DATA에 4.7 kΩ 풀업 저항 1번 다리를 연결하세요.' },
+      { from: 'RESISTOR_4700.2', to: 'UNO.5V', color: 'red', text: '4.7 kΩ 풀업 저항 2번 다리를 UNO 5V에 연결하세요.' },
+      { from: 'BATTERY.+', to: 'INA219.VIN+', color: 'red', text: '전류 제한 전원 +를 INA219 VIN+에 연결하세요.' },
+      { from: 'INA219.VIN-', to: 'RESISTOR_10.1', color: 'orange', text: 'INA219 VIN-를 10 Ω·5 W 전력저항 1번 다리에 연결하세요.' },
+      { from: 'RESISTOR_10.2', to: 'BATTERY.-', color: 'black', text: '전력저항 2번 다리를 전원 -에 연결하세요.' },
+      { from: 'BATTERY.-', to: 'UNO.GND', color: 'black', text: '전원 -와 UNO GND를 공통 접지하세요.' },
+    ],
+    sketch: `#include <Wire.h>
+// @baud 9600
+// @pin ONEWIRE=D2
+// @tunable samplingIntervalMs
+const byte ONEWIRE=2;const float INA_SHUNT_OHMS=0.1f;const char* conditionId="HEATING";unsigned long samplingIntervalMs=1000;
+int16_t readIna(byte reg){Wire.beginTransmission(0x40);Wire.write(reg);Wire.endTransmission(false);Wire.requestFrom(0x40,(byte)2);return (int16_t)((Wire.read()<<8)|Wire.read());}
+void oneWireReset(){pinMode(ONEWIRE,OUTPUT);digitalWrite(ONEWIRE,LOW);delayMicroseconds(480);pinMode(ONEWIRE,INPUT_PULLUP);delayMicroseconds(480);}
+void writeOneWire(byte value){for(byte i=0;i<8;i++){pinMode(ONEWIRE,OUTPUT);digitalWrite(ONEWIRE,LOW);delayMicroseconds((value>>i)&1?6:60);pinMode(ONEWIRE,INPUT_PULLUP);delayMicroseconds((value>>i)&1?64:10);}}
+byte readOneWire(){byte value=0;for(byte i=0;i<8;i++){pinMode(ONEWIRE,OUTPUT);digitalWrite(ONEWIRE,LOW);delayMicroseconds(3);pinMode(ONEWIRE,INPUT_PULLUP);delayMicroseconds(10);if(digitalRead(ONEWIRE))value|=(1<<i);delayMicroseconds(53);}return value;}
+float readTemperatureC(){oneWireReset();writeOneWire(0xCC);writeOneWire(0x44);delay(750);oneWireReset();writeOneWire(0xCC);writeOneWire(0xBE);int16_t raw=readOneWire()|(readOneWire()<<8);return raw/16.0f;}
+void setup(){Serial.begin(9600);Wire.begin();Serial.println("condition_id,time_ms,bus_V,current_mA,power_W,temperature_C");}
+void loop(){float busV=(readIna(2)>>3)*0.004f,currentMa=(readIna(1)*0.01f)/INA_SHUNT_OHMS,tempC=readTemperatureC();Serial.print(conditionId);Serial.print(',');Serial.print(millis());Serial.print(',');Serial.print(busV,4);Serial.print(',');Serial.print(currentMa,3);Serial.print(',');Serial.print(busV*currentMa/1000.0f,4);Serial.print(',');Serial.println(tempC,3);delay(samplingIntervalMs);}`,
   },
   {
     id: 'ph21-rc-time-constant', title: 'RC 충전·방전 시간상수', difficulty: '중급', minutes: 65, sensors: ['ina219'],
     keywords: ['RC회로', '시간상수', '충전', '방전'],
     law: '커패시터 전압은 충전 시 $V=V_0\\left(1-e^{-t/(RC)}\\right)$, 방전 시 $V=V_0e^{-t/(RC)}$를 따릅니다.',
     apparatus: 'INA219, 10 kΩ 저항, 100 µF 전해 커패시터, 5 V 전원, 방전 스위치, Arduino UNO, 브레드보드',
-    method: '커패시터 극성을 확인하고 10 kΩ 저항을 거쳐 충전·방전하며 전압을 짧은 간격으로 기록합니다.',
+    method: '그림의 CHARGE 조건에서 5 V-10 kΩ-INA219-100 µF 순서로 연결하고 커패시터 +극을 A0에도 연결한 뒤 conditionId=CHARGE로 기록합니다. 완전히 충전되면 전원을 끄고, 커패시터 +극-INA219-10 kΩ-커패시터 -극의 폐회로가 되도록 점퍼를 옮긴 뒤 conditionId=DISCHARGE로 바꾸어 기록합니다. 충전과 방전 모두 A0가 커패시터 +극에 연결되어 있는지 확인하세요.',
     graph: '63.2% 충전 시점과 로그 선형화 기울기에서 τ를 각각 구해 명목 RC값과 비교합니다.',
     safety: '전해 커패시터의 극성과 정격전압을 반드시 확인하고 전원 재연결 전 방전하세요.',
+    connections: [
+      { from: 'INA219.VCC', to: 'UNO.5V', color: 'red', text: 'INA219 VCC를 UNO 5V에 연결하세요.' },
+      { from: 'INA219.GND', to: 'UNO.GND', color: 'black', text: 'INA219 GND를 UNO GND에 연결하세요.' },
+      { from: 'INA219.SDA', to: 'UNO.A4', color: 'green', text: 'INA219 SDA를 UNO A4에 연결하세요.' },
+      { from: 'INA219.SCL', to: 'UNO.A5', color: 'yellow', text: 'INA219 SCL을 UNO A5에 연결하세요.' },
+      { from: 'BATTERY.+', to: 'RESISTOR_10000.1', color: 'red', text: 'CHARGE 조건에서 5 V 전원 +를 10 kΩ 저항 1번 다리에 연결하세요.' },
+      { from: 'RESISTOR_10000.2', to: 'INA219.VIN+', color: 'orange', text: '10 kΩ 저항 2번 다리를 INA219 VIN+에 연결하세요.' },
+      { from: 'INA219.VIN-', to: 'CAPACITOR.1', color: 'purple', text: 'INA219 VIN-를 100 µF 커패시터 +극에 연결해 이 노드의 전압을 측정하세요.' },
+      { from: 'CAPACITOR.1', to: 'UNO.A0', color: 'blue', text: '100 µF 커패시터 +극을 UNO A0에도 연결해 커패시터 전압을 직접 측정하세요.' },
+      { from: 'CAPACITOR.2', to: 'BATTERY.-', color: 'black', text: '100 µF 커패시터 -극을 전원 -에 연결하세요.' },
+      { from: 'BATTERY.-', to: 'UNO.GND', color: 'black', text: '전원 -와 UNO GND를 공통 접지하세요.' },
+    ],
+    sketch: `#include <Wire.h>
+// @baud 9600
+// @tunable samplingIntervalMs
+const float INA_SHUNT_OHMS=0.1f;
+const byte CAPACITOR_VOLTAGE_PIN=A0;
+const char* conditionId="CHARGE"; // 방전 회로로 옮긴 뒤 DISCHARGE로 바꾸세요.
+unsigned long samplingIntervalMs=50;
+int16_t readIna(byte reg){Wire.beginTransmission(0x40);Wire.write(reg);Wire.endTransmission(false);Wire.requestFrom(0x40,(byte)2);return (int16_t)((Wire.read()<<8)|Wire.read());}
+void setup(){Serial.begin(9600);Wire.begin();Serial.println("condition_id,time_ms,capacitor_V,current_mA");}
+void loop(){float capacitorV=analogRead(CAPACITOR_VOLTAGE_PIN)*(5.0f/1023.0f),currentMa=(readIna(1)*0.01f)/INA_SHUNT_OHMS;Serial.print(conditionId);Serial.print(',');Serial.print(millis());Serial.print(',');Serial.print(capacitorV,4);Serial.print(',');Serial.println(currentMa,4);delay(samplingIntervalMs);}`,
   },
   {
     id: 'ph22-battery-internal-resistance', title: '건전지 내부저항 추정', difficulty: '중급', minutes: 55, sensors: ['ina219'],
     keywords: ['내부저항', '기전력', '부하전압', '건전지'],
     law: '전지의 단자전압은 $V=E-Ir$로 근사되므로 부하전류 변화에 따른 전압강하에서 내부저항 $r$을 구할 수 있습니다.',
     apparatus: 'INA219, 새 건전지와 홀더, 100 Ω·220 Ω·470 Ω 정격저항, Arduino UNO, 브레드보드',
-    method: '무부하 전압을 먼저 측정하고 큰 저항부터 차례로 연결해 전류와 단자전압을 짧게 기록합니다.',
+    method: '먼저 부하를 떼고 INA219 VIN+와 VIN-를 모두 건전지 +에 연결해 conditionId=NO_LOAD로 개방전압을 기록합니다. 전원을 분리한 뒤 그림처럼 부하를 연결하고 470 Ω, 220 Ω, 100 Ω 순서로 교체하며 conditionId를 LOAD_470, LOAD_220, LOAD_100으로 맞춥니다. 각 부하는 5초 이내로 측정하고 조건 사이에 건전지를 쉬게 하세요.',
     graph: 'V-I 그래프의 음의 기울기에서 내부저항, 절편에서 기전력을 구합니다.',
     safety: '건전지를 단락하지 말고 저항 정격과 최대 측정전류를 넘지 마세요.',
+    connections: [
+      { from: 'INA219.VCC', to: 'UNO.5V', color: 'red', text: 'INA219 VCC를 UNO 5V에 연결하세요.' },
+      { from: 'INA219.GND', to: 'UNO.GND', color: 'black', text: 'INA219 GND를 UNO GND에 연결하세요.' },
+      { from: 'INA219.SDA', to: 'UNO.A4', color: 'green', text: 'INA219 SDA를 UNO A4에 연결하세요.' },
+      { from: 'INA219.SCL', to: 'UNO.A5', color: 'yellow', text: 'INA219 SCL을 UNO A5에 연결하세요.' },
+      { from: 'BATTERY.+', to: 'INA219.VIN+', color: 'red', text: '건전지 +를 INA219 VIN+에 연결하세요.' },
+      { from: 'INA219.VIN-', to: 'RESISTOR_220.1', color: 'orange', text: '기본 LOAD_220 조건에서 INA219 VIN-를 220 Ω 부하 1번 다리에 연결하세요.' },
+      { from: 'RESISTOR_220.2', to: 'BATTERY.-', color: 'black', text: '220 Ω 부하 2번 다리를 건전지 -에 연결하세요.' },
+      { from: 'BATTERY.-', to: 'UNO.GND', color: 'black', text: '건전지 -와 UNO GND를 공통 접지하세요.' },
+    ],
+    sketch: `#include <Wire.h>
+// @baud 9600
+// @tunable samplingIntervalMs
+const float INA_SHUNT_OHMS=0.1f;
+const char* conditionId="LOAD_220"; // NO_LOAD, LOAD_470, LOAD_220, LOAD_100 중 실제 조건과 맞추세요.
+unsigned long samplingIntervalMs=250;
+int16_t readIna(byte reg){Wire.beginTransmission(0x40);Wire.write(reg);Wire.endTransmission(false);Wire.requestFrom(0x40,(byte)2);return (int16_t)((Wire.read()<<8)|Wire.read());}
+void setup(){Serial.begin(9600);Wire.begin();Serial.println("condition_id,time_ms,terminal_V,current_mA");}
+void loop(){float terminalV=(readIna(2)>>3)*0.004f,currentMa=(readIna(1)*0.01f)/INA_SHUNT_OHMS;Serial.print(conditionId);Serial.print(',');Serial.print(millis());Serial.print(',');Serial.print(terminalV,4);Serial.print(',');Serial.println(currentMa,3);delay(samplingIntervalMs);}`,
   },
   {
     id: 'ph23-solar-iv-mpp', title: '태양전지 I-V 곡선과 최대전력점', difficulty: '고급', minutes: 80, sensors: ['ina219', 'tsl2591'],
     keywords: ['태양전지', 'IV곡선', '최대전력점', '조도'],
     law: '태양전지의 출력 전력 $P=VI$는 부하에 따라 변하며 $I$-$V$ 곡선 위에 최대전력점이 존재합니다.',
     apparatus: 'INA219, 소형 태양전지, TSL2591, 100 Ω~10 kΩ 부하저항 세트, 일정한 광원, Arduino UNO, 브레드보드',
-    method: '광량과 패널 각도를 고정하고 큰 저항부터 부하를 바꾸며 V, I, 조도를 함께 기록합니다.',
+    method: '패널과 TSL2591 수광면을 같은 광원 방향에 고정합니다. 그림처럼 패널-INA219-부하저항을 직렬로 연결하고 가장 큰 저항부터 바꿉니다. 각 교체 때 전원을 차단한 뒤 코드의 conditionId를 LOAD_10K, LOAD_4K7, LOAD_2K2, LOAD_1K, LOAD_470, LOAD_220, LOAD_100 중 실제 부하와 맞추고 V, I, 조도를 함께 기록합니다.',
     graph: '$I$-$V$ 및 $P$-$V$ 그래프를 그리고 최대 $P$ 지점과 광량 변화에 따른 이동을 비교합니다.',
+    connections: [
+      { from: 'INA219.VCC', to: 'UNO.5V', color: 'red', text: 'INA219 VCC를 UNO 5V에 연결하세요.' },
+      { from: 'INA219.GND', to: 'UNO.GND', color: 'black', text: 'INA219 GND를 UNO GND에 연결하세요.' },
+      { from: 'INA219.SDA', to: 'UNO.A4', color: 'green', text: 'INA219 SDA를 UNO A4 공통 I2C 버스에 연결하세요.' },
+      { from: 'INA219.SCL', to: 'UNO.A5', color: 'yellow', text: 'INA219 SCL을 UNO A5 공통 I2C 버스에 연결하세요.' },
+      { from: 'TSL2591.VIN', to: 'UNO.5V', color: 'red', text: 'TSL2591 VIN을 UNO 5V에 연결하세요.' },
+      { from: 'TSL2591.GND', to: 'UNO.GND', color: 'black', text: 'TSL2591 GND를 UNO GND에 연결하세요.' },
+      { from: 'TSL2591.SDA', to: 'UNO.A4', color: 'green', text: 'TSL2591 SDA를 UNO A4 공통 I2C 버스에 연결하세요.' },
+      { from: 'TSL2591.SCL', to: 'UNO.A5', color: 'yellow', text: 'TSL2591 SCL을 UNO A5 공통 I2C 버스에 연결하세요.' },
+      { from: 'PANEL.POSITIVE', to: 'INA219.VIN+', color: 'red', text: '태양전지 +를 INA219 VIN+에 연결하세요.' },
+      { from: 'INA219.VIN-', to: 'RESISTOR_1000.1', color: 'orange', text: '기본 LOAD_1K 조건에서 INA219 VIN-를 1 kΩ 부하 1번 다리에 연결하세요.' },
+      { from: 'RESISTOR_1000.2', to: 'PANEL.NEGATIVE', color: 'black', text: '1 kΩ 부하 2번 다리를 태양전지 -에 연결하세요.' },
+      { from: 'PANEL.NEGATIVE', to: 'UNO.GND', color: 'black', text: '태양전지 -와 UNO GND를 공통 접지해 INA219 버스 전압의 기준을 만드세요.' },
+    ],
+    sketch: `#include <Wire.h>
+// @baud 9600
+// @tunable samplingIntervalMs
+const float INA_SHUNT_OHMS=0.1f;
+const char* conditionId="LOAD_1K"; // 실제 부하 ID와 맞추세요.
+unsigned long samplingIntervalMs=500;
+int16_t readIna(byte reg){Wire.beginTransmission(0x40);Wire.write(reg);Wire.endTransmission(false);Wire.requestFrom(0x40,(byte)2);return (int16_t)((Wire.read()<<8)|Wire.read());}
+uint16_t lightRaw(){Wire.beginTransmission(0x29);Wire.write(0xB4);Wire.endTransmission(false);Wire.requestFrom(0x29,(byte)2);return Wire.read()|(Wire.read()<<8);}
+void setup(){Serial.begin(9600);Wire.begin();Wire.beginTransmission(0x29);Wire.write(0xA0);Wire.write(0x03);Wire.endTransmission();Serial.println("condition_id,time_ms,panel_V,current_mA,power_mW,light_raw");}
+void loop(){float panelV=(readIna(2)>>3)*0.004f,currentMa=(readIna(1)*0.01f)/INA_SHUNT_OHMS;Serial.print(conditionId);Serial.print(',');Serial.print(millis());Serial.print(',');Serial.print(panelV,4);Serial.print(',');Serial.print(currentMa,3);Serial.print(',');Serial.print(panelV*currentMa,3);Serial.print(',');Serial.println(lightRaw());delay(samplingIntervalMs);}`,
   },
 ]
 
@@ -302,18 +443,63 @@ const magnetism: Phase6RecipeDefinition[] = [
     id: 'ph24-solenoid-current-field', title: '솔레노이드 전류와 자기장', difficulty: '고급', minutes: 70, sensors: ['ina219', 'hbe0704'],
     keywords: ['솔레노이드', '전류', '자기장', '비례관계'],
     law: '긴 솔레노이드 중심 자기장은 $B\\approx\\mu_0nI$로 전류에 비례합니다.',
-    apparatus: 'INA219, HBE0704, 교육용 솔레노이드, 전류 제한 저전압 전원, 전력저항, Arduino UNO, 브레드보드',
-    method: '홀 센서를 코일 중심에 고정하고 전류를 정격 내에서 단계적으로 바꾸며 영점 대비 센서 출력을 측정합니다.',
+    apparatus: 'INA219, HBE0704, 교육용 솔레노이드, 전류 제한 저전압 전원, 솔레노이드 규격에 맞는 직렬 전력저항, 비자성 센서 지그, Arduino UNO, 브레드보드',
+    method: 'HBE0704 OUT을 A0에 연결하고 센서 수광면을 솔레노이드 중심축에 고정합니다. 그림처럼 전원-INA219-솔레노이드(LOAD)-전력저항을 직렬로 구성합니다. 전원 전류 제한값을 I050, I100, I150처럼 단계적으로 바꿀 때마다 실제 전류가 안정된 뒤 코드의 conditionId도 같은 ID로 바꾸어 기록합니다. 전류를 0으로 내린 기준 조건은 I000으로 기록합니다.',
     graph: '홀 출력-I 그래프의 선형 구간을 찾고 코일 가열에 따른 드리프트를 분리합니다.',
     safety: '코일 정격전류를 넘지 말고 측정 사이에 충분히 냉각하세요.',
+    connections: [
+      { from: 'INA219.VCC', to: 'UNO.5V', color: 'red', text: 'INA219 VCC를 UNO 5V에 연결하세요.' },
+      { from: 'INA219.GND', to: 'UNO.GND', color: 'black', text: 'INA219 GND를 UNO GND에 연결하세요.' },
+      { from: 'INA219.SDA', to: 'UNO.A4', color: 'green', text: 'INA219 SDA를 UNO A4에 연결하세요.' },
+      { from: 'INA219.SCL', to: 'UNO.A5', color: 'yellow', text: 'INA219 SCL을 UNO A5에 연결하세요.' },
+      { from: 'HBE0704.VCC', to: 'UNO.5V', color: 'red', text: 'HBE0704 VCC를 UNO 5V에 연결하세요.' },
+      { from: 'HBE0704.GND', to: 'UNO.GND', color: 'black', text: 'HBE0704 GND를 UNO GND에 연결하세요.' },
+      { from: 'HBE0704.OUT', to: 'UNO.A0', color: 'blue', text: 'HBE0704 OUT을 UNO A0에 연결하세요.' },
+      { from: 'BATTERY.+', to: 'INA219.VIN+', color: 'red', text: '전류 제한 전원 +를 INA219 VIN+에 연결하세요.' },
+      { from: 'INA219.VIN-', to: 'LOAD.POSITIVE', color: 'orange', text: 'INA219 VIN-를 솔레노이드 코일의 시작 단자에 연결하세요.' },
+      { from: 'LOAD.NEGATIVE', to: 'RESISTOR_10.1', color: 'purple', text: '솔레노이드 코일의 끝 단자를 규격에 맞는 직렬 전력저항에 연결하세요.' },
+      { from: 'RESISTOR_10.2', to: 'BATTERY.-', color: 'black', text: '직렬 전력저항의 남은 다리를 전원 -에 연결하세요.' },
+      { from: 'BATTERY.-', to: 'UNO.GND', color: 'black', text: '전원 -와 UNO GND를 공통 접지하세요.' },
+    ],
+    sketch: `#include <Wire.h>
+// @baud 9600
+// @pin HALL_IN=A0
+// @tunable samplingIntervalMs
+const byte HALL_IN=A0;const float INA_SHUNT_OHMS=0.1f;const char* conditionId="I050";unsigned long samplingIntervalMs=250;
+int16_t readIna(byte reg){Wire.beginTransmission(0x40);Wire.write(reg);Wire.endTransmission(false);Wire.requestFrom(0x40,(byte)2);return (int16_t)((Wire.read()<<8)|Wire.read());}
+void setup(){Serial.begin(9600);Wire.begin();Serial.println("condition_id,time_ms,current_mA,hall_raw");}
+void loop(){float currentMa=(readIna(1)*0.01f)/INA_SHUNT_OHMS;Serial.print(conditionId);Serial.print(',');Serial.print(millis());Serial.print(',');Serial.print(currentMa,3);Serial.print(',');Serial.println(analogRead(HALL_IN));delay(samplingIntervalMs);}`,
   },
   {
     id: 'ph25-coil-turns-field', title: '코일 감은 수와 자기장', difficulty: '중급', minutes: 65, sensors: ['ina219', 'hbe0704'],
     keywords: ['코일', '감은수', '자기장', '암페어법칙'],
     law: '길이와 전류가 같을 때 솔레노이드 자기장은 단위 길이당 감은 수 n에 비례합니다.',
-    apparatus: 'INA219, HBE0704, 감은 수가 다른 같은 길이 코일, 전류 제한 전원, Arduino UNO, 브레드보드',
-    method: '각 코일의 전류를 같은 값으로 맞추고 홀 센서의 위치와 방향을 고정해 출력을 기록합니다.',
+    apparatus: 'INA219, HBE0704, 같은 길이·지름이면서 감은 수가 다른 코일 3개, 전류 제한 전원, 규격에 맞는 직렬 전력저항, 비자성 센서 지그, Arduino UNO, 브레드보드',
+    method: 'HBE0704를 코일 중심의 같은 위치와 방향에 고정합니다. 그림의 LOAD 자리에 첫 코일을 연결하고 전류 제한 전원으로 모든 코일의 실제 전류를 같은 값에 맞춥니다. 전원을 끄고 코일을 N50, N100, N150 순서로 교체할 때마다 코드의 conditionId를 실제 감은 수 ID로 바꾸어 전류와 홀 출력을 함께 기록합니다.',
     graph: '영점 보정 홀 출력-N 그래프를 만들고 코일 끝 효과로 생기는 비선형성을 분석합니다.',
+    safety: '코일을 교체하기 전에 반드시 전원을 끄고 각 코일의 정격전류를 넘지 마세요.',
+    connections: [
+      { from: 'INA219.VCC', to: 'UNO.5V', color: 'red', text: 'INA219 VCC를 UNO 5V에 연결하세요.' },
+      { from: 'INA219.GND', to: 'UNO.GND', color: 'black', text: 'INA219 GND를 UNO GND에 연결하세요.' },
+      { from: 'INA219.SDA', to: 'UNO.A4', color: 'green', text: 'INA219 SDA를 UNO A4에 연결하세요.' },
+      { from: 'INA219.SCL', to: 'UNO.A5', color: 'yellow', text: 'INA219 SCL을 UNO A5에 연결하세요.' },
+      { from: 'HBE0704.VCC', to: 'UNO.5V', color: 'red', text: 'HBE0704 VCC를 UNO 5V에 연결하세요.' },
+      { from: 'HBE0704.GND', to: 'UNO.GND', color: 'black', text: 'HBE0704 GND를 UNO GND에 연결하세요.' },
+      { from: 'HBE0704.OUT', to: 'UNO.A0', color: 'blue', text: 'HBE0704 OUT을 UNO A0에 연결하세요.' },
+      { from: 'BATTERY.+', to: 'INA219.VIN+', color: 'red', text: '전류 제한 전원 +를 INA219 VIN+에 연결하세요.' },
+      { from: 'INA219.VIN-', to: 'LOAD.POSITIVE', color: 'orange', text: 'INA219 VIN-를 현재 시험할 코일의 시작 단자에 연결하세요.' },
+      { from: 'LOAD.NEGATIVE', to: 'RESISTOR_10.1', color: 'purple', text: '시험 코일의 끝 단자를 규격에 맞는 직렬 전력저항에 연결하세요.' },
+      { from: 'RESISTOR_10.2', to: 'BATTERY.-', color: 'black', text: '직렬 전력저항의 남은 다리를 전원 -에 연결하세요.' },
+      { from: 'BATTERY.-', to: 'UNO.GND', color: 'black', text: '전원 -와 UNO GND를 공통 접지하세요.' },
+    ],
+    sketch: `#include <Wire.h>
+// @baud 9600
+// @pin HALL_IN=A0
+// @tunable samplingIntervalMs
+const byte HALL_IN=A0;const float INA_SHUNT_OHMS=0.1f;const char* conditionId="N50";unsigned long samplingIntervalMs=250;
+int16_t readIna(byte reg){Wire.beginTransmission(0x40);Wire.write(reg);Wire.endTransmission(false);Wire.requestFrom(0x40,(byte)2);return (int16_t)((Wire.read()<<8)|Wire.read());}
+void setup(){Serial.begin(9600);Wire.begin();Serial.println("condition_id,time_ms,current_mA,hall_raw");}
+void loop(){float currentMa=(readIna(1)*0.01f)/INA_SHUNT_OHMS;Serial.print(conditionId);Serial.print(',');Serial.print(millis());Serial.print(',');Serial.print(currentMa,3);Serial.print(',');Serial.println(analogRead(HALL_IN));delay(samplingIntervalMs);}`,
   },
   {
     id: 'ph26-rotating-magnet-signal', title: '회전 자석의 각속도와 유도 신호', difficulty: '중급', minutes: 55, sensors: ['hbe0704'],

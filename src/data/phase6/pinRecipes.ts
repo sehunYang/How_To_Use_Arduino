@@ -43,16 +43,16 @@ unsigned long samplingIntervalMs=5;
 void writeReg(byte r,byte v){Wire.beginTransmission(MPU);Wire.write(r);Wire.write(v);Wire.endTransmission();}
 int16_t read16(byte r){Wire.beginTransmission(MPU);Wire.write(r);Wire.endTransmission(false);Wire.requestFrom(MPU,(byte)2);return (int16_t)((Wire.read()<<8)|Wire.read());}
 void onData(){interruptUs=micros();sampleReady=true;}
-void setup(){Serial.begin(9600);Wire.begin();writeReg(0x6B,0);writeReg(0x38,1);pinMode(INT_PIN,INPUT);attachInterrupt(digitalPinToInterrupt(INT_PIN),onData,RISING);Serial.println("time_us,acceleration_x_g");}
-void loop(){if(sampleReady){noInterrupts();sampleReady=false;unsigned long t=interruptUs;interrupts();Serial.print(t);Serial.print(',');Serial.println(read16(0x3B)/16384.0f,5);}delay(samplingIntervalMs);}`
+void setup(){Serial.begin(9600);Wire.begin();writeReg(0x6B,0);writeReg(0x38,1);pinMode(INT_PIN,INPUT);attachInterrupt(digitalPinToInterrupt(INT_PIN),onData,RISING);Serial.println("time_us,acceleration_x_g,acceleration_y_g,acceleration_z_g");}
+void loop(){if(sampleReady){noInterrupts();sampleReady=false;unsigned long t=interruptUs;interrupts();float ax=read16(0x3B)/16384.0f,ay=read16(0x3D)/16384.0f,az=read16(0x3F)/16384.0f;Serial.print(t);Serial.print(',');Serial.print(ax,5);Serial.print(',');Serial.print(ay,5);Serial.print(',');Serial.println(az,5);}delay(samplingIntervalMs);}`
 
 const auxBusSketch = `#include <Wire.h>
 // @baud 9600
 // @tunable samplingIntervalMs
 unsigned long samplingIntervalMs=200;
 void mpuWrite(byte r,byte v){Wire.beginTransmission(0x68);Wire.write(r);Wire.write(v);Wire.endTransmission();}
-uint16_t lightRaw(){Wire.beginTransmission(0x29);Wire.write(0xB4);Wire.endTransmission(false);Wire.requestFrom(0x29,(byte)2);return Wire.read()|(Wire.read()<<8);}
-void setup(){Serial.begin(9600);Wire.begin();mpuWrite(0x6B,0);mpuWrite(0x37,0x02);Wire.beginTransmission(0x29);Wire.write(0xA0);Wire.write(3);Wire.endTransmission();Serial.println("time_ms,light_raw");}
+uint16_t lightRaw(){mpuWrite(0x25,0xA9);mpuWrite(0x26,0xB4);mpuWrite(0x27,0x82);delay(2);Wire.beginTransmission(0x68);Wire.write(0x49);Wire.endTransmission(false);Wire.requestFrom(0x68,(byte)2);return Wire.read()|(Wire.read()<<8);}
+void setup(){Serial.begin(9600);Wire.begin();mpuWrite(0x6B,0);mpuWrite(0x37,0x02);Wire.beginTransmission(0x29);Wire.write(0xA0);Wire.write(3);Wire.endTransmission();mpuWrite(0x37,0);mpuWrite(0x6A,0x20);mpuWrite(0x24,0x0D);Serial.println("time_ms,light_raw");}
 void loop(){Serial.print(millis());Serial.print(',');Serial.println(lightRaw());delay(samplingIntervalMs);}`
 
 const tcaResetSketch = `#include <Wire.h>

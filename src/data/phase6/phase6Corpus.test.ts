@@ -113,6 +113,54 @@ describe('Phase 6 recipe expansion', () => {
     }
   })
 
+  it('keeps electricity and magnetism guides aligned with their physical conditions and CSV labels', () => {
+    const byId = (id: string) => phase6PhysicsRecipes.find((recipe) => recipe.id === id)!
+    for (const id of [
+      'ph17-ohms-law',
+      'ph18-series-parallel-resistance',
+      'ph19-kirchhoff-laws',
+      'ph20-joule-heating',
+      'ph21-rc-time-constant',
+      'ph22-battery-internal-resistance',
+      'ph23-solar-iv-mpp',
+      'ph24-solenoid-current-field',
+      'ph25-coil-turns-field',
+    ]) {
+      expect(byId(id).sketch, id).toContain('condition_id')
+      expect(byId(id).sketch, id).toContain('conditionId')
+    }
+
+    expect(byId('ph18-series-parallel-resistance').wiring).toEqual(expect.arrayContaining([
+      expect.objectContaining({ from: 'RESISTOR_220.2', to: 'RESISTOR_1000.1' }),
+    ]))
+    expect(byId('ph19-kirchhoff-laws').wiring).toEqual(expect.arrayContaining([
+      expect.objectContaining({ from: 'INA219.VIN-', to: 'RESISTOR_220.1' }),
+      expect.objectContaining({ from: 'INA219.VIN-', to: 'RESISTOR_470.1' }),
+    ]))
+    expect(byId('ph20-joule-heating').wiring).toEqual(expect.arrayContaining([
+      expect.objectContaining({ from: 'DS18B20.DATA', to: 'UNO.D2' }),
+      expect.objectContaining({ from: 'INA219.VIN-', to: 'RESISTOR_10.1' }),
+    ]))
+    expect(byId('ph21-rc-time-constant').wiring).toEqual(expect.arrayContaining([
+      expect.objectContaining({ from: 'BATTERY.+', to: 'RESISTOR_10000.1' }),
+      expect.objectContaining({ from: 'INA219.VIN-', to: 'CAPACITOR.1' }),
+      expect.objectContaining({ from: 'CAPACITOR.1', to: 'UNO.A0' }),
+    ]))
+    expect(byId('ph21-rc-time-constant').sketch).toContain('analogRead(CAPACITOR_VOLTAGE_PIN)')
+    expect(byId('ph22-battery-internal-resistance').body).toContain('NO_LOAD')
+    expect(byId('ph22-battery-internal-resistance').body).toContain('LOAD_100')
+    expect(byId('ph23-solar-iv-mpp').wiring).toEqual(expect.arrayContaining([
+      expect.objectContaining({ from: 'PANEL.POSITIVE', to: 'INA219.VIN+' }),
+      expect.objectContaining({ from: 'TSL2591.SDA', to: 'UNO.A4' }),
+    ]))
+    for (const id of ['ph24-solenoid-current-field', 'ph25-coil-turns-field']) {
+      expect(byId(id).wiring).toEqual(expect.arrayContaining([
+        expect.objectContaining({ from: 'HBE0704.OUT', to: 'UNO.A0' }),
+        expect.objectContaining({ from: 'INA219.VIN-', to: 'LOAD.POSITIVE' }),
+      ]))
+    }
+  })
+
   it('mounts the RC filter parts on breadboard terminal strips', () => {
     const ohmsLaw = phase6PhysicsRecipes.find((recipe) => recipe.id === 'ph17-ohms-law')!
     const diagram = buildDiagram(ohmsLaw, sensors)

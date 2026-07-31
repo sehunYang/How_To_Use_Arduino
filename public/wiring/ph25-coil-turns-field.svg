@@ -4,56 +4,61 @@
 <g>
   <rect x="30" y="30" width="165" height="78" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
   <text x="40" y="55" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">1. INA219.VCC → UNO.5V</text>
-  <text x="40" y="77" font-family="sans-serif" font-size="11" fill="#455064">INA219 VCC을 브레드보드 + 전원 레</text>
+  <text x="40" y="77" font-family="sans-serif" font-size="11" fill="#455064">INA219 VCC를 UNO 5V에 연결하세</text>
 </g>
 <g>
   <rect x="220" y="30" width="165" height="78" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
   <text x="230" y="55" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">2. INA219.GND → UNO.GND</text>
-  <text x="230" y="77" font-family="sans-serif" font-size="11" fill="#455064">INA219 GND를 브레드보드 - 전원 레</text>
+  <text x="230" y="77" font-family="sans-serif" font-size="11" fill="#455064">INA219 GND를 UNO GND에 연결하</text>
 </g>
 <g>
   <rect x="410" y="30" width="165" height="78" rx="8" fill="#ffffff" stroke="green" stroke-width="4"/>
   <text x="420" y="55" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">3. INA219.SDA → UNO.A4</text>
-  <text x="420" y="77" font-family="sans-serif" font-size="11" fill="#455064">INA219 SDA를 UNO A4(SDA)에</text>
+  <text x="420" y="77" font-family="sans-serif" font-size="11" fill="#455064">INA219 SDA를 UNO A4에 연결하세</text>
 </g>
 <g>
   <rect x="600" y="30" width="165" height="78" rx="8" fill="#ffffff" stroke="yellow" stroke-width="4"/>
   <text x="610" y="55" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">4. INA219.SCL → UNO.A5</text>
-  <text x="610" y="77" font-family="sans-serif" font-size="11" fill="#455064">INA219 SCL을 UNO A5(SCL)에</text>
+  <text x="610" y="77" font-family="sans-serif" font-size="11" fill="#455064">INA219 SCL을 UNO A5에 연결하세</text>
 </g>
 <g>
   <rect x="790" y="30" width="165" height="78" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
-  <text x="800" y="55" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">5. INA219.VIN+ → BATTERY.+</text>
-  <text x="800" y="77" font-family="sans-serif" font-size="11" fill="#455064">INA219 VIN+를 실험 전원의 + 단자</text>
+  <text x="800" y="55" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">5. HBE0704.VCC → UNO.5V</text>
+  <text x="800" y="77" font-family="sans-serif" font-size="11" fill="#455064">HBE0704 VCC를 UNO 5V에 연결하</text>
 </g>
 <g>
-  <rect x="30" y="135" width="165" height="78" rx="8" fill="#ffffff" stroke="orange" stroke-width="4"/>
-  <text x="40" y="160" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">6. INA219.VIN- → RESISTOR_220.1</text>
-  <text x="40" y="182" font-family="sans-serif" font-size="11" fill="#455064">INA219 VIN-를 220 Ω 측정 저항</text>
+  <rect x="30" y="135" width="165" height="78" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
+  <text x="40" y="160" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">6. HBE0704.GND → UNO.GND</text>
+  <text x="40" y="182" font-family="sans-serif" font-size="11" fill="#455064">HBE0704 GND를 UNO GND에 연결</text>
 </g>
 <g>
-  <rect x="220" y="135" width="165" height="78" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
-  <text x="230" y="160" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">7. RESISTOR_220.2 → BATTERY.-</text>
-  <text x="230" y="182" font-family="sans-serif" font-size="11" fill="#455064">220 Ω 측정 저항 2번 단자와 실험 전원</text>
+  <rect x="220" y="135" width="165" height="78" rx="8" fill="#ffffff" stroke="blue" stroke-width="4"/>
+  <text x="230" y="160" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">7. HBE0704.OUT → UNO.A0</text>
+  <text x="230" y="182" font-family="sans-serif" font-size="11" fill="#455064">HBE0704 OUT을 UNO A0에 연결하</text>
 </g>
 <g>
-  <rect x="410" y="135" width="165" height="78" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
-  <text x="420" y="160" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">8. BATTERY.- → UNO.GND</text>
-  <text x="420" y="182" font-family="sans-serif" font-size="11" fill="#455064">실험 전원의 - 단자를 브레드보드 - 전원 </text>
+  <rect x="410" y="135" width="165" height="78" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
+  <text x="420" y="160" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">8. BATTERY.+ → INA219.VIN+</text>
+  <text x="420" y="182" font-family="sans-serif" font-size="11" fill="#455064">전류 제한 전원 +를 INA219 VIN+에</text>
 </g>
 <g>
-  <rect x="600" y="135" width="165" height="78" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
-  <text x="610" y="160" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">9. HBE0704.VCC → UNO.5V</text>
-  <text x="610" y="182" font-family="sans-serif" font-size="11" fill="#455064">HBE0704 VCC를 브레드보드 + 전원 </text>
+  <rect x="600" y="135" width="165" height="78" rx="8" fill="#ffffff" stroke="orange" stroke-width="4"/>
+  <text x="610" y="160" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">9. INA219.VIN- → LOAD.POSITIVE</text>
+  <text x="610" y="182" font-family="sans-serif" font-size="11" fill="#455064">INA219 VIN-를 현재 시험할 코일의 </text>
 </g>
 <g>
-  <rect x="790" y="135" width="165" height="78" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
-  <text x="800" y="160" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">10. HBE0704.GND → UNO.GND</text>
-  <text x="800" y="182" font-family="sans-serif" font-size="11" fill="#455064">HBE0704 GND를 브레드보드 - 전원 </text>
+  <rect x="790" y="135" width="165" height="78" rx="8" fill="#ffffff" stroke="purple" stroke-width="4"/>
+  <text x="800" y="160" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">10. LOAD.NEGATIVE → RESISTOR_10.1</text>
+  <text x="800" y="182" font-family="sans-serif" font-size="11" fill="#455064">시험 코일의 끝 단자를 규격에 맞는 직렬 전</text>
 </g>
 <g>
-  <rect x="30" y="240" width="165" height="78" rx="8" fill="#ffffff" stroke="blue" stroke-width="4"/>
-  <text x="40" y="265" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">11. HBE0704.OUT → UNO.A1</text>
-  <text x="40" y="287" font-family="sans-serif" font-size="11" fill="#455064">HBE0704 OUT을 UNO 아날로그 입력</text>
+  <rect x="30" y="240" width="165" height="78" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
+  <text x="40" y="265" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">11. RESISTOR_10.2 → BATTERY.-</text>
+  <text x="40" y="287" font-family="sans-serif" font-size="11" fill="#455064">직렬 전력저항의 남은 다리를 전원 -에 연결</text>
+</g>
+<g>
+  <rect x="220" y="240" width="165" height="78" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
+  <text x="230" y="265" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">12. BATTERY.- → UNO.GND</text>
+  <text x="230" y="287" font-family="sans-serif" font-size="11" fill="#455064">전원 -와 UNO GND를 공통 접지하세요.</text>
 </g>
 </svg>

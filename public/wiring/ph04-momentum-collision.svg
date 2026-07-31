@@ -22,23 +22,33 @@
   <text x="610" y="77" font-family="sans-serif" font-size="11" fill="#455064">MPU6050_1 SCL을 UNO A5(SC</text>
 </g>
 <g>
-  <rect x="790" y="30" width="165" height="78" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
-  <text x="800" y="55" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">5. MPU6050_2.VCC → UNO.5V</text>
-  <text x="800" y="77" font-family="sans-serif" font-size="11" fill="#455064">MPU6050_2 VCC을 브레드보드 + 전</text>
+  <rect x="790" y="30" width="165" height="78" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
+  <text x="800" y="55" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">5. MPU6050_1.AD0 → UNO.GND</text>
+  <text x="800" y="77" font-family="sans-serif" font-size="11" fill="#455064">MPU6050_1 AD0 low for I2</text>
 </g>
 <g>
-  <rect x="30" y="135" width="165" height="78" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
-  <text x="40" y="160" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">6. MPU6050_2.GND → UNO.GND</text>
-  <text x="40" y="182" font-family="sans-serif" font-size="11" fill="#455064">MPU6050_2 GND를 브레드보드 - 전</text>
+  <rect x="30" y="135" width="165" height="78" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
+  <text x="40" y="160" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">6. MPU6050_2.VCC → UNO.5V</text>
+  <text x="40" y="182" font-family="sans-serif" font-size="11" fill="#455064">MPU6050_2 VCC을 브레드보드 + 전</text>
 </g>
 <g>
-  <rect x="220" y="135" width="165" height="78" rx="8" fill="#ffffff" stroke="green" stroke-width="4"/>
-  <text x="230" y="160" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">7. MPU6050_2.SDA → UNO.A4</text>
-  <text x="230" y="182" font-family="sans-serif" font-size="11" fill="#455064">MPU6050_2 SDA를 UNO A4(SD</text>
+  <rect x="220" y="135" width="165" height="78" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
+  <text x="230" y="160" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">7. MPU6050_2.GND → UNO.GND</text>
+  <text x="230" y="182" font-family="sans-serif" font-size="11" fill="#455064">MPU6050_2 GND를 브레드보드 - 전</text>
 </g>
 <g>
-  <rect x="410" y="135" width="165" height="78" rx="8" fill="#ffffff" stroke="yellow" stroke-width="4"/>
-  <text x="420" y="160" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">8. MPU6050_2.SCL → UNO.A5</text>
-  <text x="420" y="182" font-family="sans-serif" font-size="11" fill="#455064">MPU6050_2 SCL을 UNO A5(SC</text>
+  <rect x="410" y="135" width="165" height="78" rx="8" fill="#ffffff" stroke="green" stroke-width="4"/>
+  <text x="420" y="160" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">8. MPU6050_2.SDA → UNO.A4</text>
+  <text x="420" y="182" font-family="sans-serif" font-size="11" fill="#455064">MPU6050_2 SDA를 UNO A4(SD</text>
+</g>
+<g>
+  <rect x="600" y="135" width="165" height="78" rx="8" fill="#ffffff" stroke="yellow" stroke-width="4"/>
+  <text x="610" y="160" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">9. MPU6050_2.SCL → UNO.A5</text>
+  <text x="610" y="182" font-family="sans-serif" font-size="11" fill="#455064">MPU6050_2 SCL을 UNO A5(SC</text>
+</g>
+<g>
+  <rect x="790" y="135" width="165" height="78" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
+  <text x="800" y="160" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">10. MPU6050_2.AD0 → UNO.5V</text>
+  <text x="800" y="182" font-family="sans-serif" font-size="11" fill="#455064">MPU6050_2 AD0 high for I</text>
 </g>
 </svg>

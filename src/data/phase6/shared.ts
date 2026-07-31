@@ -77,6 +77,11 @@ function defaultConnections(definition: Phase6RecipeDefinition): Connection[] {
     const base = token.replace(/_\d+$/, '')
     if (base === 'MPU6050' || base === 'BME280') {
       connections.push(...i2c(token))
+      if (base === 'MPU6050' && token.endsWith('_2')) {
+        connections.push({ from: `${token}.AD0`, to: 'UNO.5V', color: 'red', text: `${token} AD0 high for I2C address 0x69` })
+      } else if (base === 'MPU6050' && token === 'MPU6050_1') {
+        connections.push({ from: `${token}.AD0`, to: 'UNO.GND', color: 'black', text: `${token} AD0 low for I2C address 0x68` })
+      }
     } else if (base === 'TSL2591' || base === 'TCA9548A') {
       connections.push(...i2c(token, 'VIN'))
     } else if (base === 'INA219') {
@@ -225,6 +230,14 @@ void loop(){
   Serial.print(millis());Serial.print(',');Serial.println(distanceM,4);
   delay(samplingIntervalMs);
 }`
+  }
+  if (sensors.has('mpu6050') && definition.sensorTokens?.length === 2) {
+    return `#include <Wire.h>
+${header}
+int16_t read16(byte a,byte r){Wire.beginTransmission(a);Wire.write(r);Wire.endTransmission(false);Wire.requestFrom(a,(byte)2);return (int16_t)((Wire.read()<<8)|Wire.read());}
+const byte MPU_ADDRESSES[2]={0x68,0x69};
+void setup(){Serial.begin(9600);Wire.begin();for(byte i=0;i<2;i++){byte a=MPU_ADDRESSES[i];Wire.beginTransmission(a);Wire.write(0x6B);Wire.write(0);Wire.endTransmission();}Serial.println("time_ms,mpu0_ax_g,mpu0_ay_g,mpu0_az_g,mpu1_ax_g,mpu1_ay_g,mpu1_az_g");}
+void loop(){Serial.print(millis());for(byte i=0;i<2;i++){byte a=MPU_ADDRESSES[i];Serial.print(',');Serial.print(read16(a,0x3B)/16384.0f,5);Serial.print(',');Serial.print(read16(a,0x3D)/16384.0f,5);Serial.print(',');Serial.print(read16(a,0x3F)/16384.0f,5);}Serial.println();delay(samplingIntervalMs);}`
   }
   if (sensors.has('mpu6050')) {
     return `#include <Wire.h>
