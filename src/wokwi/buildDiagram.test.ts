@@ -3,9 +3,18 @@ import type { Recipe, Sensor } from '@/schema'
 import { sensors } from '@/data/inventory-seed/sensors'
 import { pendulumRecipe } from '@/data/canary/pendulum'
 import { multiTsl2591Recipe } from '@/data/canary/multiTsl2591'
+import { phase5Recipes } from '@/data/phase5'
 import { buildDiagram } from './buildDiagram'
 
 describe('buildDiagram', () => {
+  it('builds a renderable diagram for all 34 Phase 5 recipes', () => {
+    for (const recipe of phase5Recipes) {
+      const diagram = buildDiagram(recipe, sensors)
+      expect(diagram.parts.length, recipe.id).toBeGreaterThan(1)
+      expect(diagram.connections, recipe.id).toHaveLength(recipe.wiring.length)
+    }
+  })
+
   it('produces one non-uno part for a single-sensor recipe (pendulum + MPU6050)', () => {
     const diagram = buildDiagram(pendulumRecipe, sensors)
 

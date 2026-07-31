@@ -51,7 +51,7 @@ function resolveSensor(token: string, sensors: Sensor[]): Sensor | undefined {
   const exact = sensors.find((s) => s.id.toUpperCase() === upper || s.name.toUpperCase() === upper)
   if (exact) return exact
 
-  const instanceBase = upper.replace(/_\d+$/, '')
+  const instanceBase = upper.replace(/_(?:\d+|ALL)$/, '')
   if (instanceBase === upper) return undefined
   return sensors.find((s) => s.id.toUpperCase() === instanceBase || s.name.toUpperCase() === instanceBase)
 }

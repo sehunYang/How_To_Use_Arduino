@@ -3,6 +3,7 @@ import '@testing-library/jest-dom/vitest'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { pendulumRecipe } from '@/data/canary'
+import { phase5Recipes } from '@/data/phase5'
 import { WiringIllustration } from './WiringIllustration'
 
 beforeEach(() => {
@@ -78,5 +79,15 @@ describe('WiringIllustration zoom and pan', () => {
     fireEvent.pointerMove(viewport, { pointerId: 2, clientX: 700, clientY: 300 })
 
     expect(screen.getByRole('button', { name: '배선도 원래 크기' })).toHaveTextContent('200%')
+  })
+
+  it('renders a generated Wokwi diagram when a remote recipe has no readable layout', () => {
+    const recipe = phase5Recipes.find((candidate) => candidate.id === 'S1')!
+    const { container } = render(<WiringIllustration recipe={recipe} activeStep={1} />)
+
+    expect(screen.getByRole('img', { name: /Wokwi 배선도 2단계까지 연결됨/ })).toBeInTheDocument()
+    expect(container.querySelector('[data-generated-wokwi-diagram="S1"]')).toBeInTheDocument()
+    expect(container.querySelectorAll('[data-part-id]').length).toBeGreaterThan(1)
+    expect(container.querySelectorAll('[data-wire-id]')).toHaveLength(2)
   })
 })

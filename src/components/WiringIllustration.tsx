@@ -4,6 +4,7 @@ import type { Recipe } from '@/schema'
 import { layoutForRecipe } from '@/wokwi/layoutRegistry'
 import { validateReadableLayout } from '@/wokwi/readableLayout'
 import { CircuitDiagram } from './CircuitDiagram'
+import { GeneratedWokwiDiagram } from './GeneratedWokwiDiagram'
 
 export function WiringIllustration({
   recipe,
@@ -148,9 +149,7 @@ export function WiringIllustration({
           {layout ? (
             <CircuitDiagram layout={layout} activeStep={activeStep} title={recipe.title} />
           ) : (
-            <div className="grid size-full place-items-center p-8 text-center text-muted">
-              검증된 배선 이미지를 준비하고 있습니다.
-            </div>
+            <GeneratedWokwiDiagram recipe={recipe} activeStep={activeStep} />
           )}
         </div>
         <figcaption
