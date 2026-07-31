@@ -113,7 +113,7 @@ describe('WiringIllustration zoom and pan', () => {
     expect(previous?.querySelector('[data-wire-line]')).toHaveAttribute('stroke-width', '2')
     expect(previous?.querySelector('[data-wire-halo]')).toBeNull()
     expect(previous?.querySelector('[data-wire-blink]')).toBeNull()
-    expect(current?.querySelector('[data-wire-blink]')).toHaveAttribute('dur', '1.5s')
+    expect(current?.querySelector('[data-wire-blink]')).toHaveAttribute('dur', '3s')
     expect(current?.querySelector('[data-wire-blink]')).toHaveAttribute('repeatCount', 'indefinite')
     expect(current?.querySelector('[data-wire-line]')).toHaveAttribute('stroke-width', '2.5')
     expect(current?.querySelector('[data-wire-halo]')).toHaveAttribute('stroke-width', '4.5')

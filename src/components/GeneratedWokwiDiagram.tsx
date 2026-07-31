@@ -257,7 +257,7 @@ export function GeneratedWokwiDiagram({
             data-wire-blink
             attributeName="opacity"
             values="1;0.22;1"
-            dur="1.5s"
+            dur="3s"
             repeatCount="indefinite"
           />
         )}

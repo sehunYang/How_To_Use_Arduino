@@ -49,7 +49,16 @@ describe('Phase 3 responsive layout contracts', () => {
     )
 
     expect(container.querySelector('[data-testid="wiring-layout"]')).toHaveClass('min-w-0')
+    expect(container.querySelector('[data-testid="wiring-layout"]')).not.toHaveClass('lg:grid-cols-2')
     expect(container.querySelector('[data-testid="wiring-steps"]')).toHaveClass('min-w-0')
-    expect(screen.getByTestId('wiring-viewport')).toHaveClass('touch-none')
+    expect(screen.getByTestId('wiring-viewport')).toHaveClass(
+      'aspect-[2/3]',
+      'lg:aspect-[16/9]',
+      'touch-none',
+    )
+    expect(screen.getByText(/휠·핀치로 최대 500% 확대/)).toHaveClass(
+      'text-micro',
+      'leading-tight',
+    )
   })
 })

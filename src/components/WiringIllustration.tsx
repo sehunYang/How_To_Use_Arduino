@@ -121,7 +121,7 @@ export function WiringIllustration({
       <div
         ref={viewport}
         data-testid="wiring-viewport"
-        className={`relative aspect-[4/3] touch-none select-none ${view.scale > 1 ? 'cursor-grab active:cursor-grabbing' : ''}`}
+        className={`relative aspect-[2/3] touch-none select-none lg:aspect-[16/9] ${view.scale > 1 ? 'cursor-grab active:cursor-grabbing' : ''}`}
         aria-label={`${recipe.title} 완성 배선도. 마우스 휠 또는 두 손가락으로 최대 500%까지 확대하고, 확대 후 드래그해 이동할 수 있습니다.`}
         onDoubleClick={(event) => viewRef.current.scale > 1
           ? commitView({ scale: 1, x: 0, y: 0 })
@@ -157,7 +157,7 @@ export function WiringIllustration({
           onPointerDown={(event) => event.stopPropagation()}
         >
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <span>휠·핀치로 최대 500% 확대 · 확대 후 드래그하여 이동</span>
+            <span className="text-micro leading-tight">휠·핀치로 최대 500% 확대 · 확대 후 드래그하여 이동</span>
             <span className="flex gap-1">
               <Button size="sm" variant="ghost" aria-label="배선도 축소" onClick={() => zoomAt(viewRef.current.scale - 0.5)}>−</Button>
               <Button size="sm" variant="ghost" aria-label="배선도 원래 크기" onClick={() => commitView({ scale: 1, x: 0, y: 0 })}>{Math.round(view.scale * 100)}%</Button>

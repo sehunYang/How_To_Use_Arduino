@@ -29,6 +29,7 @@
   --font-size-body: 1rem;
   --font-size-heading: 1.5rem;
   --font-size-caption: 0.875rem;
+  --font-size-micro: 0.4375rem;
   --line-height-body: 1.6;
 }
 
@@ -87,6 +88,7 @@
   --font-size-body: var(--font-size-body);
   --font-size-heading: var(--font-size-heading);
   --font-size-caption: var(--font-size-caption);
+  --font-size-micro: var(--font-size-micro);
 }
 
 body {
