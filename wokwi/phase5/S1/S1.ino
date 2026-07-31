@@ -22,7 +22,9 @@ void loop() {
   mpu.getAcceleration(&ax, &ay, &az);
   float roll = atan2((float)ay, (float)az) * 180.0 / PI;
   float pitch = atan2(-(float)ax, sqrt((float)ay * ay + (float)az * az)) * 180.0 / PI;
-  Serial.print("roll="); Serial.print(roll, 1);
-  Serial.print(", pitch="); Serial.println(pitch, 1);
+  Serial.print("roll=");
+  Serial.print(roll, 1);
+  Serial.print(", pitch=");
+  Serial.println(pitch, 1);
   delay(samplingIntervalMs);
 }

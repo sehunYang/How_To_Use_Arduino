@@ -25,8 +25,10 @@ void loop() {
   if (lux < targetLux * 0.9) lamp = true;
   if (lux > targetLux * 1.1) lamp = false;
   digitalWrite(RELAY_PIN, lamp ? HIGH : LOW);
-  Serial.print(millis()); Serial.print(',');
-  Serial.print(lux, 2); Serial.print(',');
+  Serial.print(millis());
+  Serial.print(',');
+  Serial.print(lux, 2);
+  Serial.print(',');
   Serial.println(lamp);
   delay(1000);
 }

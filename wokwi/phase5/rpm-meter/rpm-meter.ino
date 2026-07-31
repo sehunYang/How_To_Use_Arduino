@@ -17,15 +17,21 @@ void loop() {
   if(!magnetDetected && hallValue<=magnetThreshold) {
     pulseCount++;
     magnetDetected=true;
-  } else if(magnetDetected && hallValue>=releaseThreshold) {
+  }
+  else if(magnetDetected && hallValue>=releaseThreshold) {
     magnetDetected=false;
   }
 
   static unsigned long last=0;
   if(millis()-last<1000) return;
-  unsigned long elapsed=millis()-last; last=millis();
-  unsigned long pulses=pulseCount; pulseCount=0;
+  unsigned long elapsed=millis()-last;
+  last=millis();
+  unsigned long pulses=pulseCount;
+  pulseCount=0;
   float rpm=pulsesPerRevolution ? pulses*60000.0/(elapsed*pulsesPerRevolution) : 0;
-  Serial.print(last); Serial.print(','); Serial.print(pulses); Serial.print(',');
+  Serial.print(last);
+  Serial.print(',');
+  Serial.print(pulses);
+  Serial.print(',');
   Serial.println(rpm,1);
 }

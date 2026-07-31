@@ -10,7 +10,10 @@ void setup() {
 }
 void loop() {
   int raw=analogRead(HALL);
-  Serial.print(millis()); Serial.print(','); Serial.print(raw); Serial.print(',');
+  Serial.print(millis());
+  Serial.print(',');
+  Serial.print(raw);
+  Serial.print(',');
   Serial.println(raw-zeroAdc);
   delay(50);
 }

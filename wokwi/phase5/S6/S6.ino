@@ -16,8 +16,11 @@ void setup() {
 }
 
 void loop() {
-  Serial.print("temperature_c="); Serial.print(bme.readTemperature(), 2);
-  Serial.print(", humidity_pct="); Serial.print(bme.readHumidity(), 2);
-  Serial.print(", pressure_hpa="); Serial.println(bme.readPressure() / 100.0, 2);
+  Serial.print("temperature_c=");
+  Serial.print(bme.readTemperature(), 2);
+  Serial.print(", humidity_pct=");
+  Serial.print(bme.readHumidity(), 2);
+  Serial.print(", pressure_hpa=");
+  Serial.println(bme.readPressure() / 100.0, 2);
   delay(samplingIntervalMs);
 }

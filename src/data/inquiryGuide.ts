@@ -1,4 +1,5 @@
 import type { Recipe } from '@/schema'
+import { formatArduinoCode } from '@/lib/formatArduinoCode'
 
 const GUIDE_MARKER = '<!-- inquiry-workbook-v1 -->'
 
@@ -96,5 +97,6 @@ $$
   return {
     ...recipe,
     body: `${latexize(recipe.body.trim())}\n\n${workbook}`,
+    sketch: formatArduinoCode(recipe.sketch),
   }
 }

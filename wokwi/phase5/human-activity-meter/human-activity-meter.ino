@@ -21,8 +21,10 @@ void loop() {
   float dynamicG = abs(sqrt(x*x+y*y+z*z) - 1.0);
   totalSamples++;
   if (dynamicG >= motionThresholdG) activeSamples++;
-  Serial.print(millis()); Serial.print(',');
-  Serial.print(dynamicG, 4); Serial.print(',');
+  Serial.print(millis());
+  Serial.print(',');
+  Serial.print(dynamicG, 4);
+  Serial.print(',');
   Serial.println(activeSamples / (float)totalSamples, 4);
   delay(50);
 }

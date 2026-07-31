@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Button } from './button'
 import { highlightArduinoLine } from './arduinoSyntax'
 import { parseDisplayCode } from './codeManifest'
+import { formatArduinoCode } from '@/lib/formatArduinoCode'
 
 interface Tunable {
   anchor: string
@@ -11,7 +12,7 @@ interface Tunable {
 
 export function CodeBlock({ code, tunables = [] }: { code: string; tunables?: Tunable[] }) {
   const [copied, setCopied] = useState(false)
-  const lines = parseDisplayCode(code)
+  const lines = parseDisplayCode(formatArduinoCode(code))
   const displayCode = lines.map((line) => line.text).join('\n')
 
   async function copy() {

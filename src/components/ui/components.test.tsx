@@ -27,6 +27,17 @@ describe('student content components', () => {
     expect(screen.getByText('// ready')).toHaveClass('text-syntax-comment')
   })
 
+  it('formats compact Arduino code for both display and clipboard', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } })
+    render(<CodeBlock code={'void loop(){for(byte ch=0;ch<8;ch++){Serial.println(ch);}}'} />)
+    expect(screen.getByText('for')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: '코드 복사' }))
+    expect(writeText).toHaveBeenCalledWith(
+      'void loop() {\n  for(byte ch=0;ch<8;ch++) {\n    Serial.println(ch);\n  }\n}',
+    )
+  })
+
   it('sanitizes executable HTML and unsafe links', () => {
     render(<SafeMarkdown source={'<script>alert(1)</script>\n<img src=x onerror=alert(2)>\n\n[위험](javascript:alert(3))\n\n**안전한 내용**'} />)
     expect(document.querySelector('script, img, a[href^="javascript:"]')).toBeNull()

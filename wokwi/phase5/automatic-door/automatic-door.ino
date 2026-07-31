@@ -7,13 +7,16 @@ unsigned long holdOpenMs = 3000;
 unsigned long lastMotion=0;
 void servoAngle(byte angle) {
   unsigned int pulse=544UL+(unsigned long)angle*(2400-544)/180;
-  digitalWrite(SERVO_PIN,HIGH); delayMicroseconds(pulse);
-  digitalWrite(SERVO_PIN,LOW); delayMicroseconds(20000-pulse);
+  digitalWrite(SERVO_PIN,HIGH);
+  delayMicroseconds(pulse);
+  digitalWrite(SERVO_PIN,LOW);
+  delayMicroseconds(20000-pulse);
 }
 void setup() {
   Serial.begin(9600);
   Serial.println("PHASE5_READY:automatic-door");
-  pinMode(PIR_PIN,INPUT); pinMode(SERVO_PIN,OUTPUT);
+  pinMode(PIR_PIN,INPUT);
+  pinMode(SERVO_PIN,OUTPUT);
   for(byte i=0;i<25;i++) servoAngle(0);
   delay(30000);
 }

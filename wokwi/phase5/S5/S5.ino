@@ -19,6 +19,9 @@ void loop() {
   sensors.requestTemperatures();
   float celsius = sensors.getTempCByIndex(0);
   if (celsius == DEVICE_DISCONNECTED_C) Serial.println("sensor-error");
-  else { Serial.print("water_c="); Serial.println(celsius, 2); }
+  else {
+    Serial.print("water_c=");
+    Serial.println(celsius, 2);
+  }
   delay(conversionIntervalMs);
 }

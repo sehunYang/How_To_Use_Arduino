@@ -15,14 +15,17 @@ void setup() {
 }
 
 void loop() {
-  digitalWrite(TRIG_PIN, LOW); delayMicroseconds(2);
-  digitalWrite(TRIG_PIN, HIGH); delayMicroseconds(10);
+  digitalWrite(TRIG_PIN, LOW);
+  delayMicroseconds(2);
+  digitalWrite(TRIG_PIN, HIGH);
+  delayMicroseconds(10);
   digitalWrite(TRIG_PIN, LOW);
   unsigned long durationUs = pulseIn(ECHO_PIN, HIGH, 30000);
   if (durationUs == 0) Serial.println("out-of-range");
   else {
     float distanceCm = durationUs * 0.0343 / 2.0;
-    Serial.print("distance_cm="); Serial.println(distanceCm, 1);
+    Serial.print("distance_cm=");
+    Serial.println(distanceCm, 1);
   }
   delay(measurementIntervalMs);
 }

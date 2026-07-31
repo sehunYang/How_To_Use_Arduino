@@ -21,6 +21,7 @@ void loop() {
   uint32_t lum = tsl.getFullLuminosity();
   uint16_t ir = lum >> 16;
   uint16_t full = lum & 0xffff;
-  Serial.print("lux="); Serial.println(tsl.calculateLux(full, ir), 2);
+  Serial.print("lux=");
+  Serial.println(tsl.calculateLux(full, ir), 2);
   delay(samplingIntervalMs);
 }

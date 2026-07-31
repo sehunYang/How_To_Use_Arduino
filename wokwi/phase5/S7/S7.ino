@@ -18,8 +18,11 @@ void setup() {
 void loop() {
   float busV = ina219.getBusVoltage_V();
   float currentMa = ina219.getCurrent_mA();
-  Serial.print("voltage_v="); Serial.print(busV, 3);
-  Serial.print(", current_ma="); Serial.print(currentMa, 2);
-  Serial.print(", power_mw="); Serial.println(busV * currentMa, 2);
+  Serial.print("voltage_v=");
+  Serial.print(busV, 3);
+  Serial.print(", current_ma=");
+  Serial.print(currentMa, 2);
+  Serial.print(", power_mw=");
+  Serial.println(busV * currentMa, 2);
   delay(samplingIntervalMs);
 }
