@@ -6,7 +6,6 @@ import { SafeMarkdown } from '@/components/ui/SafeMarkdown'
 import { SimBadge } from '@/components/ui/SimBadge'
 import { WiringIllustration } from '@/components/WiringIllustration'
 import { canarySimStatus, studentRecipes } from '@/data/studentCatalog'
-import { sensors } from '@/data/inventory-seed/sensors'
 import { INVENTORY_VERSION } from '@/data/inventory-seed/version'
 import { useWiringSteps } from '@/hooks/useWiringSteps'
 import { loadProgress, PROGRESS_VERSION, saveProgress } from '@/progress'
@@ -14,7 +13,7 @@ import { sendAnonymousEvent } from '@/telemetry/events'
 import { authorizeAdminPreview, loadAdminPreviewRecipe } from '@/firebase/adminPreview'
 import { loadDynamicSearchIndex, loadPublishedRecipe } from '@/firebase/contentRepository'
 import type { Recipe } from '@/schema'
-import { wiringStepUsesBreadboard } from '@/wokwi/buildDiagram'
+import { planBreadboardWiring } from '@/wokwi/buildDiagram'
 
 export interface PreviewServices {
   authorize: () => Promise<boolean>
@@ -175,6 +174,7 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
 
   const activeRecipe = recipe
   const active = machine.activeStep ?? 0
+  const plannedWiring = planBreadboardWiring(recipe)
   function toggleStep(index: number, checked: boolean) {
     if (checked) machine.checkStep(index)
     else machine.uncheckStep(index)
@@ -215,7 +215,10 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
                       <span className="text-syntax-operator">. </span>
                       <EndpointLabel value={step.from} />
                       <span className="text-syntax-operator">
-                        {wiringStepUsesBreadboard(step, sensors) ? ' → 브레드보드 → ' : ' → '}
+                        {plannedWiring.some(
+                          (connection) => connection.stepIndex === index
+                            && (connection.from.startsWith('BB.') || connection.to.startsWith('BB.')),
+                        ) ? ' → 브레드보드 → ' : ' → '}
                       </span>
                       <EndpointLabel value={step.to} />
                     </strong>
@@ -223,9 +226,16 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
                       <span className="text-syntax-string">{jumperWireLabel(step.from, step.to)}</span>
                       <span className="text-muted"> · </span>
                       <HighlightedWiringText text={step.text} />
-                      {wiringStepUsesBreadboard(step, sensors) && (
-                        <span className="text-muted"> 브레드보드의 같은 연결 열을 거쳐 꽂으세요.</span>
-                      )}
+                      {plannedWiring
+                        .filter((connection) => connection.stepIndex === index)
+                        .map((connection) => (
+                          <span
+                            key={`${connection.from}-${connection.to}`}
+                            className="mt-1 block text-muted"
+                          >
+                            {connection.from} → {connection.to}
+                          </span>
+                        ))}
                       <span className="text-muted"> · </span>
                       <span className={WIRE_COLOR_CLASS[step.color.toLowerCase()] ?? 'text-syntax-function'}>
                         {step.color} 선

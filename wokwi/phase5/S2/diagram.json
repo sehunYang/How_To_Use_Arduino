@@ -25,48 +25,36 @@
   "connections": [
     [
       "hc-sr04:VCC",
-      "bb:1t.a",
+      "bb:tp.1",
       "red",
       []
     ],
     [
-      "bb:1t.b",
       "uno:5V",
+      "bb:tp.2",
       "red",
       []
     ],
     [
       "hc-sr04:GND",
-      "bb:2t.a",
+      "bb:tn.1",
       "black",
       []
     ],
     [
-      "bb:2t.b",
       "uno:GND",
+      "bb:tn.2",
       "black",
       []
     ],
     [
       "hc-sr04:TRIG",
-      "bb:3t.a",
-      "blue",
-      []
-    ],
-    [
-      "bb:3t.b",
       "uno:D7",
       "blue",
       []
     ],
     [
       "hc-sr04:ECHO",
-      "bb:4t.a",
-      "green",
-      []
-    ],
-    [
-      "bb:4t.b",
       "uno:D6",
       "green",
       []

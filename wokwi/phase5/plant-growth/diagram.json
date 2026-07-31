@@ -31,97 +31,73 @@
   "connections": [
     [
       "tsl2591:VCC",
-      "bb:1t.a",
+      "bb:tp.1",
       "red",
       []
     ],
     [
-      "bb:1t.b",
       "uno:5V",
+      "bb:tp.2",
       "red",
       []
     ],
     [
       "tsl2591:GND",
-      "bb:2t.a",
+      "bb:tn.1",
       "black",
       []
     ],
     [
-      "bb:2t.b",
       "uno:GND",
+      "bb:tn.2",
       "black",
       []
     ],
     [
       "tsl2591:SDA",
-      "bb:3t.a",
+      "bb:1t.a",
       "green",
       []
     ],
     [
-      "bb:3t.b",
       "uno:A4",
+      "bb:1t.b",
       "green",
       []
     ],
     [
       "tsl2591:SCL",
-      "bb:4t.a",
+      "bb:2t.a",
       "yellow",
       []
     ],
     [
-      "bb:4t.b",
       "uno:A5",
+      "bb:2t.b",
       "yellow",
       []
     ],
     [
       "bme280:VCC",
-      "bb:5t.a",
-      "red",
-      []
-    ],
-    [
-      "bb:5t.b",
-      "uno:5V",
+      "bb:tp.3",
       "red",
       []
     ],
     [
       "bme280:GND",
-      "bb:6t.a",
-      "black",
-      []
-    ],
-    [
-      "bb:6t.b",
-      "uno:GND",
+      "bb:tn.3",
       "black",
       []
     ],
     [
       "bme280:SDA",
-      "bb:7t.a",
-      "green",
-      []
-    ],
-    [
-      "bb:7t.b",
-      "uno:A4",
+      "bb:1t.c",
       "green",
       []
     ],
     [
       "bme280:SCL",
-      "bb:8t.a",
-      "yellow",
-      []
-    ],
-    [
-      "bb:8t.b",
-      "uno:A5",
+      "bb:2t.c",
       "yellow",
       []
     ]

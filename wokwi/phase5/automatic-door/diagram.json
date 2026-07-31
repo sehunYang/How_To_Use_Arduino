@@ -37,36 +37,30 @@
   "connections": [
     [
       "hc-sr501:VCC",
-      "bb:1t.a",
+      "bb:tp.1",
       "red",
       []
     ],
     [
-      "bb:1t.b",
       "uno:5V",
+      "bb:tp.2",
       "red",
       []
     ],
     [
       "hc-sr501:GND",
-      "bb:2t.a",
+      "bb:tn.1",
       "black",
       []
     ],
     [
-      "bb:2t.b",
       "uno:GND",
+      "bb:tn.2",
       "black",
       []
     ],
     [
       "hc-sr501:OUT",
-      "bb:3t.a",
-      "yellow",
-      []
-    ],
-    [
-      "bb:3t.b",
       "uno:D2",
       "yellow",
       []
@@ -79,19 +73,25 @@
     ],
     [
       "servo:V+",
+      "bb:1t.a",
+      "red",
+      []
+    ],
+    [
       "servo_supply:SIG",
+      "bb:1t.b",
       "red",
       []
     ],
     [
       "servo:GND",
-      "servo_supply:GND",
+      "bb:tn.4",
       "black",
       []
     ],
     [
       "servo_supply:GND",
-      "uno:GND",
+      "bb:tn.3",
       "black",
       []
     ]

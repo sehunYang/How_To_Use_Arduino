@@ -4,8 +4,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { pendulumRecipe } from '@/data/canary'
 import { phase5Recipes } from '@/data/phase5'
-import { sensors } from '@/data/inventory-seed/sensors'
-import { wiringStepUsesBreadboard } from '@/wokwi/buildDiagram'
+import { planBreadboardWiring } from '@/wokwi/buildDiagram'
 import { WiringIllustration } from './WiringIllustration'
 
 beforeEach(() => {
@@ -131,10 +130,7 @@ describe('WiringIllustration zoom and pan', () => {
           .map((pin) => `${pin.getAttribute('data-pin-x')},${pin.getAttribute('data-pin-y')}`),
       )
       const wires = Array.from(container.querySelectorAll('[data-wire-from][data-wire-to]'))
-      const expectedWires = recipe.wiring.reduce(
-        (count, step) => count + (wiringStepUsesBreadboard(step, sensors) ? 2 : 1),
-        0,
-      )
+      const expectedWires = planBreadboardWiring(recipe).length
       expect(wires, recipe.id).toHaveLength(expectedWires)
       expect(container.querySelector('[data-part-id="bb"]'), recipe.id).not.toBeNull()
       for (const wire of wires) {

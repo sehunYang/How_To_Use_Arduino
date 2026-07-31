@@ -56,17 +56,89 @@ function resolveSensor(token: string, sensors: Sensor[]): Sensor | undefined {
   return sensors.find((s) => s.id.toUpperCase() === instanceBase || s.name.toUpperCase() === instanceBase)
 }
 
-export function wiringStepUsesBreadboard(
-  step: Pick<Recipe['wiring'][number], 'from' | 'to'>,
-  sensors: Sensor[],
-): boolean {
-  const [fromToken] = splitRef(step.from)
-  const [toToken] = splitRef(step.to)
-  return (
-    fromToken.toUpperCase() === UNO_TOKEN && resolveSensor(toToken, sensors) !== undefined
-  ) || (
-    toToken.toUpperCase() === UNO_TOKEN && resolveSensor(fromToken, sensors) !== undefined
-  )
+export interface PlannedWiringConnection {
+  from: string
+  to: string
+  color: string
+  stepIndex: number
+}
+
+export function planBreadboardWiring(recipe: Recipe): PlannedWiringConnection[] {
+  const adjacency = new Map<string, Set<string>>()
+  const connect = (from: string, to: string) => {
+    if (!adjacency.has(from)) adjacency.set(from, new Set())
+    if (!adjacency.has(to)) adjacency.set(to, new Set())
+    adjacency.get(from)!.add(to)
+    adjacency.get(to)!.add(from)
+  }
+  recipe.wiring.forEach((step) => connect(step.from, step.to))
+
+  const netByEndpoint = new Map<string, string[]>()
+  const visited = new Set<string>()
+  for (const endpoint of adjacency.keys()) {
+    if (visited.has(endpoint)) continue
+    const net: string[] = []
+    const pending = [endpoint]
+    while (pending.length) {
+      const current = pending.pop()!
+      if (visited.has(current)) continue
+      visited.add(current)
+      net.push(current)
+      pending.push(...(adjacency.get(current) ?? []))
+    }
+    net.forEach((member) => netByEndpoint.set(member, net))
+  }
+
+  const boardNet = new Map<string[], { holes: Map<string, string>; connected: Set<string> }>()
+  let terminalColumn = 1
+  for (const net of new Set(netByEndpoint.values())) {
+    const hasExplicitBoard = net.some((endpoint) => endpoint.toUpperCase().startsWith('BB.'))
+    const unoPins = net
+      .filter((endpoint) => endpoint.toUpperCase().startsWith('UNO.'))
+      .map((endpoint) => endpoint.slice(endpoint.indexOf('.') + 1).toUpperCase())
+    const isFiveVolt = unoPins.includes('5V')
+    const isThreeVolt = unoPins.includes('3.3V')
+    const isGround = unoPins.includes('GND')
+    const hasUno = unoPins.length > 0
+    const needsJunction = net.length > 2 || !hasUno
+    if (hasExplicitBoard || (!isFiveVolt && !isThreeVolt && !isGround && !needsJunction)) continue
+
+    const holes = new Map<string, string>()
+    if (isFiveVolt || isThreeVolt || isGround) {
+      const rail = isGround ? 'tn' : isThreeVolt ? 'bp' : 'tp'
+      net.forEach((endpoint, index) => holes.set(endpoint, `BB.${rail}.${index + 1}`))
+    } else {
+      const rows = ['a', 'b', 'c', 'd', 'e']
+      if (net.length > rows.length) {
+        throw new Error(
+          `planBreadboardWiring: terminal-strip net has ${net.length} endpoints; `
+          + 'a single breadboard column supports at most 5',
+        )
+      }
+      net.forEach((endpoint, index) => holes.set(endpoint, `BB.${terminalColumn}t.${rows[index]}`))
+      terminalColumn += 1
+    }
+    boardNet.set(net, { holes, connected: new Set() })
+  }
+
+  return recipe.wiring.flatMap((step, stepIndex) => {
+    const net = netByEndpoint.get(step.from)!
+    const plan = boardNet.get(net)
+    if (!plan) return [{ from: step.from, to: step.to, color: step.color, stepIndex }]
+
+    const connections: PlannedWiringConnection[] = []
+    for (const endpoint of [step.from, step.to]) {
+      if (plan.connected.has(endpoint)) continue
+      plan.connected.add(endpoint)
+      connections.push({
+        from: endpoint,
+        to: plan.holes.get(endpoint)!,
+        color: step.color,
+        stepIndex,
+      })
+    }
+    return connections
+  })
 }
 
 interface ResolvableComponent {
@@ -214,19 +286,12 @@ export function buildDiagram(recipe: Recipe, sensors: Sensor[]): Diagram {
     return `${partId}:${pin}`
   }
 
-  const connections: DiagramConnection[] = recipe.wiring.flatMap((step, index) => {
-    const from = resolveEndpoint(step.from)
-    const to = resolveEndpoint(step.to)
-    if (!wiringStepUsesBreadboard(step, sensors)) return [[from, to, step.color, []]]
-
-    const column = (index % 30) + 1
-    const boardA = `${BREADBOARD_PART_ID}:${column}t.a`
-    const boardB = `${BREADBOARD_PART_ID}:${column}t.b`
-    return [
-      [from, boardA, step.color, []],
-      [boardB, to, step.color, []],
-    ]
-  })
+  const connections: DiagramConnection[] = planBreadboardWiring(recipe).map((connection) => [
+    resolveEndpoint(connection.from),
+    resolveEndpoint(connection.to),
+    connection.color,
+    [],
+  ])
 
   return {
     version: 1,

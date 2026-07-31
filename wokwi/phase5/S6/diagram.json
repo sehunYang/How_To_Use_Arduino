@@ -25,48 +25,36 @@
   "connections": [
     [
       "bme280:VCC",
-      "bb:1t.a",
+      "bb:tp.1",
       "red",
       []
     ],
     [
-      "bb:1t.b",
       "uno:5V",
+      "bb:tp.2",
       "red",
       []
     ],
     [
       "bme280:GND",
-      "bb:2t.a",
+      "bb:tn.1",
       "black",
       []
     ],
     [
-      "bb:2t.b",
       "uno:GND",
+      "bb:tn.2",
       "black",
       []
     ],
     [
       "bme280:SDA",
-      "bb:3t.a",
-      "green",
-      []
-    ],
-    [
-      "bb:3t.b",
       "uno:A4",
       "green",
       []
     ],
     [
       "bme280:SCL",
-      "bb:4t.a",
-      "yellow",
-      []
-    ],
-    [
-      "bb:4t.b",
       "uno:A5",
       "yellow",
       []

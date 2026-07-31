@@ -12,7 +12,7 @@ import '@wokwi/elements/dist/esm/servo-element.js'
 import '@wokwi/elements/dist/esm/slide-potentiometer-element.js'
 import { sensors } from '@/data/inventory-seed/sensors'
 import type { Recipe } from '@/schema'
-import { buildDiagram, wiringStepUsesBreadboard, type Diagram, type DiagramPart } from '@/wokwi/buildDiagram'
+import { buildDiagram, planBreadboardWiring, type Diagram, type DiagramPart } from '@/wokwi/buildDiagram'
 import { geometryFor } from '@/wokwi/partGeometry'
 import { HalfBreadboardPart, Ina219Part, Tca9548aPart, Tsl2591Part } from './wokwiParts'
 import { Bme280Visual, CdsVisual, To92Visual } from './SensorVisual'
@@ -227,16 +227,14 @@ export function GeneratedWokwiDiagram({
   activeStep: number
 }) {
   const diagram = useMemo(() => buildDiagram(recipe, sensors), [recipe])
+  const plannedWiring = useMemo(() => planBreadboardWiring(recipe), [recipe])
   const positioned = useMemo(() => positionParts(diagram.parts), [diagram.parts])
   const partMap = useMemo(() => new Map(positioned.map((part) => [part.id, part])), [positioned])
   const usages = useMemo(() => pinUsages(diagram), [diagram])
   const contentBottom = Math.max(290, ...positioned.map((part) => part.top + part.height + 24))
   const height = contentBottom + diagram.connections.length * 10 + 30
-  const visibleCount = recipe.wiring
-    .slice(0, activeStep + 1)
-    .reduce((count, step) => count + (wiringStepUsesBreadboard(step, sensors) ? 2 : 1), 0)
-  const activeWiring = recipe.wiring[activeStep] ?? recipe.wiring[0]
-  const currentCount = activeWiring && wiringStepUsesBreadboard(activeWiring, sensors) ? 2 : 1
+  const visibleCount = plannedWiring.filter((connection) => connection.stepIndex <= activeStep).length
+  const currentCount = plannedWiring.filter((connection) => connection.stepIndex === activeStep).length
   const visible = diagram.connections.slice(0, visibleCount)
   const wires = visible.map(([from, to, color], index) => {
     const start = pinPointForEndpoint(from, partMap, usages)

@@ -37,97 +37,73 @@
   "connections": [
     [
       "ds18b20_1:VCC",
-      "bb:1t.a",
+      "bb:tp.1",
       "red",
       []
     ],
     [
-      "bb:1t.b",
       "uno:5V",
+      "bb:tp.2",
       "red",
       []
     ],
     [
       "ds18b20_1:GND",
-      "bb:2t.a",
+      "bb:tn.1",
       "black",
       []
     ],
     [
-      "bb:2t.b",
       "uno:GND",
+      "bb:tn.2",
       "black",
       []
     ],
     [
       "ds18b20_2:VCC",
-      "bb:3t.a",
-      "red",
-      []
-    ],
-    [
-      "bb:3t.b",
-      "uno:5V",
+      "bb:tp.4",
       "red",
       []
     ],
     [
       "ds18b20_2:GND",
-      "bb:4t.a",
-      "black",
-      []
-    ],
-    [
-      "bb:4t.b",
-      "uno:GND",
+      "bb:tn.4",
       "black",
       []
     ],
     [
       "ds18b20_3:VCC",
-      "bb:5t.a",
-      "red",
-      []
-    ],
-    [
-      "bb:5t.b",
-      "uno:5V",
+      "bb:tp.3",
       "red",
       []
     ],
     [
       "ds18b20_3:GND",
-      "bb:6t.a",
-      "black",
-      []
-    ],
-    [
-      "bb:6t.b",
-      "uno:GND",
+      "bb:tn.3",
       "black",
       []
     ],
     [
       "ds18b20_1:DQ",
-      "bb:7t.a",
+      "bb:1t.a",
       "green",
       []
     ],
     [
-      "bb:7t.b",
       "uno:D2",
+      "bb:1t.d",
       "green",
       []
     ],
     [
       "ds18b20_2:DQ",
-      "ds18b20_1:DQ",
+      "bb:1t.c",
       "green",
       []
     ],
     [
       "ds18b20_3:DQ",
-      "ds18b20_1:DQ",
+      "bb:1t.b",
       "green",
       []
     ]

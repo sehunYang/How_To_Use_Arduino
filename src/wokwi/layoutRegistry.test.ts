@@ -39,4 +39,56 @@ describe('layoutForRecipe', () => {
 
     expect(layoutForRecipe({ ...pendulumRecipe, layout })).toBe(layout)
   })
+
+  it('allows simple UNO signal wires to connect directly', () => {
+    const layout: ReadableLayout = {
+      version: 1,
+      author: 'teacher',
+      purpose: 'recipe',
+      minimumClearance: 8,
+      parts: [
+        { id: 'uno', type: 'wokwi-arduino-uno', top: 0, left: 0 },
+        { id: 'bb', type: 'wokwi-breadboard-half', top: 0, left: 300 },
+        { id: 'sensor', type: 'wokwi-potentiometer', top: 200, left: 300 },
+      ],
+      wires: [
+        {
+          id: 'signal',
+          net: 'SIG',
+          from: 'sensor:SIG',
+          to: 'uno:A0',
+          color: 'blue',
+          points: [],
+        },
+      ],
+    }
+
+    expect(layoutForRecipe({ ...pendulumRecipe, layout })).toBe(layout)
+  })
+
+  it('rejects embedded layouts that connect UNO power directly to a component', () => {
+    const layout: ReadableLayout = {
+      version: 1,
+      author: 'teacher',
+      purpose: 'recipe',
+      minimumClearance: 8,
+      parts: [
+        { id: 'uno', type: 'wokwi-arduino-uno', top: 0, left: 0 },
+        { id: 'bb', type: 'wokwi-breadboard-half', top: 0, left: 300 },
+        { id: 'sensor', type: 'wokwi-potentiometer', top: 200, left: 300 },
+      ],
+      wires: [
+        {
+          id: 'power',
+          net: '5V',
+          from: 'uno:5V',
+          to: 'sensor:VCC',
+          color: 'red',
+          points: [],
+        },
+      ],
+    }
+
+    expect(layoutForRecipe({ ...pendulumRecipe, layout })).toBeNull()
+  })
 })

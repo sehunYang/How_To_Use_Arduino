@@ -25,36 +25,30 @@
   "connections": [
     [
       "hbe0704:VCC",
-      "bb:1t.a",
+      "bb:tp.1",
       "red",
       []
     ],
     [
-      "bb:1t.b",
       "uno:5V",
+      "bb:tp.2",
       "red",
       []
     ],
     [
       "hbe0704:GND",
-      "bb:2t.a",
+      "bb:tn.1",
       "black",
       []
     ],
     [
-      "bb:2t.b",
       "uno:GND",
+      "bb:tn.2",
       "black",
       []
     ],
     [
       "hbe0704:SIG",
-      "bb:3t.a",
-      "blue",
-      []
-    ],
-    [
-      "bb:3t.b",
       "uno:A0",
       "blue",
       []
