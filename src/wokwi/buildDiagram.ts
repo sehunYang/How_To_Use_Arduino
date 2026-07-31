@@ -56,6 +56,19 @@ function resolveSensor(token: string, sensors: Sensor[]): Sensor | undefined {
   return sensors.find((s) => s.id.toUpperCase() === instanceBase || s.name.toUpperCase() === instanceBase)
 }
 
+export function wiringStepUsesBreadboard(
+  step: Pick<Recipe['wiring'][number], 'from' | 'to'>,
+  sensors: Sensor[],
+): boolean {
+  const [fromToken] = splitRef(step.from)
+  const [toToken] = splitRef(step.to)
+  return (
+    fromToken.toUpperCase() === UNO_TOKEN && resolveSensor(toToken, sensors) !== undefined
+  ) || (
+    toToken.toUpperCase() === UNO_TOKEN && resolveSensor(fromToken, sensors) !== undefined
+  )
+}
+
 interface ResolvableComponent {
   id: string
   pins?: readonly { name: string }[]
@@ -164,8 +177,11 @@ export function resolveWiringRef(
  * attempts to actually execute the sketch against this diagram later.
  */
 export function buildDiagram(recipe: Recipe, sensors: Sensor[]): Diagram {
-  const parts: DiagramPart[] = [{ id: UNO_PART_ID, type: 'wokwi-arduino-uno', top: 0, left: 0 }]
-  const seenPartIds = new Set([UNO_PART_ID])
+  const parts: DiagramPart[] = [
+    { id: UNO_PART_ID, type: 'wokwi-arduino-uno', top: 0, left: 0 },
+    { id: BREADBOARD_PART_ID, type: 'wokwi-breadboard-half', top: 0, left: PART_SPACING },
+  ]
+  const seenPartIds = new Set([UNO_PART_ID, BREADBOARD_PART_ID])
   let nextLeft = PART_SPACING
   const recipeActuators = actuators.filter((actuator) => recipe.actuators.includes(actuator.id))
 
@@ -198,12 +214,19 @@ export function buildDiagram(recipe: Recipe, sensors: Sensor[]): Diagram {
     return `${partId}:${pin}`
   }
 
-  const connections: DiagramConnection[] = recipe.wiring.map((step) => [
-    resolveEndpoint(step.from),
-    resolveEndpoint(step.to),
-    step.color,
-    [],
-  ])
+  const connections: DiagramConnection[] = recipe.wiring.flatMap((step, index) => {
+    const from = resolveEndpoint(step.from)
+    const to = resolveEndpoint(step.to)
+    if (!wiringStepUsesBreadboard(step, sensors)) return [[from, to, step.color, []]]
+
+    const column = (index % 30) + 1
+    const boardA = `${BREADBOARD_PART_ID}:${column}t.a`
+    const boardB = `${BREADBOARD_PART_ID}:${column}t.b`
+    return [
+      [from, boardA, step.color, []],
+      [boardB, to, step.color, []],
+    ]
+  })
 
   return {
     version: 1,

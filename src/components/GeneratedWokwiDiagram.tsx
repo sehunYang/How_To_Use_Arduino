@@ -12,7 +12,7 @@ import '@wokwi/elements/dist/esm/servo-element.js'
 import '@wokwi/elements/dist/esm/slide-potentiometer-element.js'
 import { sensors } from '@/data/inventory-seed/sensors'
 import type { Recipe } from '@/schema'
-import { buildDiagram, type Diagram, type DiagramPart } from '@/wokwi/buildDiagram'
+import { buildDiagram, wiringStepUsesBreadboard, type Diagram, type DiagramPart } from '@/wokwi/buildDiagram'
 import { geometryFor } from '@/wokwi/partGeometry'
 import { HalfBreadboardPart, Ina219Part, Tca9548aPart, Tsl2591Part } from './wokwiParts'
 import { Bme280Visual, CdsVisual, To92Visual } from './SensorVisual'
@@ -52,7 +52,7 @@ const PART_SIZE: Record<string, { width: number; height: number }> = {
   'wokwi-buzzer': { width: 64.25, height: 75.59 },
   'wokwi-pir-motion-sensor': { width: 90.71, height: 92.4 },
   'wokwi-potentiometer': { width: 75.59, height: 75.59 },
-  'wokwi-resistor': { width: 59.13, height: 11.34 },
+  'wokwi-resistor': { width: 96, height: 38 },
   'wokwi-servo': { width: 170.08, height: 119.55 },
   'wokwi-slide-potentiometer': { width: 150, height: 109.61 },
 }
@@ -67,6 +67,10 @@ const GEOMETRY_TYPE: Record<string, string> = {
 }
 
 function displayName(part: DiagramPart): string {
+  if (part.type === 'wokwi-resistor') {
+    if (part.id.startsWith('cds_resistor')) return '10 kΩ'
+    if (part.id === 'load' || part.id === 'lamp') return '220 Ω'
+  }
   return part.id.replaceAll('-', ' ').replaceAll('_', ' ').toUpperCase()
 }
 
@@ -145,8 +149,16 @@ function partGraphic(part: PositionedPart) {
   if (part.type === 'custom-tca9548a') return <Tca9548aPart />
   if (part.type === 'wokwi-breadboard-half') return <HalfBreadboardPart />
   if (NATIVE_PARTS.has(part.type)) {
+    const resistor = part.type === 'wokwi-resistor'
     return createElement(part.type, {
-      style: { width: '100%', height: '100%', display: 'block' },
+      style: {
+        width: resistor ? '78%' : '100%',
+        height: resistor ? '72%' : '100%',
+        margin: resistor ? '5px auto' : undefined,
+        display: 'block',
+        overflow: 'visible',
+      },
+      ...(resistor ? { value: part.id.startsWith('cds_resistor') ? '10k' : '220' } : {}),
     })
   }
   return (
@@ -157,14 +169,16 @@ function partGraphic(part: PositionedPart) {
 }
 
 function positionParts(parts: DiagramPart[]): PositionedPart[] {
+  let componentSlot = 0
   return parts.map((part, index) => {
     const size = sizeFor(part)
     if (index === 0) return { ...part, left: 32, top: 64, ...size }
-    const slot = index - 1
+    if (part.id === 'bb') return { ...part, left: 360, top: 38, ...size }
+    const slot = componentSlot++
     return {
       ...part,
-      left: 390 + (slot % 2) * 245,
-      top: 38 + Math.floor(slot / 2) * 165,
+      left: 350 + (slot % 3) * 180,
+      top: 285 + Math.floor(slot / 3) * 190,
       ...size,
     }
   })
@@ -218,7 +232,12 @@ export function GeneratedWokwiDiagram({
   const usages = useMemo(() => pinUsages(diagram), [diagram])
   const contentBottom = Math.max(290, ...positioned.map((part) => part.top + part.height + 24))
   const height = contentBottom + diagram.connections.length * 10 + 30
-  const visible = diagram.connections.slice(0, activeStep + 1)
+  const visibleCount = recipe.wiring
+    .slice(0, activeStep + 1)
+    .reduce((count, step) => count + (wiringStepUsesBreadboard(step, sensors) ? 2 : 1), 0)
+  const activeWiring = recipe.wiring[activeStep] ?? recipe.wiring[0]
+  const currentCount = activeWiring && wiringStepUsesBreadboard(activeWiring, sensors) ? 2 : 1
+  const visible = diagram.connections.slice(0, visibleCount)
   const wires = visible.map(([from, to, color], index) => {
     const start = pinPointForEndpoint(from, partMap, usages)
     const end = pinPointForEndpoint(to, partMap, usages)
@@ -238,7 +257,7 @@ export function GeneratedWokwiDiagram({
       end,
     ]
     const points = route.map((point) => `${point.x},${point.y}`).join(' ')
-    const current = index === visible.length - 1
+    const current = index >= visible.length - currentCount
     return (
       <g
         key={`${from}-${to}-${index}`}

@@ -4,8 +4,8 @@ import type { ReadableLayout } from './readableLayout'
 import { layoutForRecipe } from './layoutRegistry'
 
 describe('layoutForRecipe', () => {
-  it('uses the registered layout for bundled recipes', () => {
-    expect(layoutForRecipe(pendulumRecipe)?.wires).toHaveLength(pendulumRecipe.wiring.length)
+  it('uses the generated breadboard diagram for bundled recipes', () => {
+    expect(layoutForRecipe(pendulumRecipe)).toBeNull()
   })
 
   it('uses an embedded validated layout for dynamic recipe previews', () => {
@@ -14,7 +14,10 @@ describe('layoutForRecipe', () => {
       author: 'teacher',
       purpose: 'recipe',
       minimumClearance: 8,
-      parts: [{ id: 'uno', type: 'wokwi-arduino-uno', top: 0, left: 0 }],
+      parts: [
+        { id: 'uno', type: 'wokwi-arduino-uno', top: 0, left: 0 },
+        { id: 'bb', type: 'wokwi-breadboard-half', top: 0, left: 300 },
+      ],
       wires: [],
     }
 
@@ -27,7 +30,10 @@ describe('layoutForRecipe', () => {
       author: 'teacher',
       purpose: 'recipe',
       minimumClearance: 8,
-      parts: [{ id: 'uno', type: 'wokwi-arduino-uno', top: 0, left: 0 }],
+      parts: [
+        { id: 'uno', type: 'wokwi-arduino-uno', top: 0, left: 0 },
+        { id: 'bb', type: 'wokwi-breadboard-half', top: 0, left: 300 },
+      ],
       wires: [],
     }
 

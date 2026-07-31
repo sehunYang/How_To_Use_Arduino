@@ -10,6 +10,12 @@
       "left": 0
     },
     {
+      "id": "bb",
+      "type": "wokwi-breadboard-half",
+      "top": 0,
+      "left": 100
+    },
+    {
       "id": "hc-sr501",
       "type": "wokwi-pir-motion-sensor",
       "top": 0,
@@ -31,18 +37,36 @@
   "connections": [
     [
       "hc-sr501:VCC",
+      "bb:1t.a",
+      "red",
+      []
+    ],
+    [
+      "bb:1t.b",
       "uno:5V",
       "red",
       []
     ],
     [
       "hc-sr501:GND",
+      "bb:2t.a",
+      "black",
+      []
+    ],
+    [
+      "bb:2t.b",
       "uno:GND",
       "black",
       []
     ],
     [
       "hc-sr501:OUT",
+      "bb:3t.a",
+      "yellow",
+      []
+    ],
+    [
+      "bb:3t.b",
       "uno:D2",
       "yellow",
       []

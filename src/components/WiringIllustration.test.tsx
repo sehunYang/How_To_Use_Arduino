@@ -4,6 +4,8 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { pendulumRecipe } from '@/data/canary'
 import { phase5Recipes } from '@/data/phase5'
+import { sensors } from '@/data/inventory-seed/sensors'
+import { wiringStepUsesBreadboard } from '@/wokwi/buildDiagram'
 import { WiringIllustration } from './WiringIllustration'
 
 beforeEach(() => {
@@ -88,7 +90,7 @@ describe('WiringIllustration zoom and pan', () => {
     expect(screen.getByRole('img', { name: /Wokwi 배선도 2단계까지 연결됨/ })).toBeInTheDocument()
     expect(container.querySelector('[data-generated-wokwi-diagram="S1"]')).toBeInTheDocument()
     expect(container.querySelectorAll('[data-part-id]').length).toBeGreaterThan(1)
-    expect(container.querySelectorAll('[data-wire-id]')).toHaveLength(2)
+    expect(container.querySelectorAll('[data-wire-id]')).toHaveLength(4)
   })
 
   it('renders sharp wires above boards, below labels, and blinks only the current step', () => {
@@ -129,7 +131,12 @@ describe('WiringIllustration zoom and pan', () => {
           .map((pin) => `${pin.getAttribute('data-pin-x')},${pin.getAttribute('data-pin-y')}`),
       )
       const wires = Array.from(container.querySelectorAll('[data-wire-from][data-wire-to]'))
-      expect(wires, recipe.id).toHaveLength(recipe.wiring.length)
+      const expectedWires = recipe.wiring.reduce(
+        (count, step) => count + (wiringStepUsesBreadboard(step, sensors) ? 2 : 1),
+        0,
+      )
+      expect(wires, recipe.id).toHaveLength(expectedWires)
+      expect(container.querySelector('[data-part-id="bb"]'), recipe.id).not.toBeNull()
       for (const wire of wires) {
         expect(pinPoints.has(wire.getAttribute('data-wire-from') ?? ''), recipe.id).toBe(true)
         expect(pinPoints.has(wire.getAttribute('data-wire-to') ?? ''), recipe.id).toBe(true)
@@ -157,6 +164,18 @@ describe('WiringIllustration zoom and pan', () => {
       }
       unmount()
     }
+  })
+
+  it('renders full resistor bodies with concrete resistance labels', () => {
+    const recipe = phase5Recipes.find((candidate) => candidate.id === 'S4')!
+    const { container } = render(
+      <WiringIllustration recipe={recipe} activeStep={recipe.wiring.length - 1} />,
+    )
+    const resistor = container.querySelector('[data-part-id="cds_resistor"]')
+    expect(resistor).toHaveAttribute('data-part-width', '96')
+    expect(resistor).toHaveAttribute('data-part-height', '38')
+    expect(container.querySelector('[data-part-overlay="cds_resistor"]')).toHaveTextContent('10 kΩ')
+    expect(container.textContent).not.toContain('CDS RESISTOR')
   })
 
   it('reuses the current sensor SVGs and their measured connector coordinates', () => {

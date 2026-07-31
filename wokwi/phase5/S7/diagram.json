@@ -10,6 +10,12 @@
       "left": 0
     },
     {
+      "id": "bb",
+      "type": "wokwi-breadboard-half",
+      "top": 0,
+      "left": 100
+    },
+    {
       "id": "ina219",
       "type": "chip-ina219",
       "top": 0,
@@ -25,30 +31,60 @@
   "connections": [
     [
       "ina219:VCC",
+      "bb:1t.a",
+      "red",
+      []
+    ],
+    [
+      "bb:1t.b",
       "uno:5V",
       "red",
       []
     ],
     [
       "ina219:GND",
+      "bb:2t.a",
+      "black",
+      []
+    ],
+    [
+      "bb:2t.b",
       "uno:GND",
       "black",
       []
     ],
     [
       "ina219:SDA",
+      "bb:3t.a",
+      "green",
+      []
+    ],
+    [
+      "bb:3t.b",
       "uno:A4",
       "green",
       []
     ],
     [
       "ina219:SCL",
+      "bb:4t.a",
+      "yellow",
+      []
+    ],
+    [
+      "bb:4t.b",
       "uno:A5",
       "yellow",
       []
     ],
     [
       "ina219:VIN+",
+      "bb:5t.a",
+      "red",
+      []
+    ],
+    [
+      "bb:5t.b",
       "uno:5V",
       "red",
       []

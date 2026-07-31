@@ -10,6 +10,12 @@
       "left": 0
     },
     {
+      "id": "bb",
+      "type": "wokwi-breadboard-half",
+      "top": 0,
+      "left": 100
+    },
+    {
       "id": "hbe0704",
       "type": "wokwi-potentiometer",
       "top": 0,
@@ -19,18 +25,36 @@
   "connections": [
     [
       "hbe0704:VCC",
+      "bb:1t.a",
+      "red",
+      []
+    ],
+    [
+      "bb:1t.b",
       "uno:5V",
       "red",
       []
     ],
     [
       "hbe0704:GND",
+      "bb:2t.a",
+      "black",
+      []
+    ],
+    [
+      "bb:2t.b",
       "uno:GND",
       "black",
       []
     ],
     [
       "hbe0704:SIG",
+      "bb:3t.a",
+      "green",
+      []
+    ],
+    [
+      "bb:3t.b",
       "uno:A0",
       "green",
       []

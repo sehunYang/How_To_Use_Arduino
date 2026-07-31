@@ -10,6 +10,12 @@
       "left": 0
     },
     {
+      "id": "bb",
+      "type": "wokwi-breadboard-half",
+      "top": 0,
+      "left": 100
+    },
+    {
       "id": "mpu6050",
       "type": "wokwi-mpu6050",
       "top": 0,
@@ -25,48 +31,96 @@
   "connections": [
     [
       "mpu6050:VCC",
+      "bb:1t.a",
+      "red",
+      []
+    ],
+    [
+      "bb:1t.b",
       "uno:5V",
       "red",
       []
     ],
     [
       "mpu6050:GND",
+      "bb:2t.a",
+      "black",
+      []
+    ],
+    [
+      "bb:2t.b",
       "uno:GND",
       "black",
       []
     ],
     [
       "mpu6050:SDA",
+      "bb:3t.a",
+      "green",
+      []
+    ],
+    [
+      "bb:3t.b",
       "uno:A4",
       "green",
       []
     ],
     [
       "mpu6050:SCL",
+      "bb:4t.a",
+      "yellow",
+      []
+    ],
+    [
+      "bb:4t.b",
       "uno:A5",
       "yellow",
       []
     ],
     [
       "hc-sr04:VCC",
+      "bb:5t.a",
+      "red",
+      []
+    ],
+    [
+      "bb:5t.b",
       "uno:5V",
       "red",
       []
     ],
     [
       "hc-sr04:GND",
+      "bb:6t.a",
+      "black",
+      []
+    ],
+    [
+      "bb:6t.b",
       "uno:GND",
       "black",
       []
     ],
     [
       "hc-sr04:TRIG",
+      "bb:7t.a",
+      "orange",
+      []
+    ],
+    [
+      "bb:7t.b",
       "uno:D9",
       "orange",
       []
     ],
     [
       "hc-sr04:ECHO",
+      "bb:8t.a",
+      "blue",
+      []
+    ],
+    [
+      "bb:8t.b",
       "uno:D10",
       "blue",
       []

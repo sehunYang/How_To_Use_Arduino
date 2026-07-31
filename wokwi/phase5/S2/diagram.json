@@ -10,6 +10,12 @@
       "left": 0
     },
     {
+      "id": "bb",
+      "type": "wokwi-breadboard-half",
+      "top": 0,
+      "left": 100
+    },
+    {
       "id": "hc-sr04",
       "type": "wokwi-hc-sr04",
       "top": 0,
@@ -19,24 +25,48 @@
   "connections": [
     [
       "hc-sr04:VCC",
+      "bb:1t.a",
+      "red",
+      []
+    ],
+    [
+      "bb:1t.b",
       "uno:5V",
       "red",
       []
     ],
     [
       "hc-sr04:GND",
+      "bb:2t.a",
+      "black",
+      []
+    ],
+    [
+      "bb:2t.b",
       "uno:GND",
       "black",
       []
     ],
     [
       "hc-sr04:TRIG",
+      "bb:3t.a",
+      "blue",
+      []
+    ],
+    [
+      "bb:3t.b",
       "uno:D7",
       "blue",
       []
     ],
     [
       "hc-sr04:ECHO",
+      "bb:4t.a",
+      "green",
+      []
+    ],
+    [
+      "bb:4t.b",
       "uno:D6",
       "green",
       []

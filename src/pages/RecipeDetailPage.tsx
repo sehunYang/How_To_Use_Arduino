@@ -6,6 +6,7 @@ import { SafeMarkdown } from '@/components/ui/SafeMarkdown'
 import { SimBadge } from '@/components/ui/SimBadge'
 import { WiringIllustration } from '@/components/WiringIllustration'
 import { canarySimStatus, studentRecipes } from '@/data/studentCatalog'
+import { sensors } from '@/data/inventory-seed/sensors'
 import { INVENTORY_VERSION } from '@/data/inventory-seed/version'
 import { useWiringSteps } from '@/hooks/useWiringSteps'
 import { loadProgress, PROGRESS_VERSION, saveProgress } from '@/progress'
@@ -13,6 +14,7 @@ import { sendAnonymousEvent } from '@/telemetry/events'
 import { authorizeAdminPreview, loadAdminPreviewRecipe } from '@/firebase/adminPreview'
 import { loadDynamicSearchIndex, loadPublishedRecipe } from '@/firebase/contentRepository'
 import type { Recipe } from '@/schema'
+import { wiringStepUsesBreadboard } from '@/wokwi/buildDiagram'
 
 export interface PreviewServices {
   authorize: () => Promise<boolean>
@@ -42,9 +44,14 @@ function EndpointLabel({ value }: { value: string }) {
   const separator = value.indexOf('.')
   const component = separator === -1 ? value : value.slice(0, separator)
   const pin = separator === -1 ? '' : value.slice(separator + 1)
+  const componentLabel = component.startsWith('CDS_RESISTOR')
+    ? '10 kΩ 저항'
+    : component === 'LOAD' || component === 'LAMP'
+      ? '220 Ω 저항'
+      : component
   return (
     <span data-wiring-endpoint={value}>
-      <span className="text-syntax-type">{component}</span>
+      <span className="text-syntax-type">{componentLabel}</span>
       {pin && <><span className="text-syntax-operator">.</span><span className="text-syntax-property">{pin}</span></>}
     </span>
   )
@@ -207,13 +214,18 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
                       <span className="text-syntax-number">{index + 1}</span>
                       <span className="text-syntax-operator">. </span>
                       <EndpointLabel value={step.from} />
-                      <span className="text-syntax-operator"> → </span>
+                      <span className="text-syntax-operator">
+                        {wiringStepUsesBreadboard(step, sensors) ? ' → 브레드보드 → ' : ' → '}
+                      </span>
                       <EndpointLabel value={step.to} />
                     </strong>
                     <span className="mt-1 block text-caption">
                       <span className="text-syntax-string">{jumperWireLabel(step.from, step.to)}</span>
                       <span className="text-muted"> · </span>
                       <HighlightedWiringText text={step.text} />
+                      {wiringStepUsesBreadboard(step, sensors) && (
+                        <span className="text-muted"> 브레드보드의 같은 연결 열을 거쳐 꽂으세요.</span>
+                      )}
                       <span className="text-muted"> · </span>
                       <span className={WIRE_COLOR_CLASS[step.color.toLowerCase()] ?? 'text-syntax-function'}>
                         {step.color} 선

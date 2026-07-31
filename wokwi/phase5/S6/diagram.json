@@ -10,6 +10,12 @@
       "left": 0
     },
     {
+      "id": "bb",
+      "type": "wokwi-breadboard-half",
+      "top": 0,
+      "left": 100
+    },
+    {
       "id": "bme280",
       "type": "chip-bme280",
       "top": 0,
@@ -19,24 +25,48 @@
   "connections": [
     [
       "bme280:VCC",
+      "bb:1t.a",
+      "red",
+      []
+    ],
+    [
+      "bb:1t.b",
       "uno:5V",
       "red",
       []
     ],
     [
       "bme280:GND",
+      "bb:2t.a",
+      "black",
+      []
+    ],
+    [
+      "bb:2t.b",
       "uno:GND",
       "black",
       []
     ],
     [
       "bme280:SDA",
+      "bb:3t.a",
+      "green",
+      []
+    ],
+    [
+      "bb:3t.b",
       "uno:A4",
       "green",
       []
     ],
     [
       "bme280:SCL",
+      "bb:4t.a",
+      "yellow",
+      []
+    ],
+    [
+      "bb:4t.b",
       "uno:A5",
       "yellow",
       []

@@ -10,6 +10,12 @@
       "left": 0
     },
     {
+      "id": "bb",
+      "type": "wokwi-breadboard-half",
+      "top": 0,
+      "left": 100
+    },
+    {
       "id": "ds18b20_1",
       "type": "wokwi-ds18b20",
       "top": 0,
@@ -31,42 +37,84 @@
   "connections": [
     [
       "ds18b20_1:VCC",
+      "bb:1t.a",
+      "red",
+      []
+    ],
+    [
+      "bb:1t.b",
       "uno:5V",
       "red",
       []
     ],
     [
       "ds18b20_1:GND",
+      "bb:2t.a",
+      "black",
+      []
+    ],
+    [
+      "bb:2t.b",
       "uno:GND",
       "black",
       []
     ],
     [
       "ds18b20_2:VCC",
+      "bb:3t.a",
+      "red",
+      []
+    ],
+    [
+      "bb:3t.b",
       "uno:5V",
       "red",
       []
     ],
     [
       "ds18b20_2:GND",
+      "bb:4t.a",
+      "black",
+      []
+    ],
+    [
+      "bb:4t.b",
       "uno:GND",
       "black",
       []
     ],
     [
       "ds18b20_3:VCC",
+      "bb:5t.a",
+      "red",
+      []
+    ],
+    [
+      "bb:5t.b",
       "uno:5V",
       "red",
       []
     ],
     [
       "ds18b20_3:GND",
+      "bb:6t.a",
+      "black",
+      []
+    ],
+    [
+      "bb:6t.b",
       "uno:GND",
       "black",
       []
     ],
     [
       "ds18b20_1:DQ",
+      "bb:7t.a",
+      "green",
+      []
+    ],
+    [
+      "bb:7t.b",
       "uno:D2",
       "green",
       []

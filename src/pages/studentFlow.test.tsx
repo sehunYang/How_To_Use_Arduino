@@ -67,7 +67,7 @@ describe('Phase 3 student flow', () => {
     expect(svg).toBeInTheDocument()
     expect(svg).toHaveAttribute('viewBox')
     expect(svg?.querySelectorAll('[data-part-id]').length).toBeGreaterThan(0)
-    expect(svg?.querySelectorAll('[data-wire-id]')).toHaveLength(1)
+    expect(svg?.querySelectorAll('[data-wire-id]')).toHaveLength(2)
   })
 
   it('renders a draft only after an authenticated admin preview check', async () => {

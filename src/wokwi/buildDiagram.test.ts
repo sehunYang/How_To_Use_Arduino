@@ -4,14 +4,19 @@ import { sensors } from '@/data/inventory-seed/sensors'
 import { pendulumRecipe } from '@/data/canary/pendulum'
 import { multiTsl2591Recipe } from '@/data/canary/multiTsl2591'
 import { phase5Recipes } from '@/data/phase5'
-import { buildDiagram } from './buildDiagram'
+import { buildDiagram, wiringStepUsesBreadboard } from './buildDiagram'
 
 describe('buildDiagram', () => {
   it('builds a renderable diagram for all 34 Phase 5 recipes', () => {
     for (const recipe of phase5Recipes) {
       const diagram = buildDiagram(recipe, sensors)
       expect(diagram.parts.length, recipe.id).toBeGreaterThan(1)
-      expect(diagram.connections, recipe.id).toHaveLength(recipe.wiring.length)
+      const expectedConnections = recipe.wiring.reduce(
+        (count, step) => count + (wiringStepUsesBreadboard(step, sensors) ? 2 : 1),
+        0,
+      )
+      expect(diagram.connections, recipe.id).toHaveLength(expectedConnections)
+      expect(diagram.parts.some((part) => part.id === 'bb'), recipe.id).toBe(true)
     }
   })
 
@@ -19,18 +24,22 @@ describe('buildDiagram', () => {
     const diagram = buildDiagram(pendulumRecipe, sensors)
 
     const nonUnoParts = diagram.parts.filter((p) => p.id !== 'uno')
-    expect(nonUnoParts).toHaveLength(1)
-    expect(nonUnoParts[0].id).toBe('mpu6050')
-    expect(nonUnoParts[0].type).toBe('wokwi-mpu6050')
+    expect(nonUnoParts).toHaveLength(2)
+    expect(nonUnoParts.find((part) => part.id === 'mpu6050')?.type).toBe('wokwi-mpu6050')
+    expect(nonUnoParts.find((part) => part.id === 'bb')?.type).toBe('wokwi-breadboard-half')
     expect(diagram.parts.some((p) => p.id === 'uno' && p.type === 'wokwi-arduino-uno')).toBe(true)
 
-    expect(diagram.connections).toHaveLength(4)
+    expect(diagram.connections).toHaveLength(8)
     expect(diagram.connections).toEqual(
       expect.arrayContaining([
-        ['mpu6050:VCC', 'uno:5V', 'red', []],
-        ['mpu6050:GND', 'uno:GND', 'black', []],
-        ['mpu6050:SDA', 'uno:A4', 'green', []],
-        ['mpu6050:SCL', 'uno:A5', 'yellow', []],
+        ['mpu6050:VCC', 'bb:1t.a', 'red', []],
+        ['bb:1t.b', 'uno:5V', 'red', []],
+        ['mpu6050:GND', 'bb:2t.a', 'black', []],
+        ['bb:2t.b', 'uno:GND', 'black', []],
+        ['mpu6050:SDA', 'bb:3t.a', 'green', []],
+        ['bb:3t.b', 'uno:A4', 'green', []],
+        ['mpu6050:SCL', 'bb:4t.a', 'yellow', []],
+        ['bb:4t.b', 'uno:A5', 'yellow', []],
       ]),
     )
   })
@@ -51,7 +60,7 @@ describe('buildDiagram', () => {
     }
     expect(nonUnoParts.find((p) => p.id === 'tca9548a')?.type).toBe('custom-tca9548a')
 
-    expect(diagram.connections).toHaveLength(16)
+    expect(diagram.connections).toHaveLength(18)
     expect(diagram.connections).toEqual(
       expect.arrayContaining([
         ['uno:5V', 'bb:tp.1', 'red', []],
@@ -60,8 +69,10 @@ describe('buildDiagram', () => {
         ['tca9548a:GND', 'bb:bn.7', 'black', []],
         ['tsl2591_1:VCC', 'bb:bp.3', 'red', []],
         ['tsl2591_2:GND', 'bb:bn.24', 'black', []],
-        ['tca9548a:SDA', 'uno:A4', 'green', []],
-        ['tca9548a:SCL', 'uno:A5', 'yellow', []],
+        ['tca9548a:SDA', 'bb:11t.a', 'green', []],
+        ['bb:11t.b', 'uno:A4', 'green', []],
+        ['tca9548a:SCL', 'bb:12t.a', 'yellow', []],
+        ['bb:12t.b', 'uno:A5', 'yellow', []],
         ['tsl2591_1:SDA', 'tca9548a:SD0', 'green', []],
         ['tsl2591_1:SCL', 'tca9548a:SC0', 'yellow', []],
         ['tsl2591_2:SDA', 'tca9548a:SD1', 'green', []],
@@ -184,9 +195,12 @@ describe('buildDiagram', () => {
 
     expect(diagram.connections).toEqual(
       expect.arrayContaining([
-        ['fake-sensor-11:VCC', 'uno:5V', 'red', []],
-        ['fake-sensor-11:GND', 'uno:GND', 'black', []],
-        ['fake-sensor-11:signal', 'uno:D2', 'blue', []],
+        ['fake-sensor-11:VCC', 'bb:1t.a', 'red', []],
+        ['bb:1t.b', 'uno:5V', 'red', []],
+        ['fake-sensor-11:GND', 'bb:2t.a', 'black', []],
+        ['bb:2t.b', 'uno:GND', 'black', []],
+        ['fake-sensor-11:signal', 'bb:3t.a', 'blue', []],
+        ['bb:3t.b', 'uno:D2', 'blue', []],
       ]),
     )
   })
