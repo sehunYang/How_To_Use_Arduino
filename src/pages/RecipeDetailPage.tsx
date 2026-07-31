@@ -38,6 +38,39 @@ function jumperWireLabel(from: string, to: string): string {
   return 'FF(암-암) 점퍼선'
 }
 
+function EndpointLabel({ value }: { value: string }) {
+  const separator = value.indexOf('.')
+  const component = separator === -1 ? value : value.slice(0, separator)
+  const pin = separator === -1 ? '' : value.slice(separator + 1)
+  return (
+    <span data-wiring-endpoint={value}>
+      <span className="text-syntax-type">{component}</span>
+      {pin && <><span className="text-syntax-operator">.</span><span className="text-syntax-property">{pin}</span></>}
+    </span>
+  )
+}
+
+const WIRING_TEXT_TOKEN = /\b(?:[A-Z][A-Z0-9_-]*|[AD]\d+|\d+(?:\.\d+)?\s?(?:kΩ|Ω|V|mA))\b/g
+const PIN_NAMES = new Set(['VCC', 'VIN', 'GND', 'SCL', 'SDA', 'AO', 'OUT', 'DATA', 'DQ', 'SIG'])
+
+function HighlightedWiringText({ text }: { text: string }) {
+  const fragments = []
+  let cursor = 0
+  for (const match of text.matchAll(WIRING_TEXT_TOKEN)) {
+    if (match.index > cursor) fragments.push(text.slice(cursor, match.index))
+    const token = match[0]
+    const className = /\d/.test(token)
+      ? 'text-syntax-number'
+      : PIN_NAMES.has(token)
+        ? 'text-syntax-property'
+        : 'text-syntax-type'
+    fragments.push(<span key={`${match.index}-${token}`} className={className}>{token}</span>)
+    cursor = match.index + token.length
+  }
+  if (cursor < text.length) fragments.push(text.slice(cursor))
+  return fragments
+}
+
 export function RecipeDetailPage({ previewServices = defaultPreviewServices }: { previewServices?: PreviewServices }) {
   const { id = '' } = useParams()
   const location = useLocation()
@@ -148,7 +181,7 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
         <h2 id="wiring-title" className="text-2xl font-semibold">1. 배선하기</h2>
         <p className="mt-2 text-muted">먼저 완성 모습을 확인한 뒤 한 단계씩 체크하세요.</p>
         <div data-testid="wiring-layout" className="mt-5 min-w-0 space-y-6">
-          <div className="w-full"><WiringIllustration recipe={recipe} activeStep={active} /></div>
+          <div className="sticky top-16 z-20 w-full bg-background pb-2 lg:top-20"><WiringIllustration recipe={recipe} activeStep={active} /></div>
           <ol data-testid="wiring-steps" className="min-w-0 space-y-3">
             {recipe.wiring.map((step, index) => (
               <li
@@ -159,7 +192,22 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
               >
                 <label className="flex min-h-11 cursor-pointer items-start gap-3">
                   <input className="mt-1 size-5 accent-accent" type="checkbox" checked={machine.checked[index] ?? false} onChange={(event) => toggleStep(index, event.target.checked)} onFocus={() => machine.setActiveStep(index)} />
-                  <span><strong>{index + 1}. {step.from} → {step.to}</strong><span className="mt-1 block text-caption text-muted">{jumperWireLabel(step.from, step.to)} · {step.text} · {step.color} 선</span></span>
+                  <span>
+                    <strong>
+                      <span className="text-syntax-number">{index + 1}</span>
+                      <span className="text-syntax-operator">. </span>
+                      <EndpointLabel value={step.from} />
+                      <span className="text-syntax-operator"> → </span>
+                      <EndpointLabel value={step.to} />
+                    </strong>
+                    <span className="mt-1 block text-caption">
+                      <span className="text-syntax-string">{jumperWireLabel(step.from, step.to)}</span>
+                      <span className="text-muted"> · </span>
+                      <HighlightedWiringText text={step.text} />
+                      <span className="text-muted"> · </span>
+                      <span className="text-syntax-function">{step.color} 선</span>
+                    </span>
+                  </span>
                 </label>
               </li>
             ))}

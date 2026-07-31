@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Button } from './button'
+import { highlightArduinoLine } from './arduinoSyntax'
 import { parseDisplayCode } from './codeManifest'
 
 interface Tunable {
@@ -35,7 +36,7 @@ export function CodeBlock({ code, tunables = [] }: { code: string; tunables?: Tu
                 title={tunable?.hint}
               >
                 <span aria-hidden="true" className="select-none text-muted">{index + 1}</span>
-                <span>{line.text || ' '}{'\n'}</span>
+                <span>{line.text ? highlightArduinoLine(line.text) : ' '}{'\n'}</span>
               </span>
             )
           })}

@@ -17,6 +17,16 @@ describe('student content components', () => {
     expect(writeText).toHaveBeenCalledWith('int delayMs=10;')
   })
 
+  it('syntax-highlights Arduino code without changing its text', () => {
+    render(<CodeBlock code={'int value = 10;\nvoid setup() { digitalWrite(13, HIGH); }\n// ready'} />)
+
+    expect(screen.getByText('int')).toHaveClass('text-syntax-type')
+    expect(screen.getByText('void')).toHaveClass('text-syntax-type')
+    expect(screen.getByText('digitalWrite')).toHaveClass('text-syntax-function')
+    expect(screen.getByText('HIGH')).toHaveClass('text-syntax-number')
+    expect(screen.getByText('// ready')).toHaveClass('text-syntax-comment')
+  })
+
   it('sanitizes executable HTML and unsafe links', () => {
     render(<SafeMarkdown source={'<script>alert(1)</script>\n<img src=x onerror=alert(2)>\n\n[위험](javascript:alert(3))\n\n**안전한 내용**'} />)
     expect(document.querySelector('script, img, a[href^="javascript:"]')).toBeNull()

@@ -22,6 +22,14 @@
   --color-success-background: #dcfce7;
   --color-danger: #b91c1c;
   --color-danger-background: #fee2e2;
+  --color-syntax-keyword: #7c3aed;
+  --color-syntax-type: #0369a1;
+  --color-syntax-property: #047857;
+  --color-syntax-function: #a16207;
+  --color-syntax-string: #c2410c;
+  --color-syntax-number: #15803d;
+  --color-syntax-comment: #64748b;
+  --color-syntax-operator: #0e7490;
 
   --spacing-page: 1.5rem;
   --radius-card: 0.75rem;
@@ -47,6 +55,14 @@
   --color-success-background: #052e16;
   --color-danger: #f87171;
   --color-danger-background: #450a0a;
+  --color-syntax-keyword: #c586c0;
+  --color-syntax-type: #4ec9b0;
+  --color-syntax-property: #9cdcfe;
+  --color-syntax-function: #dcdcaa;
+  --color-syntax-string: #ce9178;
+  --color-syntax-number: #b5cea8;
+  --color-syntax-comment: #6a9955;
+  --color-syntax-operator: #d4d4d4;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -64,6 +80,14 @@
     --color-success-background: #052e16;
     --color-danger: #f87171;
     --color-danger-background: #450a0a;
+    --color-syntax-keyword: #c586c0;
+    --color-syntax-type: #4ec9b0;
+    --color-syntax-property: #9cdcfe;
+    --color-syntax-function: #dcdcaa;
+    --color-syntax-string: #ce9178;
+    --color-syntax-number: #b5cea8;
+    --color-syntax-comment: #6a9955;
+    --color-syntax-operator: #d4d4d4;
   }
 }
 
@@ -81,6 +105,14 @@
   --color-success-background: var(--color-success-background);
   --color-danger: var(--color-danger);
   --color-danger-background: var(--color-danger-background);
+  --color-syntax-keyword: var(--color-syntax-keyword);
+  --color-syntax-type: var(--color-syntax-type);
+  --color-syntax-property: var(--color-syntax-property);
+  --color-syntax-function: var(--color-syntax-function);
+  --color-syntax-string: var(--color-syntax-string);
+  --color-syntax-number: var(--color-syntax-number);
+  --color-syntax-comment: var(--color-syntax-comment);
+  --color-syntax-operator: var(--color-syntax-operator);
 
   --spacing-page: var(--spacing-page);
   --radius-card: var(--radius-card);

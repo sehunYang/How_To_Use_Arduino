@@ -51,6 +51,14 @@ describe('Phase 3 responsive layout contracts', () => {
     expect(container.querySelector('[data-testid="wiring-layout"]')).toHaveClass('min-w-0')
     expect(container.querySelector('[data-testid="wiring-layout"]')).not.toHaveClass('lg:grid-cols-2')
     expect(container.querySelector('[data-testid="wiring-steps"]')).toHaveClass('min-w-0')
+    expect(screen.getByTestId('wiring-viewport').parentElement?.parentElement).toHaveClass(
+      'sticky',
+      'top-16',
+      'lg:top-20',
+    )
+    const endpoint = container.querySelector('[data-wiring-endpoint="MPU6050.VCC"]')
+    expect(endpoint?.querySelector('.text-syntax-type')).toHaveTextContent('MPU6050')
+    expect(endpoint?.querySelector('.text-syntax-property')).toHaveTextContent('VCC')
     expect(screen.getByTestId('wiring-viewport')).toHaveClass(
       'aspect-[2/3]',
       'lg:aspect-[16/9]',
