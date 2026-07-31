@@ -190,6 +190,13 @@ const cdsVisualGeometry: PartGeometry = {
   tolerance: MEASURED_TOLERANCE,
   pins: pins([['L1', 96, 159], ['L2', 144, 159]]),
 }
+const batteryVisualGeometry: PartGeometry = {
+  width: 240,
+  height: 170,
+  source: 'measured',
+  tolerance: MEASURED_TOLERANCE,
+  pins: pins([['NEG', 28, 85], ['POS', 218, 85]]),
+}
 const ds18b20VisualGeometry: PartGeometry = {
   width: 240,
   height: 170,
@@ -275,6 +282,7 @@ export const PART_GEOMETRY: Record<string, PartGeometry> = {
   'visual-tsl2591': tsl2591VisualGeometry,
   'visual-bme280': bme280VisualGeometry,
   'visual-cds': cdsVisualGeometry,
+  'visual-battery': batteryVisualGeometry,
   'visual-ds18b20': ds18b20VisualGeometry,
   'visual-hbe0704': hbe0704VisualGeometry,
   'visual-tca9548a': tca9548aVisualGeometry(),

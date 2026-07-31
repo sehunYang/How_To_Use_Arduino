@@ -76,6 +76,37 @@ export function CdsVisual() {
   )
 }
 
+export function BatteryVisual() {
+  return (
+    <FullFrame label="원통형 건전지">
+      <defs>
+        <linearGradient id="battery-body" x1="0" x2="0" y1="0" y2="1">
+          <stop stopColor="#f8d557" />
+          <stop offset=".48" stopColor="#e7b92c" />
+          <stop offset="1" stopColor="#b88612" />
+        </linearGradient>
+        <linearGradient id="battery-metal" x1="0" x2="0" y1="0" y2="1">
+          <stop stopColor="#f1f3f2" />
+          <stop offset=".5" stopColor="#9da5a5" />
+          <stop offset="1" stopColor="#62696a" />
+        </linearGradient>
+      </defs>
+      <rect x="42" y="48" width="156" height="74" rx="14" fill="url(#battery-body)" stroke="#72530c" strokeWidth="3" />
+      <path d="M42 48h26v74H42c-8 0-14-6-14-14V62c0-8 6-14 14-14z" fill="#202326" stroke="#080a0b" strokeWidth="3" />
+      <rect x="198" y="57" width="10" height="56" rx="3" fill="url(#battery-metal)" stroke="#5d6464" strokeWidth="2" />
+      <rect x="208" y="74" width="6" height="22" rx="2" fill="url(#battery-metal)" stroke="#5d6464" strokeWidth="2" />
+      <line x1="28" y1="85" x2="42" y2="85" stroke="#929999" strokeWidth="5" strokeLinecap="round" />
+      <line x1="214" y1="85" x2="218" y2="85" stroke="#c6cccc" strokeWidth="5" strokeLinecap="round" />
+      <text x="119" y="80" textAnchor="middle" fill="#392b08" fontSize="17" fontWeight="800">1.5V</text>
+      <text x="119" y="101" textAnchor="middle" fill="#5b430b" fontSize="10" fontWeight="700">ALKALINE</text>
+      <text x="28" y="69" textAnchor="middle" fill="#111827" fontSize="18" fontWeight="900">−</text>
+      <text x="218" y="69" textAnchor="middle" fill="#b91c1c" fontSize="18" fontWeight="900">+</text>
+      <circle cx="28" cy="85" r="3.5" fill="#111827" />
+      <circle cx="218" cy="85" r="3.5" fill="#dc2626" />
+    </FullFrame>
+  )
+}
+
 function NativeVisual({ sensorId, tag }: { sensorId: string; tag: string }) {
   const partStyle: CSSProperties = {
     display: 'block',

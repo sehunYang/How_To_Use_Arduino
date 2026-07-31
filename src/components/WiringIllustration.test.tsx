@@ -258,6 +258,16 @@ describe('WiringIllustration zoom and pan', () => {
       .not.toBeNull()
     expect(container.querySelector('[data-wire-from-pin="uno:GND"][data-wire-to-pin="bb:tn.1"]'))
       .not.toBeNull()
+    expect(container.querySelector('[data-part-id="battery"][data-part-type="wokwi-slide-potentiometer"]'))
+      .not.toBeNull()
+    expect(container.querySelector('[data-pin="battery:SIG"]')).toHaveAttribute('data-pin-source', 'verified')
+    expect(container.querySelector('[data-pin="battery:GND"]')).toHaveAttribute('data-pin-source', 'verified')
+    expect(container.querySelector('[data-wire-from-pin="battery:SIG"]'))
+      .toHaveAttribute('data-wire-from', container.querySelector('[data-pin="battery:SIG"]')?.getAttribute('data-pin-x')
+        + ',' + container.querySelector('[data-pin="battery:SIG"]')?.getAttribute('data-pin-y'))
+    expect(container.querySelector('[data-wire-from-pin="battery:GND"]'))
+      .toHaveAttribute('data-wire-from', container.querySelector('[data-pin="battery:GND"]')?.getAttribute('data-pin-x')
+        + ',' + container.querySelector('[data-pin="battery:GND"]')?.getAttribute('data-pin-y'))
   })
 
   it('reuses the current sensor SVGs and their measured connector coordinates', () => {

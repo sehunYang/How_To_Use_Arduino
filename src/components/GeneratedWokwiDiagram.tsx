@@ -15,7 +15,7 @@ import type { Recipe } from '@/schema'
 import { buildDiagram, planBreadboardWiring, type Diagram, type DiagramPart } from '@/wokwi/buildDiagram'
 import { geometryFor } from '@/wokwi/partGeometry'
 import { HalfBreadboardPart, Ina219Part, Tca9548aPart, Tsl2591Part } from './wokwiParts'
-import { Bme280Visual, CdsVisual, To92Visual } from './SensorVisual'
+import { BatteryVisual, Bme280Visual, CdsVisual, To92Visual } from './SensorVisual'
 
 interface Point {
   x: number
@@ -69,6 +69,7 @@ const GEOMETRY_TYPE: Record<string, string> = {
   'chip-tsl2591': 'visual-tsl2591',
   'chip-bme280': 'visual-bme280',
   'visual-cds': 'visual-cds',
+  'visual-battery': 'visual-battery',
   'wokwi-ds18b20': 'visual-ds18b20',
   'custom-tca9548a': 'visual-tca9548a',
 }
@@ -86,6 +87,11 @@ function displayName(part: DiagramPart): string {
 }
 
 function geometryType(part: Pick<DiagramPart, 'id' | 'type'>): string {
+  if (part.type === 'wokwi-slide-potentiometer' && (
+    part.id === 'battery' || part.id.endsWith('_supply')
+  )) {
+    return 'visual-battery'
+  }
   if (part.type === 'wokwi-potentiometer' && part.id.startsWith('hbe0704')) {
     return 'visual-hbe0704'
   }
@@ -133,7 +139,10 @@ function localPinPoint(part: PositionedPart, pin: string, pins: string[]): Point
 
 function verifiedPinPoint(part: Pick<DiagramPart, 'id' | 'type'>, pin: string): Point | null {
   const geometry = verifiedGeometry(part)
-  return geometry?.pins.find((candidate) => candidate.name === pin) ?? nativePin(part.type, pin)
+  const visualPin = geometryType(part) === 'visual-battery'
+    ? pin === 'SIG' ? 'POS' : pin === 'GND' ? 'NEG' : pin
+    : pin
+  return geometry?.pins.find((candidate) => candidate.name === visualPin) ?? nativePin(part.type, pin)
 }
 
 function pinPointForEndpoint(
@@ -225,6 +234,8 @@ function partGraphic(part: PositionedPart) {
   if (part.type === 'chip-tsl2591') return <Tsl2591Part />
   if (part.type === 'chip-bme280') return <Bme280Visual />
   if (part.type === 'visual-cds') return <CdsVisual />
+  if (part.type === 'visual-battery') return <BatteryVisual />
+  if (geometryType(part) === 'visual-battery') return <BatteryVisual />
   if (part.type === 'wokwi-ds18b20') return <To92Visual label="DS18B20" />
   if (part.type === 'wokwi-potentiometer' && part.id.startsWith('hbe0704')) {
     return <To92Visual label="HBE0704" />

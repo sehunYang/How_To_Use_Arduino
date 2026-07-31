@@ -125,6 +125,10 @@ describe('Wokwi part geometry', () => {
       { name: 'L1', x: 96, y: 159 },
       { name: 'L2', x: 144, y: 159 },
     ])
+    expect(geometryFor('visual-battery')?.pins).toEqual([
+      { name: 'NEG', x: 28, y: 85 },
+      { name: 'POS', x: 218, y: 85 },
+    ])
     expect(geometryFor('visual-ds18b20')?.pins).toEqual([
       { name: 'GND', x: 94, y: 155 },
       { name: 'DQ', x: 120, y: 155 },

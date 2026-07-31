@@ -159,8 +159,8 @@ export interface WokwiAuxiliaryPart {
  * Recipe-only supplies and loads that are not owned actuators. Wokwi does
  * not provide battery/solar-panel parts, so variable voltage sources use the
  * real potentiometer part and passive loads use the real resistor/LED parts.
- * These descriptors preserve wiring topology only; they never assert that
- * Wokwi executes the physical supply or load behavior.
+ * The student-facing renderer replaces battery aliases with owned artwork,
+ * while committed Wokwi projects retain a simulator-supported part.
  */
 export const wokwiAuxiliaryParts: WokwiAuxiliaryPart[] = [
   {
