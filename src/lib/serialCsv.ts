@@ -197,7 +197,7 @@ export function convertSerialTextToCsv(input: string): SerialCsvResult {
     const parsed = parseCsvLine(trimmed)
     if (!parsed.fields) {
       excludedRows.push(excluded(lineNumber, content, parsed.error ?? 'CSV 형식 오류'))
-    } else if (parsed.fields.length === header.length && parsed.fields.every((field, index) => field === header[index])) {
+    } else if (parsed.fields.length === header.length && parsed.fields.every((field, index) => field === header![index])) {
       excludedRows.push(excluded(lineNumber, content, '반복된 CSV 헤더'))
     } else if (parsed.fields.length !== header.length) {
       excludedRows.push(excluded(
