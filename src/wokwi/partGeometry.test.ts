@@ -101,6 +101,31 @@ describe('Wokwi part geometry', () => {
     }
   })
 
+  it('anchors replaced sensor artwork to the connector ends drawn in each SVG', () => {
+    expect(geometryFor('visual-bme280')?.pins).toEqual([
+      { name: 'VIN', x: 88, y: 164 },
+      { name: 'VCC', x: 88, y: 164 },
+      { name: 'GND', x: 109, y: 164 },
+      { name: 'SCL', x: 130, y: 164 },
+      { name: 'SDA', x: 151, y: 164 },
+    ])
+    expect(geometryFor('visual-cds')?.pins).toEqual([
+      { name: 'VCC', x: 96, y: 159 },
+      { name: 'GND', x: 120, y: 159 },
+      { name: 'AO', x: 144, y: 159 },
+    ])
+    expect(geometryFor('visual-ds18b20')?.pins).toEqual([
+      { name: 'GND', x: 94, y: 155 },
+      { name: 'DQ', x: 120, y: 155 },
+      { name: 'VCC', x: 146, y: 155 },
+    ])
+    expect(geometryFor('visual-hbe0704')?.pins).toEqual([
+      { name: 'VCC', x: 94, y: 155 },
+      { name: 'GND', x: 120, y: 155 },
+      { name: 'SIG', x: 146, y: 155 },
+    ])
+  })
+
   it('marks transcribed wokwi-elements geometry with its strict source tolerance', () => {
     expect(geometryFor('wokwi-arduino-uno')).toMatchObject({
       source: 'wokwi-elements',

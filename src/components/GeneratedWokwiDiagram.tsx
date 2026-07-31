@@ -16,6 +16,7 @@ import type { Recipe } from '@/schema'
 import { buildDiagram, type Diagram, type DiagramPart } from '@/wokwi/buildDiagram'
 import { geometryFor } from '@/wokwi/partGeometry'
 import { HalfBreadboardPart, Ina219Part, Tca9548aPart, Tsl2591Part } from './wokwiParts'
+import { Bme280Visual, CdsVisual, To92Visual } from './SensorVisual'
 
 interface Point {
   x: number
@@ -60,6 +61,11 @@ const PART_SIZE: Record<string, { width: number; height: number }> = {
 }
 
 const GEOMETRY_TYPE: Record<string, string> = {
+  'chip-ina219': 'visual-ina219',
+  'chip-tsl2591': 'visual-tsl2591',
+  'chip-bme280': 'visual-bme280',
+  'wokwi-photoresistor-sensor': 'visual-cds',
+  'wokwi-ds18b20': 'visual-ds18b20',
   'custom-tca9548a': 'visual-tca9548a',
 }
 
@@ -67,14 +73,21 @@ function displayName(part: DiagramPart): string {
   return part.id.replaceAll('-', ' ').replaceAll('_', ' ').toUpperCase()
 }
 
-function verifiedGeometry(type: string) {
-  return geometryFor(GEOMETRY_TYPE[type] ?? type)
+function geometryType(part: Pick<DiagramPart, 'id' | 'type'>): string {
+  if (part.type === 'wokwi-potentiometer' && part.id.startsWith('hbe0704')) {
+    return 'visual-hbe0704'
+  }
+  return GEOMETRY_TYPE[part.type] ?? part.type
 }
 
-function sizeFor(type: string): { width: number; height: number } {
-  const geometry = verifiedGeometry(type)
+function verifiedGeometry(part: Pick<DiagramPart, 'id' | 'type'>) {
+  return geometryFor(geometryType(part))
+}
+
+function sizeFor(part: Pick<DiagramPart, 'id' | 'type'>): { width: number; height: number } {
+  const geometry = verifiedGeometry(part)
   if (geometry) return { width: geometry.width, height: geometry.height }
-  return PART_SIZE[type] ?? { width: 132, height: 82 }
+  return PART_SIZE[part.type] ?? { width: 132, height: 82 }
 }
 
 function normalizedPin(type: string, pin: string): string {
@@ -95,7 +108,7 @@ function nativePin(type: string, pin: string): Point | null {
 
 function localPinPoint(part: PositionedPart, pin: string, pins: string[]): Point {
   const normalized = normalizedPin(part.type, pin)
-  const measured = verifiedPinPoint(part.type, normalized)
+  const measured = verifiedPinPoint(part, normalized)
   if (measured) return measured
 
   const index = Math.max(0, pins.indexOf(pin))
@@ -105,9 +118,9 @@ function localPinPoint(part: PositionedPart, pin: string, pins: string[]): Point
   }
 }
 
-function verifiedPinPoint(type: string, pin: string): Point | null {
-  const geometry = verifiedGeometry(type)
-  return geometry?.pins.find((candidate) => candidate.name === pin) ?? nativePin(type, pin)
+function verifiedPinPoint(part: Pick<DiagramPart, 'id' | 'type'>, pin: string): Point | null {
+  const geometry = verifiedGeometry(part)
+  return geometry?.pins.find((candidate) => candidate.name === pin) ?? nativePin(part.type, pin)
 }
 
 function pinPointForEndpoint(
@@ -125,6 +138,12 @@ function pinPointForEndpoint(
 function partGraphic(part: PositionedPart) {
   if (part.type === 'chip-ina219') return <Ina219Part />
   if (part.type === 'chip-tsl2591') return <Tsl2591Part />
+  if (part.type === 'chip-bme280') return <Bme280Visual />
+  if (part.type === 'wokwi-photoresistor-sensor') return <CdsVisual />
+  if (part.type === 'wokwi-ds18b20') return <To92Visual label="DS18B20" />
+  if (part.type === 'wokwi-potentiometer' && part.id.startsWith('hbe0704')) {
+    return <To92Visual label="HBE0704" />
+  }
   if (part.type === 'custom-tca9548a') return <Tca9548aPart />
   if (part.type === 'wokwi-breadboard-half') return <HalfBreadboardPart />
   if (NATIVE_PARTS.has(part.type)) {
@@ -141,7 +160,7 @@ function partGraphic(part: PositionedPart) {
 
 function positionParts(parts: DiagramPart[]): PositionedPart[] {
   return parts.map((part, index) => {
-    const size = sizeFor(part.type)
+    const size = sizeFor(part)
     if (index === 0) return { ...part, left: 32, top: 64, ...size }
     const slot = index - 1
     return {
@@ -238,7 +257,7 @@ export function GeneratedWokwiDiagram({
           </text>
           {(usages.get(part.id) ?? []).map((pin) => {
             const point = pinPointForEndpoint(`${part.id}:${pin}`, partMap, usages)
-            const source = verifiedPinPoint(part.type, normalizedPin(part.type, pin))
+            const source = verifiedPinPoint(part, normalizedPin(part.type, pin))
               ? 'verified'
               : 'fallback'
             return (

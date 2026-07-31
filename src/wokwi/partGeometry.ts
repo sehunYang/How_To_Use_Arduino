@@ -169,6 +169,40 @@ const conformanceChipGeometry = customChipGeometry(
   { width: 112, height: 73 },
 )
 const sensorBreakoutGeometry = breakoutBoardGeometry(['VCC', 'GND', 'SCL', 'SDA'])
+const bme280VisualGeometry: PartGeometry = {
+  width: 240,
+  height: 170,
+  source: 'measured',
+  tolerance: MEASURED_TOLERANCE,
+  pins: pins([
+    ['VIN', 88, 164],
+    ['VCC', 88, 164],
+    ['GND', 109, 164],
+    ['SCL', 130, 164],
+    ['SDA', 151, 164],
+  ]),
+}
+const cdsVisualGeometry: PartGeometry = {
+  width: 240,
+  height: 170,
+  source: 'measured',
+  tolerance: MEASURED_TOLERANCE,
+  pins: pins([['VCC', 96, 159], ['GND', 120, 159], ['AO', 144, 159]]),
+}
+const ds18b20VisualGeometry: PartGeometry = {
+  width: 240,
+  height: 170,
+  source: 'measured',
+  tolerance: MEASURED_TOLERANCE,
+  pins: pins([['GND', 94, 155], ['DQ', 120, 155], ['VCC', 146, 155]]),
+}
+const hbe0704VisualGeometry: PartGeometry = {
+  width: 240,
+  height: 170,
+  source: 'measured',
+  tolerance: MEASURED_TOLERANCE,
+  pins: pins([['VCC', 94, 155], ['GND', 120, 155], ['SIG', 146, 155]]),
+}
 
 export const PART_GEOMETRY: Record<string, PartGeometry> = {
   // 72.58mm x 53.34mm. Two 9.5px-pitch headers: digital along y=9, power and
@@ -238,6 +272,10 @@ export const PART_GEOMETRY: Record<string, PartGeometry> = {
   'chip-bme280': conformanceChipGeometry,
   'visual-ina219': sensorBreakoutGeometry,
   'visual-tsl2591': sensorBreakoutGeometry,
+  'visual-bme280': bme280VisualGeometry,
+  'visual-cds': cdsVisualGeometry,
+  'visual-ds18b20': ds18b20VisualGeometry,
+  'visual-hbe0704': hbe0704VisualGeometry,
   'visual-tca9548a': tca9548aVisualGeometry(),
 }
 

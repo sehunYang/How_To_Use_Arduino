@@ -28,6 +28,16 @@ function emitStudentEvent(event: Parameters<typeof sendAnonymousEvent>[0]) {
   void sendAnonymousEvent(event).catch(() => undefined)
 }
 
+function jumperWireLabel(from: string, to: string): string {
+  const endpoints = [from, to].map((endpoint) => endpoint.split('.')[0].toUpperCase())
+  const femaleSocketCount = endpoints.filter(
+    (endpoint) => endpoint === 'UNO' || endpoint === 'BB' || endpoint.includes('BREADBOARD'),
+  ).length
+  if (femaleSocketCount === 2) return 'MM(수-수) 점퍼선'
+  if (femaleSocketCount === 1) return 'MF(수-암) 점퍼선'
+  return 'FF(암-암) 점퍼선'
+}
+
 export function RecipeDetailPage({ previewServices = defaultPreviewServices }: { previewServices?: PreviewServices }) {
   const { id = '' } = useParams()
   const location = useLocation()
@@ -149,7 +159,7 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
               >
                 <label className="flex min-h-11 cursor-pointer items-start gap-3">
                   <input className="mt-1 size-5 accent-accent" type="checkbox" checked={machine.checked[index] ?? false} onChange={(event) => toggleStep(index, event.target.checked)} onFocus={() => machine.setActiveStep(index)} />
-                  <span><strong>{index + 1}. {step.from} → {step.to}</strong><span className="mt-1 block text-caption text-muted">{step.text} · {step.color} 선</span></span>
+                  <span><strong>{index + 1}. {step.from} → {step.to}</strong><span className="mt-1 block text-caption text-muted">{jumperWireLabel(step.from, step.to)} · {step.text} · {step.color} 선</span></span>
                 </label>
               </li>
             ))}

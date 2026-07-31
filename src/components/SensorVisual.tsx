@@ -16,18 +16,18 @@ const nativeScale: Record<string, number> = {
   'hc-sr04': 1.45,
 }
 
-function FullFrame({ children }: { children: ReactNode }) {
-  return <svg viewBox="0 0 240 170" className="block size-full" aria-hidden="true">{children}</svg>
+function FullFrame({ children, label }: { children: ReactNode; label: string }) {
+  return <svg viewBox="0 0 240 170" role="img" aria-label={label} className="block size-full">{children}</svg>
 }
 
-function Bme280Visual() {
+export function Bme280Visual() {
   return (
-    <FullFrame>
+    <FullFrame label="BME280 온습도 기압 센서 모듈">
       <defs>
-        <linearGradient id="bme-board" x1="0" x2="0" y1="0" y2="1"><stop stopColor="#1675b8" /><stop offset="1" stopColor="#07558f" /></linearGradient>
+        <linearGradient id="bme-board" x1="0" x2="0" y1="0" y2="1"><stop stopColor="#7c3fa0" /><stop offset="1" stopColor="#4d216d" /></linearGradient>
         <linearGradient id="bme-chip" x1="0" x2="1" y1="0" y2="1"><stop stopColor="#f1f2ed" /><stop offset="1" stopColor="#9ca3a7" /></linearGradient>
       </defs>
-      <rect x="38" y="14" width="164" height="126" rx="7" fill="url(#bme-board)" stroke="#073a63" strokeWidth="3" />
+      <rect x="38" y="14" width="164" height="126" rx="7" fill="url(#bme-board)" stroke="#351348" strokeWidth="3" />
       <circle cx="54" cy="30" r="7" fill="#d8b04e" /><circle cx="54" cy="30" r="3.5" fill="#18394b" />
       <circle cx="186" cy="30" r="7" fill="#d8b04e" /><circle cx="186" cy="30" r="3.5" fill="#18394b" />
       <rect x="88" y="48" width="54" height="48" rx="3" fill="url(#bme-chip)" stroke="#747a7d" strokeWidth="2" />
@@ -45,10 +45,10 @@ function Bme280Visual() {
   )
 }
 
-function To92Visual({ label }: { label: string }) {
+export function To92Visual({ label }: { label: 'DS18B20' | 'HBE0704' }) {
   const gradientId = `to92-${label}`
   return (
-    <FullFrame>
+    <FullFrame label={`${label} TO-92 센서`}>
       <defs><linearGradient id={gradientId} x1="0" x2="1" y1="0" y2="0"><stop stopColor="#111416" /><stop offset=".55" stopColor="#363b3e" /><stop offset="1" stopColor="#101214" /></linearGradient></defs>
       <path d="M76 82V49c0-24 19-38 44-38s44 14 44 38v33z" fill={`url(#${gradientId})`} stroke="#050607" strokeWidth="3" />
       <path d="M78 75h84v14H78z" fill="#171a1c" />
@@ -60,15 +60,19 @@ function To92Visual({ label }: { label: string }) {
   )
 }
 
-function CdsVisual() {
+export function CdsVisual() {
   return (
-    <FullFrame>
+    <FullFrame label="CDS 조도 센서">
       <defs><radialGradient id="cds-face"><stop stopColor="#f4e8a5" /><stop offset="1" stopColor="#c4a64c" /></radialGradient></defs>
       <circle cx="120" cy="64" r="53" fill="url(#cds-face)" stroke="#8e7430" strokeWidth="4" />
       <path d="M80 42h18v13h44v13H98v13h44v13H98v10" fill="none" stroke="#b0602d" strokeWidth="7" strokeLinejoin="round" />
       <path d="M80 42v62" fill="none" stroke="#b0602d" strokeWidth="7" />
-      <g stroke="#bbbcae" strokeWidth="7" strokeLinecap="round"><path d="M96 112v47" /><path d="M144 112v47" /></g>
-      <g stroke="#f0f0e8" strokeWidth="2" opacity=".65"><path d="M94 116v39" /><path d="M142 116v39" /></g>
+      <rect x="83" y="108" width="74" height="31" rx="5" fill="#246b45" stroke="#174b30" strokeWidth="3" />
+      <g fill="#eef7f0" fontSize="7" textAnchor="middle">
+        <text x="96" y="128">VCC</text><text x="120" y="128">GND</text><text x="144" y="128">AO</text>
+      </g>
+      <g stroke="#bbbcae" strokeWidth="7" strokeLinecap="round"><path d="M96 136v23" /><path d="M120 136v23" /><path d="M144 136v23" /></g>
+      <g stroke="#f0f0e8" strokeWidth="2" opacity=".65"><path d="M94 139v16" /><path d="M118 139v16" /><path d="M142 139v16" /></g>
     </FullFrame>
   )
 }

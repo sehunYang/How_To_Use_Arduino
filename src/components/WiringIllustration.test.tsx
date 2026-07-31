@@ -130,4 +130,27 @@ describe('WiringIllustration zoom and pan', () => {
       unmount()
     }
   })
+
+  it('reuses the current sensor SVGs and their measured connector coordinates', () => {
+    const expected = [
+      ['bme280', 'chip-bme280', 'BME280 온습도 기압 센서 모듈'],
+      ['cds', 'wokwi-photoresistor-sensor', 'CDS 조도 센서'],
+      ['ds18b20', 'wokwi-ds18b20', 'DS18B20 TO-92 센서'],
+      ['hbe0704', 'wokwi-potentiometer', 'HBE0704 TO-92 센서'],
+      ['ina219', 'chip-ina219', 'INA219'],
+      ['tsl2591', 'chip-tsl2591', 'TSL2591'],
+    ] as const
+
+    for (const [sensorId, partType, accessibleName] of expected) {
+      const recipe = phase5Recipes.find((candidate) => candidate.sensors.includes(sensorId))!
+      const { container, unmount } = render(
+        <WiringIllustration recipe={recipe} activeStep={recipe.wiring.length - 1} />,
+      )
+      const part = container.querySelector(`[data-part-type="${partType}"]`)
+      expect(part, `${recipe.id}: ${sensorId} SVG part`).not.toBeNull()
+      expect(part?.querySelector(`[role="img"][aria-label*="${accessibleName}"]`)).not.toBeNull()
+      expect(part?.querySelectorAll('[data-pin-source="fallback"]')).toHaveLength(0)
+      unmount()
+    }
+  })
 })
