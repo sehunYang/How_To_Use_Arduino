@@ -221,6 +221,44 @@ export function GeneratedWokwiDiagram({
   const contentBottom = Math.max(290, ...positioned.map((part) => part.top + part.height + 24))
   const height = contentBottom + diagram.connections.length * 10 + 30
   const visible = diagram.connections.slice(0, activeStep + 1)
+  const wires = visible.map(([from, to, color], index) => {
+    const start = pinPointForEndpoint(from, partMap, usages)
+    const end = pinPointForEndpoint(to, partMap, usages)
+    const startPart = partMap.get(from.split(':')[0])!
+    const endPart = partMap.get(to.split(':')[0])!
+    const startEscape = escapePoints(start, startPart)
+    const endEscape = escapePoints(end, endPart)
+    const startCorridor = startEscape.at(-1)!
+    const endCorridor = endEscape.at(-1)!
+    const laneY = contentBottom + 10 + index * 10
+    const route = [
+      start,
+      ...startEscape,
+      { x: startCorridor.x, y: laneY },
+      { x: endCorridor.x, y: laneY },
+      ...[...endEscape].reverse(),
+      end,
+    ]
+    const points = route.map((point) => `${point.x},${point.y}`).join(' ')
+    const current = index === visible.length - 1
+    return (
+      <g
+        key={`${from}-${to}-${index}`}
+        className={current ? 'wiring-current-step' : undefined}
+        data-wire-id={`wire-${index}`}
+        data-wire-current={current ? 'true' : 'false'}
+        data-wire-from-pin={from}
+        data-wire-to-pin={to}
+        data-wire-from={`${start.x},${start.y}`}
+        data-wire-to={`${end.x},${end.y}`}
+        opacity={current ? 1 : 0.58}
+      >
+        {current && <polyline data-wire-halo points={points} stroke="#fff" strokeWidth="4.5" />}
+        <polyline data-wire-line points={points} stroke={color} strokeWidth={current ? 2.5 : 2} />
+        <title>{`${from} → ${to}`}</title>
+      </g>
+    )
+  })
 
   return (
     <svg
@@ -232,6 +270,9 @@ export function GeneratedWokwiDiagram({
       data-generated-wokwi-diagram={recipe.id}
     >
       <rect width="900" height={height} rx="14" fill="#f7f7f5" />
+      <g data-wire-layer="behind-parts" fill="none" strokeLinecap="round" strokeLinejoin="round">
+        {wires}
+      </g>
       {positioned.map((part) => (
         <g
           key={part.id}
@@ -287,44 +328,6 @@ export function GeneratedWokwiDiagram({
           })}
         </g>
       ))}
-      <g fill="none" strokeLinecap="round" strokeLinejoin="round">
-        {visible.map(([from, to, color], index) => {
-          const start = pinPointForEndpoint(from, partMap, usages)
-          const end = pinPointForEndpoint(to, partMap, usages)
-          const startPart = partMap.get(from.split(':')[0])!
-          const endPart = partMap.get(to.split(':')[0])!
-          const startEscape = escapePoints(start, startPart)
-          const endEscape = escapePoints(end, endPart)
-          const startCorridor = startEscape.at(-1)!
-          const endCorridor = endEscape.at(-1)!
-          const laneY = contentBottom + 10 + index * 10
-          const route = [
-            start,
-            ...startEscape,
-            { x: startCorridor.x, y: laneY },
-            { x: endCorridor.x, y: laneY },
-            ...[...endEscape].reverse(),
-            end,
-          ]
-          const points = route.map((point) => `${point.x},${point.y}`).join(' ')
-          const current = index === visible.length - 1
-          return (
-            <g
-              key={`${from}-${to}-${index}`}
-              data-wire-id={`wire-${index}`}
-              data-wire-from-pin={from}
-              data-wire-to-pin={to}
-              data-wire-from={`${start.x},${start.y}`}
-              data-wire-to={`${end.x},${end.y}`}
-              opacity={current ? 1 : 0.58}
-            >
-              {current && <polyline points={points} stroke="#fff" strokeWidth="9" />}
-              <polyline points={points} stroke={color} strokeWidth={current ? 5 : 4} />
-              <title>{`${from} → ${to}`}</title>
-            </g>
-          )
-        })}
-      </g>
     </svg>
   )
 }

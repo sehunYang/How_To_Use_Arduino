@@ -91,6 +91,27 @@ describe('WiringIllustration zoom and pan', () => {
     expect(container.querySelectorAll('[data-wire-id]')).toHaveLength(2)
   })
 
+  it('renders sharp wires behind boards and blinks only the current step', () => {
+    const recipe = phase5Recipes.find((candidate) => candidate.id === 'S1')!
+    const { container } = render(<WiringIllustration recipe={recipe} activeStep={1} />)
+    const diagram = container.querySelector('[data-generated-wokwi-diagram]')
+    const wireLayer = diagram?.querySelector('[data-wire-layer="behind-parts"]')
+    const firstPart = diagram?.querySelector('[data-part-id]')
+    const previous = wireLayer?.querySelector('[data-wire-current="false"]')
+    const current = wireLayer?.querySelector('[data-wire-current="true"]')
+
+    expect(wireLayer).not.toBeNull()
+    expect(firstPart).not.toBeNull()
+    expect(
+      wireLayer!.compareDocumentPosition(firstPart!) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+    expect(previous?.querySelector('[data-wire-line]')).toHaveAttribute('stroke-width', '2')
+    expect(previous?.querySelector('[data-wire-halo]')).toBeNull()
+    expect(current).toHaveClass('wiring-current-step')
+    expect(current?.querySelector('[data-wire-line]')).toHaveAttribute('stroke-width', '2.5')
+    expect(current?.querySelector('[data-wire-halo]')).toHaveAttribute('stroke-width', '4.5')
+  })
+
   it('anchors every Phase 5 wire endpoint to a visible pin center', () => {
     for (const recipe of phase5Recipes) {
       const { container, unmount } = render(

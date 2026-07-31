@@ -118,6 +118,21 @@ textarea {
   display: grid;
 }
 
+@keyframes wiring-current-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.28;
+  }
+}
+
+.wiring-current-step {
+  animation: wiring-current-blink 1.5s ease-in-out infinite;
+}
+
 @media (min-width: 48rem) {
   .app-layout {
     grid-template-columns: 15rem minmax(0, 1fr);
@@ -130,5 +145,9 @@ textarea {
   *::after {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .wiring-current-step {
+    animation: none;
   }
 }
