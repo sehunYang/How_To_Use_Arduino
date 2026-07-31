@@ -39,14 +39,17 @@ export function RecipeCard({
   return (
     <article className="flex h-full flex-col rounded-card border border-border bg-background p-5 shadow-sm">
       <div className="mb-4 flex flex-wrap gap-x-4 gap-y-1 text-caption font-semibold">
-        <span className={SUBJECT_COLOR[recipe.subject ?? '융합']}>
-          과목 · {recipe.subject ?? '융합'}
+        <span>
+          <span className="text-muted">과목 · </span>
+          <span className={SUBJECT_COLOR[recipe.subject ?? '융합']}>{recipe.subject ?? '융합'}</span>
         </span>
-        <span className={DIFFICULTY_COLOR[recipe.difficulty]}>
-          난이도 · {recipe.difficulty}
+        <span>
+          <span className="text-muted">난이도 · </span>
+          <span className={DIFFICULTY_COLOR[recipe.difficulty]}>{recipe.difficulty}</span>
         </span>
-        <span className={timeColor(recipe.minutes)} title="30분 이하 짧음 · 31~60분 보통 · 61분 이상 김">
-          시간 · {recipe.minutes}분
+        <span title="30분 이하 짧음 · 31~60분 보통 · 61분 이상 김">
+          <span className="text-muted">시간 · </span>
+          <span className={timeColor(recipe.minutes)}>{recipe.minutes}분</span>
         </span>
       </div>
       <h3 className="text-heading font-semibold">{recipe.title}</h3>
