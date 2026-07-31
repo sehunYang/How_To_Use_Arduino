@@ -24,6 +24,10 @@ describe('complete Phase 5 corpus', () => {
       expect(recipe.status, recipe.id).toBe('draft')
       expect(recipe.reviewedOnDevice, recipe.id).toBeNull()
       expect(recipe.commentReviewed, recipe.id).toBeNull()
+      expect(recipe.body, recipe.id).toContain('## 실험 실행 계획')
+      expect(recipe.body, recipe.id).toContain('## 측정 기록표')
+      expect(recipe.body, recipe.id).toContain('$$')
+      expect(recipe.body, recipe.id).toContain('| 조건 번호 |')
     }
   })
 

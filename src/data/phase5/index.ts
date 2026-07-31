@@ -1,6 +1,7 @@
 import { bioRoboticsProjectRecipes } from './bioRoboticsProjects'
 import { phase5ProjectRecipes as physicsEnvironmentRecipes } from './projectRecipes'
 import { sensorExampleRecipes } from './sensorExamples'
+import { withInquiryWorkbook } from '../inquiryGuide'
 
 export { biologyProjectRecipes, roboticsProjectRecipes, bioRoboticsProjectRecipes } from './bioRoboticsProjects'
 export {
@@ -18,4 +19,4 @@ export const phase5ProjectRecipes = [
 export const phase5Recipes = [
   ...sensorExampleRecipes,
   ...phase5ProjectRecipes,
-]
+].map(withInquiryWorkbook)

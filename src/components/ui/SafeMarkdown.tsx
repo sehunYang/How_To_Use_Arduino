@@ -1,6 +1,9 @@
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
 import rehypeSanitize from 'rehype-sanitize'
+import rehypeKatex from 'rehype-katex'
+import 'katex/dist/katex.min.css'
 import { Callout } from './Callout'
 import { Toggle } from './Toggle'
 
@@ -46,9 +49,18 @@ function parseBlocks(source: string): Block[] {
 function Markdown({ source }: { source: string }) {
   return (
     <ReactMarkdown
-      remarkPlugins={[remarkGfm]}
-      rehypePlugins={[rehypeSanitize]}
-      components={{ a: ({ children, ...props }) => <a {...props} target="_blank" rel="noopener noreferrer">{children}</a> }}
+      remarkPlugins={[remarkGfm, remarkMath]}
+      rehypePlugins={[rehypeSanitize, rehypeKatex]}
+      components={{
+        a: ({ children, ...props }) => <a {...props} target="_blank" rel="noopener noreferrer">{children}</a>,
+        table: ({ children, ...props }) => (
+          <div className="my-5 overflow-x-auto rounded-card border border-border">
+            <table {...props} className="m-0 min-w-2xl border-collapse text-sm">{children}</table>
+          </div>
+        ),
+        th: ({ children, ...props }) => <th {...props} className="border-b border-border bg-surface-strong px-3 py-2 text-left font-semibold">{children}</th>,
+        td: ({ children, ...props }) => <td {...props} className="border-b border-border px-3 py-2 align-top tabular-nums">{children}</td>,
+      }}
     >
       {source}
     </ReactMarkdown>

@@ -23,6 +23,10 @@ describe('Phase 6 recipe expansion', () => {
       expect(recipe.commentReviewed, recipe.id).toBeNull()
       expect(recipe.body, recipe.id).toContain('## 변인')
       expect(recipe.body, recipe.id).toContain('## 데이터 처리')
+      expect(recipe.body, recipe.id).toContain('## 실험 실행 계획')
+      expect(recipe.body, recipe.id).toContain('## 측정 기록표')
+      expect(recipe.body, recipe.id).toContain('$$')
+      expect(recipe.body, recipe.id).toContain('| 조건 번호 |')
     }
   })
 

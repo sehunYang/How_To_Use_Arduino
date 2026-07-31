@@ -38,4 +38,14 @@ describe('student content components', () => {
     expect(screen.getByRole('note')).toHaveTextContent('주의 내용')
     expect(screen.getByText('더 보기')).toBeTruthy()
   })
+
+  it('renders LaTeX equations and aligned GFM tables', () => {
+    const { container } = render(
+      <SafeMarkdown source={'| 조건 | 값 |\n|:---|---:|\n| 1 | 3.14 |\n\n$$\\bar{x}=\\frac{1}{n}\\sum x_i$$'} />,
+    )
+    expect(screen.getByRole('table')).toHaveClass('min-w-2xl')
+    expect(screen.getByText('3.14')).toHaveClass('tabular-nums')
+    expect(container.querySelector('.katex')).not.toBeNull()
+    expect(container.querySelector('math')).not.toBeNull()
+  })
 })
