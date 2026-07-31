@@ -30,7 +30,7 @@ void drive(byte left, byte right) {
 }
 void setup() {
   Serial.begin(9600);
-  Serial.println("PHASE5_READY:obstacle-avoid-car");
+  Serial.println("# PHASE5_READY:obstacle-avoid-car");
   Wire.begin();
   imu.initialize();
   pinMode(TRIG,OUTPUT);
@@ -39,6 +39,7 @@ void setup() {
   pinMode(RIGHT_IN,OUTPUT);
   pinMode(LEFT_PWM,OUTPUT);
   pinMode(RIGHT_PWM,OUTPUT);
+  Serial.println("distance_cm,tilt_x_g");
 }
 void loop() {
   float d=distanceCm();
@@ -46,9 +47,8 @@ void loop() {
   imu.getAcceleration(&ax,&ay,&az);
   if (isnan(d) || d < stopDistanceCm) drive(0,150);
   else drive(150,150);
-  Serial.print("distance_cm=");
   Serial.print(d,1);
-  Serial.print(", tilt_x_g=");
+  Serial.print(',');
   Serial.println(ax/16384.0,3);
   delay(80);
 }

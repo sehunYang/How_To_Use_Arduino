@@ -31,11 +31,12 @@ void setup() {
   Serial.begin(9600);
   Wire.begin();
   writeRegister(0x05, 4096);
-  Serial.println("WOKWI_READY");
+  Serial.println("# WOKWI_READY");
+  Serial.println("time_ms,current_raw");
 }
 
 void loop() {
-  Serial.print("INA219_CURRENT=");
+  Serial.print(millis()); Serial.print(',');
   Serial.println(readRegister(0x04));
   delay(samplingIntervalMs);
 }

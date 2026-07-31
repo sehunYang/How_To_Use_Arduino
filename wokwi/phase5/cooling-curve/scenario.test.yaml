@@ -2,4 +2,4 @@ name: Phase 5 deterministic smoke - cooling-curve
 version: 1
 author: phase5-generator
 steps:
-  - wait-serial: "PHASE5_READY:cooling-curve"
+  - wait-serial: "# PHASE5_READY:cooling-curve"

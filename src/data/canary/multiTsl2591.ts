@@ -20,7 +20,7 @@ void readChannel(uint8_t channel) {
   mux.openChannel(channel);
   delay(channelDelayMs);
   uint32_t lum = tsl.getFullLuminosity();
-  Serial.print("channel "); Serial.print(channel); Serial.print(": ");
+  Serial.print(channel); Serial.print(',');
   Serial.println(lum);
   mux.closeChannel(channel);
 }
@@ -29,6 +29,7 @@ void setup() {
   Serial.begin(9600);
   Wire.begin();
   tsl.begin();
+  Serial.println("channel,light_raw");
 }
 
 void loop() {

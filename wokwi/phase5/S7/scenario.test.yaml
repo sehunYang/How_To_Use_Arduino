@@ -2,4 +2,4 @@ name: Phase 5 deterministic smoke - S7
 version: 1
 author: phase5-generator
 steps:
-  - wait-serial: "PHASE5_READY:S7"
+  - wait-serial: "# PHASE5_READY:S7"

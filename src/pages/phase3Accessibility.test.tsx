@@ -5,7 +5,7 @@ import axe from 'axe-core'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from '@/App'
 
-const studentRoutes = ['/', '/recipes', '/recipes/pendulum', '/sensors']
+const studentRoutes = ['/', '/recipes', '/recipes/pendulum', '/sensors', '/data-converter']
 const themes = ['light', 'dark'] as const
 
 beforeEach(() => {

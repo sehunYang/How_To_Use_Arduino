@@ -9,7 +9,7 @@ float motionThresholdG = 0.18;
 unsigned long activeSamples = 0, totalSamples = 0;
 void setup() {
   Serial.begin(9600);
-  Serial.println("PHASE5_READY:human-activity-meter");
+  Serial.println("# PHASE5_READY:human-activity-meter");
   Wire.begin();
   imu.initialize();
   Serial.println("time_ms,dynamic_g,active_fraction");

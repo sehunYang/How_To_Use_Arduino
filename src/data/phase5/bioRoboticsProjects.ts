@@ -120,8 +120,8 @@ float humidityPct() {
 }
 void setup() {
   Serial.begin(9600); Wire.begin();
-  if (!light.begin()) Serial.println("TSL2591_ERROR");
-  if (read8(0xD0)!=0x60) Serial.println("BME280_ERROR"); else beginBme();
+  if (!light.begin()) Serial.println("# TSL2591_ERROR");
+  if (read8(0xD0)!=0x60) Serial.println("# BME280_ERROR"); else beginBme();
   light.setGain(TSL2591_GAIN_LOW);
   light.setTiming(TSL2591_INTEGRATIONTIME_100MS);
   Serial.println("time_ms,lux,temperature_c,humidity_pct");
@@ -175,7 +175,7 @@ void setup() {
   Serial.begin(9600);
   pinMode(RELAY_PIN, OUTPUT);
   digitalWrite(RELAY_PIN, LOW);
-  if (!light.begin()) Serial.println("TSL2591_ERROR");
+  if (!light.begin()) Serial.println("# TSL2591_ERROR");
   light.setGain(TSL2591_GAIN_LOW);
   light.setTiming(TSL2591_INTEGRATIONTIME_100MS);
   Serial.println("time_ms,lux,lamp");
@@ -251,13 +251,14 @@ void setup() {
   pinMode(TRIG,OUTPUT); pinMode(ECHO,INPUT);
   pinMode(LEFT_IN,OUTPUT); pinMode(RIGHT_IN,OUTPUT);
   pinMode(LEFT_PWM,OUTPUT); pinMode(RIGHT_PWM,OUTPUT);
+  Serial.println("distance_cm,tilt_x_g");
 }
 void loop() {
   float d=distanceCm();
   int16_t ax,ay,az; imu.getAcceleration(&ax,&ay,&az);
   if (isnan(d) || d < stopDistanceCm) drive(0,150); else drive(150,150);
-  Serial.print("distance_cm="); Serial.print(d,1);
-  Serial.print(", tilt_x_g="); Serial.println(ax/16384.0,3);
+  Serial.print(d,1); Serial.print(',');
+  Serial.println(ax/16384.0,3);
   delay(80);
 }`
 
@@ -276,6 +277,7 @@ void setup() {
   pinMode(IN_L,OUTPUT); pinMode(IN_R,OUTPUT);
   pinMode(PWM_L,OUTPUT); pinMode(PWM_R,OUTPUT);
   digitalWrite(IN_L,HIGH); digitalWrite(IN_R,HIGH);
+  Serial.println("left_adc,right_adc,error");
 }
 void loop() {
   int left=analogRead(LDR_L), right=analogRead(LDR_R);
@@ -283,9 +285,9 @@ void loop() {
   int correction=abs(error)<deadband ? 0 : constrain(error/2,-80,80);
   analogWrite(PWM_L,constrain(150-correction,0,255));
   analogWrite(PWM_R,constrain(150+correction,0,255));
-  Serial.print("left="); Serial.print(left);
-  Serial.print(", right="); Serial.print(right);
-  Serial.print(", error="); Serial.println(error);
+  Serial.print(left); Serial.print(',');
+  Serial.print(right); Serial.print(',');
+  Serial.println(error);
   delay(50);
 }`
 
@@ -306,12 +308,14 @@ void setup() {
   pinMode(PIR_PIN,INPUT); pinMode(SERVO_PIN,OUTPUT);
   for(byte i=0;i<25;i++) servoAngle(0);
   delay(30000);
+  Serial.println("time_ms,door_state");
 }
 void loop() {
   if (digitalRead(PIR_PIN)==HIGH) lastMotion=millis();
   bool open=millis()-lastMotion < holdOpenMs;
   servoAngle(open ? 90 : 0);
-  Serial.println(open ? "door=open" : "door=closed");
+  Serial.print(millis()); Serial.print(',');
+  Serial.println(open ? "open" : "closed");
 }`
 
 const parkingAlarmSketch = `// @pin TRIG=D8
@@ -325,6 +329,7 @@ float warningDistanceCm = 60.0;
 void setup() {
   Serial.begin(9600); pinMode(TRIG,OUTPUT); pinMode(ECHO,INPUT);
   pinMode(BUZZER,OUTPUT); pinMode(LED_PIN,OUTPUT);
+  Serial.println("time_ms,distance_cm");
 }
 void loop() {
   digitalWrite(TRIG,LOW); delayMicroseconds(2);
@@ -334,7 +339,8 @@ void loop() {
   bool warning=!isnan(cm) && cm<warningDistanceCm;
   digitalWrite(LED_PIN,warning);
   if(warning) tone(BUZZER,1200,80); else noTone(BUZZER);
-  Serial.print("distance_cm="); Serial.println(cm,1);
+  Serial.print(millis()); Serial.print(',');
+  Serial.println(cm,1);
   delay(warning ? constrain((int)(cm*8),80,500) : 500);
 }`
 
@@ -382,6 +388,7 @@ void setup() {
   pinMode(PIR_PIN,INPUT); pinMode(RELAY_PIN,OUTPUT);
   digitalWrite(RELAY_PIN,LOW);
   delay(30000);
+  Serial.println("light_adc,occupied,lamp");
 }
 void loop() {
   int light=analogRead(LIGHT_PIN);
@@ -389,9 +396,9 @@ void loop() {
   bool occupied=millis()-lastMotion<30000;
   bool lamp=occupied && light<darkThreshold;
   digitalWrite(RELAY_PIN,lamp ? HIGH : LOW);
-  Serial.print("light_adc=");Serial.print(light);
-  Serial.print(", occupied=");Serial.print(occupied);
-  Serial.print(", lamp=");Serial.println(lamp);
+  Serial.print(light);Serial.print(',');
+  Serial.print(occupied);Serial.print(',');
+  Serial.println(lamp);
   delay(250);
 }`
 

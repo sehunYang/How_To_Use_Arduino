@@ -2,4 +2,4 @@ name: Phase 5 deterministic smoke - rpm-meter
 version: 1
 author: phase5-generator
 steps:
-  - wait-serial: "PHASE5_READY:rpm-meter"
+  - wait-serial: "# PHASE5_READY:rpm-meter"

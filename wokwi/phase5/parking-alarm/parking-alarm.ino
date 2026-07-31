@@ -8,11 +8,12 @@ const byte TRIG=8,ECHO=9,BUZZER=3,LED_PIN=4;
 float warningDistanceCm = 60.0;
 void setup() {
   Serial.begin(9600);
-  Serial.println("PHASE5_READY:parking-alarm");
+  Serial.println("# PHASE5_READY:parking-alarm");
   pinMode(TRIG,OUTPUT);
   pinMode(ECHO,INPUT);
   pinMode(BUZZER,OUTPUT);
   pinMode(LED_PIN,OUTPUT);
+  Serial.println("time_ms,distance_cm");
 }
 void loop() {
   digitalWrite(TRIG,LOW);
@@ -26,7 +27,8 @@ void loop() {
   digitalWrite(LED_PIN,warning);
   if(warning) tone(BUZZER,1200,80);
   else noTone(BUZZER);
-  Serial.print("distance_cm=");
+  Serial.print(millis());
+  Serial.print(',');
   Serial.println(cm,1);
   delay(warning ? constrain((int)(cm*8),80,500) : 500);
 }

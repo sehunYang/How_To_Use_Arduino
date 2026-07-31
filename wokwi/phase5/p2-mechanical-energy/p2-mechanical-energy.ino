@@ -8,7 +8,7 @@ MPU6050 imu;
 const unsigned long samplingIntervalMs = 20;
 void setup() {
   Serial.begin(9600);
-  Serial.println("PHASE5_READY:p2-mechanical-energy");
+  Serial.println("# PHASE5_READY:p2-mechanical-energy");
   Wire.begin();
   imu.initialize();
   Serial.println("time_ms,ax,ay,az,g_norm");

@@ -65,10 +65,10 @@ float humidityPct() {
 }
 void setup() {
   Serial.begin(9600);
-  Serial.println("PHASE5_READY:plant-growth");
+  Serial.println("# PHASE5_READY:plant-growth");
   Wire.begin();
-  if (!light.begin()) Serial.println("TSL2591_ERROR");
-  if (read8(0xD0)!=0x60) Serial.println("BME280_ERROR");
+  if (!light.begin()) Serial.println("# TSL2591_ERROR");
+  if (read8(0xD0)!=0x60) Serial.println("# BME280_ERROR");
   else beginBme();
   light.setGain(TSL2591_GAIN_LOW);
   light.setTiming(TSL2591_INTEGRATIONTIME_100MS);

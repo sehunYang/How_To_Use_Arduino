@@ -7,6 +7,20 @@ import { RecipeSchema } from '@/schema'
 import { buildDiagram } from '@/wokwi/buildDiagram'
 import { phase6PhysicsRecipes, phase6PinRecipes, phase6Recipes } from '.'
 
+function functionBody(sketch: string, name: 'setup' | 'loop') {
+  const signatureIndex = sketch.indexOf(`void ${name}()`)
+  const openBraceIndex = sketch.indexOf('{', signatureIndex)
+  let depth = 0
+
+  for (let index = openBraceIndex; index < sketch.length; index += 1) {
+    if (sketch[index] === '{') depth += 1
+    if (sketch[index] === '}') depth -= 1
+    if (depth === 0) return sketch.slice(openBraceIndex + 1, index)
+  }
+
+  return ''
+}
+
 describe('Phase 6 recipe expansion', () => {
   it('contains the approved pin-coverage and current-inventory physics groups', () => {
     expect(phase6PinRecipes).toHaveLength(6)
@@ -30,6 +44,23 @@ describe('Phase 6 recipe expansion', () => {
       expect(recipe.body, recipe.id).not.toContain('relative error')
       expect(recipe.body, recipe.id).toContain('## 과학 이론 쉽게 이해하기')
       expect(recipe.body.trim(), recipe.id).toMatch(/## 과학 이론 쉽게 이해하기\n\n[^#]+$/)
+    }
+  })
+
+  it('emits one CSV header from setup and keeps serial text CSV-safe', () => {
+    for (const recipe of phase6Recipes) {
+      const setup = functionBody(recipe.sketch, 'setup')
+      const loop = functionBody(recipe.sketch, 'loop')
+      const headers = [...setup.matchAll(/Serial\.println\("([^"\r\n]+,[^"\r\n]+)"\)/g)]
+
+      expect(headers, recipe.id).toHaveLength(1)
+      expect(headers[0][1], recipe.id).not.toMatch(/^,|,$/)
+      expect(headers[0][1].split(',').every((column) => /^[A-Za-z][A-Za-z0-9_]*$/.test(column)), recipe.id).toBe(true)
+
+      for (const match of loop.matchAll(/Serial\.(?:print|println)\("([^"\r\n]*)"\)/g)) {
+        const text = match[1]
+        expect(text.startsWith('#') || text.endsWith(','), `${recipe.id}: ${text}`).toBe(true)
+      }
     }
   })
 

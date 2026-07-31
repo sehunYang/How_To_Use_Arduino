@@ -11,18 +11,18 @@ int samplingIntervalMs = 500;
 
 void setup() {
   Serial.begin(9600);
-  Serial.println("PHASE5_READY:S7");
-  if (!ina219.begin()) Serial.println("INA219_ERROR");
+  Serial.println("# PHASE5_READY:S7");
+  if (!ina219.begin()) Serial.println("# INA219_ERROR");
+  Serial.println("voltage_v,current_ma,power_mw");
 }
 
 void loop() {
   float busV = ina219.getBusVoltage_V();
   float currentMa = ina219.getCurrent_mA();
-  Serial.print("voltage_v=");
   Serial.print(busV, 3);
-  Serial.print(", current_ma=");
+  Serial.print(',');
   Serial.print(currentMa, 2);
-  Serial.print(", power_mw=");
+  Serial.print(',');
   Serial.println(busV * currentMa, 2);
   delay(samplingIntervalMs);
 }

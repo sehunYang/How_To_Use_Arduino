@@ -97,7 +97,7 @@ const byte RELAY=7;
 float humidityOnPercent = 70.0;
 void setup() {
   Serial.begin(9600);
-  Serial.println("PHASE5_READY:fan-control");
+  Serial.println("# PHASE5_READY:fan-control");
   Wire.begin();
   bmeBegin();
   pinMode(RELAY,OUTPUT);

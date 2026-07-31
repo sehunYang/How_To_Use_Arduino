@@ -91,6 +91,7 @@ void setup() {
   Serial.begin(9600);
   Wire.begin();
   mpu.initialize();
+  Serial.println("roll_deg,pitch_deg");
 }
 
 void loop() {
@@ -98,8 +99,8 @@ void loop() {
   mpu.getAcceleration(&ax, &ay, &az);
   float roll = atan2((float)ay, (float)az) * 180.0 / PI;
   float pitch = atan2(-(float)ax, sqrt((float)ay * ay + (float)az * az)) * 180.0 / PI;
-  Serial.print("roll="); Serial.print(roll, 1);
-  Serial.print(", pitch="); Serial.println(pitch, 1);
+  Serial.print(roll, 1); Serial.print(',');
+  Serial.println(pitch, 1);
   delay(samplingIntervalMs);
 }
 `
@@ -117,6 +118,7 @@ void setup() {
   Serial.begin(9600);
   pinMode(TRIG_PIN, OUTPUT);
   pinMode(ECHO_PIN, INPUT);
+  Serial.println("time_ms,distance_cm");
 }
 
 void loop() {
@@ -124,10 +126,11 @@ void loop() {
   digitalWrite(TRIG_PIN, HIGH); delayMicroseconds(10);
   digitalWrite(TRIG_PIN, LOW);
   unsigned long durationUs = pulseIn(ECHO_PIN, HIGH, 30000);
-  if (durationUs == 0) Serial.println("out-of-range");
+  if (durationUs == 0) Serial.println("# out-of-range");
   else {
     float distanceCm = durationUs * 0.0343 / 2.0;
-    Serial.print("distance_cm="); Serial.println(distanceCm, 1);
+    Serial.print(millis()); Serial.print(',');
+    Serial.println(distanceCm, 1);
   }
   delay(measurementIntervalMs);
 }
@@ -144,9 +147,11 @@ void setup() {
   Serial.begin(9600);
   pinMode(PIR_PIN, INPUT);
   delay(30000);
+  Serial.println("time_ms,motion");
 }
 
 void loop() {
+  Serial.print(millis()); Serial.print(',');
   Serial.println(digitalRead(PIR_PIN) == HIGH ? "motion" : "clear");
   delay(holdoffMs);
 }
@@ -159,7 +164,10 @@ const byte LIGHT_PIN = A0;
 // @tunable samples
 int samples = 10;
 
-void setup() { Serial.begin(9600); }
+void setup() {
+  Serial.begin(9600);
+  Serial.println("time_ms,light_adc");
+}
 
 void loop() {
   long sum = 0;
@@ -167,7 +175,8 @@ void loop() {
     sum += analogRead(LIGHT_PIN);
     delay(5);
   }
-  Serial.print("light_adc="); Serial.println(sum / samples);
+  Serial.print(millis()); Serial.print(',');
+  Serial.println(sum / samples);
   delay(200);
 }
 `
@@ -186,13 +195,17 @@ int conversionIntervalMs = 1000;
 void setup() {
   Serial.begin(9600);
   sensors.begin();
+  Serial.println("time_ms,water_c");
 }
 
 void loop() {
   sensors.requestTemperatures();
   float celsius = sensors.getTempCByIndex(0);
-  if (celsius == DEVICE_DISCONNECTED_C) Serial.println("sensor-error");
-  else { Serial.print("water_c="); Serial.println(celsius, 2); }
+  if (celsius == DEVICE_DISCONNECTED_C) Serial.println("# sensor-error");
+  else {
+    Serial.print(millis()); Serial.print(',');
+    Serial.println(celsius, 2);
+  }
   delay(conversionIntervalMs);
 }
 `
@@ -210,13 +223,14 @@ int samplingIntervalMs = 1000;
 
 void setup() {
   Serial.begin(9600);
-  if (!bme.begin(0x76)) Serial.println("BME280_ERROR");
+  if (!bme.begin(0x76)) Serial.println("# BME280_ERROR");
+  Serial.println("temperature_c,humidity_pct,pressure_hpa");
 }
 
 void loop() {
-  Serial.print("temperature_c="); Serial.print(bme.readTemperature(), 2);
-  Serial.print(", humidity_pct="); Serial.print(bme.readHumidity(), 2);
-  Serial.print(", pressure_hpa="); Serial.println(bme.readPressure() / 100.0, 2);
+  Serial.print(bme.readTemperature(), 2); Serial.print(',');
+  Serial.print(bme.readHumidity(), 2); Serial.print(',');
+  Serial.println(bme.readPressure() / 100.0, 2);
   delay(samplingIntervalMs);
 }
 `
@@ -234,15 +248,16 @@ int samplingIntervalMs = 500;
 
 void setup() {
   Serial.begin(9600);
-  if (!ina219.begin()) Serial.println("INA219_ERROR");
+  if (!ina219.begin()) Serial.println("# INA219_ERROR");
+  Serial.println("voltage_v,current_ma,power_mw");
 }
 
 void loop() {
   float busV = ina219.getBusVoltage_V();
   float currentMa = ina219.getCurrent_mA();
-  Serial.print("voltage_v="); Serial.print(busV, 3);
-  Serial.print(", current_ma="); Serial.print(currentMa, 2);
-  Serial.print(", power_mw="); Serial.println(busV * currentMa, 2);
+  Serial.print(busV, 3); Serial.print(',');
+  Serial.print(currentMa, 2); Serial.print(',');
+  Serial.println(busV * currentMa, 2);
   delay(samplingIntervalMs);
 }
 `
@@ -260,16 +275,18 @@ int samplingIntervalMs = 500;
 
 void setup() {
   Serial.begin(9600);
-  if (!tsl.begin()) Serial.println("TSL2591_ERROR");
+  if (!tsl.begin()) Serial.println("# TSL2591_ERROR");
   tsl.setGain(TSL2591_GAIN_MED);
   tsl.setTiming(TSL2591_INTEGRATIONTIME_100MS);
+  Serial.println("time_ms,lux");
 }
 
 void loop() {
   uint32_t lum = tsl.getFullLuminosity();
   uint16_t ir = lum >> 16;
   uint16_t full = lum & 0xffff;
-  Serial.print("lux="); Serial.println(tsl.calculateLux(full, ir), 2);
+  Serial.print(millis()); Serial.print(',');
+  Serial.println(tsl.calculateLux(full, ir), 2);
   delay(samplingIntervalMs);
 }
 `
@@ -295,15 +312,16 @@ void readChannel(byte channel) {
   selectChannel(channel);
   delay(channelDelayMs);
   uint32_t lum = tsl.getFullLuminosity();
-  Serial.print("channel_"); Serial.print(channel);
-  Serial.print("="); Serial.println(lum & 0xffff);
+  Serial.print(channel); Serial.print(',');
+  Serial.println(lum & 0xffff);
 }
 
 void setup() {
   Serial.begin(9600);
   Wire.begin();
   selectChannel(0);
-  if (!tsl.begin()) Serial.println("TSL2591_ERROR");
+  if (!tsl.begin()) Serial.println("# TSL2591_ERROR");
+  Serial.println("channel,light_raw");
 }
 
 void loop() {
@@ -320,15 +338,17 @@ const byte HALL_PIN = A0;
 // @tunable zeroLevel
 int zeroLevel = 512;
 
-void setup() { Serial.begin(9600); }
+void setup() {
+  Serial.begin(9600);
+  Serial.println("raw,polarity,relative_strength");
+}
 
 void loop() {
   int raw = analogRead(HALL_PIN);
   int signedLevel = raw - zeroLevel;
-  Serial.print("raw="); Serial.print(raw);
-  Serial.print(", polarity=");
+  Serial.print(raw); Serial.print(',');
   Serial.print(signedLevel >= 0 ? "positive" : "negative");
-  Serial.print(", relative_strength="); Serial.println(abs(signedLevel));
+  Serial.print(','); Serial.println(abs(signedLevel));
   delay(100);
 }
 `

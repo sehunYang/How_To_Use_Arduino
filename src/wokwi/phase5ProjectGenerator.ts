@@ -40,7 +40,7 @@ function instrumentSketch(recipeId: string, sketch: string): string {
   }
   return `${sketch.trimEnd().replace(
     serialBegin,
-    `Serial.begin($1);\n  Serial.println("PHASE5_READY:${recipeId}");`,
+    `Serial.begin($1);\n  Serial.println("# PHASE5_READY:${recipeId}");`,
   )}\n`
 }
 
@@ -103,7 +103,7 @@ export function renderPhase5Scenario(project: Phase5WokwiProject): string {
     'version: 1',
     'author: phase5-generator',
     'steps:',
-    `  - wait-serial: "PHASE5_READY:${project.id}"`,
+    `  - wait-serial: "# PHASE5_READY:${project.id}"`,
     '',
   ].join('\n')
 }

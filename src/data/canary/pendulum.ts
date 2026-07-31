@@ -18,12 +18,13 @@ void setup() {
   Serial.begin(9600);
   Wire.begin();
   mpu.initialize();
-  Serial.println("WOKWI_READY");
+  Serial.println("# WOKWI_READY");
   if (mpu.testConnection()) {
-    Serial.println("MPU6050_OK");
+    Serial.println("# MPU6050_OK");
   } else {
-    Serial.println("MPU6050_ERROR");
+    Serial.println("# MPU6050_ERROR");
   }
+  Serial.println("accel_x_raw,accel_y_raw,accel_z_raw");
 }
 
 void loop() {

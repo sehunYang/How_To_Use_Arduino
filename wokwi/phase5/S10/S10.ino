@@ -7,17 +7,17 @@ int zeroLevel = 512;
 
 void setup() {
   Serial.begin(9600);
-  Serial.println("PHASE5_READY:S10");
+  Serial.println("# PHASE5_READY:S10");
+  Serial.println("raw,polarity,relative_strength");
 }
 
 void loop() {
   int raw = analogRead(HALL_PIN);
   int signedLevel = raw - zeroLevel;
-  Serial.print("raw=");
   Serial.print(raw);
-  Serial.print(", polarity=");
+  Serial.print(',');
   Serial.print(signedLevel >= 0 ? "positive" : "negative");
-  Serial.print(", relative_strength=");
+  Serial.print(',');
   Serial.println(abs(signedLevel));
   delay(100);
 }

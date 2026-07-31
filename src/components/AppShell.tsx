@@ -7,6 +7,7 @@ const navigation = [
   { to: '/', label: '아이디어 찾기' },
   { to: '/recipes', label: '레시피 둘러보기' },
   { to: '/sensors', label: '센서 학습하기' },
+  { to: '/data-converter', label: '데이터 변환하기' },
 ]
 
 export function AppShell({ children }: { children: ReactNode }) {

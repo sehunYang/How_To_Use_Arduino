@@ -9,9 +9,10 @@ int measurementIntervalMs = 200;
 
 void setup() {
   Serial.begin(9600);
-  Serial.println("PHASE5_READY:S2");
+  Serial.println("# PHASE5_READY:S2");
   pinMode(TRIG_PIN, OUTPUT);
   pinMode(ECHO_PIN, INPUT);
+  Serial.println("time_ms,distance_cm");
 }
 
 void loop() {
@@ -21,10 +22,11 @@ void loop() {
   delayMicroseconds(10);
   digitalWrite(TRIG_PIN, LOW);
   unsigned long durationUs = pulseIn(ECHO_PIN, HIGH, 30000);
-  if (durationUs == 0) Serial.println("out-of-range");
+  if (durationUs == 0) Serial.println("# out-of-range");
   else {
     float distanceCm = durationUs * 0.0343 / 2.0;
-    Serial.print("distance_cm=");
+    Serial.print(millis());
+    Serial.print(',');
     Serial.println(distanceCm, 1);
   }
   delay(measurementIntervalMs);

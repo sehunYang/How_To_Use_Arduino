@@ -11,16 +11,16 @@ int samplingIntervalMs = 1000;
 
 void setup() {
   Serial.begin(9600);
-  Serial.println("PHASE5_READY:S6");
-  if (!bme.begin(0x76)) Serial.println("BME280_ERROR");
+  Serial.println("# PHASE5_READY:S6");
+  if (!bme.begin(0x76)) Serial.println("# BME280_ERROR");
+  Serial.println("temperature_c,humidity_pct,pressure_hpa");
 }
 
 void loop() {
-  Serial.print("temperature_c=");
   Serial.print(bme.readTemperature(), 2);
-  Serial.print(", humidity_pct=");
+  Serial.print(',');
   Serial.print(bme.readHumidity(), 2);
-  Serial.print(", pressure_hpa=");
+  Serial.print(',');
   Serial.println(bme.readPressure() / 100.0, 2);
   delay(samplingIntervalMs);
 }

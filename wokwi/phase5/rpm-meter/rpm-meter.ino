@@ -8,7 +8,7 @@ unsigned long pulseCount=0;
 unsigned int pulsesPerRevolution = 1;
 void setup() {
   Serial.begin(9600);
-  Serial.println("PHASE5_READY:rpm-meter");
+  Serial.println("# PHASE5_READY:rpm-meter");
   Serial.println("time_ms,pulses,rpm");
 }
 void loop() {

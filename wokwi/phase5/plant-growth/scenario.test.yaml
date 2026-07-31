@@ -2,4 +2,4 @@ name: Phase 5 deterministic smoke - plant-growth
 version: 1
 author: phase5-generator
 steps:
-  - wait-serial: "PHASE5_READY:plant-growth"
+  - wait-serial: "# PHASE5_READY:plant-growth"

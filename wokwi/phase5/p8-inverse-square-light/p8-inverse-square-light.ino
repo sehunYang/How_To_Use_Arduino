@@ -23,7 +23,7 @@ float distanceM() {
 }
 void setup() {
   Serial.begin(9600);
-  Serial.println("PHASE5_READY:p8-inverse-square-light");
+  Serial.println("# PHASE5_READY:p8-inverse-square-light");
   Wire.begin();
   tsl.begin();
   pinMode(TRIG,OUTPUT);

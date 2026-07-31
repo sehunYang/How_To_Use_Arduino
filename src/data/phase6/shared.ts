@@ -153,7 +153,7 @@ unsigned long samplingIntervalMs = 100;
 ${header}
 ${bme280Driver}
 const byte TRIG_PIN=7,ECHO_PIN=6;
-void setup(){Serial.begin(9600);Wire.begin();bmeBegin();pinMode(TRIG_PIN,OUTPUT);pinMode(ECHO_PIN,INPUT);}
+void setup(){Serial.begin(9600);Wire.begin();bmeBegin();pinMode(TRIG_PIN,OUTPUT);pinMode(ECHO_PIN,INPUT);Serial.println("time_ms,temperature_c,pressure_hpa,distance_m");}
 void loop(){
   digitalWrite(TRIG_PIN,LOW);delayMicroseconds(2);digitalWrite(TRIG_PIN,HIGH);delayMicroseconds(10);digitalWrite(TRIG_PIN,LOW);
   unsigned long us=pulseIn(ECHO_PIN,HIGH,30000);float t=bmeTemperatureC(),p=bmePressureHpa();
@@ -168,7 +168,7 @@ ${header}
 const byte TRIG_PIN=7,ECHO_PIN=6;
 void writeReg(byte r,byte v){Wire.beginTransmission(0x68);Wire.write(r);Wire.write(v);Wire.endTransmission();}
 int16_t read16(byte r){Wire.beginTransmission(0x68);Wire.write(r);Wire.endTransmission(false);Wire.requestFrom(0x68,(byte)2);return (int16_t)((Wire.read()<<8)|Wire.read());}
-void setup(){Serial.begin(9600);Wire.begin();writeReg(0x6B,0);pinMode(TRIG_PIN,OUTPUT);pinMode(ECHO_PIN,INPUT);}
+void setup(){Serial.begin(9600);Wire.begin();writeReg(0x6B,0);pinMode(TRIG_PIN,OUTPUT);pinMode(ECHO_PIN,INPUT);Serial.println("time_ms,distance_m,acceleration_x_g");}
 void loop(){digitalWrite(TRIG_PIN,LOW);delayMicroseconds(2);digitalWrite(TRIG_PIN,HIGH);delayMicroseconds(10);digitalWrite(TRIG_PIN,LOW);unsigned long us=pulseIn(ECHO_PIN,HIGH,30000);
 Serial.print(millis());Serial.print(',');Serial.print(us*0.000343f/2.0f,4);Serial.print(',');Serial.println(read16(0x3B)/16384.0f,5);delay(samplingIntervalMs);}`
   }
@@ -177,7 +177,7 @@ Serial.print(millis());Serial.print(',');Serial.print(us*0.000343f/2.0f,4);Seria
 ${header}
 void writeReg(byte r,byte v){Wire.beginTransmission(0x68);Wire.write(r);Wire.write(v);Wire.endTransmission();}
 int16_t read16(byte r){Wire.beginTransmission(0x68);Wire.write(r);Wire.endTransmission(false);Wire.requestFrom(0x68,(byte)2);return (int16_t)((Wire.read()<<8)|Wire.read());}
-void setup(){Serial.begin(9600);Wire.begin();writeReg(0x6B,0);}
+void setup(){Serial.begin(9600);Wire.begin();writeReg(0x6B,0);Serial.println("time_ms,gyro_z_dps,hall_raw");}
 void loop(){float gyroZ=read16(0x47)/131.0f;Serial.print(millis());Serial.print(',');Serial.print(gyroZ,3);Serial.print(',');Serial.println(analogRead(A1));delay(samplingIntervalMs);}`
   }
   if (sensors.has('ina219') && sensors.has('ds18b20')) {
@@ -185,7 +185,7 @@ void loop(){float gyroZ=read16(0x47)/131.0f;Serial.print(millis());Serial.print(
 ${header}
 ${oneWireDriver}
 int16_t readIna(byte reg){Wire.beginTransmission(0x40);Wire.write(reg);Wire.endTransmission(false);Wire.requestFrom(0x40,(byte)2);return (int16_t)((Wire.read()<<8)|Wire.read());}
-void setup(){Serial.begin(9600);Wire.begin();}
+void setup(){Serial.begin(9600);Wire.begin();Serial.println("time_ms,bus_voltage_v,shunt_voltage_mv,temperature_c");}
 void loop(){startAllTemperatures();delay(750);float busV=(readIna(2)>>3)*0.004f,shuntMv=readIna(1)*0.01f;
 Serial.print(millis());Serial.print(',');Serial.print(busV,4);Serial.print(',');Serial.print(shuntMv,4);Serial.print(',');Serial.println(readOnlyTemperatureC(),3);delay(samplingIntervalMs);}`
   }
@@ -194,14 +194,14 @@ Serial.print(millis());Serial.print(',');Serial.print(busV,4);Serial.print(',');
 ${header}
 int16_t readIna(byte reg){Wire.beginTransmission(0x40);Wire.write(reg);Wire.endTransmission(false);Wire.requestFrom(0x40,(byte)2);return (int16_t)((Wire.read()<<8)|Wire.read());}
 uint16_t lightRaw(){Wire.beginTransmission(0x29);Wire.write(0xB4);Wire.endTransmission(false);Wire.requestFrom(0x29,(byte)2);return Wire.read()|(Wire.read()<<8);}
-void setup(){Serial.begin(9600);Wire.begin();Wire.beginTransmission(0x29);Wire.write(0xA0);Wire.write(3);Wire.endTransmission();}
+void setup(){Serial.begin(9600);Wire.begin();Wire.beginTransmission(0x29);Wire.write(0xA0);Wire.write(3);Wire.endTransmission();Serial.println("time_ms,bus_voltage_v,shunt_voltage_mv,light_raw");}
 void loop(){Serial.print(millis());Serial.print(',');Serial.print((readIna(2)>>3)*0.004f,4);Serial.print(',');Serial.print(readIna(1)*0.01f,4);Serial.print(',');Serial.println(lightRaw());delay(samplingIntervalMs);}`
   }
   if (sensors.has('ina219') && sensors.has('hbe0704')) {
     return `#include <Wire.h>
 ${header}
 int16_t readIna(byte reg){Wire.beginTransmission(0x40);Wire.write(reg);Wire.endTransmission(false);Wire.requestFrom(0x40,(byte)2);return (int16_t)((Wire.read()<<8)|Wire.read());}
-void setup(){Serial.begin(9600);Wire.begin();}
+void setup(){Serial.begin(9600);Wire.begin();Serial.println("time_ms,shunt_voltage_mv,hall_raw");}
 void loop(){Serial.print(millis());Serial.print(',');Serial.print(readIna(1)*0.01f,4);Serial.print(',');Serial.println(analogRead(A1));delay(samplingIntervalMs);}`
   }
   if (sensors.has('ds18b20') && sensors.has('bme280')) {
@@ -209,14 +209,14 @@ void loop(){Serial.print(millis());Serial.print(',');Serial.print(readIna(1)*0.0
 ${header}
 ${oneWireDriver}
 ${bme280Driver}
-void setup(){Serial.begin(9600);Wire.begin();bmeBegin();}
+void setup(){Serial.begin(9600);Wire.begin();bmeBegin();Serial.println("time_ms,object_temperature_c,ambient_temperature_c,humidity_pct");}
 void loop(){startAllTemperatures();delay(750);float objectT=readOnlyTemperatureC(),ambientT=bmeTemperatureC();
 Serial.print(millis());Serial.print(',');Serial.print(objectT,3);Serial.print(',');Serial.print(ambientT,3);Serial.print(',');Serial.println(bmeHumidity(),2);delay(samplingIntervalMs);}`
   }
   if (sensors.has('hc-sr04')) {
     return `${header}
 const byte TRIG_PIN=7,ECHO_PIN=6;
-void setup(){Serial.begin(9600);pinMode(TRIG_PIN,OUTPUT);pinMode(ECHO_PIN,INPUT);}
+void setup(){Serial.begin(9600);pinMode(TRIG_PIN,OUTPUT);pinMode(ECHO_PIN,INPUT);Serial.println("time_ms,distance_m");}
 void loop(){
   digitalWrite(TRIG_PIN,LOW);delayMicroseconds(2);digitalWrite(TRIG_PIN,HIGH);
   delayMicroseconds(10);digitalWrite(TRIG_PIN,LOW);
@@ -231,7 +231,7 @@ void loop(){
 ${header}
 void writeReg(byte a,byte r,byte v){Wire.beginTransmission(a);Wire.write(r);Wire.write(v);Wire.endTransmission();}
 int16_t read16(byte a,byte r){Wire.beginTransmission(a);Wire.write(r);Wire.endTransmission(false);Wire.requestFrom(a,(byte)2);return (int16_t)((Wire.read()<<8)|Wire.read());}
-void setup(){Serial.begin(9600);Wire.begin();writeReg(0x68,0x6B,0);}
+void setup(){Serial.begin(9600);Wire.begin();writeReg(0x68,0x6B,0);Serial.println("time_ms,acceleration_x_g,acceleration_y_g,acceleration_z_g");}
 void loop(){
   float ax=read16(0x68,0x3B)/16384.0f,ay=read16(0x68,0x3D)/16384.0f,az=read16(0x68,0x3F)/16384.0f;
   Serial.print(millis());Serial.print(',');Serial.print(ax,5);Serial.print(',');Serial.print(ay,5);Serial.print(',');Serial.println(az,5);
@@ -242,7 +242,7 @@ void loop(){
     return `#include <Wire.h>
 ${header}
 int16_t readIna(byte reg){Wire.beginTransmission(0x40);Wire.write(reg);Wire.endTransmission(false);Wire.requestFrom(0x40,(byte)2);return (int16_t)((Wire.read()<<8)|Wire.read());}
-void setup(){Serial.begin(9600);Wire.begin();}
+void setup(){Serial.begin(9600);Wire.begin();Serial.println("time_ms,bus_voltage_v,shunt_voltage_mv");}
 void loop(){
   float shuntMv=readIna(0x01)*0.01f,busV=(readIna(0x02)>>3)*0.004f;
   Serial.print(millis());Serial.print(',');Serial.print(busV,4);Serial.print(',');Serial.println(shuntMv,4);
@@ -253,7 +253,7 @@ void loop(){
     return `#include <Wire.h>
 ${header}
 uint16_t lightRaw(){Wire.beginTransmission(0x29);Wire.write(0xB4);Wire.endTransmission(false);Wire.requestFrom(0x29,(byte)2);return Wire.read()|(Wire.read()<<8);}
-void setup(){Serial.begin(9600);Wire.begin();Wire.beginTransmission(0x29);Wire.write(0xA0);Wire.write(0x03);Wire.endTransmission();}
+void setup(){Serial.begin(9600);Wire.begin();Wire.beginTransmission(0x29);Wire.write(0xA0);Wire.write(0x03);Wire.endTransmission();Serial.println("time_ms,light_raw");}
 void loop(){Serial.print(millis());Serial.print(',');Serial.println(lightRaw());delay(samplingIntervalMs);}`
   }
   if (sensors.has('ds18b20')) {
@@ -265,11 +265,11 @@ void loop(){Serial.print(millis());Serial.print(',');Serial.println(lightRaw());
     return `#include <Wire.h>
 ${header}
 ${bme280Driver}
-void setup(){Serial.begin(9600);Wire.begin();bmeBegin();}
+void setup(){Serial.begin(9600);Wire.begin();bmeBegin();Serial.println("time_ms,temperature_c,pressure_hpa");}
 void loop(){float t=bmeTemperatureC(),p=bmePressureHpa();Serial.print(millis());Serial.print(',');Serial.print(t,3);Serial.print(',');Serial.println(p,3);delay(samplingIntervalMs);}`
   }
   return `${header}
-void setup(){Serial.begin(9600);}
+void setup(){Serial.begin(9600);Serial.println("time_ms,analog_raw");}
 void loop(){Serial.print(millis());Serial.print(',');Serial.println(analogRead(A0));delay(samplingIntervalMs);}`
 }
 

@@ -43,7 +43,7 @@ describe('Phase 5 Wokwi project generation', () => {
     const projects = buildPhase5WokwiProjects(eligible, phase5Recipes, sensors)
 
     for (const project of projects) {
-      expect(project.sketch).toContain(`Serial.println("PHASE5_READY:${project.id}");`)
+      expect(project.sketch).toContain(`Serial.println("# PHASE5_READY:${project.id}");`)
       expect(project.diagram.author).toBe(project.id)
       expect(project.timeoutMs).toBeLessThanOrEqual(PHASE5_SIMULATION_TIMEOUT_CAP_MS)
       expect(project.command).toBe(
@@ -51,7 +51,7 @@ describe('Phase 5 Wokwi project generation', () => {
       )
       expect(renderPhase5WokwiToml(project)).toContain('firmware = "firmware.hex"')
       expect(renderPhase5Scenario(project))
-        .toContain(`  - wait-serial: "PHASE5_READY:${project.id}"`)
+        .toContain(`  - wait-serial: "# PHASE5_READY:${project.id}"`)
     }
   })
 

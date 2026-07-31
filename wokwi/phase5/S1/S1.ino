@@ -12,9 +12,10 @@ int samplingIntervalMs = 100;
 
 void setup() {
   Serial.begin(9600);
-  Serial.println("PHASE5_READY:S1");
+  Serial.println("# PHASE5_READY:S1");
   Wire.begin();
   mpu.initialize();
+  Serial.println("roll_deg,pitch_deg");
 }
 
 void loop() {
@@ -22,9 +23,8 @@ void loop() {
   mpu.getAcceleration(&ax, &ay, &az);
   float roll = atan2((float)ay, (float)az) * 180.0 / PI;
   float pitch = atan2(-(float)ax, sqrt((float)ay * ay + (float)az * az)) * 180.0 / PI;
-  Serial.print("roll=");
   Serial.print(roll, 1);
-  Serial.print(", pitch=");
+  Serial.print(',');
   Serial.println(pitch, 1);
   delay(samplingIntervalMs);
 }

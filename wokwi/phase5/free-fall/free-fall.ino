@@ -15,7 +15,7 @@ float distanceM() {
 }
 void setup() {
   Serial.begin(9600);
-  Serial.println("PHASE5_READY:free-fall");
+  Serial.println("# PHASE5_READY:free-fall");
   pinMode(TRIG,OUTPUT);
   pinMode(ECHO,INPUT);
   Serial.println("time_ms,distance_m");

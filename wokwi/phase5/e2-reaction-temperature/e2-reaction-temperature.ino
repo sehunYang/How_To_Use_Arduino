@@ -64,7 +64,7 @@ float readOnlyTemperatureC() {
 const unsigned long samplingIntervalMs = 1000;
 void setup() {
   Serial.begin(9600);
-  Serial.println("PHASE5_READY:e2-reaction-temperature");
+  Serial.println("# PHASE5_READY:e2-reaction-temperature");
   Serial.println("time_s,temperature_c");
 }
 void loop() {

@@ -2,4 +2,4 @@ name: Phase 5 deterministic smoke - e2-reaction-temperature
 version: 1
 author: phase5-generator
 steps:
-  - wait-serial: "PHASE5_READY:e2-reaction-temperature"
+  - wait-serial: "# PHASE5_READY:e2-reaction-temperature"

@@ -5,7 +5,7 @@ const byte HALL=A0;
 int zeroAdc = 512;
 void setup() {
   Serial.begin(9600);
-  Serial.println("PHASE5_READY:p6-magnetic-field-distance");
+  Serial.println("# PHASE5_READY:p6-magnetic-field-distance");
   Serial.println("time_ms,raw,signed_relative_field");
 }
 void loop() {

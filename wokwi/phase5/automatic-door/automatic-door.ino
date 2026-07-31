@@ -14,15 +14,18 @@ void servoAngle(byte angle) {
 }
 void setup() {
   Serial.begin(9600);
-  Serial.println("PHASE5_READY:automatic-door");
+  Serial.println("# PHASE5_READY:automatic-door");
   pinMode(PIR_PIN,INPUT);
   pinMode(SERVO_PIN,OUTPUT);
   for(byte i=0;i<25;i++) servoAngle(0);
   delay(30000);
+  Serial.println("time_ms,door_state");
 }
 void loop() {
   if (digitalRead(PIR_PIN)==HIGH) lastMotion=millis();
   bool open=millis()-lastMotion < holdOpenMs;
   servoAngle(open ? 90 : 0);
-  Serial.println(open ? "door=open" : "door=closed");
+  Serial.print(millis());
+  Serial.print(',');
+  Serial.println(open ? "open" : "closed");
 }

@@ -64,7 +64,7 @@ float readOnlyTemperatureC() {
 float ambientTemperatureC = 22.0;
 void setup() {
   Serial.begin(9600);
-  Serial.println("PHASE5_READY:cooling-curve");
+  Serial.println("# PHASE5_READY:cooling-curve");
   Serial.println("time_s,temperature_c,excess_temperature_c");
 }
 void loop() {
