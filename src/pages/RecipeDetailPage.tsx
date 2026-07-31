@@ -45,6 +45,8 @@ function EndpointLabel({ value }: { value: string }) {
   const pin = separator === -1 ? '' : value.slice(separator + 1)
   const componentLabel = component.startsWith('CDS_RESISTOR')
     ? '10 kΩ 저항'
+    : /^RESISTOR_(\d+)$/.test(component)
+      ? `${Number(component.match(/\d+/)?.[0]) >= 1000 ? `${Number(component.match(/\d+/)?.[0]) / 1000} kΩ` : `${component.match(/\d+/)?.[0]} Ω`} 저항`
     : component === 'LOAD' || component === 'LAMP'
       ? '220 Ω 저항'
       : component

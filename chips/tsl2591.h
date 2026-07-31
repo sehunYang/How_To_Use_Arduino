@@ -19,6 +19,11 @@ extern "C" {
 // Register map (TSL2591 datasheet).
 #define TSL2591_REG_ENABLE 0x00
 #define TSL2591_REG_CONFIG 0x01
+#define TSL2591_REG_AILTL 0x04
+#define TSL2591_REG_AILTH 0x05
+#define TSL2591_REG_AIHTL 0x06
+#define TSL2591_REG_AIHTH 0x07
+#define TSL2591_REG_STATUS 0x13
 #define TSL2591_REG_C0DATAL 0x14  // CH0 = full spectrum (visible + IR)
 #define TSL2591_REG_C0DATAH 0x15
 #define TSL2591_REG_C1DATAL 0x16  // CH1 = infrared only
@@ -27,6 +32,7 @@ extern "C" {
 // ENABLE bits.
 #define TSL2591_ENABLE_PON 0x01
 #define TSL2591_ENABLE_AEN 0x02
+#define TSL2591_ENABLE_AIEN 0x10
 
 // CONFIG field layout: gain in bits 5-4, integration time in bits 2-0.
 #define TSL2591_CONFIG_GAIN_MASK 0x30
@@ -38,6 +44,8 @@ typedef struct Tsl2591Registers {
   uint8_t config;
   uint16_t ch0;  // exposed over I2C as C0DATAL/C0DATAH
   uint16_t ch1;  // exposed over I2C as C1DATAL/C1DATAH
+  uint16_t lowThreshold;
+  uint16_t highThreshold;
   // Incident light, in ADC counts at 1x gain / 100 ms. Not an I2C-visible register:
   // this is the simulated photodiode input the data registers are derived from.
   uint32_t rawCh0;

@@ -70,7 +70,6 @@ describe('Wokwi part geometry', () => {
   })
 
   it('registers all custom chips and keeps only genuinely unavailable breadboards listed', () => {
-    expect(geometryFor('chip-ina219')).toEqual(geometryFor('chip-tsl2591'))
     expect(geometryFor('chip-ina219')).toEqual(geometryFor('chip-bme280'))
     expect(geometryFor('chip-ina219')?.pins.map((pin) => pin.name)).toEqual([
       'VCC',
@@ -94,6 +93,14 @@ describe('Wokwi part geometry', () => {
       { name: 'SDA', x: 61, y: 72 },
       { name: 'VIN+', x: 72, y: 72 },
       { name: 'VIN-', x: 83, y: 72 },
+    ])
+    expect(geometryFor('chip-tsl2591')?.pins.map((pin) => pin.name)).toEqual([
+      'VIN',
+      'GND',
+      '3VO',
+      'INT',
+      'SDA',
+      'SCL',
     ])
     expect(geometryFor('visual-tsl2591')?.pins).toEqual([
       { name: 'VIN', x: 28, y: 72 },

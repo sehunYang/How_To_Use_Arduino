@@ -70,7 +70,7 @@ export const chipConformanceLayout: ReadableLayout = {
       left: 329.2,
       rotate: 0,
       attrs: { ch0Raw: '1234', ch1Raw: '321' },
-      pins: ['VCC', 'GND', 'SDA', 'SCL'],
+      pins: ['VIN', 'GND', '3VO', 'INT', 'SDA', 'SCL'],
     },
   ],
   wires: [
@@ -141,7 +141,7 @@ export const chipConformanceLayout: ReadableLayout = {
       ['v', 136.39],
     ], { allowCrossings: ['ground-bme'] }),
 
-    wire('power-tsl', '5V', 'tsl2591:VCC', 'breadboard:tp.13', 'red', { x: 334, y: -111.42 }, [
+    wire('power-tsl', '5V', 'tsl2591:VIN', 'breadboard:tp.13', 'red', { x: 334, y: -111.42 }, [
       ['h', -34.8],
       ['v', 171.42],
       ['h', -29.91],
@@ -153,18 +153,18 @@ export const chipConformanceLayout: ReadableLayout = {
       ['h', -49.51],
       ['v', 74.29],
     ], { allowCrossings: ['power-tsl', 'ground-bme'] }),
-    wire('sda-tsl', 'SDA', 'tsl2591:SDA', 'breadboard:27t.b', 'green', { x: 443.96, y: -111.42 }, [
+    wire('sda-tsl', 'SDA', 'tsl2591:SDA', 'breadboard:27t.b', 'green', { x: 443.96, y: -101.82 }, [
       ['h', 34.8],
-      ['v', 195.42],
+      ['v', 185.82],
       ['h', -102.77],
       ['v', 76.39],
-    ], { allowCrossings: ['ground-bme'] }),
-    wire('scl-tsl', 'SCL', 'tsl2591:SCL', 'breadboard:24t.b', 'yellow', { x: 443.96, y: -101.82 }, [
+    ], { allowCrossings: ['ground-bme', 'scl-tsl'] }),
+    wire('scl-tsl', 'SCL', 'tsl2591:SCL', 'breadboard:24t.b', 'yellow', { x: 443.96, y: -111.42 }, [
       ['h', 24.8],
-      ['v', 173.82],
+      ['v', 183.42],
       ['h', -121.57],
       ['v', 88.39],
-    ], { allowCrossings: ['ground-bme'] }),
+    ], { allowCrossings: ['ground-bme', 'sda-tsl'] }),
 
     wire('sda-bus-1', 'SDA', 'breadboard:13t.c', 'breadboard:17t.c', 'green', { x: 241.59, y: 169.99 }, [
       ['h', 38.4],

@@ -60,9 +60,9 @@ describe('buildDiagram', () => {
       expect.arrayContaining([
         ['uno:5V', 'bb:tp.1', 'red', []],
         ['uno:GND', 'bb:tn.1', 'black', []],
-        ['tca9548a:VCC', 'bb:bp.8', 'red', []],
+        ['tca9548a:VIN', 'bb:bp.8', 'red', []],
         ['tca9548a:GND', 'bb:bn.7', 'black', []],
-        ['tsl2591_1:VCC', 'bb:bp.3', 'red', []],
+        ['tsl2591_1:VIN', 'bb:bp.3', 'red', []],
         ['tsl2591_2:GND', 'bb:bn.24', 'black', []],
         ['tca9548a:SDA', 'uno:A4', 'green', []],
         ['tca9548a:SCL', 'uno:A5', 'yellow', []],

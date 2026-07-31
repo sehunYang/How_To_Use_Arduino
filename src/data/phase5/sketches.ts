@@ -1,4 +1,4 @@
-const oneWireDriver = `const byte ONE_WIRE_PIN=2;
+export const oneWireDriver = `const byte ONE_WIRE_PIN=2;
 bool owReset() {
   pinMode(ONE_WIRE_PIN,OUTPUT);digitalWrite(ONE_WIRE_PIN,LOW);delayMicroseconds(480);
   pinMode(ONE_WIRE_PIN,INPUT_PULLUP);delayMicroseconds(70);
@@ -48,7 +48,7 @@ float readAddressTemperatureC(const byte address[8]){
   owWriteByte(0xBE);int16_t raw=owReadByte();raw|=(int16_t)owReadByte()<<8;return raw/16.0;
 }`
 
-const bme280Driver = `const byte BME=0x76;
+export const bme280Driver = `const byte BME=0x76;
 uint16_t digT1,digP1;int16_t digT2,digT3,digP2,digP3,digP4,digP5,digP6,digP7,digP8,digP9;
 byte digH1,digH3;int16_t digH2,digH4,digH5;int8_t digH6;int32_t tFine;
 byte bmeRead8(byte reg){Wire.beginTransmission(BME);Wire.write(reg);Wire.endTransmission(false);Wire.requestFrom(BME,(byte)1);return Wire.read();}

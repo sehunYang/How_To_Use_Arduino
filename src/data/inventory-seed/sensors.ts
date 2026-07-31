@@ -44,7 +44,11 @@ export const sensors: Sensor[] = [
       { name: 'INT', kind: 'digital' },
     ],
     currentDrawMa: 0.4,
-    wokwi: { part: 'chip-tsl2591', pinMap: { VIN: 'VCC', GND: 'GND', SCL: 'SCL', SDA: 'SDA' }, simSupported: true },
+    wokwi: {
+      part: 'chip-tsl2591',
+      pinMap: { VIN: 'VIN', GND: 'GND', SCL: 'SCL', SDA: 'SDA', '3VO': '3VO', INT: 'INT' },
+      simSupported: true,
+    },
     muxChannels: 0,
   },
   {
@@ -63,7 +67,20 @@ export const sensors: Sensor[] = [
       { name: 'INT', kind: 'digital' },
     ],
     currentDrawMa: 3.9,
-    wokwi: { part: 'wokwi-mpu6050', pinMap: { VCC: 'VCC', GND: 'GND', SCL: 'SCL', SDA: 'SDA' }, simSupported: true },
+    wokwi: {
+      part: 'wokwi-mpu6050',
+      pinMap: {
+        VCC: 'VCC',
+        GND: 'GND',
+        SCL: 'SCL',
+        SDA: 'SDA',
+        XDA: 'XDA',
+        XCL: 'XCL',
+        AD0: 'AD0',
+        INT: 'INT',
+      },
+      simSupported: true,
+    },
     muxChannels: 0,
   },
   {
@@ -120,7 +137,20 @@ export const sensors: Sensor[] = [
       ]).flat(),
     ],
     currentDrawMa: 1,
-    wokwi: { part: 'custom-tca9548a', pinMap: { VIN: 'VCC', GND: 'GND', SCL: 'SCL', SDA: 'SDA' }, simSupported: false },
+    wokwi: {
+      part: 'custom-tca9548a',
+      pinMap: {
+        VIN: 'VIN',
+        GND: 'GND',
+        SCL: 'SCL',
+        SDA: 'SDA',
+        RST: 'RST',
+        A0: 'A0',
+        A1: 'A1',
+        A2: 'A2',
+      },
+      simSupported: false,
+    },
     muxChannels: 8,
   },
   {

@@ -7,6 +7,8 @@ void tsl2591_reset(Tsl2591Registers* regs) {
   regs->config = 0;
   regs->ch0 = 0;
   regs->ch1 = 0;
+  regs->lowThreshold = 0;
+  regs->highThreshold = 0xffff;
   regs->rawCh0 = 0;
   regs->rawCh1 = 0;
 }
@@ -60,6 +62,18 @@ void tsl2591_write_register(Tsl2591Registers* regs, uint8_t addr, uint8_t value)
       regs->config = value;
       tsl2591_recompute(regs);
       break;
+    case TSL2591_REG_AILTL:
+      regs->lowThreshold = (regs->lowThreshold & 0xff00u) | value;
+      break;
+    case TSL2591_REG_AILTH:
+      regs->lowThreshold = (regs->lowThreshold & 0x00ffu) | ((uint16_t)value << 8);
+      break;
+    case TSL2591_REG_AIHTL:
+      regs->highThreshold = (regs->highThreshold & 0xff00u) | value;
+      break;
+    case TSL2591_REG_AIHTH:
+      regs->highThreshold = (regs->highThreshold & 0x00ffu) | ((uint16_t)value << 8);
+      break;
     default:
       break;
   }
@@ -71,6 +85,19 @@ uint8_t tsl2591_read_register(const Tsl2591Registers* regs, uint8_t addr) {
       return regs->enable;
     case TSL2591_REG_CONFIG:
       return regs->config;
+    case TSL2591_REG_AILTL:
+      return (uint8_t)(regs->lowThreshold & 0xff);
+    case TSL2591_REG_AILTH:
+      return (uint8_t)(regs->lowThreshold >> 8);
+    case TSL2591_REG_AIHTL:
+      return (uint8_t)(regs->highThreshold & 0xff);
+    case TSL2591_REG_AIHTH:
+      return (uint8_t)(regs->highThreshold >> 8);
+    case TSL2591_REG_STATUS:
+      return (regs->enable & TSL2591_ENABLE_AIEN)
+          && (regs->ch0 < regs->lowThreshold || regs->ch0 > regs->highThreshold)
+        ? 0x10
+        : 0;
     case TSL2591_REG_C0DATAL:
       return (uint8_t)(regs->ch0 & 0xFF);
     case TSL2591_REG_C0DATAH:

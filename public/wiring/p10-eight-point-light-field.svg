@@ -1,0 +1,184 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="800" viewBox="0 0 1100 800">
+<rect width="100%" height="100%" fill="#f3f6fa"/>
+<text x="30" y="585" font-family="sans-serif" font-size="14" fill="#172033">8지점 광량 분포와 차광 패턴 분석 · 배선 단계 카드</text>
+<g>
+  <rect x="30" y="30" width="165" height="78" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
+  <text x="40" y="55" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">1. TCA9548A.VIN → UNO.5V</text>
+  <text x="40" y="77" font-family="sans-serif" font-size="11" fill="#455064">TCA9548A VIN을 브레드보드 + 전원</text>
+</g>
+<g>
+  <rect x="220" y="30" width="165" height="78" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
+  <text x="230" y="55" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">2. TCA9548A.GND → UNO.GND</text>
+  <text x="230" y="77" font-family="sans-serif" font-size="11" fill="#455064">TCA9548A GND를 브레드보드 - 전원</text>
+</g>
+<g>
+  <rect x="410" y="30" width="165" height="78" rx="8" fill="#ffffff" stroke="green" stroke-width="4"/>
+  <text x="420" y="55" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">3. TCA9548A.SDA → UNO.A4</text>
+  <text x="420" y="77" font-family="sans-serif" font-size="11" fill="#455064">TCA9548A SDA를 UNO A4에 연결</text>
+</g>
+<g>
+  <rect x="600" y="30" width="165" height="78" rx="8" fill="#ffffff" stroke="yellow" stroke-width="4"/>
+  <text x="610" y="55" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">4. TCA9548A.SCL → UNO.A5</text>
+  <text x="610" y="77" font-family="sans-serif" font-size="11" fill="#455064">TCA9548A SCL을 UNO A5에 연결</text>
+</g>
+<g>
+  <rect x="790" y="30" width="165" height="78" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
+  <text x="800" y="55" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">5. TSL2591_1.VIN → UNO.5V</text>
+  <text x="800" y="77" font-family="sans-serif" font-size="11" fill="#455064">TSL2591_1 VIN을 + 전원 레일의 </text>
+</g>
+<g>
+  <rect x="30" y="135" width="165" height="78" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
+  <text x="40" y="160" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">6. TSL2591_1.GND → UNO.GND</text>
+  <text x="40" y="182" font-family="sans-serif" font-size="11" fill="#455064">TSL2591_1 GND를 - 전원 레일의 </text>
+</g>
+<g>
+  <rect x="220" y="135" width="165" height="78" rx="8" fill="#ffffff" stroke="green" stroke-width="4"/>
+  <text x="230" y="160" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">7. TSL2591_1.SDA → TCA9548A.SD0</text>
+  <text x="230" y="182" font-family="sans-serif" font-size="11" fill="#455064">TSL2591_1 SDA를 TCA9548A </text>
+</g>
+<g>
+  <rect x="410" y="135" width="165" height="78" rx="8" fill="#ffffff" stroke="yellow" stroke-width="4"/>
+  <text x="420" y="160" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">8. TSL2591_1.SCL → TCA9548A.SC0</text>
+  <text x="420" y="182" font-family="sans-serif" font-size="11" fill="#455064">TSL2591_1 SCL을 TCA9548A </text>
+</g>
+<g>
+  <rect x="600" y="135" width="165" height="78" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
+  <text x="610" y="160" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">9. TSL2591_2.VIN → UNO.5V</text>
+  <text x="610" y="182" font-family="sans-serif" font-size="11" fill="#455064">TSL2591_2 VIN을 + 전원 레일의 </text>
+</g>
+<g>
+  <rect x="790" y="135" width="165" height="78" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
+  <text x="800" y="160" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">10. TSL2591_2.GND → UNO.GND</text>
+  <text x="800" y="182" font-family="sans-serif" font-size="11" fill="#455064">TSL2591_2 GND를 - 전원 레일의 </text>
+</g>
+<g>
+  <rect x="30" y="240" width="165" height="78" rx="8" fill="#ffffff" stroke="green" stroke-width="4"/>
+  <text x="40" y="265" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">11. TSL2591_2.SDA → TCA9548A.SD1</text>
+  <text x="40" y="287" font-family="sans-serif" font-size="11" fill="#455064">TSL2591_2 SDA를 TCA9548A </text>
+</g>
+<g>
+  <rect x="220" y="240" width="165" height="78" rx="8" fill="#ffffff" stroke="yellow" stroke-width="4"/>
+  <text x="230" y="265" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">12. TSL2591_2.SCL → TCA9548A.SC1</text>
+  <text x="230" y="287" font-family="sans-serif" font-size="11" fill="#455064">TSL2591_2 SCL을 TCA9548A </text>
+</g>
+<g>
+  <rect x="410" y="240" width="165" height="78" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
+  <text x="420" y="265" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">13. TSL2591_3.VIN → UNO.5V</text>
+  <text x="420" y="287" font-family="sans-serif" font-size="11" fill="#455064">TSL2591_3 VIN을 + 전원 레일의 </text>
+</g>
+<g>
+  <rect x="600" y="240" width="165" height="78" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
+  <text x="610" y="265" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">14. TSL2591_3.GND → UNO.GND</text>
+  <text x="610" y="287" font-family="sans-serif" font-size="11" fill="#455064">TSL2591_3 GND를 - 전원 레일의 </text>
+</g>
+<g>
+  <rect x="790" y="240" width="165" height="78" rx="8" fill="#ffffff" stroke="green" stroke-width="4"/>
+  <text x="800" y="265" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">15. TSL2591_3.SDA → TCA9548A.SD2</text>
+  <text x="800" y="287" font-family="sans-serif" font-size="11" fill="#455064">TSL2591_3 SDA를 TCA9548A </text>
+</g>
+<g>
+  <rect x="30" y="345" width="165" height="78" rx="8" fill="#ffffff" stroke="yellow" stroke-width="4"/>
+  <text x="40" y="370" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">16. TSL2591_3.SCL → TCA9548A.SC2</text>
+  <text x="40" y="392" font-family="sans-serif" font-size="11" fill="#455064">TSL2591_3 SCL을 TCA9548A </text>
+</g>
+<g>
+  <rect x="220" y="345" width="165" height="78" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
+  <text x="230" y="370" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">17. TSL2591_4.VIN → UNO.5V</text>
+  <text x="230" y="392" font-family="sans-serif" font-size="11" fill="#455064">TSL2591_4 VIN을 + 전원 레일의 </text>
+</g>
+<g>
+  <rect x="410" y="345" width="165" height="78" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
+  <text x="420" y="370" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">18. TSL2591_4.GND → UNO.GND</text>
+  <text x="420" y="392" font-family="sans-serif" font-size="11" fill="#455064">TSL2591_4 GND를 - 전원 레일의 </text>
+</g>
+<g>
+  <rect x="600" y="345" width="165" height="78" rx="8" fill="#ffffff" stroke="green" stroke-width="4"/>
+  <text x="610" y="370" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">19. TSL2591_4.SDA → TCA9548A.SD3</text>
+  <text x="610" y="392" font-family="sans-serif" font-size="11" fill="#455064">TSL2591_4 SDA를 TCA9548A </text>
+</g>
+<g>
+  <rect x="790" y="345" width="165" height="78" rx="8" fill="#ffffff" stroke="yellow" stroke-width="4"/>
+  <text x="800" y="370" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">20. TSL2591_4.SCL → TCA9548A.SC3</text>
+  <text x="800" y="392" font-family="sans-serif" font-size="11" fill="#455064">TSL2591_4 SCL을 TCA9548A </text>
+</g>
+<g>
+  <rect x="30" y="450" width="165" height="78" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
+  <text x="40" y="475" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">21. TSL2591_5.VIN → UNO.5V</text>
+  <text x="40" y="497" font-family="sans-serif" font-size="11" fill="#455064">TSL2591_5 VIN을 + 전원 레일의 </text>
+</g>
+<g>
+  <rect x="220" y="450" width="165" height="78" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
+  <text x="230" y="475" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">22. TSL2591_5.GND → UNO.GND</text>
+  <text x="230" y="497" font-family="sans-serif" font-size="11" fill="#455064">TSL2591_5 GND를 - 전원 레일의 </text>
+</g>
+<g>
+  <rect x="410" y="450" width="165" height="78" rx="8" fill="#ffffff" stroke="green" stroke-width="4"/>
+  <text x="420" y="475" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">23. TSL2591_5.SDA → TCA9548A.SD4</text>
+  <text x="420" y="497" font-family="sans-serif" font-size="11" fill="#455064">TSL2591_5 SDA를 TCA9548A </text>
+</g>
+<g>
+  <rect x="600" y="450" width="165" height="78" rx="8" fill="#ffffff" stroke="yellow" stroke-width="4"/>
+  <text x="610" y="475" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">24. TSL2591_5.SCL → TCA9548A.SC4</text>
+  <text x="610" y="497" font-family="sans-serif" font-size="11" fill="#455064">TSL2591_5 SCL을 TCA9548A </text>
+</g>
+<g>
+  <rect x="790" y="450" width="165" height="78" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
+  <text x="800" y="475" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">25. TSL2591_6.VIN → UNO.5V</text>
+  <text x="800" y="497" font-family="sans-serif" font-size="11" fill="#455064">TSL2591_6 VIN을 + 전원 레일의 </text>
+</g>
+<g>
+  <rect x="30" y="555" width="165" height="78" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
+  <text x="40" y="580" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">26. TSL2591_6.GND → UNO.GND</text>
+  <text x="40" y="602" font-family="sans-serif" font-size="11" fill="#455064">TSL2591_6 GND를 - 전원 레일의 </text>
+</g>
+<g>
+  <rect x="220" y="555" width="165" height="78" rx="8" fill="#ffffff" stroke="green" stroke-width="4"/>
+  <text x="230" y="580" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">27. TSL2591_6.SDA → TCA9548A.SD5</text>
+  <text x="230" y="602" font-family="sans-serif" font-size="11" fill="#455064">TSL2591_6 SDA를 TCA9548A </text>
+</g>
+<g>
+  <rect x="410" y="555" width="165" height="78" rx="8" fill="#ffffff" stroke="yellow" stroke-width="4"/>
+  <text x="420" y="580" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">28. TSL2591_6.SCL → TCA9548A.SC5</text>
+  <text x="420" y="602" font-family="sans-serif" font-size="11" fill="#455064">TSL2591_6 SCL을 TCA9548A </text>
+</g>
+<g>
+  <rect x="600" y="555" width="165" height="78" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
+  <text x="610" y="580" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">29. TSL2591_7.VIN → UNO.5V</text>
+  <text x="610" y="602" font-family="sans-serif" font-size="11" fill="#455064">TSL2591_7 VIN을 + 전원 레일의 </text>
+</g>
+<g>
+  <rect x="790" y="555" width="165" height="78" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
+  <text x="800" y="580" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">30. TSL2591_7.GND → UNO.GND</text>
+  <text x="800" y="602" font-family="sans-serif" font-size="11" fill="#455064">TSL2591_7 GND를 - 전원 레일의 </text>
+</g>
+<g>
+  <rect x="30" y="660" width="165" height="78" rx="8" fill="#ffffff" stroke="green" stroke-width="4"/>
+  <text x="40" y="685" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">31. TSL2591_7.SDA → TCA9548A.SD6</text>
+  <text x="40" y="707" font-family="sans-serif" font-size="11" fill="#455064">TSL2591_7 SDA를 TCA9548A </text>
+</g>
+<g>
+  <rect x="220" y="660" width="165" height="78" rx="8" fill="#ffffff" stroke="yellow" stroke-width="4"/>
+  <text x="230" y="685" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">32. TSL2591_7.SCL → TCA9548A.SC6</text>
+  <text x="230" y="707" font-family="sans-serif" font-size="11" fill="#455064">TSL2591_7 SCL을 TCA9548A </text>
+</g>
+<g>
+  <rect x="410" y="660" width="165" height="78" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
+  <text x="420" y="685" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">33. TSL2591_8.VIN → UNO.5V</text>
+  <text x="420" y="707" font-family="sans-serif" font-size="11" fill="#455064">TSL2591_8 VIN을 + 전원 레일의 </text>
+</g>
+<g>
+  <rect x="600" y="660" width="165" height="78" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
+  <text x="610" y="685" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">34. TSL2591_8.GND → UNO.GND</text>
+  <text x="610" y="707" font-family="sans-serif" font-size="11" fill="#455064">TSL2591_8 GND를 - 전원 레일의 </text>
+</g>
+<g>
+  <rect x="790" y="660" width="165" height="78" rx="8" fill="#ffffff" stroke="green" stroke-width="4"/>
+  <text x="800" y="685" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">35. TSL2591_8.SDA → TCA9548A.SD7</text>
+  <text x="800" y="707" font-family="sans-serif" font-size="11" fill="#455064">TSL2591_8 SDA를 TCA9548A </text>
+</g>
+<g>
+  <rect x="30" y="765" width="165" height="78" rx="8" fill="#ffffff" stroke="yellow" stroke-width="4"/>
+  <text x="40" y="790" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">36. TSL2591_8.SCL → TCA9548A.SC7</text>
+  <text x="40" y="812" font-family="sans-serif" font-size="11" fill="#455064">TSL2591_8 SCL을 TCA9548A </text>
+</g>
+</svg>

@@ -164,6 +164,15 @@ export interface WokwiAuxiliaryPart {
  */
 export const wokwiAuxiliaryParts: WokwiAuxiliaryPart[] = [
   {
+    id: 'resistor',
+    wokwi: {
+      part: 'wokwi-resistor',
+      pinMap: { '1': '1', '2': '2', POSITIVE: '1', NEGATIVE: '2' },
+      simSupported: false,
+      aliases: ['RESISTOR'],
+    },
+  },
+  {
     id: 'panel',
     wokwi: {
       part: 'wokwi-potentiometer',

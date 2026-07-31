@@ -162,6 +162,10 @@ const conformanceChipGeometry = customChipGeometry(
   ['VCC', 'GND', 'SCL', 'SDA'],
   { width: 112, height: 73 },
 )
+const tsl2591ChipGeometry = customChipGeometry(
+  ['VIN', 'GND', '3VO', 'INT', 'SDA', 'SCL'],
+  { width: 112, height: 73 },
+)
 const ina219VisualGeometry = breakoutBoardGeometry(['VCC', 'GND', 'SCL', 'SDA', 'VIN+', 'VIN-'])
 ina219VisualGeometry.pins.forEach((pin, index) => { pin.x = 28 + index * 11 })
 const tsl2591VisualGeometry = breakoutBoardGeometry(['VIN', 'GND', '3VO', 'INT', 'SDA', 'SCL'])
@@ -265,7 +269,7 @@ export const PART_GEOMETRY: Record<string, PartGeometry> = {
   },
   'wokwi-breadboard-half': halfBreadboardGeometry(),
   'chip-ina219': conformanceChipGeometry,
-  'chip-tsl2591': conformanceChipGeometry,
+  'chip-tsl2591': tsl2591ChipGeometry,
   'chip-bme280': conformanceChipGeometry,
   'visual-ina219': ina219VisualGeometry,
   'visual-tsl2591': tsl2591VisualGeometry,

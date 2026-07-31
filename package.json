@@ -23,6 +23,7 @@
     "verify:search-performance": "tsx scripts/verify-search-performance.ts",
     "aggregate:stats": "tsx scripts/aggregate-stats.ts",
     "seed:phase5": "tsx scripts/seed-phase5.ts",
+    "seed:phase6": "tsx scripts/seed-phase6.ts",
     "publish:phase5": "tsx scripts/publish-phase5.ts",
     "verify:extract": "tsx scripts/extract-content.ts",
     "verify:queue": "tsx scripts/drain-verify-queue.ts",

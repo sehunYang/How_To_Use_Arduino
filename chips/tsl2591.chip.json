@@ -1,7 +1,7 @@
 {
   "name": "TSL2591 Light Sensor",
   "author": "sehunYang",
-  "pins": ["VCC", "GND", "SCL", "SDA"],
+  "pins": ["VIN", "GND", "3VO", "INT", "SDA", "SCL"],
   "display": {
     "width": 112,
     "height": 73

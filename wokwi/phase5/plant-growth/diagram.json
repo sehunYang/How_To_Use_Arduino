@@ -30,7 +30,7 @@
   ],
   "connections": [
     [
-      "tsl2591:VCC",
+      "tsl2591:VIN",
       "bb:tp.5",
       "red",
       []

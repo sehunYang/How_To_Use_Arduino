@@ -150,7 +150,7 @@ describe('recipe netlist', () => {
       recipeWith([step('MPU6050.VCC', 'UNO.5V'), step('TSL2591.VIN', 'UNO.5V')]),
       sensors,
     )
-    expect(nets).toEqual([['mpu6050:VCC', 'tsl2591:VCC', 'uno:5V']])
+    expect(nets).toEqual([['mpu6050:VCC', 'tsl2591:VIN', 'uno:5V']])
   })
 })
 
@@ -202,7 +202,7 @@ describe('chip conformance rig (strict layout with no teaching recipe)', () => {
       [['GND'], ['bme280:GND', 'ina219:GND', 'tsl2591:GND', 'uno:GND']],
       [['SCL'], ['bme280:SCL', 'ina219:SCL', 'tsl2591:SCL', 'uno:A5']],
       [['SDA'], ['bme280:SDA', 'ina219:SDA', 'tsl2591:SDA', 'uno:A4']],
-      [['5V'], ['bme280:VCC', 'ina219:VCC', 'tsl2591:VCC', 'uno:5V']],
+      [['5V'], ['bme280:VCC', 'ina219:VCC', 'tsl2591:VIN', 'uno:5V']],
     ])
   })
 

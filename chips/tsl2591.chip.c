@@ -10,6 +10,7 @@ typedef struct {
   uint32_t ch1_raw_attr;
   uint8_t register_pointer;
   bool awaiting_register;
+  pin_t interrupt_pin;
 } chip_state_t;
 
 static void refresh_measurement(chip_state_t *chip) {
@@ -17,6 +18,11 @@ static void refresh_measurement(chip_state_t *chip) {
       &chip->registers,
       attr_read(chip->ch0_raw_attr),
       attr_read(chip->ch1_raw_attr));
+  const bool interrupt_asserted =
+      (chip->registers.enable & TSL2591_ENABLE_AIEN)
+      && (chip->registers.ch0 < chip->registers.lowThreshold
+          || chip->registers.ch0 > chip->registers.highThreshold);
+  pin_write(chip->interrupt_pin, interrupt_asserted ? LOW : HIGH);
 }
 
 static bool on_i2c_connect(void *user_data, uint32_t address, bool read) {
@@ -43,6 +49,7 @@ static bool on_i2c_write(void *user_data, uint8_t data) {
   } else {
     tsl2591_write_register(&chip->registers, chip->register_pointer, data);
     chip->register_pointer++;
+    refresh_measurement(chip);
   }
   return true;
 }
@@ -56,6 +63,8 @@ void chip_init(void) {
   tsl2591_reset(&chip->registers);
   chip->ch0_raw_attr = attr_init("ch0Raw", 1234);
   chip->ch1_raw_attr = attr_init("ch1Raw", 321);
+  chip->interrupt_pin = pin_init("INT", OUTPUT_HIGH);
+  pin_init("3VO", OUTPUT_HIGH);
 
   const i2c_config_t config = {
       .user_data = chip,

@@ -68,6 +68,10 @@ const GEOMETRY_TYPE: Record<string, string> = {
 
 function displayName(part: DiagramPart): string {
   if (part.type === 'wokwi-resistor') {
+    const rated = /^resistor_(\d+)$/i.exec(part.id)
+    if (rated) return Number(rated[1]) >= 1000
+      ? `${Number(rated[1]) / 1000} kΩ`
+      : `${rated[1]} Ω`
     if (part.id.startsWith('cds_resistor')) return '10 kΩ'
     if (part.id === 'load' || part.id === 'lamp') return '220 Ω'
   }

@@ -1,6 +1,9 @@
 #!/usr/bin/env tsx
 import { mkdir, writeFile } from 'node:fs/promises'
 import { phase5Recipes } from '../src/data/phase5'
+import { phase6Recipes } from '../src/data/phase6'
+
+const bundledRecipes = [...phase5Recipes, ...phase6Recipes]
 
 function escapeXml(value: string): string {
   return value
@@ -10,7 +13,7 @@ function escapeXml(value: string): string {
     .replaceAll('"', '&quot;')
 }
 
-function svgFor(recipe: (typeof phase5Recipes)[number]): string {
+function svgFor(recipe: (typeof bundledRecipes)[number]): string {
   const cards = recipe.wiring.map((step, index) => {
     const { x, y, w, h } = step.focus
     const label = `${index + 1}. ${step.from} → ${step.to}`
@@ -30,7 +33,7 @@ ${cards}
 }
 
 await mkdir('public/wiring', { recursive: true })
-for (const recipe of phase5Recipes) {
+for (const recipe of bundledRecipes) {
   await writeFile(`public/${recipe.imageUrl}`, svgFor(recipe), 'utf8')
 }
-console.log(`Generated ${phase5Recipes.length} Phase 5 wiring SVG files.`)
+console.log(`Generated ${bundledRecipes.length} Phase 5/6 wiring SVG files.`)
