@@ -244,7 +244,6 @@ export function GeneratedWokwiDiagram({
     return (
       <g
         key={`${from}-${to}-${index}`}
-        className={current ? 'wiring-current-step' : undefined}
         data-wire-id={`wire-${index}`}
         data-wire-current={current ? 'true' : 'false'}
         data-wire-from-pin={from}
@@ -253,6 +252,15 @@ export function GeneratedWokwiDiagram({
         data-wire-to={`${end.x},${end.y}`}
         opacity={current ? 1 : 0.58}
       >
+        {current && (
+          <animate
+            data-wire-blink
+            attributeName="opacity"
+            values="1;0.22;1"
+            dur="1.5s"
+            repeatCount="indefinite"
+          />
+        )}
         {current && <polyline data-wire-halo points={points} stroke="#fff" strokeWidth="4.5" />}
         <polyline data-wire-line points={points} stroke={color} strokeWidth={current ? 2.5 : 2} />
         <title>{`${from} → ${to}`}</title>
@@ -270,9 +278,6 @@ export function GeneratedWokwiDiagram({
       data-generated-wokwi-diagram={recipe.id}
     >
       <rect width="900" height={height} rx="14" fill="#f7f7f5" />
-      <g data-wire-layer="behind-parts" fill="none" strokeLinecap="round" strokeLinejoin="round">
-        {wires}
-      </g>
       {positioned.map((part) => (
         <g
           key={part.id}
@@ -286,6 +291,13 @@ export function GeneratedWokwiDiagram({
           <foreignObject x={part.left} y={part.top} width={part.width} height={part.height}>
             <div className="size-full">{partGraphic(part)}</div>
           </foreignObject>
+        </g>
+      ))}
+      <g data-wire-layer="above-boards" fill="none" strokeLinecap="round" strokeLinejoin="round">
+        {wires}
+      </g>
+      {positioned.map((part) => (
+        <g key={part.id} data-part-overlay={part.id}>
           <text
             x={part.left + part.width / 2}
             y={part.top + part.height + 16}
