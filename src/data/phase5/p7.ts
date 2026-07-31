@@ -13,6 +13,7 @@ const connections: Connection[] = [
   { from: 'PANEL.POSITIVE', to: 'INA219.VIN+', color: 'orange', text: '태양광 패널 양극을 INA219 VIN+에 연결하세요.' },
   { from: 'INA219.VIN-', to: 'LOAD.POSITIVE', color: 'orange', text: 'INA219 VIN-를 실험용 부하의 양극에 연결하세요.' },
   { from: 'LOAD.NEGATIVE', to: 'PANEL.NEGATIVE', color: 'purple', text: '부하 음극을 패널 음극에 연결해 패널→VIN+→VIN−→부하 직렬 경로를 완성하세요.' },
+  { from: 'PANEL.NEGATIVE', to: 'UNO.GND', color: 'black', text: '패널 음극을 아두이노 GND와 공통 접지하세요. INA219의 전압은 GND를 기준으로 재므로 이 선이 없으면 전압·전력 값이 의미가 없습니다.' },
 ]
 
 export const p7Recipe = createProjectRecipe({

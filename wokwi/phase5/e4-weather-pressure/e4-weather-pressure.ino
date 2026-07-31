@@ -28,7 +28,10 @@ uint32_t bmeRead20(byte reg) {
   Wire.write(reg);
   Wire.endTransmission(false);
   Wire.requestFrom(BME,(byte)3);
-  return ((uint32_t)Wire.read()<<12)|((uint16_t)Wire.read()<<4)|(Wire.read()>>4);
+  byte msb=Wire.read();
+  byte lsb=Wire.read();
+  byte xlsb=Wire.read();
+  return ((uint32_t)msb<<12)|((uint16_t)lsb<<4)|(xlsb>>4);
 }
 void bmeWrite8(byte reg,byte value) {
   Wire.beginTransmission(BME);
@@ -53,8 +56,9 @@ bool bmeBegin() {
   digH1=bmeRead8(0xA1);
   digH2=bmeReadS16LE(0xE1);
   digH3=bmeRead8(0xE3);
-  digH4=((int16_t)(int8_t)bmeRead8(0xE4)<<4)|(bmeRead8(0xE5)&15);
-  digH5=((int16_t)(int8_t)bmeRead8(0xE6)<<4)|(bmeRead8(0xE5)>>4);
+  byte e4=bmeRead8(0xE4),e5=bmeRead8(0xE5),e6=bmeRead8(0xE6);
+  digH4=((int16_t)(int8_t)e4<<4)|(e5&15);
+  digH5=((int16_t)(int8_t)e6<<4)|(e5>>4);
   digH6=(int8_t)bmeRead8(0xE7);
   bmeWrite8(0xF2,1);
   bmeWrite8(0xF4,0x27);
@@ -83,7 +87,8 @@ float bmePressureHpa() {
   return p/25600.0;
 }
 float bmeHumidity() {
-  int32_t adc=((uint32_t)bmeRead8(0xFD)<<8)|bmeRead8(0xFE);
+  byte hMsb=bmeRead8(0xFD),hLsb=bmeRead8(0xFE);
+  int32_t adc=((uint32_t)hMsb<<8)|hLsb;
   int32_t v=tFine-76800;
   v=(((((adc<<14)-((int32_t)digH4<<20)-((int32_t)digH5*v))+16384)>>15)*
   (((((((v*digH6)>>10)*(((v*digH3)>>11)+32768))>>10)+2097152)*digH2+8192)>>14));

@@ -37,8 +37,18 @@
   <text x="430" y="187" font-family="sans-serif" font-size="11" fill="#455064">릴레이 모듈 GND를 아두이노 GND에 연결</text>
 </g>
 <g>
-  <rect x="610" y="140" width="150" height="70" rx="8" fill="#ffffff" stroke="purple" stroke-width="4"/>
-  <text x="620" y="165" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">8. FAN.POSITIVE → RELAY.NO</text>
-  <text x="620" y="187" font-family="sans-serif" font-size="11" fill="#455064">5V 팬은 릴레이 NO 접점을 거쳐 별도 5</text>
+  <rect x="610" y="140" width="150" height="70" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
+  <text x="620" y="165" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">8. FAN_SUPPLY.+ → RELAY.COM</text>
+  <text x="620" y="187" font-family="sans-serif" font-size="11" fill="#455064">팬 정격에 맞는 별도 5V 전원의 양극을 릴</text>
+</g>
+<g>
+  <rect x="40" y="245" width="150" height="70" rx="8" fill="#ffffff" stroke="purple" stroke-width="4"/>
+  <text x="50" y="270" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">9. RELAY.NO → FAN.POSITIVE</text>
+  <text x="50" y="292" font-family="sans-serif" font-size="11" fill="#455064">릴레이 NO 단자를 팬의 양극에 연결하세요.</text>
+</g>
+<g>
+  <rect x="230" y="245" width="150" height="70" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
+  <text x="240" y="270" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">10. FAN.NEGATIVE → FAN_SUPPLY.-</text>
+  <text x="240" y="292" font-family="sans-serif" font-size="11" fill="#455064">팬의 음극을 별도 전원의 음극에 연결해 접점</text>
 </g>
 </svg>

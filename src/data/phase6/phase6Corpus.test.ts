@@ -147,8 +147,8 @@ describe('Phase 6 recipe expansion', () => {
       expect.objectContaining({ from: 'CAPACITOR.1', to: 'UNO.A0' }),
     ]))
     expect(byId('ph21-rc-time-constant').sketch).toContain('analogRead(CAPACITOR_VOLTAGE_PIN)')
-    expect(byId('ph22-battery-internal-resistance').body).toContain('NO_LOAD')
-    expect(byId('ph22-battery-internal-resistance').body).toContain('LOAD_100')
+    expect(byId('ph22-battery-internal-resistance').body).toContain('OPEN')
+    expect(byId('ph22-battery-internal-resistance').body).toContain('R100')
     expect(byId('ph23-solar-iv-mpp').wiring).toEqual(expect.arrayContaining([
       expect.objectContaining({ from: 'PANEL.POSITIVE', to: 'INA219.VIN+' }),
       expect.objectContaining({ from: 'TSL2591.SDA', to: 'UNO.A4' }),

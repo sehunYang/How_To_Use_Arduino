@@ -109,7 +109,19 @@
     ],
     [
       "driver:STEP",
+      "uno:D4",
+      "orange",
+      []
+    ],
+    [
+      "driver:MS2",
       "uno:D3",
+      "purple",
+      []
+    ],
+    [
+      "driver:MS3",
+      "uno:D7",
       "purple",
       []
     ],

@@ -1,4 +1,10 @@
-import { createPhase6Recipe, type Phase6RecipeDefinition } from './shared'
+import { createPhase6Recipe, hallPulseDriver, type Phase6RecipeDefinition } from './shared'
+
+/** Shared wording for recipes whose tunable is a DS18B20 count, not an interval. */
+const sensorCountTunable = {
+  name: '센서 개수',
+  hint: '실제로 1-Wire 버스에 연결해 확인한 DS18B20 개수와 같게 설정하세요.',
+}
 
 const mechanics: Phase6RecipeDefinition[] = [
   {
@@ -70,9 +76,33 @@ const mechanics: Phase6RecipeDefinition[] = [
     keywords: ['구심가속도', '각속도', '회전반경', '원운동'],
     law: '등속 원운동의 구심가속도는 $a_c=\\omega^2r$입니다.',
     apparatus: 'MPU6050, 저속 회전판, 반경 표시 자, 보호 덮개, Arduino UNO, 브레드보드',
-    method: '센서 축을 반지름 방향으로 정렬하고 반경과 각속도를 한 번에 하나씩 바꿔 가속도를 측정합니다.',
-    graph: '고정 반경에서는 $a_c$-$\\omega^2$, 고정 각속도에서는 $a_c$-$r$ 그래프를 만들고 선형성을 검증합니다.',
+    method: '센서의 x축을 반지름 방향으로, z축을 회전축과 나란하게 정렬합니다. 구심가속도는 반지름 방향 가속도 열에서, 각속도 $\\omega$는 자이로 z축 열(gyro_z_dps)에서 얻습니다. 반경과 회전 속도를 한 번에 하나씩 바꿔 측정하세요.',
+    graph: '고정 반경에서는 $a_c$-$\\omega^2$, 고정 각속도에서는 $a_c$-$r$ 그래프를 만들고 선형성을 검증합니다. $\\omega$는 gyro_z_dps를 rad/s로 바꾸어 사용합니다($\\times\\pi/180$).',
     safety: '센서와 배터리를 이중 고정하고 회전 중 보호 덮개 밖으로 손을 넣지 마세요.',
+    // The shared MPU sketch logs acceleration only, so a_c-ω² could not be
+    // plotted from it. This variant adds the gyro z channel the guide needs.
+    sketch: `#include <Wire.h>
+// @baud 9600
+int16_t mpuRead16(byte reg){
+  Wire.beginTransmission(0x68);Wire.write(reg);Wire.endTransmission(false);Wire.requestFrom(0x68,(byte)2);
+  byte high=Wire.read();byte low=Wire.read(); // 한 식에 두 번 읽으면 순서가 정해지지 않습니다.
+  return (int16_t)(((uint16_t)high<<8)|low);
+}
+void mpuWrite(byte reg,byte value){Wire.beginTransmission(0x68);Wire.write(reg);Wire.write(value);Wire.endTransmission();}
+// @tunable samplingIntervalMs
+unsigned long samplingIntervalMs=100;
+void setup(){
+  Serial.begin(9600);Wire.begin();mpuWrite(0x6B,0);
+  Serial.println("time_ms,acceleration_x_g,acceleration_y_g,acceleration_z_g,gyro_z_dps");
+}
+void loop(){
+  float ax=mpuRead16(0x3B)/16384.0f,ay=mpuRead16(0x3D)/16384.0f,az=mpuRead16(0x3F)/16384.0f;
+  float gz=mpuRead16(0x47)/131.0f;
+  Serial.print(millis());Serial.print(',');Serial.print(ax,5);Serial.print(',');
+  Serial.print(ay,5);Serial.print(',');Serial.print(az,5);Serial.print(',');
+  Serial.println(gz,3);
+  delay(samplingIntervalMs);
+}`,
   },
   {
     id: 'ph08-rpm-comparison',
@@ -117,6 +147,7 @@ const thermal: Phase6RecipeDefinition[] = [
     apparatus: 'DS18B20 2개, 동일 질량 시료, 저전압 정격 히터, 단열 용기, 전력계, Arduino UNO, 브레드보드',
     method: '시료 질량과 공급 전력을 같게 유지하고 두 시료의 온도를 일정 간격으로 기록합니다.',
     graph: '초기 선형 구간의 $dT/dt$와 공급 전력으로 비열비를 구하고 용기 열용량과 열손실을 오차로 평가합니다.',
+    tunable: sensorCountTunable,
     safety: '화상 방지를 위해 저온 범위와 정격 전력만 사용하고 교사가 히터 전원을 관리하세요.',
   },
   {
@@ -140,6 +171,7 @@ const thermal: Phase6RecipeDefinition[] = [
     apparatus: 'DS18B20 2개, 같은 치수의 재료 막대, 저전압 히터, 단열재, Arduino UNO, 브레드보드',
     method: '막대 양 끝에 센서를 고정하고 한쪽만 일정 전력으로 가열해 정상상태의 온도차를 측정합니다.',
     graph: '재료별 정상 온도차와 도달 시간을 비교하고 알려진 기준 재료에 대한 상대 열전도율을 구합니다.',
+    tunable: sensorCountTunable,
   },
   {
     id: 'ph14-insulation-performance',
@@ -180,9 +212,13 @@ const electricity: Phase6RecipeDefinition[] = [
     keywords: ['옴의 법칙', '전압', '전류', '저항'],
     law: '옴성 저항에서는 전압과 전류가 $V=IR$의 선형 관계를 따릅니다. UNO의 analogWrite()는 진짜 아날로그 전압이 아니라 PWM이므로, RC 저역통과 필터로 평활한 뒤 실제 전압을 INA219로 측정합니다.',
     apparatus: 'INA219, 100 Ω RC 필터 저항, 470 µF 전해 커패시터, 1 kΩ·2.2 kΩ·4.7 kΩ 측정 저항, 수-암(MF) 점퍼선, Arduino UNO, 브레드보드',
-    method: '먼저 1 kΩ 저항을 연결하고 코드의 conditionId를 R1K로 맞춥니다. D9 PWM 듀티를 단계적으로 올리고 RC 출력이 안정될 때까지 기다린 뒤 INA219가 측정한 실제 부하 전압과 전류를 기록합니다. 전원을 끈 뒤 측정 저항을 2.2 kΩ, 4.7 kΩ으로 바꿀 때마다 conditionId도 각각 R2K2, R4K7로 바꾸어 반복합니다.',
-    graph: 'PWM 듀티가 아니라 INA219가 측정한 실제 V-I 데이터를 그립니다. 각 직선의 V/I 또는 기울기에서 저항을 구해 표시값과 비교합니다.',
-    safety: '커패시터의 +극은 평활 노드, -극은 GND에 연결하세요. UNO D9의 과전류를 막기 위해 측정 저항은 1 kΩ 이상만 사용하고, 100 Ω·220 Ω을 부하로 직접 연결하지 마세요.',
+    method: '먼저 1 kΩ 저항을 연결하고 코드의 conditionId를 R1K로 맞춥니다. D9 PWM 듀티를 단계적으로 올리고 RC 출력이 안정될 때까지 기다린 뒤 INA219가 측정한 저항 양단의 실제 전압과 전류를 기록합니다. 전원을 끈 뒤 측정 저항을 2.2 kΩ, 4.7 kΩ으로 바꿀 때마다 conditionId도 각각 R2K2, R4K7로 바꾸어 반복합니다.',
+    graph: 'PWM 듀티가 아니라 INA219가 측정한 실제 V-I 데이터를 그립니다. 각 직선의 V/I 또는 기울기에서 저항을 구해 표시값과 비교합니다. INA219의 전류 분해능은 약 0.1 mA이므로 4.7 kΩ 조건(약 0.1~1 mA)은 눈금 1~10칸에 불과합니다. 이 조건은 같은 듀티에서 여러 번 재어 평균을 쓰고, 불확도를 반드시 함께 표시하세요.',
+    tunable: {
+      name: '듀티 변경 후 안정화 시간 (ms)',
+      hint: 'RC 필터의 시정수는 약 47 ms입니다. 출력이 완전히 안정되도록 그 5배 이상으로 두세요.',
+    },
+    safety: '커패시터의 +극은 평활 노드, -극은 GND에 연결하세요. UNO D9의 과전류를 막기 위해 측정 저항은 1 kΩ 이상만 사용하고, 100 Ω·220 Ω 저항을 직접 연결하지 마세요.',
     connections: [
       { from: 'INA219.VCC', to: 'UNO.5V', color: 'red', text: 'INA219 VCC를 브레드보드 + 전원 레일에 연결하세요.' },
       { from: 'INA219.GND', to: 'UNO.GND', color: 'black', text: 'INA219 GND를 브레드보드 - 전원 레일에 연결하세요.' },
@@ -198,18 +234,16 @@ const electricity: Phase6RecipeDefinition[] = [
     sketch: `#include <Wire.h>
 // @baud 9600
 // @pin PWM_OUT=D9
-// @tunable settlingMs
 const byte PWM_OUT = 9;
 const float INA_SHUNT_OHMS = 0.1f;
 const char* conditionId = "R1K"; // R1K, R2K2, R4K7 중 실제 연결한 저항과 맞추세요.
+// @tunable settlingMs
 unsigned long settlingMs = 800;
 
-int16_t readIna(byte reg) {
-  Wire.beginTransmission(0x40);
-  Wire.write(reg);
-  Wire.endTransmission(false);
-  Wire.requestFrom(0x40, (byte)2);
-  return (int16_t)((Wire.read() << 8) | Wire.read());
+int16_t readIna(byte reg){
+  Wire.beginTransmission(0x40);Wire.write(reg);Wire.endTransmission(false);Wire.requestFrom(0x40,(byte)2);
+  byte high=Wire.read();byte low=Wire.read(); // 한 식에 두 번 읽으면 순서가 정해지지 않습니다.
+  return (int16_t)(((uint16_t)high<<8)|low);
 }
 
 void setup() {
@@ -267,11 +301,15 @@ void loop() {
     ],
     sketch: `#include <Wire.h>
 // @baud 9600
-// @tunable samplingIntervalMs
 const float INA_SHUNT_OHMS = 0.1f;
 const char* conditionId = "SERIES_220_1000"; // 병렬 재배선 뒤 PARALLEL_220_1000으로 바꾸세요.
+// @tunable samplingIntervalMs
 unsigned long samplingIntervalMs = 500;
-int16_t readIna(byte reg){Wire.beginTransmission(0x40);Wire.write(reg);Wire.endTransmission(false);Wire.requestFrom(0x40,(byte)2);return (int16_t)((Wire.read()<<8)|Wire.read());}
+int16_t readIna(byte reg){
+  Wire.beginTransmission(0x40);Wire.write(reg);Wire.endTransmission(false);Wire.requestFrom(0x40,(byte)2);
+  byte high=Wire.read();byte low=Wire.read(); // 한 식에 두 번 읽으면 순서가 정해지지 않습니다.
+  return (int16_t)(((uint16_t)high<<8)|low);
+}
 void setup(){Serial.begin(9600);Wire.begin();Serial.println("condition_id,time_ms,bus_V,current_mA,equivalent_ohm");}
 void loop(){
   float busV=(readIna(0x02)>>3)*0.004f,shuntMv=readIna(0x01)*0.01f,currentMa=shuntMv/INA_SHUNT_OHMS;
@@ -301,11 +339,15 @@ void loop(){
     ],
     sketch: `#include <Wire.h>
 // @baud 9600
-// @tunable samplingIntervalMs
 const float INA_SHUNT_OHMS=0.1f;
 const char* conditionId="TOTAL"; // TOTAL, BRANCH_220, BRANCH_470 중 INA219 위치와 맞추세요.
+// @tunable samplingIntervalMs
 unsigned long samplingIntervalMs=500;
-int16_t readIna(byte reg){Wire.beginTransmission(0x40);Wire.write(reg);Wire.endTransmission(false);Wire.requestFrom(0x40,(byte)2);return (int16_t)((Wire.read()<<8)|Wire.read());}
+int16_t readIna(byte reg){
+  Wire.beginTransmission(0x40);Wire.write(reg);Wire.endTransmission(false);Wire.requestFrom(0x40,(byte)2);
+  byte high=Wire.read();byte low=Wire.read(); // 한 식에 두 번 읽으면 순서가 정해지지 않습니다.
+  return (int16_t)(((uint16_t)high<<8)|low);
+}
 void setup(){Serial.begin(9600);Wire.begin();Serial.println("condition_id,time_ms,bus_V,shunt_mV,current_mA");}
 void loop(){float busV=(readIna(2)>>3)*0.004f,shuntMv=readIna(1)*0.01f,currentMa=shuntMv/INA_SHUNT_OHMS;Serial.print(conditionId);Serial.print(',');Serial.print(millis());Serial.print(',');Serial.print(busV,4);Serial.print(',');Serial.print(shuntMv,4);Serial.print(',');Serial.println(currentMa,3);delay(samplingIntervalMs);}`,
   },
@@ -335,13 +377,18 @@ void loop(){float busV=(readIna(2)>>3)*0.004f,shuntMv=readIna(1)*0.01f,currentMa
     sketch: `#include <Wire.h>
 // @baud 9600
 // @pin ONEWIRE=D2
+const byte ONEWIRE=2;const float INA_SHUNT_OHMS=0.1f;const char* conditionId="HEATING";
 // @tunable samplingIntervalMs
-const byte ONEWIRE=2;const float INA_SHUNT_OHMS=0.1f;const char* conditionId="HEATING";unsigned long samplingIntervalMs=1000;
-int16_t readIna(byte reg){Wire.beginTransmission(0x40);Wire.write(reg);Wire.endTransmission(false);Wire.requestFrom(0x40,(byte)2);return (int16_t)((Wire.read()<<8)|Wire.read());}
+unsigned long samplingIntervalMs=1000;
+int16_t readIna(byte reg){
+  Wire.beginTransmission(0x40);Wire.write(reg);Wire.endTransmission(false);Wire.requestFrom(0x40,(byte)2);
+  byte high=Wire.read();byte low=Wire.read(); // 한 식에 두 번 읽으면 순서가 정해지지 않습니다.
+  return (int16_t)(((uint16_t)high<<8)|low);
+}
 void oneWireReset(){pinMode(ONEWIRE,OUTPUT);digitalWrite(ONEWIRE,LOW);delayMicroseconds(480);pinMode(ONEWIRE,INPUT_PULLUP);delayMicroseconds(480);}
 void writeOneWire(byte value){for(byte i=0;i<8;i++){pinMode(ONEWIRE,OUTPUT);digitalWrite(ONEWIRE,LOW);delayMicroseconds((value>>i)&1?6:60);pinMode(ONEWIRE,INPUT_PULLUP);delayMicroseconds((value>>i)&1?64:10);}}
 byte readOneWire(){byte value=0;for(byte i=0;i<8;i++){pinMode(ONEWIRE,OUTPUT);digitalWrite(ONEWIRE,LOW);delayMicroseconds(3);pinMode(ONEWIRE,INPUT_PULLUP);delayMicroseconds(10);if(digitalRead(ONEWIRE))value|=(1<<i);delayMicroseconds(53);}return value;}
-float readTemperatureC(){oneWireReset();writeOneWire(0xCC);writeOneWire(0x44);delay(750);oneWireReset();writeOneWire(0xCC);writeOneWire(0xBE);int16_t raw=readOneWire()|(readOneWire()<<8);return raw/16.0f;}
+float readTemperatureC(){oneWireReset();writeOneWire(0xCC);writeOneWire(0x44);delay(750);oneWireReset();writeOneWire(0xCC);writeOneWire(0xBE);byte lsb=readOneWire();byte msb=readOneWire();int16_t raw=(int16_t)(((uint16_t)msb<<8)|lsb);return raw/16.0f;}
 void setup(){Serial.begin(9600);Wire.begin();Serial.println("condition_id,time_ms,bus_V,current_mA,power_W,temperature_C");}
 void loop(){float busV=(readIna(2)>>3)*0.004f,currentMa=(readIna(1)*0.01f)/INA_SHUNT_OHMS,tempC=readTemperatureC();Serial.print(conditionId);Serial.print(',');Serial.print(millis());Serial.print(',');Serial.print(busV,4);Serial.print(',');Serial.print(currentMa,3);Serial.print(',');Serial.print(busV*currentMa/1000.0f,4);Serial.print(',');Serial.println(tempC,3);delay(samplingIntervalMs);}`,
   },
@@ -367,21 +414,25 @@ void loop(){float busV=(readIna(2)>>3)*0.004f,currentMa=(readIna(1)*0.01f)/INA_S
     ],
     sketch: `#include <Wire.h>
 // @baud 9600
-// @tunable samplingIntervalMs
 const float INA_SHUNT_OHMS=0.1f;
 const byte CAPACITOR_VOLTAGE_PIN=A0;
 const char* conditionId="CHARGE"; // 방전 회로로 옮긴 뒤 DISCHARGE로 바꾸세요.
+// @tunable samplingIntervalMs
 unsigned long samplingIntervalMs=50;
-int16_t readIna(byte reg){Wire.beginTransmission(0x40);Wire.write(reg);Wire.endTransmission(false);Wire.requestFrom(0x40,(byte)2);return (int16_t)((Wire.read()<<8)|Wire.read());}
+int16_t readIna(byte reg){
+  Wire.beginTransmission(0x40);Wire.write(reg);Wire.endTransmission(false);Wire.requestFrom(0x40,(byte)2);
+  byte high=Wire.read();byte low=Wire.read(); // 한 식에 두 번 읽으면 순서가 정해지지 않습니다.
+  return (int16_t)(((uint16_t)high<<8)|low);
+}
 void setup(){Serial.begin(9600);Wire.begin();Serial.println("condition_id,time_ms,capacitor_V,current_mA");}
 void loop(){float capacitorV=analogRead(CAPACITOR_VOLTAGE_PIN)*(5.0f/1023.0f),currentMa=(readIna(1)*0.01f)/INA_SHUNT_OHMS;Serial.print(conditionId);Serial.print(',');Serial.print(millis());Serial.print(',');Serial.print(capacitorV,4);Serial.print(',');Serial.println(currentMa,4);delay(samplingIntervalMs);}`,
   },
   {
     id: 'ph22-battery-internal-resistance', title: '건전지 내부저항 추정', difficulty: '중급', minutes: 55, sensors: ['ina219'],
-    keywords: ['내부저항', '기전력', '부하전압', '건전지'],
-    law: '전지의 단자전압은 $V=E-Ir$로 근사되므로 부하전류 변화에 따른 전압강하에서 내부저항 $r$을 구할 수 있습니다.',
+    keywords: ['내부저항', '기전력', '단자전압', '건전지'],
+    law: '전지의 단자전압은 $V=E-Ir$로 근사되므로 연결한 저항을 바꿔 전류를 달리했을 때의 전압강하에서 내부저항 $r$을 구할 수 있습니다.',
     apparatus: 'INA219, 새 건전지와 홀더, 100 Ω·220 Ω·470 Ω 정격저항, Arduino UNO, 브레드보드',
-    method: '먼저 부하를 떼고 INA219 VIN+와 VIN-를 모두 건전지 +에 연결해 conditionId=NO_LOAD로 개방전압을 기록합니다. 전원을 분리한 뒤 그림처럼 부하를 연결하고 470 Ω, 220 Ω, 100 Ω 순서로 교체하며 conditionId를 LOAD_470, LOAD_220, LOAD_100으로 맞춥니다. 각 부하는 5초 이내로 측정하고 조건 사이에 건전지를 쉬게 하세요.',
+    method: '먼저 저항을 떼고 INA219 VIN+와 VIN-를 모두 건전지 +에 연결해 conditionId=OPEN으로 개방전압을 기록합니다. 전원을 분리한 뒤 그림처럼 저항을 연결하고 470 Ω, 220 Ω, 100 Ω 순서로 교체하며 conditionId를 각각 R470, R220, R100으로 맞춥니다. 각 저항은 5초 이내로 측정하고 조건 사이에 건전지를 쉬게 하세요.',
     graph: 'V-I 그래프의 음의 기울기에서 내부저항, 절편에서 기전력을 구합니다.',
     safety: '건전지를 단락하지 말고 저항 정격과 최대 측정전류를 넘지 마세요.',
     connections: [
@@ -390,26 +441,30 @@ void loop(){float capacitorV=analogRead(CAPACITOR_VOLTAGE_PIN)*(5.0f/1023.0f),cu
       { from: 'INA219.SDA', to: 'UNO.A4', color: 'green', text: 'INA219 SDA를 UNO A4에 연결하세요.' },
       { from: 'INA219.SCL', to: 'UNO.A5', color: 'yellow', text: 'INA219 SCL을 UNO A5에 연결하세요.' },
       { from: 'BATTERY.+', to: 'INA219.VIN+', color: 'red', text: '건전지 +를 INA219 VIN+에 연결하세요.' },
-      { from: 'INA219.VIN-', to: 'RESISTOR_220.1', color: 'orange', text: '기본 LOAD_220 조건에서 INA219 VIN-를 220 Ω 부하 1번 다리에 연결하세요.' },
-      { from: 'RESISTOR_220.2', to: 'BATTERY.-', color: 'black', text: '220 Ω 부하 2번 다리를 건전지 -에 연결하세요.' },
+      { from: 'INA219.VIN-', to: 'RESISTOR_220.1', color: 'orange', text: '기본 R220 조건에서 INA219 VIN-를 220 Ω 저항 1번 다리에 연결하세요.' },
+      { from: 'RESISTOR_220.2', to: 'BATTERY.-', color: 'black', text: '220 Ω 저항 2번 다리를 건전지 -에 연결하세요.' },
       { from: 'BATTERY.-', to: 'UNO.GND', color: 'black', text: '건전지 -와 UNO GND를 공통 접지하세요.' },
     ],
     sketch: `#include <Wire.h>
 // @baud 9600
-// @tunable samplingIntervalMs
 const float INA_SHUNT_OHMS=0.1f;
-const char* conditionId="LOAD_220"; // NO_LOAD, LOAD_470, LOAD_220, LOAD_100 중 실제 조건과 맞추세요.
+const char* conditionId="R220"; // OPEN, R470, R220, R100 중 실제 조건과 맞추세요.
+// @tunable samplingIntervalMs
 unsigned long samplingIntervalMs=250;
-int16_t readIna(byte reg){Wire.beginTransmission(0x40);Wire.write(reg);Wire.endTransmission(false);Wire.requestFrom(0x40,(byte)2);return (int16_t)((Wire.read()<<8)|Wire.read());}
+int16_t readIna(byte reg){
+  Wire.beginTransmission(0x40);Wire.write(reg);Wire.endTransmission(false);Wire.requestFrom(0x40,(byte)2);
+  byte high=Wire.read();byte low=Wire.read(); // 한 식에 두 번 읽으면 순서가 정해지지 않습니다.
+  return (int16_t)(((uint16_t)high<<8)|low);
+}
 void setup(){Serial.begin(9600);Wire.begin();Serial.println("condition_id,time_ms,terminal_V,current_mA");}
 void loop(){float terminalV=(readIna(2)>>3)*0.004f,currentMa=(readIna(1)*0.01f)/INA_SHUNT_OHMS;Serial.print(conditionId);Serial.print(',');Serial.print(millis());Serial.print(',');Serial.print(terminalV,4);Serial.print(',');Serial.println(currentMa,3);delay(samplingIntervalMs);}`,
   },
   {
     id: 'ph23-solar-iv-mpp', title: '태양전지 I-V 곡선과 최대전력점', difficulty: '고급', minutes: 80, sensors: ['ina219', 'tsl2591'],
     keywords: ['태양전지', 'IV곡선', '최대전력점', '조도'],
-    law: '태양전지의 출력 전력 $P=VI$는 부하에 따라 변하며 $I$-$V$ 곡선 위에 최대전력점이 존재합니다.',
-    apparatus: 'INA219, 소형 태양전지, TSL2591, 100 Ω~10 kΩ 부하저항 세트, 일정한 광원, Arduino UNO, 브레드보드',
-    method: '패널과 TSL2591 수광면을 같은 광원 방향에 고정합니다. 그림처럼 패널-INA219-부하저항을 직렬로 연결하고 가장 큰 저항부터 바꿉니다. 각 교체 때 전원을 차단한 뒤 코드의 conditionId를 LOAD_10K, LOAD_4K7, LOAD_2K2, LOAD_1K, LOAD_470, LOAD_220, LOAD_100 중 실제 부하와 맞추고 V, I, 조도를 함께 기록합니다.',
+    law: '태양전지의 출력 전력 $P=VI$는 연결한 저항에 따라 변하며 $I$-$V$ 곡선 위에 최대전력점이 존재합니다.',
+    apparatus: 'INA219, 소형 태양전지, TSL2591, 100 Ω~10 kΩ 저항 세트, 일정한 광원, Arduino UNO, 브레드보드',
+    method: '패널과 TSL2591 수광면을 같은 광원 방향에 고정합니다. 그림처럼 패널-INA219-저항을 직렬로 연결하고 가장 큰 저항부터 바꿉니다. 각 교체 때 전원을 차단한 뒤 코드의 conditionId를 실제로 연결한 저항과 맞추세요. 10 kΩ은 R10K, 4.7 kΩ은 R4K7, 2.2 kΩ은 R2K2, 1 kΩ은 R1K, 470 Ω은 R470, 220 Ω은 R220, 100 Ω은 R100입니다. 각 조건에서 V, I, 조도를 함께 기록합니다.',
     graph: '$I$-$V$ 및 $P$-$V$ 그래프를 그리고 최대 $P$ 지점과 광량 변화에 따른 이동을 비교합니다.',
     connections: [
       { from: 'INA219.VCC', to: 'UNO.5V', color: 'red', text: 'INA219 VCC를 UNO 5V에 연결하세요.' },
@@ -421,18 +476,26 @@ void loop(){float terminalV=(readIna(2)>>3)*0.004f,currentMa=(readIna(1)*0.01f)/
       { from: 'TSL2591.SDA', to: 'UNO.A4', color: 'green', text: 'TSL2591 SDA를 UNO A4 공통 I2C 버스에 연결하세요.' },
       { from: 'TSL2591.SCL', to: 'UNO.A5', color: 'yellow', text: 'TSL2591 SCL을 UNO A5 공통 I2C 버스에 연결하세요.' },
       { from: 'PANEL.POSITIVE', to: 'INA219.VIN+', color: 'red', text: '태양전지 +를 INA219 VIN+에 연결하세요.' },
-      { from: 'INA219.VIN-', to: 'RESISTOR_1000.1', color: 'orange', text: '기본 LOAD_1K 조건에서 INA219 VIN-를 1 kΩ 부하 1번 다리에 연결하세요.' },
-      { from: 'RESISTOR_1000.2', to: 'PANEL.NEGATIVE', color: 'black', text: '1 kΩ 부하 2번 다리를 태양전지 -에 연결하세요.' },
+      { from: 'INA219.VIN-', to: 'RESISTOR_1000.1', color: 'orange', text: '기본 R1K 조건에서 INA219 VIN-를 1 kΩ 저항 1번 다리에 연결하세요.' },
+      { from: 'RESISTOR_1000.2', to: 'PANEL.NEGATIVE', color: 'black', text: '1 kΩ 저항 2번 다리를 태양전지 -에 연결하세요.' },
       { from: 'PANEL.NEGATIVE', to: 'UNO.GND', color: 'black', text: '태양전지 -와 UNO GND를 공통 접지해 INA219 버스 전압의 기준을 만드세요.' },
     ],
     sketch: `#include <Wire.h>
 // @baud 9600
-// @tunable samplingIntervalMs
 const float INA_SHUNT_OHMS=0.1f;
-const char* conditionId="LOAD_1K"; // 실제 부하 ID와 맞추세요.
+const char* conditionId="R1K"; // R10K, R4K7, R2K2, R1K, R470, R220, R100 중 실제 연결한 저항과 맞추세요.
+// @tunable samplingIntervalMs
 unsigned long samplingIntervalMs=500;
-int16_t readIna(byte reg){Wire.beginTransmission(0x40);Wire.write(reg);Wire.endTransmission(false);Wire.requestFrom(0x40,(byte)2);return (int16_t)((Wire.read()<<8)|Wire.read());}
-uint16_t lightRaw(){Wire.beginTransmission(0x29);Wire.write(0xB4);Wire.endTransmission(false);Wire.requestFrom(0x29,(byte)2);return Wire.read()|(Wire.read()<<8);}
+int16_t readIna(byte reg){
+  Wire.beginTransmission(0x40);Wire.write(reg);Wire.endTransmission(false);Wire.requestFrom(0x40,(byte)2);
+  byte high=Wire.read();byte low=Wire.read(); // 한 식에 두 번 읽으면 순서가 정해지지 않습니다.
+  return (int16_t)(((uint16_t)high<<8)|low);
+}
+uint16_t lightRaw(){
+  Wire.beginTransmission(0x29);Wire.write(0xB4);Wire.endTransmission(false);Wire.requestFrom(0x29,(byte)2);
+  byte low=Wire.read();byte high=Wire.read(); // TSL2591은 하위 바이트가 먼저 옵니다.
+  return (uint16_t)low|((uint16_t)high<<8);
+}
 void setup(){Serial.begin(9600);Wire.begin();Wire.beginTransmission(0x29);Wire.write(0xA0);Wire.write(0x03);Wire.endTransmission();Serial.println("condition_id,time_ms,panel_V,current_mA,power_mW,light_raw");}
 void loop(){float panelV=(readIna(2)>>3)*0.004f,currentMa=(readIna(1)*0.01f)/INA_SHUNT_OHMS;Serial.print(conditionId);Serial.print(',');Serial.print(millis());Serial.print(',');Serial.print(panelV,4);Serial.print(',');Serial.print(currentMa,3);Serial.print(',');Serial.print(panelV*currentMa,3);Serial.print(',');Serial.println(lightRaw());delay(samplingIntervalMs);}`,
   },
@@ -464,9 +527,14 @@ const magnetism: Phase6RecipeDefinition[] = [
     sketch: `#include <Wire.h>
 // @baud 9600
 // @pin HALL_IN=A0
+const byte HALL_IN=A0;const float INA_SHUNT_OHMS=0.1f;const char* conditionId="I050";
 // @tunable samplingIntervalMs
-const byte HALL_IN=A0;const float INA_SHUNT_OHMS=0.1f;const char* conditionId="I050";unsigned long samplingIntervalMs=250;
-int16_t readIna(byte reg){Wire.beginTransmission(0x40);Wire.write(reg);Wire.endTransmission(false);Wire.requestFrom(0x40,(byte)2);return (int16_t)((Wire.read()<<8)|Wire.read());}
+unsigned long samplingIntervalMs=250;
+int16_t readIna(byte reg){
+  Wire.beginTransmission(0x40);Wire.write(reg);Wire.endTransmission(false);Wire.requestFrom(0x40,(byte)2);
+  byte high=Wire.read();byte low=Wire.read(); // 한 식에 두 번 읽으면 순서가 정해지지 않습니다.
+  return (int16_t)(((uint16_t)high<<8)|low);
+}
 void setup(){Serial.begin(9600);Wire.begin();Serial.println("condition_id,time_ms,current_mA,hall_raw");}
 void loop(){float currentMa=(readIna(1)*0.01f)/INA_SHUNT_OHMS;Serial.print(conditionId);Serial.print(',');Serial.print(millis());Serial.print(',');Serial.print(currentMa,3);Serial.print(',');Serial.println(analogRead(HALL_IN));delay(samplingIntervalMs);}`,
   },
@@ -495,9 +563,14 @@ void loop(){float currentMa=(readIna(1)*0.01f)/INA_SHUNT_OHMS;Serial.print(condi
     sketch: `#include <Wire.h>
 // @baud 9600
 // @pin HALL_IN=A0
+const byte HALL_IN=A0;const float INA_SHUNT_OHMS=0.1f;const char* conditionId="N50";
 // @tunable samplingIntervalMs
-const byte HALL_IN=A0;const float INA_SHUNT_OHMS=0.1f;const char* conditionId="N50";unsigned long samplingIntervalMs=250;
-int16_t readIna(byte reg){Wire.beginTransmission(0x40);Wire.write(reg);Wire.endTransmission(false);Wire.requestFrom(0x40,(byte)2);return (int16_t)((Wire.read()<<8)|Wire.read());}
+unsigned long samplingIntervalMs=250;
+int16_t readIna(byte reg){
+  Wire.beginTransmission(0x40);Wire.write(reg);Wire.endTransmission(false);Wire.requestFrom(0x40,(byte)2);
+  byte high=Wire.read();byte low=Wire.read(); // 한 식에 두 번 읽으면 순서가 정해지지 않습니다.
+  return (int16_t)(((uint16_t)high<<8)|low);
+}
 void setup(){Serial.begin(9600);Wire.begin();Serial.println("condition_id,time_ms,current_mA,hall_raw");}
 void loop(){float currentMa=(readIna(1)*0.01f)/INA_SHUNT_OHMS;Serial.print(conditionId);Serial.print(',');Serial.print(millis());Serial.print(',');Serial.print(currentMa,3);Serial.print(',');Serial.println(analogRead(HALL_IN));delay(samplingIntervalMs);}`,
   },
@@ -506,8 +579,20 @@ void loop(){float currentMa=(readIna(1)*0.01f)/INA_SHUNT_OHMS;Serial.print(condi
     keywords: ['회전자석', '주파수', '각속도', '홀효과'],
     law: '회전축에 자석 $N$개가 있으면 홀 센서 펄스 주파수 $f$와 각속도는 $\\omega=2\\pi f/N$ 관계를 가집니다.',
     apparatus: 'HBE0704, 자석 1~4개, 손 회전 원판 또는 저속 모터, 보호 덮개, Arduino UNO, 브레드보드',
-    method: '홀 센서와 자석 사이 간격을 고정하고 펄스 사이 시간을 기록합니다. 자석 수를 바꿔 같은 회전속도를 측정하세요.',
-    graph: '펄스 주파수/N으로 계산한 회전수를 비교하고 누락·중복 펄스 비율을 구합니다.',
+    method: '홀 센서와 자석 사이 간격을 고정하고 펄스 사이 시간을 기록합니다. 자석 수를 바꿔 같은 회전속도를 측정하세요. 스케치는 표본을 출력하는 사이에도 홀 신호를 계속 살펴 자석 통과를 세므로, pulse_count와 pulse_interval_us 열에서 주파수를 구합니다.',
+    graph: '펄스 주파수/N으로 계산한 회전수를 비교하고 누락·중복 펄스 비율을 구합니다. 주파수는 $f=10^6/\\text{pulse\\_interval\\_us}$ 또는 두 행의 pulse_count 차이를 시간 차이로 나누어 얻습니다.',
+    // A magnet pulse is only milliseconds wide, so the default fixed-interval
+    // analogRead() sampled almost none of them. Edge counting runs continuously.
+    sketch: `// @baud 9600
+${hallPulseDriver('A0')}
+// @tunable samplingIntervalMs
+unsigned long samplingIntervalMs=100;
+void setup(){Serial.begin(9600);Serial.println("time_ms,hall_raw,pulse_count,pulse_interval_us");}
+void loop(){
+  pollHallFor(samplingIntervalMs);
+  Serial.print(millis());Serial.print(',');Serial.print(hallRaw);Serial.print(',');
+  Serial.print(pulseCount);Serial.print(',');Serial.println(lastIntervalUs);
+}`,
   },
   {
     id: 'ph27-magnetic-shielding', title: '자기 차폐 재료 비교', difficulty: '중급', minutes: 55, sensors: ['hbe0704'],

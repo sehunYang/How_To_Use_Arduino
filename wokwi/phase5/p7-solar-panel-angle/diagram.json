@@ -66,6 +66,12 @@
       []
     ],
     [
+      "bb:tn.17",
+      "bb:4t.a",
+      "black",
+      []
+    ],
+    [
       "ina219:SDA",
       "bb:1t.a",
       "green",
@@ -97,7 +103,7 @@
     ],
     [
       "tsl2591:GND",
-      "bb:tn.9",
+      "bb:tn.13",
       "black",
       []
     ],
@@ -145,7 +151,7 @@
     ],
     [
       "panel:GND",
-      "bb:4t.a",
+      "bb:tn.9",
       "purple",
       []
     ]

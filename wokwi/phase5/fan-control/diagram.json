@@ -28,10 +28,16 @@
       "left": 200
     },
     {
+      "id": "fan_supply",
+      "type": "wokwi-slide-potentiometer",
+      "top": 0,
+      "left": 300
+    },
+    {
       "id": "fan",
       "type": "wokwi-resistor",
       "top": 0,
-      "left": 300
+      "left": 400
     }
   ],
   "connections": [
@@ -90,15 +96,39 @@
       []
     ],
     [
-      "fan:1",
+      "fan_supply:SIG",
       "bb:1t.a",
-      "purple",
+      "red",
+      []
+    ],
+    [
+      "relay:COM",
+      "bb:1t.b",
+      "red",
       []
     ],
     [
       "relay:NO",
-      "bb:1t.b",
+      "bb:5t.a",
       "purple",
+      []
+    ],
+    [
+      "fan:1",
+      "bb:5t.b",
+      "purple",
+      []
+    ],
+    [
+      "fan:2",
+      "bb:9t.a",
+      "black",
+      []
+    ],
+    [
+      "fan_supply:GND",
+      "bb:9t.b",
+      "black",
       []
     ]
   ]

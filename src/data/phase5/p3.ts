@@ -21,7 +21,7 @@ export const p3Recipe = createProjectRecipe({
   tunable: { anchor: 'samplingIntervalMs', name: '측정 간격 (ms)', hint: '이전 초음파의 잔향과 겹치지 않도록 60 ms 이상으로 유지하세요.' },
   overview: '위쪽에 고정한 초음파 센서로 낙하 물체까지의 거리를 시간에 따라 재고 거리-시간 자료에서 중력가속도를 구합니다.',
   procedure: '넓고 평평한 반사판을 센서 축을 따라 안전하게 낙하시키세요. 낙하 전 거리를 원점으로 빼고, 시작 직후 여러 점에 $s=s_0+v_0t+\\frac{1}{2}gt^2$을 맞추세요.',
-  science: '공기 저항을 무시하면 위치는 시간의 이차함수입니다. HC-SR04의 사각, 음속의 온도 의존성, 물체 기울어짐과 20 ms 측정 간격이 주된 오차입니다.',
+  science: '공기 저항을 무시하면 위치는 시간의 이차함수입니다. HC-SR04의 사각, 음속의 온도 의존성, 물체 기울어짐, 그리고 초음파 잔향 때문에 60 ms 아래로 줄이기 어려운 측정 간격이 주된 오차입니다. 1 m 낙하는 약 0.45초이므로 표본이 7개 남짓입니다. 낙하 거리를 늘려 표본 수를 확보하세요.',
   applicationGuide: '온도를 함께 기록해 음속 보정을 적용한 결과와 적용하지 않은 결과를 비교해보세요.',
   troubleshooting: [
     contactTroubleshooting,

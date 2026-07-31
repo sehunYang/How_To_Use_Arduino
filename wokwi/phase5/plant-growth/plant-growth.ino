@@ -39,8 +39,9 @@ void beginBme() {
   H1=read8(0xA1);
   H2=readS16LE(0xE1);
   H3=read8(0xE3);
-  H4=(int16_t)((read8(0xE4)<<4)|(read8(0xE5)&0x0f));
-  H5=(int16_t)((read8(0xE6)<<4)|(read8(0xE5)>>4));
+  byte e4=read8(0xE4),e5=read8(0xE5),e6=read8(0xE6);
+  H4=(int16_t)((e4<<4)|(e5&0x0f));
+  H5=(int16_t)((e6<<4)|(e5>>4));
   H6=(int8_t)read8(0xE7);
   if(H4&0x0800) H4|=0xf000;
   if(H5&0x0800) H5|=0xf000;
@@ -57,7 +58,8 @@ float temperatureC() {
   return tFine/5120.0;
 }
 float humidityPct() {
-  long raw=((long)read8(0xFD)<<8)|read8(0xFE);
+  byte hMsb=read8(0xFD),hLsb=read8(0xFE);
+  long raw=((long)hMsb<<8)|hLsb;
   float h=tFine-76800.0;
   h=(raw-(H4*64.0+H5/16384.0*h))*(H2/65536.0*(1.0+H6/67108864.0*h*(1.0+H3/67108864.0*h)));
   h=h*(1.0-H1*h/524288.0);

@@ -41,9 +41,15 @@ export const actuators: Actuator[] = [
     name: 'DC모터 + 모터드라이버',
     category: 'motor',
     currentDrawMa: 700,
+    // An L298N-class dual H-bridge needs TWO direction inputs per motor
+    // (IN1+IN2 for channel A, IN3+IN4 for channel B). Modelling only one per
+    // motor would leave the other input floating, which makes the direction
+    // undefined on real hardware, so all four are declared here.
     pins: [
       { name: 'IN1', kind: 'digital' },
       { name: 'IN2', kind: 'digital' },
+      { name: 'IN3', kind: 'digital' },
+      { name: 'IN4', kind: 'digital' },
       { name: 'ENA', kind: 'digital' },
       { name: 'ENB', kind: 'digital' },
       { name: 'VM', kind: 'power' },
@@ -58,6 +64,8 @@ export const actuators: Actuator[] = [
       pinMap: {
         IN1: 'DIR',
         IN2: 'STEP',
+        IN3: 'MS2',
+        IN4: 'MS3',
         ENA: 'ENABLE',
         ENB: 'MS1',
         VM: 'VMOT',
@@ -214,7 +222,7 @@ export const wokwiAuxiliaryParts: WokwiAuxiliaryPart[] = [
       part: 'wokwi-slide-potentiometer',
       pinMap: { '+': 'SIG', '-': 'GND' },
       simSupported: false,
-      aliases: ['BATTERY', 'SERVO_SUPPLY', 'LED_SUPPLY', 'LAMP_SUPPLY'],
+      aliases: ['BATTERY', 'SERVO_SUPPLY', 'LED_SUPPLY', 'LAMP_SUPPLY', 'FAN_SUPPLY'],
     },
   },
 ]

@@ -2,12 +2,12 @@
 #include <MPU6050.h>
 // @pin SDA=A4
 // @pin SCL=A5
-// @baud 9600
+// @baud 115200
 MPU6050 imu;
 // @tunable samplingIntervalMs
 const unsigned long samplingIntervalMs = 10;
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial.println("# PHASE5_READY:p1-pendulum-period");
   Wire.begin();
   imu.initialize();

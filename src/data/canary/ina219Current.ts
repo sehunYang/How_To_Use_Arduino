@@ -15,7 +15,11 @@ uint16_t readRegister(uint8_t reg) {
   Wire.write(reg);
   Wire.endTransmission(false);
   Wire.requestFrom(INA219_ADDRESS, (uint8_t)2);
-  return ((uint16_t)Wire.read() << 8) | Wire.read();
+  // 한 식 안의 두 Wire.read() 호출은 실행 순서가 정해져 있지 않아
+  // 바이트가 뒤바뀔 수 있으므로 두 줄로 나눠 읽습니다.
+  uint8_t high = Wire.read();
+  uint8_t low = Wire.read();
+  return ((uint16_t)high << 8) | low;
 }
 
 void writeRegister(uint8_t reg, uint16_t value) {

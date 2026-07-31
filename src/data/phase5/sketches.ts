@@ -56,7 +56,8 @@ uint16_t bmeRead16LE(byte reg){uint16_t lo=bmeRead8(reg),hi=bmeRead8(reg+1);retu
 int16_t bmeReadS16LE(byte reg){return (int16_t)bmeRead16LE(reg);}
 uint32_t bmeRead20(byte reg){
   Wire.beginTransmission(BME);Wire.write(reg);Wire.endTransmission(false);Wire.requestFrom(BME,(byte)3);
-  return ((uint32_t)Wire.read()<<12)|((uint16_t)Wire.read()<<4)|(Wire.read()>>4);
+  byte msb=Wire.read();byte lsb=Wire.read();byte xlsb=Wire.read();
+  return ((uint32_t)msb<<12)|((uint16_t)lsb<<4)|(xlsb>>4);
 }
 void bmeWrite8(byte reg,byte value){Wire.beginTransmission(BME);Wire.write(reg);Wire.write(value);Wire.endTransmission();}
 bool bmeBegin(){
@@ -66,8 +67,9 @@ bool bmeBegin(){
   digP4=bmeReadS16LE(0x94);digP5=bmeReadS16LE(0x96);digP6=bmeReadS16LE(0x98);
   digP7=bmeReadS16LE(0x9A);digP8=bmeReadS16LE(0x9C);digP9=bmeReadS16LE(0x9E);
   digH1=bmeRead8(0xA1);digH2=bmeReadS16LE(0xE1);digH3=bmeRead8(0xE3);
-  digH4=((int16_t)(int8_t)bmeRead8(0xE4)<<4)|(bmeRead8(0xE5)&15);
-  digH5=((int16_t)(int8_t)bmeRead8(0xE6)<<4)|(bmeRead8(0xE5)>>4);digH6=(int8_t)bmeRead8(0xE7);
+  byte e4=bmeRead8(0xE4),e5=bmeRead8(0xE5),e6=bmeRead8(0xE6);
+  digH4=((int16_t)(int8_t)e4<<4)|(e5&15);
+  digH5=((int16_t)(int8_t)e6<<4)|(e5>>4);digH6=(int8_t)bmeRead8(0xE7);
   bmeWrite8(0xF2,1);bmeWrite8(0xF4,0x27);bmeWrite8(0xF5,0xA0);return true;
 }
 float bmeTemperatureC(){
@@ -86,7 +88,8 @@ float bmePressureHpa(){
   p=((p+v1+v2)>>8)+((int64_t)digP7<<4);return p/25600.0;
 }
 float bmeHumidity(){
-  int32_t adc=((uint32_t)bmeRead8(0xFD)<<8)|bmeRead8(0xFE);
+  byte hMsb=bmeRead8(0xFD),hLsb=bmeRead8(0xFE);
+  int32_t adc=((uint32_t)hMsb<<8)|hLsb;
   int32_t v=tFine-76800;
   v=(((((adc<<14)-((int32_t)digH4<<20)-((int32_t)digH5*v))+16384)>>15)*
     (((((((v*digH6)>>10)*(((v*digH3)>>11)+32768))>>10)+2097152)*digH2+8192)>>14));
@@ -98,12 +101,12 @@ export const p1Sketch = `#include <Wire.h>
 #include <MPU6050.h>
 // @pin SDA=A4
 // @pin SCL=A5
-// @baud 9600
+// @baud 115200
 MPU6050 imu;
 // @tunable samplingIntervalMs
 const unsigned long samplingIntervalMs = 10;
 void setup() {
-  Serial.begin(9600); Wire.begin(); imu.initialize();
+  Serial.begin(115200); Wire.begin(); imu.initialize();
   Serial.println("time_ms,ax_mps2");
 }
 void loop() {
@@ -119,12 +122,12 @@ export const p2Sketch = `#include <Wire.h>
 #include <MPU6050.h>
 // @pin SDA=A4
 // @pin SCL=A5
-// @baud 9600
+// @baud 115200
 MPU6050 imu;
 // @tunable samplingIntervalMs
 const unsigned long samplingIntervalMs = 20;
 void setup() {
-  Serial.begin(9600); Wire.begin(); imu.initialize();
+  Serial.begin(115200); Wire.begin(); imu.initialize();
   Serial.println("time_ms,ax,ay,az,g_norm");
 }
 void loop() {
@@ -191,12 +194,12 @@ export const p5Sketch = `#include <Wire.h>
 #include <MPU6050.h>
 // @pin SDA=A4
 // @pin SCL=A5
-// @baud 9600
+// @baud 115200
 MPU6050 imu;
 // @tunable samplingIntervalMs
 const unsigned long samplingIntervalMs = 20;
 void setup() {
-  Serial.begin(9600); Wire.begin(); imu.initialize();
+  Serial.begin(115200); Wire.begin(); imu.initialize();
   Serial.println("time_ms,along_mps2,tilt_deg");
 }
 void loop() {
@@ -238,7 +241,8 @@ void inaWrite(byte reg,uint16_t value){
 }
 uint16_t inaRead(byte reg){
   Wire.beginTransmission(INA);Wire.write(reg);Wire.endTransmission(false);Wire.requestFrom(INA,(byte)2);
-  return ((uint16_t)Wire.read()<<8)|Wire.read();
+  byte high=Wire.read();byte low=Wire.read(); // 한 식에 두 번 읽으면 순서가 정해지지 않습니다.
+  return ((uint16_t)high<<8)|low;
 }
 void setup() {
   Serial.begin(9600); Wire.begin(); inaWrite(0x05,4096); tsl.begin();
@@ -280,13 +284,14 @@ float distanceM() {
 void setup() {
   Serial.begin(9600); Wire.begin(); tsl.begin();
   pinMode(TRIG,OUTPUT);pinMode(ECHO,INPUT);
-  Serial.println("distance_m,mean_lux,d2_times_lux");
+  Serial.println("time_ms,distance_m,mean_lux,d2_times_lux");
 }
 void loop() {
   float d=distanceM();
   float sum=0;
   for(byte i=0;i<sampleCount;i++){sum+=lightLux();delay(120);}
   float light=sum/sampleCount;
+  Serial.print(millis());Serial.print(',');
   Serial.print(d,4);Serial.print(',');Serial.print(light,2);Serial.print(',');
   Serial.println(light*d*d,3); delay(300);
 }`

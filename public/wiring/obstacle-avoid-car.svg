@@ -44,36 +44,46 @@
 <g>
   <rect x="40" y="245" width="150" height="70" rx="8" fill="#ffffff" stroke="orange" stroke-width="4"/>
   <text x="50" y="270" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">9. DRIVER.IN1 → UNO.D2</text>
-  <text x="50" y="292" font-family="sans-serif" font-size="11" fill="#455064">왼쪽 모터 방향 입력을 D2에 연결하세요.</text>
+  <text x="50" y="292" font-family="sans-serif" font-size="11" fill="#455064">왼쪽 모터 방향 입력 IN1을 D2에 연결하</text>
 </g>
 <g>
-  <rect x="230" y="245" width="150" height="70" rx="8" fill="#ffffff" stroke="purple" stroke-width="4"/>
-  <text x="240" y="270" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">10. DRIVER.IN2 → UNO.D3</text>
-  <text x="240" y="292" font-family="sans-serif" font-size="11" fill="#455064">오른쪽 모터 방향 입력을 D3에 연결하세요.</text>
+  <rect x="230" y="245" width="150" height="70" rx="8" fill="#ffffff" stroke="orange" stroke-width="4"/>
+  <text x="240" y="270" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">10. DRIVER.IN2 → UNO.D4</text>
+  <text x="240" y="292" font-family="sans-serif" font-size="11" fill="#455064">왼쪽 모터 방향 입력 IN2를 D4에 연결하</text>
 </g>
 <g>
-  <rect x="420" y="245" width="150" height="70" rx="8" fill="#ffffff" stroke="yellow" stroke-width="4"/>
-  <text x="430" y="270" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">11. DRIVER.ENA → UNO.D5</text>
-  <text x="430" y="292" font-family="sans-serif" font-size="11" fill="#455064">왼쪽 모터 PWM 입력을 D5에 연결하세요.</text>
+  <rect x="420" y="245" width="150" height="70" rx="8" fill="#ffffff" stroke="purple" stroke-width="4"/>
+  <text x="430" y="270" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">11. DRIVER.IN3 → UNO.D3</text>
+  <text x="430" y="292" font-family="sans-serif" font-size="11" fill="#455064">오른쪽 모터 방향 입력 IN3을 D3에 연결</text>
 </g>
 <g>
-  <rect x="610" y="245" width="150" height="70" rx="8" fill="#ffffff" stroke="white" stroke-width="4"/>
-  <text x="620" y="270" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">12. DRIVER.ENB → UNO.D6</text>
-  <text x="620" y="292" font-family="sans-serif" font-size="11" fill="#455064">오른쪽 모터 PWM 입력을 D6에 연결하세요</text>
+  <rect x="610" y="245" width="150" height="70" rx="8" fill="#ffffff" stroke="purple" stroke-width="4"/>
+  <text x="620" y="270" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">12. DRIVER.IN4 → UNO.D7</text>
+  <text x="620" y="292" font-family="sans-serif" font-size="11" fill="#455064">오른쪽 모터 방향 입력 IN4를 D7에 연결</text>
 </g>
 <g>
-  <rect x="40" y="350" width="150" height="70" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
-  <text x="50" y="375" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">13. BATTERY.+ → DRIVER.VM</text>
-  <text x="50" y="397" font-family="sans-serif" font-size="11" fill="#455064">모터 정격에 맞는 외부 전원 양극을 드라이버</text>
+  <rect x="40" y="350" width="150" height="70" rx="8" fill="#ffffff" stroke="yellow" stroke-width="4"/>
+  <text x="50" y="375" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">13. DRIVER.ENA → UNO.D5</text>
+  <text x="50" y="397" font-family="sans-serif" font-size="11" fill="#455064">왼쪽 모터 PWM 입력 ENA를 D5에 연결</text>
 </g>
 <g>
-  <rect x="230" y="350" width="150" height="70" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
-  <text x="240" y="375" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">14. BATTERY.- → DRIVER.GND</text>
-  <text x="240" y="397" font-family="sans-serif" font-size="11" fill="#455064">외부 전원 음극을 드라이버 GND에 연결하세</text>
+  <rect x="230" y="350" width="150" height="70" rx="8" fill="#ffffff" stroke="white" stroke-width="4"/>
+  <text x="240" y="375" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">14. DRIVER.ENB → UNO.D6</text>
+  <text x="240" y="397" font-family="sans-serif" font-size="11" fill="#455064">오른쪽 모터 PWM 입력 ENB를 D6에 연</text>
 </g>
 <g>
-  <rect x="420" y="350" width="150" height="70" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
-  <text x="430" y="375" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">15. DRIVER.GND → UNO.GND</text>
-  <text x="430" y="397" font-family="sans-serif" font-size="11" fill="#455064">드라이버와 Uno의 GND를 공통으로 연결하</text>
+  <rect x="420" y="350" width="150" height="70" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
+  <text x="430" y="375" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">15. BATTERY.+ → DRIVER.VM</text>
+  <text x="430" y="397" font-family="sans-serif" font-size="11" fill="#455064">모터 정격에 맞는 외부 전원 양극을 드라이버</text>
+</g>
+<g>
+  <rect x="610" y="350" width="150" height="70" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
+  <text x="620" y="375" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">16. BATTERY.- → DRIVER.GND</text>
+  <text x="620" y="397" font-family="sans-serif" font-size="11" fill="#455064">외부 전원 음극을 드라이버 GND에 연결하세</text>
+</g>
+<g>
+  <rect x="40" y="455" width="150" height="70" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
+  <text x="50" y="480" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">17. DRIVER.GND → UNO.GND</text>
+  <text x="50" y="502" font-family="sans-serif" font-size="11" fill="#455064">드라이버와 Uno의 GND를 공통으로 연결하</text>
 </g>
 </svg>

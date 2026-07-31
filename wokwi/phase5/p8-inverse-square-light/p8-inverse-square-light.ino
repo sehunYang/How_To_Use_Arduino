@@ -28,7 +28,7 @@ void setup() {
   tsl.begin();
   pinMode(TRIG,OUTPUT);
   pinMode(ECHO,INPUT);
-  Serial.println("distance_m,mean_lux,d2_times_lux");
+  Serial.println("time_ms,distance_m,mean_lux,d2_times_lux");
 }
 void loop() {
   float d=distanceM();
@@ -38,6 +38,8 @@ void loop() {
     delay(120);
   }
   float light=sum/sampleCount;
+  Serial.print(millis());
+  Serial.print(',');
   Serial.print(d,4);
   Serial.print(',');
   Serial.print(light,2);

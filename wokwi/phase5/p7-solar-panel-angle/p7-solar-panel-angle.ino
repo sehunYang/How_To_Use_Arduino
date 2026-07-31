@@ -19,7 +19,10 @@ uint16_t inaRead(byte reg) {
   Wire.write(reg);
   Wire.endTransmission(false);
   Wire.requestFrom(INA,(byte)2);
-  return ((uint16_t)Wire.read()<<8)|Wire.read();
+  byte high=Wire.read();
+  byte low=Wire.read();
+  // 한 식에 두 번 읽으면 순서가 정해지지 않습니다.
+  return ((uint16_t)high<<8)|low;
 }
 void setup() {
   Serial.begin(9600);

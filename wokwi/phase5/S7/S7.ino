@@ -13,12 +13,14 @@ void setup() {
   Serial.begin(9600);
   Serial.println("# PHASE5_READY:S7");
   if (!ina219.begin()) Serial.println("# INA219_ERROR");
-  Serial.println("voltage_v,current_ma,power_mw");
+  Serial.println("time_ms,voltage_v,current_ma,power_mw");
 }
 
 void loop() {
   float busV = ina219.getBusVoltage_V();
   float currentMa = ina219.getCurrent_mA();
+  Serial.print(millis());
+  Serial.print(',');
   Serial.print(busV, 3);
   Serial.print(',');
   Serial.print(currentMa, 2);

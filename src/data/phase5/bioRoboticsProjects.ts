@@ -100,8 +100,9 @@ void write8(byte reg,byte value) {
 void beginBme() {
   T1=read16LE(0x88); T2=readS16LE(0x8A); T3=readS16LE(0x8C);
   H1=read8(0xA1); H2=readS16LE(0xE1); H3=read8(0xE3);
-  H4=(int16_t)((read8(0xE4)<<4)|(read8(0xE5)&0x0f));
-  H5=(int16_t)((read8(0xE6)<<4)|(read8(0xE5)>>4)); H6=(int8_t)read8(0xE7);
+  byte e4=read8(0xE4),e5=read8(0xE5),e6=read8(0xE6);
+  H4=(int16_t)((e4<<4)|(e5&0x0f));
+  H5=(int16_t)((e6<<4)|(e5>>4)); H6=(int8_t)read8(0xE7);
   if(H4&0x0800) H4|=0xf000; if(H5&0x0800) H5|=0xf000;
   write8(0xF2,1); write8(0xF4,0x27);
 }
@@ -113,7 +114,8 @@ float temperatureC() {
   v2=v2*v2*T3; tFine=v1+v2; return tFine/5120.0;
 }
 float humidityPct() {
-  long raw=((long)read8(0xFD)<<8)|read8(0xFE);
+  byte hMsb=read8(0xFD),hLsb=read8(0xFE);
+  long raw=((long)hMsb<<8)|hLsb;
   float h=tFine-76800.0;
   h=(raw-(H4*64.0+H5/16384.0*h))*(H2/65536.0*(1.0+H6/67108864.0*h*(1.0+H3/67108864.0*h)));
   h=h*(1.0-H1*h/524288.0); return constrain(h,0.0,100.0);
@@ -227,13 +229,15 @@ const obstacleCarSketch = `#include <Wire.h>
 // @pin SCL=A5
 // @pin TRIG=D8
 // @pin ECHO=D9
-// @pin LEFT_IN=D2
-// @pin RIGHT_IN=D3
+// @pin LEFT_IN1=D2
+// @pin LEFT_IN2=D4
+// @pin RIGHT_IN3=D3
+// @pin RIGHT_IN4=D7
 // @pin LEFT_PWM=D5
 // @pin RIGHT_PWM=D6
 // @baud 9600
 MPU6050 imu;
-const byte TRIG=8,ECHO=9,LEFT_IN=2,RIGHT_IN=3,LEFT_PWM=5,RIGHT_PWM=6;
+const byte TRIG=8,ECHO=9,LEFT_IN1=2,LEFT_IN2=4,RIGHT_IN3=3,RIGHT_IN4=7,LEFT_PWM=5,RIGHT_PWM=6;
 // @tunable stopDistanceCm
 float stopDistanceCm = 25.0;
 float distanceCm() {
@@ -243,20 +247,25 @@ float distanceCm() {
   return us ? us*0.0343/2.0 : NAN;
 }
 void drive(byte left, byte right) {
-  digitalWrite(LEFT_IN,HIGH); digitalWrite(RIGHT_IN,HIGH);
+  // L298N은 모터 한 개당 방향 입력이 두 개입니다. 한쪽만 연결하면 나머지
+  // 입력이 떠 있어 회전 방향이 정해지지 않습니다.
+  digitalWrite(LEFT_IN1,HIGH); digitalWrite(LEFT_IN2,LOW);
+  digitalWrite(RIGHT_IN3,HIGH); digitalWrite(RIGHT_IN4,LOW);
   analogWrite(LEFT_PWM,left); analogWrite(RIGHT_PWM,right);
 }
 void setup() {
   Serial.begin(9600); Wire.begin(); imu.initialize();
   pinMode(TRIG,OUTPUT); pinMode(ECHO,INPUT);
-  pinMode(LEFT_IN,OUTPUT); pinMode(RIGHT_IN,OUTPUT);
+  pinMode(LEFT_IN1,OUTPUT); pinMode(LEFT_IN2,OUTPUT);
+  pinMode(RIGHT_IN3,OUTPUT); pinMode(RIGHT_IN4,OUTPUT);
   pinMode(LEFT_PWM,OUTPUT); pinMode(RIGHT_PWM,OUTPUT);
-  Serial.println("distance_cm,tilt_x_g");
+  Serial.println("time_ms,distance_cm,tilt_x_g");
 }
 void loop() {
   float d=distanceCm();
   int16_t ax,ay,az; imu.getAcceleration(&ax,&ay,&az);
   if (isnan(d) || d < stopDistanceCm) drive(0,150); else drive(150,150);
+  Serial.print(millis()); Serial.print(',');
   Serial.print(d,1); Serial.print(',');
   Serial.println(ax/16384.0,3);
   delay(80);
@@ -264,20 +273,26 @@ void loop() {
 
 const lightFollowSketch = `// @pin LIGHT_LEFT=A0
 // @pin LIGHT_RIGHT=A1
-// @pin LEFT_IN=D2
-// @pin RIGHT_IN=D3
+// @pin LEFT_IN1=D2
+// @pin LEFT_IN2=D4
+// @pin RIGHT_IN3=D3
+// @pin RIGHT_IN4=D7
 // @pin LEFT_PWM=D5
 // @pin RIGHT_PWM=D6
 // @baud 9600
-const byte LDR_L=A0,LDR_R=A1,IN_L=2,IN_R=3,PWM_L=5,PWM_R=6;
+const byte LDR_L=A0,LDR_R=A1,IN_L1=2,IN_L2=4,IN_R3=3,IN_R4=7,PWM_L=5,PWM_R=6;
 // @tunable deadband
 int deadband = 40;
 void setup() {
   Serial.begin(9600);
-  pinMode(IN_L,OUTPUT); pinMode(IN_R,OUTPUT);
+  pinMode(IN_L1,OUTPUT); pinMode(IN_L2,OUTPUT);
+  pinMode(IN_R3,OUTPUT); pinMode(IN_R4,OUTPUT);
   pinMode(PWM_L,OUTPUT); pinMode(PWM_R,OUTPUT);
-  digitalWrite(IN_L,HIGH); digitalWrite(IN_R,HIGH);
-  Serial.println("left_adc,right_adc,error");
+  // L298N은 모터 한 개당 방향 입력이 두 개입니다. 두 입력을 HIGH/LOW로
+  // 함께 정해야 회전 방향이 확정됩니다.
+  digitalWrite(IN_L1,HIGH); digitalWrite(IN_L2,LOW);
+  digitalWrite(IN_R3,HIGH); digitalWrite(IN_R4,LOW);
+  Serial.println("time_ms,left_adc,right_adc,error");
 }
 void loop() {
   int left=analogRead(LDR_L), right=analogRead(LDR_R);
@@ -285,6 +300,7 @@ void loop() {
   int correction=abs(error)<deadband ? 0 : constrain(error/2,-80,80);
   analogWrite(PWM_L,constrain(150-correction,0,255));
   analogWrite(PWM_R,constrain(150+correction,0,255));
+  Serial.print(millis()); Serial.print(',');
   Serial.print(left); Serial.print(',');
   Serial.print(right); Serial.print(',');
   Serial.println(error);
@@ -299,23 +315,31 @@ const byte PIR_PIN=2,SERVO_PIN=9;
 unsigned long holdOpenMs = 3000;
 unsigned long lastMotion=0;
 void servoAngle(byte angle) {
-  unsigned int pulse=544UL+(unsigned long)angle*(2400-544)/180;
+  unsigned int pulse=544U+(unsigned long)angle*(2400-544)/180;
   digitalWrite(SERVO_PIN,HIGH); delayMicroseconds(pulse);
-  digitalWrite(SERVO_PIN,LOW); delayMicroseconds(20000-pulse);
+  digitalWrite(SERVO_PIN,LOW);
+  // delayMicroseconds는 16383 µs까지만 정확합니다. 20 ms 프레임을 한 번에
+  // 넣으면 주기가 무너지므로 나머지는 delay()로 채웁니다.
+  delayMicroseconds(2400-pulse); delay(17);
 }
 void setup() {
   Serial.begin(9600);
   pinMode(PIR_PIN,INPUT); pinMode(SERVO_PIN,OUTPUT);
-  for(byte i=0;i<25;i++) servoAngle(0);
-  delay(30000);
   Serial.println("time_ms,door_state");
+  // PIR 안정화 약 30초 동안에도 문을 닫힌 자세로 계속 붙잡아 둡니다.
+  for(unsigned int i=0;i<1500;i++) servoAngle(0);
 }
 void loop() {
+  static bool lastOpen=false; static unsigned long lastLog=0;
   if (digitalRead(PIR_PIN)==HIGH) lastMotion=millis();
   bool open=millis()-lastMotion < holdOpenMs;
   servoAngle(open ? 90 : 0);
-  Serial.print(millis()); Serial.print(',');
-  Serial.println(open ? "open" : "closed");
+  // 20 ms마다 출력하면 9600 baud를 넘겨 기록이 밀립니다. 상태 변화와 1초 주기만 남깁니다.
+  if (open!=lastOpen || millis()-lastLog>=1000) {
+    lastOpen=open; lastLog=millis();
+    Serial.print(millis()); Serial.print(',');
+    Serial.println(open ? "open" : "closed");
+  }
 }`
 
 const parkingAlarmSketch = `// @pin TRIG=D8
@@ -388,7 +412,7 @@ void setup() {
   pinMode(PIR_PIN,INPUT); pinMode(RELAY_PIN,OUTPUT);
   digitalWrite(RELAY_PIN,LOW);
   delay(30000);
-  Serial.println("light_adc,occupied,lamp");
+  Serial.println("time_ms,light_adc,occupied,lamp");
 }
 void loop() {
   int light=analogRead(LIGHT_PIN);
@@ -396,6 +420,7 @@ void loop() {
   bool occupied=millis()-lastMotion<30000;
   bool lamp=occupied && light<darkThreshold;
   digitalWrite(RELAY_PIN,lamp ? HIGH : LOW);
+  Serial.print(millis());Serial.print(',');
   Serial.print(light);Serial.print(',');
   Serial.print(occupied);Serial.print(',');
   Serial.println(lamp);
@@ -506,10 +531,12 @@ export const roboticsProjectRecipes: Recipe[] = [
       { from: 'HC-SR04.GND', to: 'UNO.GND', color: 'black', text: '초음파 센서 GND를 공통 GND에 연결하세요.' },
       { from: 'HC-SR04.TRIG', to: 'UNO.D8', color: 'blue', text: 'TRIG를 D8에 연결하세요.' },
       { from: 'HC-SR04.ECHO', to: 'UNO.D9', color: 'green', text: 'ECHO를 D9에 연결하세요.' },
-      { from: 'DRIVER.IN1', to: 'UNO.D2', color: 'orange', text: '왼쪽 모터 방향 입력을 D2에 연결하세요.' },
-      { from: 'DRIVER.IN2', to: 'UNO.D3', color: 'purple', text: '오른쪽 모터 방향 입력을 D3에 연결하세요.' },
-      { from: 'DRIVER.ENA', to: 'UNO.D5', color: 'yellow', text: '왼쪽 모터 PWM 입력을 D5에 연결하세요.' },
-      { from: 'DRIVER.ENB', to: 'UNO.D6', color: 'white', text: '오른쪽 모터 PWM 입력을 D6에 연결하세요.' },
+      { from: 'DRIVER.IN1', to: 'UNO.D2', color: 'orange', text: '왼쪽 모터 방향 입력 IN1을 D2에 연결하세요.' },
+      { from: 'DRIVER.IN2', to: 'UNO.D4', color: 'orange', text: '왼쪽 모터 방향 입력 IN2를 D4에 연결하세요. 모터 한 개에는 방향 입력이 두 개 모두 필요합니다.' },
+      { from: 'DRIVER.IN3', to: 'UNO.D3', color: 'purple', text: '오른쪽 모터 방향 입력 IN3을 D3에 연결하세요.' },
+      { from: 'DRIVER.IN4', to: 'UNO.D7', color: 'purple', text: '오른쪽 모터 방향 입력 IN4를 D7에 연결하세요.' },
+      { from: 'DRIVER.ENA', to: 'UNO.D5', color: 'yellow', text: '왼쪽 모터 PWM 입력 ENA를 D5에 연결하세요.' },
+      { from: 'DRIVER.ENB', to: 'UNO.D6', color: 'white', text: '오른쪽 모터 PWM 입력 ENB를 D6에 연결하세요.' },
       { from: 'BATTERY.+', to: 'DRIVER.VM', color: 'red', text: '모터 정격에 맞는 외부 전원 양극을 드라이버 VM에 연결하세요.' },
       { from: 'BATTERY.-', to: 'DRIVER.GND', color: 'black', text: '외부 전원 음극을 드라이버 GND에 연결하세요.' },
       { from: 'DRIVER.GND', to: 'UNO.GND', color: 'black', text: '드라이버와 Uno의 GND를 공통으로 연결하세요.' },
@@ -540,10 +567,12 @@ export const roboticsProjectRecipes: Recipe[] = [
       { from: 'CDS_2.L2', to: 'CDS_RESISTOR_2.1', color: 'green', text: '오른쪽 CDS의 L2를 오른쪽 10 kΩ 분압 저항과 연결하세요.' },
       { from: 'CDS_RESISTOR_2.1', to: 'UNO.A1', color: 'green', text: '오른쪽 두 저항 사이의 전압 측정 지점을 A1에 연결하세요.' },
       { from: 'CDS_RESISTOR_2.2', to: 'UNO.GND', color: 'black', text: '오른쪽 분압 저항의 다른 쪽을 GND에 연결하세요.' },
-      { from: 'DRIVER.IN1', to: 'UNO.D2', color: 'orange', text: '왼쪽 모터 방향 입력을 D2에 연결하세요.' },
-      { from: 'DRIVER.IN2', to: 'UNO.D3', color: 'purple', text: '오른쪽 모터 방향 입력을 D3에 연결하세요.' },
-      { from: 'DRIVER.ENA', to: 'UNO.D5', color: 'yellow', text: '왼쪽 PWM을 D5에 연결하세요.' },
-      { from: 'DRIVER.ENB', to: 'UNO.D6', color: 'white', text: '오른쪽 PWM을 D6에 연결하세요.' },
+      { from: 'DRIVER.IN1', to: 'UNO.D2', color: 'orange', text: '왼쪽 모터 방향 입력 IN1을 D2에 연결하세요.' },
+      { from: 'DRIVER.IN2', to: 'UNO.D4', color: 'orange', text: '왼쪽 모터 방향 입력 IN2를 D4에 연결하세요. 모터 한 개에는 방향 입력이 두 개 모두 필요합니다.' },
+      { from: 'DRIVER.IN3', to: 'UNO.D3', color: 'purple', text: '오른쪽 모터 방향 입력 IN3을 D3에 연결하세요.' },
+      { from: 'DRIVER.IN4', to: 'UNO.D7', color: 'purple', text: '오른쪽 모터 방향 입력 IN4를 D7에 연결하세요.' },
+      { from: 'DRIVER.ENA', to: 'UNO.D5', color: 'yellow', text: '왼쪽 PWM(ENA)을 D5에 연결하세요.' },
+      { from: 'DRIVER.ENB', to: 'UNO.D6', color: 'white', text: '오른쪽 PWM(ENB)을 D6에 연결하세요.' },
       { from: 'BATTERY.+', to: 'DRIVER.VM', color: 'red', text: '모터용 외부 전원 양극을 드라이버 VM에 연결하세요.' },
       { from: 'BATTERY.-', to: 'DRIVER.GND', color: 'black', text: '외부 전원 음극을 드라이버 GND에 연결하세요.' },
       { from: 'DRIVER.GND', to: 'UNO.GND', color: 'black', text: '드라이버와 Uno의 GND를 공통으로 연결하세요.' },

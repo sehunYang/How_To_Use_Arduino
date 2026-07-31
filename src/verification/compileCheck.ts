@@ -73,15 +73,16 @@ export function stageSketch(name: string, source: string): string {
   return inoPath
 }
 
-/**
- * @param sketchPath a `.ino` file or the sketch folder containing it.
- */
-export function compileSketch(sketchPath: string): Promise<CompileResult> {
-  if (!isArduinoCliInstalled()) return Promise.reject(new Error(SETUP_HINT))
+interface CliRun {
+  stdout: string
+  stderr: string
+  /** Kept so an empty-output failure can say *why* the process ended. */
+  code: number | null
+  signal: NodeJS.Signals | null
+}
 
-  const sketchDir = sketchPath.endsWith('.ino') ? dirname(sketchPath) : sketchPath
+function runArduinoCli(sketchDir: string): Promise<CliRun> {
   const args = ['compile', '--fqbn', FQBN, '--format', 'json', sketchDir]
-
   return new Promise((resolve, reject) => {
     const child = spawn(arduinoCliBin, args, { env: arduinoEnv() })
     let stdout = ''
@@ -89,39 +90,59 @@ export function compileSketch(sketchPath: string): Promise<CompileResult> {
     child.stdout.on('data', (chunk) => (stdout += chunk))
     child.stderr.on('data', (chunk) => (stderr += chunk))
     child.on('error', reject)
-    child.on('close', () => {
-      let parsed: CompileJson
-      try {
-        parsed = JSON.parse(stdout) as CompileJson
-      } catch {
-        // A non-JSON body means arduino-cli itself failed (bad FQBN, missing
-        // core) rather than the sketch failing to compile.
-        resolve({
-          compilePass: false,
-          sramPercent: 0,
-          flashPercent: 0,
-          severity: 'error',
-          message: `${basename(sketchDir)}: arduino-cli produced no JSON.\n${stderr || stdout}`,
-        })
-        return
-      }
-
-      const sections = parsed.builder_result?.executable_sections_size ?? []
-      const flashPercent = percent(sections, 'text')
-      const sramPercent = percent(sections, 'data')
-      const compilePass = parsed.success === true
-
-      resolve({
-        compilePass,
-        sramPercent,
-        flashPercent,
-        // A sketch that does not build is always an error, regardless of the
-        // (meaningless) memory figures reported alongside the failure.
-        severity: compilePass ? severityFor(sramPercent, flashPercent) : 'error',
-        message: compilePass
-          ? (parsed.compiler_out ?? '')
-          : (parsed.compiler_err ?? stderr ?? 'compilation failed'),
-      })
-    })
+    child.on('close', (code, signal) => resolve({ stdout, stderr, code, signal }))
   })
+}
+
+/**
+ * @param sketchPath a `.ino` file or the sketch folder containing it.
+ */
+export async function compileSketch(sketchPath: string): Promise<CompileResult> {
+  if (!isArduinoCliInstalled()) throw new Error(SETUP_HINT)
+
+  const sketchDir = sketchPath.endsWith('.ino') ? dirname(sketchPath) : sketchPath
+
+  let run = await runArduinoCli(sketchDir)
+  // A sketch that genuinely fails to build still prints a JSON body with
+  // `success: false`, so empty stdout never means "the code is wrong" — it
+  // means the process never got far enough to report. Spawning many builds
+  // back to back against a cold cache makes that happen transiently, and it
+  // used to surface as an error indistinguishable from a real build failure.
+  // Retrying only on empty output therefore cannot mask a broken sketch.
+  if (run.stdout.trim() === '') run = await runArduinoCli(sketchDir)
+
+  let parsed: CompileJson
+  try {
+    parsed = JSON.parse(run.stdout) as CompileJson
+  } catch {
+    // A non-JSON body means arduino-cli itself failed (bad FQBN, missing
+    // core) rather than the sketch failing to compile. The exit status is
+    // reported because with both streams empty there is nothing else to go on.
+    const detail = run.stderr.trim() || run.stdout.trim() || '(both output streams were empty)'
+    return {
+      compilePass: false,
+      sramPercent: 0,
+      flashPercent: 0,
+      severity: 'error',
+      message: `${basename(sketchDir)}: arduino-cli produced no JSON `
+        + `(exit=${run.code}, signal=${run.signal}, retried once).\n${detail}`,
+    }
+  }
+
+  const sections = parsed.builder_result?.executable_sections_size ?? []
+  const flashPercent = percent(sections, 'text')
+  const sramPercent = percent(sections, 'data')
+  const compilePass = parsed.success === true
+
+  return {
+    compilePass,
+    sramPercent,
+    flashPercent,
+    // A sketch that does not build is always an error, regardless of the
+    // (meaningless) memory figures reported alongside the failure.
+    severity: compilePass ? severityFor(sramPercent, flashPercent) : 'error',
+    message: compilePass
+      ? (parsed.compiler_out ?? '')
+      : (parsed.compiler_err ?? run.stderr ?? 'compilation failed'),
+  }
 }

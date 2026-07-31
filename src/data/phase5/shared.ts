@@ -106,7 +106,10 @@ export function createProjectRecipe(input: ProjectRecipeInput): Recipe {
     imageHeight: 600,
     wiring: makeWiring(input.connections),
     sketch: input.sketch,
-    baudRate: 9600,
+    // Read from the sketch rather than pinned to 9600: L1 cross-checks the two,
+    // so a recipe that samples faster than 9600 baud can carry must be able to
+    // raise both together (9600 = 960 B/s only fits ~25-60 CSV rows per second).
+    baudRate: Number(/\/\/ @baud\s+(\d+)/.exec(input.sketch)?.[1] ?? 9600),
     tunables: [input.tunable],
     body: `## 탐구 목표
 

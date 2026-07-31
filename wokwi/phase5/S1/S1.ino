@@ -15,7 +15,7 @@ void setup() {
   Serial.println("# PHASE5_READY:S1");
   Wire.begin();
   mpu.initialize();
-  Serial.println("roll_deg,pitch_deg");
+  Serial.println("time_ms,roll_deg,pitch_deg");
 }
 
 void loop() {
@@ -23,6 +23,8 @@ void loop() {
   mpu.getAcceleration(&ax, &ay, &az);
   float roll = atan2((float)ay, (float)az) * 180.0 / PI;
   float pitch = atan2(-(float)ax, sqrt((float)ay * ay + (float)az * az)) * 180.0 / PI;
+  Serial.print(millis());
+  Serial.print(',');
   Serial.print(roll, 1);
   Serial.print(',');
   Serial.println(pitch, 1);

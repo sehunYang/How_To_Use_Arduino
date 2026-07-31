@@ -91,7 +91,7 @@ void setup() {
   Serial.begin(9600);
   Wire.begin();
   mpu.initialize();
-  Serial.println("roll_deg,pitch_deg");
+  Serial.println("time_ms,roll_deg,pitch_deg");
 }
 
 void loop() {
@@ -99,6 +99,7 @@ void loop() {
   mpu.getAcceleration(&ax, &ay, &az);
   float roll = atan2((float)ay, (float)az) * 180.0 / PI;
   float pitch = atan2(-(float)ax, sqrt((float)ay * ay + (float)az * az)) * 180.0 / PI;
+  Serial.print(millis()); Serial.print(',');
   Serial.print(roll, 1); Serial.print(',');
   Serial.println(pitch, 1);
   delay(samplingIntervalMs);
@@ -224,10 +225,11 @@ int samplingIntervalMs = 1000;
 void setup() {
   Serial.begin(9600);
   if (!bme.begin(0x76)) Serial.println("# BME280_ERROR");
-  Serial.println("temperature_c,humidity_pct,pressure_hpa");
+  Serial.println("time_ms,temperature_c,humidity_pct,pressure_hpa");
 }
 
 void loop() {
+  Serial.print(millis()); Serial.print(',');
   Serial.print(bme.readTemperature(), 2); Serial.print(',');
   Serial.print(bme.readHumidity(), 2); Serial.print(',');
   Serial.println(bme.readPressure() / 100.0, 2);
@@ -249,12 +251,13 @@ int samplingIntervalMs = 500;
 void setup() {
   Serial.begin(9600);
   if (!ina219.begin()) Serial.println("# INA219_ERROR");
-  Serial.println("voltage_v,current_ma,power_mw");
+  Serial.println("time_ms,voltage_v,current_ma,power_mw");
 }
 
 void loop() {
   float busV = ina219.getBusVoltage_V();
   float currentMa = ina219.getCurrent_mA();
+  Serial.print(millis()); Serial.print(',');
   Serial.print(busV, 3); Serial.print(',');
   Serial.print(currentMa, 2); Serial.print(',');
   Serial.println(busV * currentMa, 2);
@@ -312,6 +315,7 @@ void readChannel(byte channel) {
   selectChannel(channel);
   delay(channelDelayMs);
   uint32_t lum = tsl.getFullLuminosity();
+  Serial.print(millis()); Serial.print(',');
   Serial.print(channel); Serial.print(',');
   Serial.println(lum & 0xffff);
 }
@@ -319,9 +323,16 @@ void readChannel(byte channel) {
 void setup() {
   Serial.begin(9600);
   Wire.begin();
-  selectChannel(0);
-  if (!tsl.begin()) Serial.println("# TSL2591_ERROR");
-  Serial.println("channel,light_raw");
+  // 채널마다 begin()을 불러야 두 센서의 신호 증폭 정도와 측정 시간이 같아집니다.
+  // 채널 0에서만 부르면 채널 1 센서는 전원투입 기본 설정으로 남아 두 위치의
+  // 값을 그대로 비교할 수 없습니다.
+  for (byte channel = 0; channel < 2; ++channel) {
+    selectChannel(channel);
+    if (!tsl.begin()) Serial.println("# TSL2591_ERROR");
+    tsl.setGain(TSL2591_GAIN_MED);
+    tsl.setTiming(TSL2591_INTEGRATIONTIME_100MS);
+  }
+  Serial.println("time_ms,channel,light_raw");
 }
 
 void loop() {
