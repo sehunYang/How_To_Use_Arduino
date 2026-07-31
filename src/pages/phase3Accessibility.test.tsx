@@ -5,7 +5,7 @@ import axe from 'axe-core'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App, { PAGE_LOADING_LABEL } from '@/App'
 
-const studentRoutes = ['/', '/recipes', '/recipes/pendulum', '/sensors', '/data-converter']
+const studentRoutes = ['/', '/recipes', '/recipes/pendulum', '/sensors', '/data-analysis']
 const themes = ['light', 'dark'] as const
 
 // 화면은 필요할 때 내려받으므로 이 검사는 실제 import가 끝나기를 기다립니다.

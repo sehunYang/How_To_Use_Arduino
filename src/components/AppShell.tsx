@@ -3,17 +3,24 @@ import { Link, NavLink } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/ThemeToggle'
 
-const navigation = [
+const guideNavigation = [
   { to: '/', label: '아이디어 찾기' },
   { to: '/recipes', label: '레시피 둘러보기' },
   { to: '/sensors', label: '센서 학습하기' },
-  { to: '/data-converter', label: '데이터 변환하기' },
 ]
+
+/**
+ * 데이터 변환·분석은 학생 가이드의 하위 항목이 아니라 같은 높이의 메뉴입니다.
+ * 레시피를 따라 회로를 만든 뒤 측정한 값을 다루는 별개의 작업이라, 가이드 안에
+ * 숨어 있으면 실험을 마친 학생이 찾기 어렵습니다.
+ */
+const dataAnalysisNavigation = { to: '/data-analysis', label: '데이터 변환·분석' }
 
 export function AppShell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false)
   const [treeOpen, setTreeOpen] = useState(true)
-  const links = navigation.map((item) => (
+
+  const guideLinks = guideNavigation.map((item) => (
     <NavLink
       key={item.to}
       to={item.to}
@@ -26,6 +33,38 @@ export function AppShell({ children }: { children: ReactNode }) {
       {item.label}
     </NavLink>
   ))
+
+  const dataAnalysisLink = (
+    <NavLink
+      to={dataAnalysisNavigation.to}
+      onClick={() => setOpen(false)}
+      className={({ isActive }) =>
+        `block rounded-card px-3 py-2 font-semibold ${isActive ? 'bg-accent text-accent-foreground' : 'text-foreground hover:bg-muted-background'}`
+      }
+    >
+      {dataAnalysisNavigation.label}
+    </NavLink>
+  )
+
+  // 데스크톱 사이드바와 모바일 메뉴가 같은 목록을 그리므로, 펼침 상태를 가리키는
+  // id는 화면마다 달라야 두 곳에 같은 id가 생기지 않습니다.
+  const renderMenu = (scope: string) => {
+    const treeId = `${scope}-navigation-tree`
+    return (
+      <>
+        <button
+          className="flex w-full items-center justify-between rounded-card px-3 py-2 font-semibold hover:bg-muted-background"
+          aria-expanded={treeOpen}
+          aria-controls={treeId}
+          onClick={() => setTreeOpen((value) => !value)}
+        >
+          학생 가이드 <span aria-hidden="true">{treeOpen ? '▾' : '▸'}</span>
+        </button>
+        {treeOpen && <div id={treeId} className="mt-1 space-y-1 border-l border-border pl-3">{guideLinks}</div>}
+        <div className="mt-2">{dataAnalysisLink}</div>
+      </>
+    )
+  }
 
   return (
     <div className="min-h-dvh bg-background text-foreground">
@@ -49,21 +88,11 @@ export function AppShell({ children }: { children: ReactNode }) {
       </header>
       <div className="app-layout mx-auto max-w-screen-2xl">
         <aside className="hidden min-h-[calc(100dvh-4rem)] border-r border-border p-page md:block">
-          <nav aria-label="학습 메뉴" className="sticky top-20">
-            <button
-              className="flex w-full items-center justify-between rounded-card px-3 py-2 font-semibold hover:bg-muted-background"
-              aria-expanded={treeOpen}
-              aria-controls="student-navigation-tree"
-              onClick={() => setTreeOpen((value) => !value)}
-            >
-              학생 가이드 <span aria-hidden="true">{treeOpen ? '▾' : '▸'}</span>
-            </button>
-            {treeOpen && <div id="student-navigation-tree" className="mt-1 space-y-1 border-l border-border pl-3">{links}</div>}
-          </nav>
+          <nav aria-label="학습 메뉴" className="sticky top-20">{renderMenu('student')}</nav>
         </aside>
         {open && (
           <nav id="mobile-navigation" aria-label="모바일 메뉴" className="border-b border-border p-page md:hidden">
-            {links}
+            {renderMenu('mobile')}
           </nav>
         )}
         <main className="min-w-0 p-page">{children}</main>

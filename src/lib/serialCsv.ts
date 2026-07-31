@@ -1,3 +1,5 @@
+import { createTimestampedFilename, downloadBlob } from '@/lib/downloadFile'
+
 export const MAX_SERIAL_INPUT_CHARS = 5_000_000
 
 export interface ExcludedSerialRow {
@@ -10,6 +12,8 @@ export interface SerialCsvSuccess {
   ok: true
   csv: string
   header: string[]
+  /** 헤더를 뺀 측정값 행. 그래프와 통계가 CSV 문자열을 다시 읽지 않도록 그대로 전달합니다. */
+  rows: string[][]
   columnCount: number
   dataRowCount: number
   excludedRows: ExcludedSerialRow[]
@@ -230,6 +234,7 @@ export function convertSerialTextToCsv(input: string): SerialCsvResult {
     ok: true,
     csv: [csvLine(header), ...dataRows.map(csvLine)].join('\r\n'),
     header,
+    rows: dataRows,
     columnCount: header.length,
     dataRowCount: dataRows.length,
     excludedRows,
@@ -237,19 +242,10 @@ export function convertSerialTextToCsv(input: string): SerialCsvResult {
 }
 
 export function createSerialCsvFilename(date = new Date()) {
-  const twoDigits = (value: number) => String(value).padStart(2, '0')
-  return `arduino-data-${date.getFullYear()}${twoDigits(date.getMonth() + 1)}${twoDigits(date.getDate())}-${twoDigits(date.getHours())}${twoDigits(date.getMinutes())}${twoDigits(date.getSeconds())}.csv`
+  return createTimestampedFilename('arduino-data', 'csv', date)
 }
 
 export function downloadSerialCsv(csv: string, filename = createSerialCsvFilename()) {
-  const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const anchor = document.createElement('a')
-  anchor.href = url
-  anchor.download = filename
-  anchor.hidden = true
-  document.body.append(anchor)
-  anchor.click()
-  anchor.remove()
-  URL.revokeObjectURL(url)
+  // \uC55E\uBA38\uB9AC BOM\uC740 \uC5D1\uC140\uC774 \uD30C\uC77C\uC744 UTF-8\uB85C \uC77D\uAC8C \uD574 \uD55C\uAE00 \uC5F4 \uC774\uB984\uC774 \uAE68\uC9C0\uC9C0 \uC54A\uAC8C \uD569\uB2C8\uB2E4.
+  downloadBlob(new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8' }), filename)
 }

@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { BrowserRouter, Link, Routes, Route, useParams } from 'react-router-dom'
+import { BrowserRouter, Link, Navigate, Routes, Route, useParams } from 'react-router-dom'
 import { routerBasename } from '@/lib/basePath'
 import { AppShell } from '@/components/AppShell'
 import { type AdminServices } from '@/admin/AdminServices'
@@ -20,7 +20,7 @@ const RecipeListPage = lazy(async () => ({ default: (await import('@/pages/Recip
 const RecipeDetailPage = lazy(async () => ({ default: (await import('@/pages/RecipeDetailPage')).RecipeDetailPage }))
 const SensorListPage = lazy(async () => ({ default: (await import('@/pages/SensorListPage')).SensorListPage }))
 const SensorDetailPage = lazy(async () => ({ default: (await import('@/pages/SensorDetailPage')).SensorDetailPage }))
-const DataConverterPage = lazy(async () => ({ default: (await import('@/pages/DataConverterPage')).DataConverterPage }))
+const DataAnalysisPage = lazy(async () => ({ default: (await import('@/pages/DataAnalysisPage')).DataAnalysisPage }))
 
 /**
  * 관리자 화면과 그 Firebase 어댑터를 한 덩어리로 묶어 함께 내려받습니다.
@@ -68,7 +68,9 @@ function App({ adminServices }: { adminServices?: AdminServices }) {
             <Route path="/recipes/:id" element={<RecipeRoute />} />
             <Route path="/sensors" element={<SensorListPage />} />
             <Route path="/sensors/:id" element={<SensorDetailPage />} />
-            <Route path="/data-converter" element={<DataConverterPage />} />
+            <Route path="/data-analysis" element={<DataAnalysisPage />} />
+            {/* 변환 전용 화면이던 시절의 주소를 저장해 둔 학생이 있어 새 주소로 넘겨 줍니다. */}
+            <Route path="/data-converter" element={<Navigate to="/data-analysis" replace />} />
             <Route path="/admin/*" element={<AdminRoute services={adminServices} />} />
             <Route path="*" element={<div className="py-20 text-center"><h1 className="text-3xl font-semibold">페이지를 찾을 수 없어요</h1><Link className="mt-4 inline-block text-accent" to="/">처음으로</Link></div>} />
           </Routes>

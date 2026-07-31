@@ -1,5 +1,13 @@
 # Design
 
+## 2026-08-01 데이터 변환·분석 결정
+
+- 데이터 변환·분석은 학생 가이드의 하위 항목이 아니라 같은 높이의 메뉴로 둔다.
+- 그래프는 화면 테마와 무관하게 흰 바탕·검은 축의 논문 그림 형식으로만 그린다. 화면에 보이는 그림과 저장한 PNG가 달라지면 안 되고, 어두운 바탕 그림은 보고서에 쓸 수 없다.
+- 세로축에 겹쳐 그리는 계열은 세 개까지만 허용한다. 산점도는 모든 계열 쌍이 서로 구분되어야 하며, 네 번째 색부터는 색약에서 앞선 색과 구별되지 않는다.
+- 계열 색은 고정된 순서(파랑·주황·초록)로만 배정하고, 색과 함께 점 모양(원·마름모·삼각형)으로도 구분한다.
+- 세로축 눈금은 하나만 둔다. 단위가 다른 변인은 눈금을 따로 만들지 않고, 학생에게 단위가 같은 변인끼리 고르도록 안내한다.
+
 ## 2026-07-31 recipe and wiring decisions
 
 - 레시피 둘러보기 카드에는 배선 이미지나 배선 단계 카드를 표시하지 않는다.
@@ -38,8 +46,8 @@
 
 ## Information architecture
 
-- Primary navigation: 아이디어 찾기 · 레시피 둘러보기 · 센서 학습하기
-- Core routes/screens: `/`, `/search`, `/recipes`, `/recipes/:id`, `/sensors`, `/sensors/:id`
+- Primary navigation: 학생 가이드(아이디어 찾기 · 레시피 둘러보기 · 센서 학습하기)와 같은 높이의 데이터 변환·분석
+- Core routes/screens: `/`, `/search`, `/recipes`, `/recipes/:id`, `/sensors`, `/sensors/:id`, `/data-analysis`
 - Content hierarchy: 현재 단계 배선 이미지 → 연결 문장 → 진행 제어 → 코드와 설명
 
 ## Design principles
