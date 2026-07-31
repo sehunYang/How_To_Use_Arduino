@@ -230,7 +230,10 @@ export function GeneratedWokwiDiagram({
   const partMap = useMemo(() => new Map(positioned.map((part) => [part.id, part])), [positioned])
   const usages = useMemo(() => pinUsages(diagram), [diagram])
   const contentBottom = Math.max(290, ...positioned.map((part) => part.top + part.height + 24))
-  const height = contentBottom + diagram.connections.length * 10 + 30
+  const contentHeight = contentBottom + diagram.connections.length * 10 + 30
+  const sketchPadding = Math.max(80, diagram.connections.length * 7 + 28)
+  const sketchWidth = 900 + sketchPadding * 2
+  const sketchHeight = contentHeight + sketchPadding * 2
   const visibleCount = plannedWiring.filter((connection) => connection.stepIndex <= activeStep).length
   const currentCount = plannedWiring.filter((connection) => connection.stepIndex === activeStep).length
   const visible = diagram.connections.slice(0, visibleCount)
@@ -289,14 +292,21 @@ export function GeneratedWokwiDiagram({
 
   return (
     <svg
-      viewBox={`0 0 900 ${height}`}
+      viewBox={`${-sketchPadding} ${-sketchPadding} ${sketchWidth} ${sketchHeight}`}
       role="img"
       aria-label={`${recipe.title} Wokwi 배선도 ${activeStep + 1}단계까지 연결됨`}
       className="size-full"
       preserveAspectRatio="xMidYMid meet"
       data-generated-wokwi-diagram={recipe.id}
     >
-      <rect width="900" height={height} rx="14" fill="#f7f7f5" />
+      <rect
+        x={-sketchPadding}
+        y={-sketchPadding}
+        width={sketchWidth}
+        height={sketchHeight}
+        rx="14"
+        fill="#f7f7f5"
+      />
       {positioned.map((part) => (
         <g
           key={part.id}

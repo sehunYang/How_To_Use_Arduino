@@ -187,6 +187,10 @@ describe('WiringIllustration zoom and pan', () => {
       const expectedWires = planBreadboardWiring(recipe).length
       expect(wires, recipe.id).toHaveLength(expectedWires)
       expect(container.querySelector('[data-part-id="bb"]'), recipe.id).not.toBeNull()
+      const svg = container.querySelector('[data-generated-wokwi-diagram]')!
+      const [viewX, viewY, viewWidth, viewHeight] = (svg.getAttribute('viewBox') ?? '')
+        .split(' ')
+        .map(Number)
       for (const wire of wires) {
         expect(pinPoints.has(wire.getAttribute('data-wire-from') ?? ''), recipe.id).toBe(true)
         expect(pinPoints.has(wire.getAttribute('data-wire-to') ?? ''), recipe.id).toBe(true)
@@ -204,6 +208,12 @@ describe('WiringIllustration zoom and pan', () => {
             previous.x === current.x || previous.y === current.y,
             `${recipe.id}: wire segment must be orthogonal`,
           ).toBe(true)
+        }
+        for (const point of points) {
+          expect(point.x, `${recipe.id}: wire x must remain inside sketch`).toBeGreaterThanOrEqual(viewX)
+          expect(point.x, `${recipe.id}: wire x must remain inside sketch`).toBeLessThanOrEqual(viewX + viewWidth)
+          expect(point.y, `${recipe.id}: wire y must remain inside sketch`).toBeGreaterThanOrEqual(viewY)
+          expect(point.y, `${recipe.id}: wire y must remain inside sketch`).toBeLessThanOrEqual(viewY + viewHeight)
         }
       }
       for (const fallbackPin of Array.from(
