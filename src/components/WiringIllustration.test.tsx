@@ -113,8 +113,10 @@ describe('WiringIllustration zoom and pan', () => {
       wireLayer!.compareDocumentPosition(firstOverlay!) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy()
     expect(previous?.querySelector('[data-wire-line]')).toHaveAttribute('stroke-width', '2')
+    expect(previous).toHaveAttribute('opacity', '0.32')
     expect(previous?.querySelector('[data-wire-halo]')).toBeNull()
     expect(previous?.querySelector('[data-wire-blink]')).toBeNull()
+    expect(current).toHaveAttribute('opacity', '1')
     expect(current?.querySelector('[data-wire-blink]')).toHaveAttribute('dur', '3s')
     expect(current?.querySelector('[data-wire-blink]')).toHaveAttribute('repeatCount', 'indefinite')
     expect(currentWires.map((wire) => wire.querySelector('[data-wire-blink]')?.getAttribute('begin')))

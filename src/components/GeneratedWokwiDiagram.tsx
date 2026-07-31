@@ -271,7 +271,7 @@ export function GeneratedWokwiDiagram({
         data-wire-to-pin={to}
         data-wire-from={`${start.x},${start.y}`}
         data-wire-to={`${end.x},${end.y}`}
-        opacity={current ? 1 : 0.58}
+        opacity={current ? 1 : 0.32}
       >
         {current && (
           <animate
