@@ -100,7 +100,15 @@ export function planBreadboardWiring(recipe: Recipe): PlannedWiringConnection[] 
     const isThreeVolt = unoPins.includes('3.3V')
     const isGround = unoPins.includes('GND')
     const hasUno = unoPins.length > 0
-    const needsJunction = net.length > 2 || !hasUno
+    const hasBoardMountedPart = net.some((endpoint) => {
+      const token = endpoint.slice(0, endpoint.indexOf('.')).toUpperCase()
+      return /^LED(?:_\d+)?$/.test(token)
+        || /^BUZZER(?:_\d+)?$/.test(token)
+        || token.includes('RESISTOR')
+        || token === 'LOAD'
+        || token === 'LAMP'
+    })
+    const needsJunction = net.length > 2 || !hasUno || hasBoardMountedPart
     return { hasExplicitBoard, isFiveVolt, isThreeVolt, isGround, needsJunction }
   }
   const terminalNets = nets.filter((net) => {

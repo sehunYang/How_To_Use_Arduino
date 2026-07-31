@@ -27,7 +27,7 @@ interface PositionedPart extends DiagramPart {
   height: number
 }
 
-interface MountedResistor {
+interface BoardMountedPart {
   part: PositionedPart
   pinPoints: Map<string, Point>
   start: Point
@@ -160,14 +160,18 @@ function pinPointForEndpoint(
   return { x: part.left + local.x, y: part.top + local.y }
 }
 
-function mountedResistors(
+function boardMountedParts(
   diagram: Diagram,
   parts: PositionedPart[],
   usages: Map<string, string[]>,
-): MountedResistor[] {
+): BoardMountedPart[] {
   const partMap = new Map(parts.map((part) => [part.id, part]))
   return parts
-    .filter((part) => part.type === 'wokwi-resistor')
+    .filter((part) => (
+      part.type === 'wokwi-resistor'
+      || part.type === 'wokwi-led'
+      || part.type === 'wokwi-buzzer'
+    ))
     .flatMap((part) => {
       const pinPoints = new Map<string, Point>()
       for (const [from, to] of diagram.connections) {
@@ -181,13 +185,14 @@ function mountedResistors(
           pinPointForEndpoint(boardEndpoint, partMap, usages),
         )
       }
-      const start = pinPoints.get('1')
-      const end = pinPoints.get('2')
+      const usedPins = usages.get(part.id) ?? []
+      const start = pinPoints.get(usedPins[0])
+      const end = pinPoints.get(usedPins[1])
       return start && end ? [{ part, pinPoints, start, end }] : []
     })
 }
 
-function mountedResistorGraphic(mounted: MountedResistor) {
+function boardMountedGraphic(mounted: BoardMountedPart) {
   const { part, start, end } = mounted
   const dx = end.x - start.x
   const dy = end.y - start.y
@@ -195,6 +200,8 @@ function mountedResistorGraphic(mounted: MountedResistor) {
   const angle = Math.atan2(dy, dx) * 180 / Math.PI
   const bodyWidth = Math.min(54, Math.max(28, length * 0.48))
   const bodyX = (length - bodyWidth) / 2
+  const resistor = part.type === 'wokwi-resistor'
+  const led = part.type === 'wokwi-led'
   return (
     <g
       key={part.id}
@@ -204,27 +211,36 @@ function mountedResistorGraphic(mounted: MountedResistor) {
       data-part-top={Math.min(start.y, end.y) - 7}
       data-part-width={length}
       data-part-height="14"
-      data-mounted-resistor={part.id}
+      data-board-mounted-part={part.id}
+      data-mounted-resistor={resistor ? part.id : undefined}
+      data-mounted-led={led ? part.id : undefined}
+      data-mounted-buzzer={!resistor && !led ? part.id : undefined}
       data-resistor-pin-1={`${start.x},${start.y}`}
       data-resistor-pin-2={`${end.x},${end.y}`}
       transform={`translate(${start.x} ${start.y}) rotate(${angle})`}
     >
       <line x1="0" y1="0" x2={bodyX} y2="0" stroke="#8b8b83" strokeWidth="2.2" />
       <line x1={bodyX + bodyWidth} y1="0" x2={length} y2="0" stroke="#8b8b83" strokeWidth="2.2" />
-      <rect
-        x={bodyX}
-        y="-7"
-        width={bodyWidth}
-        height="14"
-        rx="3"
-        fill="#e8c989"
-        stroke="#8a6a34"
-        strokeWidth="1.2"
-      />
-      <line x1={bodyX + bodyWidth * 0.22} y1="-7" x2={bodyX + bodyWidth * 0.22} y2="7" stroke="#c2410c" strokeWidth="3" />
-      <line x1={bodyX + bodyWidth * 0.42} y1="-7" x2={bodyX + bodyWidth * 0.42} y2="7" stroke="#c2410c" strokeWidth="3" />
-      <line x1={bodyX + bodyWidth * 0.62} y1="-7" x2={bodyX + bodyWidth * 0.62} y2="7" stroke="#7c2d12" strokeWidth="3" />
-      <line x1={bodyX + bodyWidth * 0.82} y1="-7" x2={bodyX + bodyWidth * 0.82} y2="7" stroke="#d4a017" strokeWidth="2" />
+      {resistor ? (
+        <>
+          <rect x={bodyX} y="-7" width={bodyWidth} height="14" rx="3" fill="#e8c989" stroke="#8a6a34" strokeWidth="1.2" />
+          <line x1={bodyX + bodyWidth * 0.22} y1="-7" x2={bodyX + bodyWidth * 0.22} y2="7" stroke="#c2410c" strokeWidth="3" />
+          <line x1={bodyX + bodyWidth * 0.42} y1="-7" x2={bodyX + bodyWidth * 0.42} y2="7" stroke="#c2410c" strokeWidth="3" />
+          <line x1={bodyX + bodyWidth * 0.62} y1="-7" x2={bodyX + bodyWidth * 0.62} y2="7" stroke="#7c2d12" strokeWidth="3" />
+          <line x1={bodyX + bodyWidth * 0.82} y1="-7" x2={bodyX + bodyWidth * 0.82} y2="7" stroke="#d4a017" strokeWidth="2" />
+        </>
+      ) : led ? (
+        <>
+          <path d={`M${bodyX + 8} 0a${bodyWidth / 2 - 8} ${bodyWidth / 2 - 8} 0 0 1 ${bodyWidth - 16} 0v7h-${bodyWidth - 16}z`} fill="#ef4444" stroke="#991b1b" strokeWidth="1.4" />
+          <rect x={bodyX + 6} y="6" width={bodyWidth - 12} height="5" rx="2" fill="#b91c1c" />
+        </>
+      ) : (
+        <>
+          <circle cx={bodyX + bodyWidth / 2} cy="0" r={Math.min(20, bodyWidth / 2)} fill="#20262b" stroke="#050708" strokeWidth="2" />
+          <circle cx={bodyX + bodyWidth / 2} cy="0" r={Math.min(9, bodyWidth / 4)} fill="#080a0b" />
+          <text x={bodyX + bodyWidth / 2} y="4" textAnchor="middle" fill="#d7dcdf" fontSize="8">+</text>
+        </>
+      )}
     </g>
   )
 }
@@ -323,7 +339,7 @@ export function GeneratedWokwiDiagram({
   const positioned = useMemo(() => positionParts(diagram.parts), [diagram.parts])
   const partMap = useMemo(() => new Map(positioned.map((part) => [part.id, part])), [positioned])
   const usages = useMemo(() => pinUsages(diagram), [diagram])
-  const mounted = useMemo(() => mountedResistors(diagram, positioned, usages), [diagram, positioned, usages])
+  const mounted = useMemo(() => boardMountedParts(diagram, positioned, usages), [diagram, positioned, usages])
   const mountedIds = useMemo(() => new Set(mounted.map(({ part }) => part.id)), [mounted])
   const endpointOverrides = useMemo(() => new Map(
     mounted.flatMap(({ part, pinPoints }) => [...pinPoints].map(([pin, point]) => [`${part.id}:${pin}`, point])),
@@ -432,7 +448,7 @@ export function GeneratedWokwiDiagram({
         {wires}
       </g>
       <g data-resistor-layer="mounted-on-breadboard">
-        {mounted.map(mountedResistorGraphic)}
+        {mounted.map(boardMountedGraphic)}
       </g>
       {positioned.filter((part) => !mountedIds.has(part.id)).map((part) => (
         <g key={part.id} data-part-overlay={part.id}>

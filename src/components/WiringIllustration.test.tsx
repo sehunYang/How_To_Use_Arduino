@@ -187,7 +187,7 @@ describe('WiringIllustration zoom and pan', () => {
           .map((pin) => `${pin.getAttribute('data-pin-x')},${pin.getAttribute('data-pin-y')}`),
       )
       const wires = Array.from(container.querySelectorAll('[data-wire-from][data-wire-to]'))
-      const mountedLeadCount = container.querySelectorAll('[data-mounted-resistor]').length * 2
+      const mountedLeadCount = container.querySelectorAll('[data-board-mounted-part]').length * 2
       const expectedWires = planBreadboardWiring(recipe).length - mountedLeadCount
       expect(wires, recipe.id).toHaveLength(expectedWires)
       expect(container.querySelector('[data-part-id="bb"]'), recipe.id).not.toBeNull()
@@ -268,6 +268,35 @@ describe('WiringIllustration zoom and pan', () => {
     expect(container.querySelector('[data-wire-from-pin="battery:GND"]'))
       .toHaveAttribute('data-wire-from', container.querySelector('[data-pin="battery:GND"]')?.getAttribute('data-pin-x')
         + ',' + container.querySelector('[data-pin="battery:GND"]')?.getAttribute('data-pin-y'))
+  })
+
+  it('mounts LED and buzzer leads directly in breadboard holes', () => {
+    const recipe = phase5Recipes.find((candidate) => candidate.id === 'parking-alarm')!
+    const { container } = render(
+      <WiringIllustration recipe={recipe} activeStep={recipe.wiring.length - 1} />,
+    )
+
+    expect(container.querySelector('[data-mounted-led="led"]')).not.toBeNull()
+    expect(container.querySelector('[data-mounted-buzzer="buzzer"]')).not.toBeNull()
+    for (const partId of ['led', 'buzzer']) {
+      const mounted = container.querySelector(`[data-board-mounted-part="${partId}"]`)!
+      const pin1 = mounted.getAttribute('data-resistor-pin-1')
+      const pin2 = mounted.getAttribute('data-resistor-pin-2')
+      expect(pin1).not.toBe(pin2)
+      expect(container.querySelector(`[data-part-overlay="${partId}"] [data-pin-source="breadboard-hole"]`))
+        .not.toBeNull()
+      expect(container.querySelector(`[data-wire-from-pin^="${partId}:"][data-wire-to-pin^="bb:"]`))
+        .toBeNull()
+    }
+  })
+
+  it('uses TSL2591 instead of CDS for the precision lens focal-length experiment', () => {
+    const recipe = phase6Recipes.find((candidate) => candidate.id === 'ph31-lens-focal-length')!
+
+    expect(recipe.sensors).toEqual(['tsl2591'])
+    expect(recipe.body).toContain('TSL2591 정밀 조도센서')
+    expect(recipe.wiring.some((step) => step.from.startsWith('CDS.'))).toBe(false)
+    expect(recipe.wiring.some((step) => step.from === 'TSL2591.SDA')).toBe(true)
   })
 
   it('reuses the current sensor SVGs and their measured connector coordinates', () => {

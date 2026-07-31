@@ -298,10 +298,10 @@ const optics: Phase6RecipeDefinition[] = [
     graph: '각도-광량 곡선의 최대 위치로 반사 법칙을 검증하고 재료별 봉우리 폭과 배경 산란을 비교합니다.',
   },
   {
-    id: 'ph31-lens-focal-length', title: '렌즈 초점거리 측정', difficulty: '초급', minutes: 55, sensors: ['cds'],
+    id: 'ph31-lens-focal-length', title: '렌즈 초점거리 측정', difficulty: '초급', minutes: 55, sensors: ['tsl2591'],
     keywords: ['렌즈', '초점거리', '얇은렌즈식', '상거리'],
     law: '얇은 렌즈는 1/f=1/u+1/v를 만족하며 먼 광원의 경우 상거리가 초점거리에 가까워집니다.',
-    apparatus: 'CDS 조도센서, 10 kΩ 저항, 볼록렌즈, LED 물체, 광학 레일 또는 자, 차광판, Arduino UNO, 브레드보드',
+    apparatus: 'TSL2591 정밀 조도센서, 볼록렌즈, LED 물체, 광학 레일 또는 자, 차광판, Arduino UNO, 브레드보드, MF선',
     method: '물체거리 u를 고정하고 센서를 이동해 가장 선명하고 밝은 상이 생기는 v를 찾습니다. 여러 u에서 반복하세요.',
     graph: '1/v-1/u 관계 또는 계산한 f의 분포를 나타내고 센서 면적 때문에 생기는 초점 판정 오차를 평가합니다.',
   },

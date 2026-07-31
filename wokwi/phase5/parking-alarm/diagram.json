@@ -73,7 +73,13 @@
     ],
     [
       "buzzer:2",
+      "bb:1t.a",
+      "purple",
+      []
+    ],
+    [
       "uno:D3",
+      "bb:1t.b",
       "purple",
       []
     ],
@@ -85,7 +91,13 @@
     ],
     [
       "led:A",
+      "bb:5t.a",
+      "orange",
+      []
+    ],
+    [
       "uno:D4",
+      "bb:5t.b",
       "orange",
       []
     ],
