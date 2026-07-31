@@ -28,6 +28,23 @@ function latexize(source: string) {
   return replacements.reduce((result, [pattern, replacement]) => result.replace(pattern, replacement), source)
 }
 
+function firstParagraph(source: string) {
+  return source
+    .split(/\n\s*\n/)
+    .map((paragraph) => paragraph.replace(/^#+\s+.*$/gm, '').trim())
+    .find((paragraph) => paragraph && !paragraph.startsWith(':::')) ?? ''
+}
+
+function theoryPrimer(recipe: Recipe) {
+  const targetSection = recipe.body.includes('## 변인')
+    ? recipe.body.match(/## 탐구 목표\s+([\s\S]*?)(?=\n## |\n:::|$)/)?.[1] ?? ''
+    : recipe.body.match(/:::toggle [^\n]*(?:원리|과학|한계)[^\n]*\n([\s\S]*?)\n:::/)?.[1] ?? ''
+  const fallback = recipe.body.match(/^## [^\n]+\s+([\s\S]*?)(?=\n## |\n:::|$)/)?.[1] ?? ''
+  const explanation = firstParagraph(targetSection) || firstParagraph(fallback)
+
+  return `센서는 눈으로 정확히 비교하기 어려운 변화를 전기 신호와 숫자로 바꾸어 보여 주는 도구입니다. ${explanation} 이 실험에서는 한 번에 한 조건만 바꾸고 측정값이 어느 방향으로 얼마나 달라지는지 비교하면 이 관계를 확인할 수 있습니다.`
+}
+
 export function withInquiryWorkbook(recipe: Recipe): Recipe {
   if (recipe.body.includes(GUIDE_MARKER)) return recipe
   const { levels, repeats, samples, intervalSeconds, settlingSeconds } = samplingPlan(recipe)
@@ -54,6 +71,10 @@ export function withInquiryWorkbook(recipe: Recipe): Recipe {
 3. 각 조건에서 ${settlingSeconds}초 기다린 후 ${intervalSeconds}초 간격으로 ${samples}개를 저장합니다.
 4. 조건 순서를 **낮음 → 높음**으로 1회, **높음 → 낮음**으로 1회 실시하고 나머지 1회는 무작위 순서로 측정합니다.
 5. 총 **${totalRows}개 조건 묶음**이 빠짐없이 측정되었는지 조건 번호와 반복 번호를 확인합니다.
+
+## 과학 이론 쉽게 이해하기
+
+${theoryPrimer(recipe)}
 `
 
   return {

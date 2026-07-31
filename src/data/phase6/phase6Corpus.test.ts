@@ -28,6 +28,8 @@ describe('Phase 6 recipe expansion', () => {
       expect(recipe.body, recipe.id).not.toContain('## 계산과 그래프')
       expect(recipe.body, recipe.id).not.toContain('표본 표준편차')
       expect(recipe.body, recipe.id).not.toContain('relative error')
+      expect(recipe.body, recipe.id).toContain('## 과학 이론 쉽게 이해하기')
+      expect(recipe.body.trim(), recipe.id).toMatch(/## 과학 이론 쉽게 이해하기\n\n[^#]+$/)
     }
   })
 
