@@ -30,6 +30,25 @@
   --color-syntax-number: #15803d;
   --color-syntax-comment: #64748b;
   --color-syntax-operator: #0e7490;
+  --color-subject-physics: #2563eb;
+  --color-subject-chemistry: #0f766e;
+  --color-subject-biology: #15803d;
+  --color-subject-engineering: #7c3aed;
+  --color-subject-integrated: #475569;
+  --color-difficulty-beginner: #15803d;
+  --color-difficulty-intermediate: #b45309;
+  --color-difficulty-advanced: #b91c1c;
+  --color-time-short: #047857;
+  --color-time-medium: #a16207;
+  --color-time-long: #be123c;
+  --color-wire-red: #dc2626;
+  --color-wire-black: #111827;
+  --color-wire-blue: #2563eb;
+  --color-wire-green: #15803d;
+  --color-wire-orange: #c2410c;
+  --color-wire-purple: #7e22ce;
+  --color-wire-white: #64748b;
+  --color-wire-yellow: #a16207;
 
   --spacing-page: 1.5rem;
   --radius-card: 0.75rem;
@@ -63,6 +82,25 @@
   --color-syntax-number: #b5cea8;
   --color-syntax-comment: #6a9955;
   --color-syntax-operator: #d4d4d4;
+  --color-subject-physics: #60a5fa;
+  --color-subject-chemistry: #2dd4bf;
+  --color-subject-biology: #4ade80;
+  --color-subject-engineering: #c084fc;
+  --color-subject-integrated: #cbd5e1;
+  --color-difficulty-beginner: #4ade80;
+  --color-difficulty-intermediate: #fbbf24;
+  --color-difficulty-advanced: #fb7185;
+  --color-time-short: #34d399;
+  --color-time-medium: #facc15;
+  --color-time-long: #fb7185;
+  --color-wire-red: #f87171;
+  --color-wire-black: #e5e7eb;
+  --color-wire-blue: #60a5fa;
+  --color-wire-green: #4ade80;
+  --color-wire-orange: #fb923c;
+  --color-wire-purple: #c084fc;
+  --color-wire-white: #f8fafc;
+  --color-wire-yellow: #fde047;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -88,6 +126,25 @@
     --color-syntax-number: #b5cea8;
     --color-syntax-comment: #6a9955;
     --color-syntax-operator: #d4d4d4;
+    --color-subject-physics: #60a5fa;
+    --color-subject-chemistry: #2dd4bf;
+    --color-subject-biology: #4ade80;
+    --color-subject-engineering: #c084fc;
+    --color-subject-integrated: #cbd5e1;
+    --color-difficulty-beginner: #4ade80;
+    --color-difficulty-intermediate: #fbbf24;
+    --color-difficulty-advanced: #fb7185;
+    --color-time-short: #34d399;
+    --color-time-medium: #facc15;
+    --color-time-long: #fb7185;
+    --color-wire-red: #f87171;
+    --color-wire-black: #e5e7eb;
+    --color-wire-blue: #60a5fa;
+    --color-wire-green: #4ade80;
+    --color-wire-orange: #fb923c;
+    --color-wire-purple: #c084fc;
+    --color-wire-white: #f8fafc;
+    --color-wire-yellow: #fde047;
   }
 }
 
@@ -113,6 +170,25 @@
   --color-syntax-number: var(--color-syntax-number);
   --color-syntax-comment: var(--color-syntax-comment);
   --color-syntax-operator: var(--color-syntax-operator);
+  --color-subject-physics: var(--color-subject-physics);
+  --color-subject-chemistry: var(--color-subject-chemistry);
+  --color-subject-biology: var(--color-subject-biology);
+  --color-subject-engineering: var(--color-subject-engineering);
+  --color-subject-integrated: var(--color-subject-integrated);
+  --color-difficulty-beginner: var(--color-difficulty-beginner);
+  --color-difficulty-intermediate: var(--color-difficulty-intermediate);
+  --color-difficulty-advanced: var(--color-difficulty-advanced);
+  --color-time-short: var(--color-time-short);
+  --color-time-medium: var(--color-time-medium);
+  --color-time-long: var(--color-time-long);
+  --color-wire-red: var(--color-wire-red);
+  --color-wire-black: var(--color-wire-black);
+  --color-wire-blue: var(--color-wire-blue);
+  --color-wire-green: var(--color-wire-green);
+  --color-wire-orange: var(--color-wire-orange);
+  --color-wire-purple: var(--color-wire-purple);
+  --color-wire-white: var(--color-wire-white);
+  --color-wire-yellow: var(--color-wire-yellow);
 
   --spacing-page: var(--spacing-page);
   --radius-card: var(--radius-card);

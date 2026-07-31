@@ -59,6 +59,7 @@ describe('Phase 3 responsive layout contracts', () => {
     const endpoint = container.querySelector('[data-wiring-endpoint="MPU6050.VCC"]')
     expect(endpoint?.querySelector('.text-syntax-type')).toHaveTextContent('MPU6050')
     expect(endpoint?.querySelector('.text-syntax-property')).toHaveTextContent('VCC')
+    expect(screen.getByText('red 선')).toHaveClass('text-wire-red')
     expect(screen.getByTestId('wiring-viewport')).toHaveClass(
       'aspect-[2/3]',
       'lg:aspect-[16/9]',

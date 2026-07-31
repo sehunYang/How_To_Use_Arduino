@@ -3,6 +3,26 @@ import type { Recipe, SearchIndexEntry } from '@/schema'
 
 type CardRecipe = Recipe | SearchIndexEntry
 
+const SUBJECT_COLOR = {
+  '물리': 'text-subject-physics',
+  '화학·환경': 'text-subject-chemistry',
+  '생물': 'text-subject-biology',
+  '공학·로봇': 'text-subject-engineering',
+  '융합': 'text-subject-integrated',
+} as const
+
+const DIFFICULTY_COLOR = {
+  '초급': 'text-difficulty-beginner',
+  '중급': 'text-difficulty-intermediate',
+  '고급': 'text-difficulty-advanced',
+} as const
+
+function timeColor(minutes: number) {
+  if (minutes <= 30) return 'text-time-short'
+  if (minutes <= 60) return 'text-time-medium'
+  return 'text-time-long'
+}
+
 function guideFor(recipe: CardRecipe) {
   return 'applicationGuide' in recipe ? recipe.applicationGuide : recipe.applicationGuideExcerpt
 }
@@ -18,14 +38,14 @@ export function RecipeCard({
 }) {
   return (
     <article className="flex h-full flex-col rounded-card border border-border bg-background p-5 shadow-sm">
-      <div className="mb-4 flex flex-wrap gap-2 text-caption font-semibold">
-        <span className="rounded-full bg-accent px-3 py-1 text-accent-foreground">
+      <div className="mb-4 flex flex-wrap gap-x-4 gap-y-1 text-caption font-semibold">
+        <span className={SUBJECT_COLOR[recipe.subject ?? '융합']}>
           과목 · {recipe.subject ?? '융합'}
         </span>
-        <span className="rounded-full bg-warning-background px-3 py-1 text-warning">
+        <span className={DIFFICULTY_COLOR[recipe.difficulty]}>
           난이도 · {recipe.difficulty}
         </span>
-        <span className="rounded-full bg-success-background px-3 py-1 text-success">
+        <span className={timeColor(recipe.minutes)} title="30분 이하 짧음 · 31~60분 보통 · 61분 이상 김">
           시간 · {recipe.minutes}분
         </span>
       </div>

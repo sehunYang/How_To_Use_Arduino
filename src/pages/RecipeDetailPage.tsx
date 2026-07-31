@@ -52,6 +52,16 @@ function EndpointLabel({ value }: { value: string }) {
 
 const WIRING_TEXT_TOKEN = /\b(?:[A-Z][A-Z0-9_-]*|[AD]\d+|\d+(?:\.\d+)?\s?(?:kΩ|Ω|V|mA))\b/g
 const PIN_NAMES = new Set(['VCC', 'VIN', 'GND', 'SCL', 'SDA', 'AO', 'OUT', 'DATA', 'DQ', 'SIG'])
+const WIRE_COLOR_CLASS: Record<string, string> = {
+  red: 'text-wire-red',
+  black: 'text-wire-black',
+  blue: 'text-wire-blue',
+  green: 'text-wire-green',
+  orange: 'text-wire-orange',
+  purple: 'text-wire-purple',
+  white: 'text-wire-white',
+  yellow: 'text-wire-yellow',
+}
 
 function HighlightedWiringText({ text }: { text: string }) {
   const fragments = []
@@ -205,7 +215,9 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
                       <span className="text-muted"> · </span>
                       <HighlightedWiringText text={step.text} />
                       <span className="text-muted"> · </span>
-                      <span className="text-syntax-function">{step.color} 선</span>
+                      <span className={WIRE_COLOR_CLASS[step.color.toLowerCase()] ?? 'text-syntax-function'}>
+                        {step.color} 선
+                      </span>
                     </span>
                   </span>
                 </label>
