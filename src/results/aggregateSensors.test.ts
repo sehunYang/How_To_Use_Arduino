@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import type { SearchIndexEntry, SensorRationale } from '@/schema'
 import { aggregateSensors, rankSensors } from './aggregateSensors'
 import type { SearchResult } from '@/search'
+import { sensors } from '@/data/inventory-seed/sensors'
+import { canaryRationales } from '@/data/canary'
 
 function entry(
   id: string,
@@ -135,5 +137,17 @@ describe('rankSensors', () => {
     )
 
     expect(ranked.map((sensor) => sensor.sensorId)).toEqual(['mpu6050', 'tca9548a'])
+  })
+
+  it('has a student-facing rationale for every published inventory sensor', () => {
+    const missing = sensors
+      .map((sensor) => sensor.id)
+      .filter((sensorId) => !canaryRationales.some((item) => item.sensorId === sensorId))
+
+    expect(missing).toEqual([])
+    expect(() => rankSensors(
+      [result(entry('all-sensors', sensors.map((sensor) => sensor.id), '물리'), 3)],
+      canaryRationales,
+    )).not.toThrow()
   })
 })
