@@ -84,7 +84,8 @@ function defaultConnections(definition: Phase6RecipeDefinition): Connection[] {
         ...i2c(token),
         { from: `${token}.VIN+`, to: 'BATTERY.+', color: 'red', text: `${token} VIN+를 실험 전원의 + 단자에 연결하세요.` },
         { from: `${token}.VIN-`, to: 'RESISTOR_220.1', color: 'orange', text: `${token} VIN-를 220 Ω 측정 저항 1번 단자에 연결하세요.` },
-        { from: 'RESISTOR_220.2', to: 'BATTERY.-', color: 'black', text: '220 Ω 측정 저항 2번 단자를 실험 전원의 - 단자에 연결하세요.' },
+        { from: 'RESISTOR_220.2', to: 'BATTERY.-', color: 'black', text: '220 Ω 측정 저항 2번 단자와 실험 전원의 - 단자를 브레드보드 - 전원 레일에 연결하세요.' },
+        { from: 'BATTERY.-', to: 'UNO.GND', color: 'black', text: '실험 전원의 - 단자를 브레드보드 - 전원 레일을 통해 UNO GND와 공통 접지하세요.' },
       )
     } else if (base === 'DS18B20') {
       connections.push(

@@ -4,6 +4,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { pendulumRecipe } from '@/data/canary'
 import { phase5Recipes } from '@/data/phase5'
+import { phase6Recipes } from '@/data/phase6'
 import { planBreadboardWiring } from '@/wokwi/buildDiagram'
 import { WiringIllustration } from './WiringIllustration'
 
@@ -186,7 +187,8 @@ describe('WiringIllustration zoom and pan', () => {
           .map((pin) => `${pin.getAttribute('data-pin-x')},${pin.getAttribute('data-pin-y')}`),
       )
       const wires = Array.from(container.querySelectorAll('[data-wire-from][data-wire-to]'))
-      const expectedWires = planBreadboardWiring(recipe).length
+      const mountedLeadCount = container.querySelectorAll('[data-mounted-resistor]').length * 2
+      const expectedWires = planBreadboardWiring(recipe).length - mountedLeadCount
       expect(wires, recipe.id).toHaveLength(expectedWires)
       expect(container.querySelector('[data-part-id="bb"]'), recipe.id).not.toBeNull()
       const svg = container.querySelector('[data-generated-wokwi-diagram]')!
@@ -228,16 +230,34 @@ describe('WiringIllustration zoom and pan', () => {
     }
   })
 
-  it('renders full resistor bodies with concrete resistance labels', () => {
+  it('mounts resistor leads directly in breadboard holes with concrete resistance labels', () => {
     const recipe = phase5Recipes.find((candidate) => candidate.id === 'S4')!
     const { container } = render(
       <WiringIllustration recipe={recipe} activeStep={recipe.wiring.length - 1} />,
     )
     const resistor = container.querySelector('[data-part-id="cds_resistor"]')
-    expect(resistor).toHaveAttribute('data-part-width', '96')
-    expect(resistor).toHaveAttribute('data-part-height', '38')
+    expect(resistor).toHaveAttribute('data-mounted-resistor', 'cds_resistor')
+    expect(resistor?.getAttribute('data-resistor-pin-1')).toMatch(/^\d+(?:\.\d+)?,\d+(?:\.\d+)?$/)
+    expect(resistor?.getAttribute('data-resistor-pin-2')).toMatch(/^\d+(?:\.\d+)?,\d+(?:\.\d+)?$/)
+    expect(resistor?.querySelectorAll('line')).toHaveLength(6)
     expect(container.querySelector('[data-part-overlay="cds_resistor"]')).toHaveTextContent('10 kΩ')
     expect(container.textContent).not.toContain('CDS RESISTOR')
+  })
+
+  it('connects battery negative to the common ground rail in the internal-resistance recipe', () => {
+    const recipe = phase6Recipes.find((candidate) => candidate.id === 'ph22-battery-internal-resistance')!
+    const { container } = render(
+      <WiringIllustration recipe={recipe} activeStep={recipe.wiring.length - 1} />,
+    )
+
+    expect(recipe.wiring).toEqual(expect.arrayContaining([
+      expect.objectContaining({ from: 'BATTERY.-', to: 'UNO.GND', color: 'black' }),
+    ]))
+    expect(container.querySelector('[data-mounted-resistor="resistor_220"]')).not.toBeNull()
+    expect(container.querySelector('[data-wire-from-pin="battery:GND"][data-wire-to-pin^="bb:tn."]'))
+      .not.toBeNull()
+    expect(container.querySelector('[data-wire-from-pin="uno:GND"][data-wire-to-pin="bb:tn.1"]'))
+      .not.toBeNull()
   })
 
   it('reuses the current sensor SVGs and their measured connector coordinates', () => {

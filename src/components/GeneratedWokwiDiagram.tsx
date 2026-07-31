@@ -27,6 +27,13 @@ interface PositionedPart extends DiagramPart {
   height: number
 }
 
+interface MountedResistor {
+  part: PositionedPart
+  pinPoints: Map<string, Point>
+  start: Point
+  end: Point
+}
+
 interface ElementWithPins extends HTMLElement {
   pinInfo?: Array<{ name: string; x: number; y: number }>
 }
@@ -133,12 +140,84 @@ function pinPointForEndpoint(
   endpoint: string,
   parts: Map<string, PositionedPart>,
   usages: Map<string, string[]>,
+  endpointOverrides?: Map<string, Point>,
 ): Point {
+  const override = endpointOverrides?.get(endpoint)
+  if (override) return override
   const [partId, pin = ''] = endpoint.split(':')
   const part = parts.get(partId)
   if (!part) throw new Error(`Generated Wokwi diagram references missing part "${partId}".`)
   const local = localPinPoint(part, pin, usages.get(partId) ?? [pin])
   return { x: part.left + local.x, y: part.top + local.y }
+}
+
+function mountedResistors(
+  diagram: Diagram,
+  parts: PositionedPart[],
+  usages: Map<string, string[]>,
+): MountedResistor[] {
+  const partMap = new Map(parts.map((part) => [part.id, part]))
+  return parts
+    .filter((part) => part.type === 'wokwi-resistor')
+    .flatMap((part) => {
+      const pinPoints = new Map<string, Point>()
+      for (const [from, to] of diagram.connections) {
+        const resistorEndpoint = from.startsWith(`${part.id}:`)
+          ? from
+          : to.startsWith(`${part.id}:`) ? to : null
+        const boardEndpoint = from.startsWith('bb:') ? from : to.startsWith('bb:') ? to : null
+        if (!resistorEndpoint || !boardEndpoint) continue
+        pinPoints.set(
+          resistorEndpoint.split(':')[1] ?? '',
+          pinPointForEndpoint(boardEndpoint, partMap, usages),
+        )
+      }
+      const start = pinPoints.get('1')
+      const end = pinPoints.get('2')
+      return start && end ? [{ part, pinPoints, start, end }] : []
+    })
+}
+
+function mountedResistorGraphic(mounted: MountedResistor) {
+  const { part, start, end } = mounted
+  const dx = end.x - start.x
+  const dy = end.y - start.y
+  const length = Math.hypot(dx, dy)
+  const angle = Math.atan2(dy, dx) * 180 / Math.PI
+  const bodyWidth = Math.min(54, Math.max(28, length * 0.48))
+  const bodyX = (length - bodyWidth) / 2
+  return (
+    <g
+      key={part.id}
+      data-part-id={part.id}
+      data-part-type={part.type}
+      data-part-left={Math.min(start.x, end.x)}
+      data-part-top={Math.min(start.y, end.y) - 7}
+      data-part-width={length}
+      data-part-height="14"
+      data-mounted-resistor={part.id}
+      data-resistor-pin-1={`${start.x},${start.y}`}
+      data-resistor-pin-2={`${end.x},${end.y}`}
+      transform={`translate(${start.x} ${start.y}) rotate(${angle})`}
+    >
+      <line x1="0" y1="0" x2={bodyX} y2="0" stroke="#8b8b83" strokeWidth="2.2" />
+      <line x1={bodyX + bodyWidth} y1="0" x2={length} y2="0" stroke="#8b8b83" strokeWidth="2.2" />
+      <rect
+        x={bodyX}
+        y="-7"
+        width={bodyWidth}
+        height="14"
+        rx="3"
+        fill="#e8c989"
+        stroke="#8a6a34"
+        strokeWidth="1.2"
+      />
+      <line x1={bodyX + bodyWidth * 0.22} y1="-7" x2={bodyX + bodyWidth * 0.22} y2="7" stroke="#c2410c" strokeWidth="3" />
+      <line x1={bodyX + bodyWidth * 0.42} y1="-7" x2={bodyX + bodyWidth * 0.42} y2="7" stroke="#c2410c" strokeWidth="3" />
+      <line x1={bodyX + bodyWidth * 0.62} y1="-7" x2={bodyX + bodyWidth * 0.62} y2="7" stroke="#7c2d12" strokeWidth="3" />
+      <line x1={bodyX + bodyWidth * 0.82} y1="-7" x2={bodyX + bodyWidth * 0.82} y2="7" stroke="#d4a017" strokeWidth="2" />
+    </g>
+  )
 }
 
 function partGraphic(part: PositionedPart) {
@@ -233,6 +312,11 @@ export function GeneratedWokwiDiagram({
   const positioned = useMemo(() => positionParts(diagram.parts), [diagram.parts])
   const partMap = useMemo(() => new Map(positioned.map((part) => [part.id, part])), [positioned])
   const usages = useMemo(() => pinUsages(diagram), [diagram])
+  const mounted = useMemo(() => mountedResistors(diagram, positioned, usages), [diagram, positioned, usages])
+  const mountedIds = useMemo(() => new Set(mounted.map(({ part }) => part.id)), [mounted])
+  const endpointOverrides = useMemo(() => new Map(
+    mounted.flatMap(({ part, pinPoints }) => [...pinPoints].map(([pin, point]) => [`${part.id}:${pin}`, point])),
+  ), [mounted])
   const contentBottom = Math.max(290, ...positioned.map((part) => part.top + part.height + 24))
   const contentHeight = contentBottom + diagram.connections.length * 10 + 30
   const sketchPadding = Math.max(80, diagram.connections.length * 7 + 28)
@@ -241,9 +325,16 @@ export function GeneratedWokwiDiagram({
   const visibleCount = plannedWiring.filter((connection) => connection.stepIndex <= activeStep).length
   const currentCount = plannedWiring.filter((connection) => connection.stepIndex === activeStep).length
   const visible = diagram.connections.slice(0, visibleCount)
-  const wires = visible.map(([from, to, color], index) => {
-    const start = pinPointForEndpoint(from, partMap, usages)
-    const end = pinPointForEndpoint(to, partMap, usages)
+  const visibleWires = visible.filter(([from, to]) => {
+    const fromPart = from.split(':')[0]
+    const toPart = to.split(':')[0]
+    return !((mountedIds.has(fromPart) && toPart === 'bb') || (fromPart === 'bb' && mountedIds.has(toPart)))
+  })
+  const currentStartIndex = visible.length - currentCount
+  const wires = visibleWires.map(([from, to, color], index) => {
+    const originalIndex = visible.findIndex((connection) => connection[0] === from && connection[1] === to)
+    const start = pinPointForEndpoint(from, partMap, usages, endpointOverrides)
+    const end = pinPointForEndpoint(to, partMap, usages, endpointOverrides)
     const startPart = partMap.get(from.split(':')[0])!
     const endPart = partMap.get(to.split(':')[0])!
     const startPin = from.split(':')[1] ?? ''
@@ -254,7 +345,7 @@ export function GeneratedWokwiDiagram({
     const endEscape = escapePoints(end, endPart, endRouteIndex)
     const startCorridor = startEscape.at(-1)!
     const endCorridor = endEscape.at(-1)!
-    const laneY = contentBottom + 10 + index * 10
+    const laneY = contentBottom + 10 + originalIndex * 10
     const route = [
       start,
       ...startEscape,
@@ -264,8 +355,8 @@ export function GeneratedWokwiDiagram({
       end,
     ]
     const points = route.map((point) => `${point.x},${point.y}`).join(' ')
-    const current = index >= visible.length - currentCount
-    const currentPhase = current ? index - (visible.length - currentCount) : 0
+    const current = originalIndex >= currentStartIndex
+    const currentPhase = current ? originalIndex - currentStartIndex : 0
     return (
       <g
         key={`${from}-${to}-${index}`}
@@ -311,7 +402,7 @@ export function GeneratedWokwiDiagram({
         rx="14"
         fill="#f7f7f5"
       />
-      {positioned.map((part) => (
+      {positioned.filter((part) => !mountedIds.has(part.id)).map((part) => (
         <g
           key={part.id}
           data-part-id={part.id}
@@ -329,7 +420,10 @@ export function GeneratedWokwiDiagram({
       <g data-wire-layer="above-boards" fill="none" strokeLinecap="round" strokeLinejoin="round">
         {wires}
       </g>
-      {positioned.map((part) => (
+      <g data-resistor-layer="mounted-on-breadboard">
+        {mounted.map(mountedResistorGraphic)}
+      </g>
+      {positioned.filter((part) => !mountedIds.has(part.id)).map((part) => (
         <g key={part.id} data-part-overlay={part.id}>
           <text
             x={part.left + part.width / 2}
@@ -342,7 +436,7 @@ export function GeneratedWokwiDiagram({
             {displayName(part)}
           </text>
           {(usages.get(part.id) ?? []).map((pin) => {
-            const point = pinPointForEndpoint(`${part.id}:${pin}`, partMap, usages)
+            const point = pinPointForEndpoint(`${part.id}:${pin}`, partMap, usages, endpointOverrides)
             const source = verifiedPinPoint(part, normalizedPin(part.type, pin))
               ? 'verified'
               : 'fallback'
@@ -371,6 +465,31 @@ export function GeneratedWokwiDiagram({
               </g>
             )
           })}
+        </g>
+      ))}
+      {mounted.map(({ part, pinPoints, start, end }) => (
+        <g key={`${part.id}-overlay`} data-part-overlay={part.id}>
+          <text
+            x={(start.x + end.x) / 2}
+            y={(start.y + end.y) / 2 - 13}
+            textAnchor="middle"
+            fontSize="12"
+            fontWeight="700"
+            fill="#334155"
+          >
+            {displayName(part)}
+          </text>
+          {[...pinPoints].map(([pin, point]) => (
+            <g
+              key={pin}
+              data-pin={`${part.id}:${pin}`}
+              data-pin-x={point.x}
+              data-pin-y={point.y}
+              data-pin-source="breadboard-hole"
+            >
+              <circle cx={point.x} cy={point.y} r="2.8" fill="#fff" stroke="#172033" strokeWidth="1.2" />
+            </g>
+          ))}
         </g>
       ))}
     </svg>
