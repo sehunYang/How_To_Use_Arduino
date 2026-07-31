@@ -275,6 +275,12 @@ describe('WiringIllustration zoom and pan', () => {
     const { container } = render(
       <WiringIllustration recipe={recipe} activeStep={recipe.wiring.length - 1} />,
     )
+    const planned = planBreadboardWiring(recipe)
+    for (const token of ['LED.', 'BUZZER.']) {
+      const mountedConnections = planned.filter(({ from }) => from.startsWith(token))
+      expect(mountedConnections).toHaveLength(2)
+      expect(mountedConnections.every(({ to }) => /^BB\.\d+t\.e$/.test(to))).toBe(true)
+    }
 
     expect(container.querySelector('[data-mounted-led="led"]')).not.toBeNull()
     expect(container.querySelector('[data-mounted-buzzer="buzzer"]')).not.toBeNull()
@@ -285,9 +291,38 @@ describe('WiringIllustration zoom and pan', () => {
       expect(pin1).not.toBe(pin2)
       expect(container.querySelector(`[data-part-overlay="${partId}"] [data-pin-source="breadboard-hole"]`))
         .not.toBeNull()
+      for (const pin of Array.from(container.querySelectorAll(`[data-part-overlay="${partId}"] [data-pin]`))) {
+        const matchingWireEndpoint = Array.from(container.querySelectorAll(`[data-wire-from-pin="${pin.getAttribute('data-pin')}"], [data-wire-to-pin="${pin.getAttribute('data-pin')}"]`))
+        expect(matchingWireEndpoint).toHaveLength(0)
+        const point = `${pin.getAttribute('data-pin-x')},${pin.getAttribute('data-pin-y')}`
+        expect([pin1, pin2]).toContain(point)
+      }
+      const legs = Array.from(mounted.querySelectorAll('line')).slice(0, 2)
+      expect(legs).toHaveLength(2)
+      for (const leg of legs) {
+        expect(Number(leg.getAttribute('y1'))).toBeGreaterThan(Number(leg.getAttribute('y2')))
+      }
       expect(container.querySelector(`[data-wire-from-pin^="${partId}:"][data-wire-to-pin^="bb:"]`))
         .toBeNull()
     }
+    const mountedBounds = Array.from(container.querySelectorAll('[data-board-mounted-part]')).map((part) => ({
+      id: part.getAttribute('data-board-mounted-part'),
+      left: Number(part.getAttribute('data-part-left')),
+      top: Number(part.getAttribute('data-part-top')),
+      right: Number(part.getAttribute('data-part-left')) + Number(part.getAttribute('data-part-width')),
+      bottom: Number(part.getAttribute('data-part-top')) + Number(part.getAttribute('data-part-height')),
+    }))
+    for (let leftIndex = 0; leftIndex < mountedBounds.length; leftIndex += 1) {
+      for (let rightIndex = leftIndex + 1; rightIndex < mountedBounds.length; rightIndex += 1) {
+        const left = mountedBounds[leftIndex]
+        const right = mountedBounds[rightIndex]
+        const overlaps = left.left < right.right && left.right > right.left
+          && left.top < right.bottom && left.bottom > right.top
+        expect(overlaps, `${left.id} and ${right.id} must not overlap`).toBe(false)
+      }
+    }
+    expect(container.querySelector('[data-wire-from-pin^="bb:tn."][data-wire-to-pin$="t.a"]'))
+      .not.toBeNull()
   })
 
   it('uses TSL2591 instead of CDS for the precision lens focal-length experiment', () => {

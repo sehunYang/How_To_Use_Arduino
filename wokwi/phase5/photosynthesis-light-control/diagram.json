@@ -109,25 +109,25 @@
     ],
     [
       "relay:NO",
-      "bb:5t.a",
+      "bb:2t.a",
       "purple",
       []
     ],
     [
       "led:A",
-      "bb:5t.b",
+      "bb:2t.e",
       "purple",
       []
     ],
     [
       "led:C",
-      "bb:9t.a",
+      "bb:4t.e",
       "black",
       []
     ],
     [
       "led_supply:GND",
-      "bb:9t.b",
+      "bb:4t.a",
       "black",
       []
     ]

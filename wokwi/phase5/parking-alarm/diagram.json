@@ -60,6 +60,18 @@
       []
     ],
     [
+      "bb:tn.9",
+      "bb:9t.a",
+      "black",
+      []
+    ],
+    [
+      "bb:tn.13",
+      "bb:4t.a",
+      "black",
+      []
+    ],
+    [
       "hc-sr04:TRIG",
       "uno:D8",
       "blue",
@@ -73,37 +85,37 @@
     ],
     [
       "buzzer:2",
-      "bb:1t.a",
+      "bb:2t.e",
       "purple",
       []
     ],
     [
       "uno:D3",
-      "bb:1t.b",
+      "bb:2t.a",
       "purple",
       []
     ],
     [
       "buzzer:1",
-      "bb:tn.13",
+      "bb:4t.e",
       "black",
       []
     ],
     [
       "led:A",
-      "bb:5t.a",
+      "bb:7t.e",
       "orange",
       []
     ],
     [
       "uno:D4",
-      "bb:5t.b",
+      "bb:7t.a",
       "orange",
       []
     ],
     [
       "led:C",
-      "bb:tn.9",
+      "bb:9t.e",
       "black",
       []
     ]

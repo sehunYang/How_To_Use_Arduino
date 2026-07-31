@@ -127,25 +127,25 @@
     ],
     [
       "ina219:VIN-",
-      "bb:13t.a",
+      "bb:2t.a",
       "orange",
       []
     ],
     [
       "load:1",
-      "bb:13t.b",
+      "bb:2t.e",
       "orange",
       []
     ],
     [
       "load:2",
-      "bb:17t.a",
+      "bb:4t.e",
       "purple",
       []
     ],
     [
       "panel:GND",
-      "bb:17t.b",
+      "bb:4t.a",
       "purple",
       []
     ]

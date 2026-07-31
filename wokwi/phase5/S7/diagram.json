@@ -54,6 +54,12 @@
       []
     ],
     [
+      "bb:tn.9",
+      "bb:4t.a",
+      "black",
+      []
+    ],
+    [
       "ina219:SDA",
       "uno:A4",
       "green",
@@ -73,19 +79,19 @@
     ],
     [
       "ina219:VIN-",
-      "bb:1t.a",
+      "bb:2t.a",
       "orange",
       []
     ],
     [
       "load:1",
-      "bb:1t.b",
+      "bb:2t.e",
       "orange",
       []
     ],
     [
       "load:2",
-      "bb:tn.9",
+      "bb:4t.e",
       "black",
       []
     ]

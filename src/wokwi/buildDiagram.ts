@@ -64,6 +64,14 @@ export interface PlannedWiringConnection {
 }
 
 export function planBreadboardWiring(recipe: Recipe): PlannedWiringConnection[] {
+  const boardMountedToken = (endpoint: string) => {
+    const token = endpoint.slice(0, endpoint.indexOf('.')).toUpperCase()
+    return /^LED(?:_\d+)?$/.test(token)
+      || /^BUZZER(?:_\d+)?$/.test(token)
+      || token.includes('RESISTOR')
+      || token === 'LOAD'
+      || token === 'LAMP'
+  }
   const adjacency = new Map<string, Set<string>>()
   const connect = (from: string, to: string) => {
     if (!adjacency.has(from)) adjacency.set(from, new Set())
@@ -89,8 +97,30 @@ export function planBreadboardWiring(recipe: Recipe): PlannedWiringConnection[] 
     net.forEach((member) => netByEndpoint.set(member, net))
   }
 
-  const boardNet = new Map<string[], { holes: Map<string, string>; connected: Set<string> }>()
   const nets = [...new Set(netByEndpoint.values())]
+  const mountedByToken = new Map<string, string[]>()
+  for (const endpoint of adjacency.keys()) {
+    if (!boardMountedToken(endpoint)) continue
+    const token = endpoint.slice(0, endpoint.indexOf('.'))
+    const endpoints = mountedByToken.get(token) ?? []
+    endpoints.push(endpoint)
+    mountedByToken.set(token, endpoints)
+  }
+  const mountedHole = new Map<string, string>()
+  const mountedParts = [...mountedByToken.values()]
+  const mountPitch = mountedParts.length <= 5 ? 5 : Math.max(3, Math.floor(27 / mountedParts.length))
+  mountedParts.forEach((endpoints, index) => {
+    const leftColumn = Math.min(27, 2 + index * mountPitch)
+    const rightColumn = Math.min(29, leftColumn + 2)
+    if (endpoints[0]) mountedHole.set(endpoints[0], `BB.${leftColumn}t.e`)
+    if (endpoints[1]) mountedHole.set(endpoints[1], `BB.${rightColumn}t.e`)
+  })
+  const boardNet = new Map<string[], {
+    holes: Map<string, string>
+    connected: Set<string>
+    bridges: Array<{ from: string; to: string }>
+    bridgesEmitted: boolean
+  }>()
   const netTraits = (net: string[]) => {
     const hasExplicitBoard = net.some((endpoint) => endpoint.toUpperCase().startsWith('BB.'))
     const unoPins = net
@@ -100,14 +130,7 @@ export function planBreadboardWiring(recipe: Recipe): PlannedWiringConnection[] 
     const isThreeVolt = unoPins.includes('3.3V')
     const isGround = unoPins.includes('GND')
     const hasUno = unoPins.length > 0
-    const hasBoardMountedPart = net.some((endpoint) => {
-      const token = endpoint.slice(0, endpoint.indexOf('.')).toUpperCase()
-      return /^LED(?:_\d+)?$/.test(token)
-        || /^BUZZER(?:_\d+)?$/.test(token)
-        || token.includes('RESISTOR')
-        || token === 'LOAD'
-        || token === 'LAMP'
-    })
+    const hasBoardMountedPart = net.some(boardMountedToken)
     const needsJunction = net.length > 2 || !hasUno || hasBoardMountedPart
     return { hasExplicitBoard, isFiveVolt, isThreeVolt, isGround, needsJunction }
   }
@@ -129,9 +152,11 @@ export function planBreadboardWiring(recipe: Recipe): PlannedWiringConnection[] 
     if (hasExplicitBoard || (!isFiveVolt && !isThreeVolt && !isGround && !needsJunction)) continue
 
     const holes = new Map<string, string>()
+    const bridges: Array<{ from: string; to: string }> = []
+    const mountedEndpoints = net.filter((endpoint) => mountedHole.has(endpoint))
     if (isFiveVolt || isThreeVolt || isGround) {
       const rail = isGround ? 'tn' : isThreeVolt ? 'bp' : 'tp'
-      const orderedEndpoints = [...net].sort((left, right) => {
+      const orderedEndpoints = net.filter((endpoint) => !mountedHole.has(endpoint)).sort((left, right) => {
         const leftIsUno = left.toUpperCase().startsWith('UNO.')
         const rightIsUno = right.toUpperCase().startsWith('UNO.')
         return Number(rightIsUno) - Number(leftIsUno)
@@ -142,6 +167,32 @@ export function planBreadboardWiring(recipe: Recipe): PlannedWiringConnection[] 
       orderedEndpoints.forEach((endpoint, index) => {
         holes.set(endpoint, `BB.${rail}.${1 + index * railPitch}`)
       })
+      mountedEndpoints.forEach((endpoint, index) => {
+        const hole = mountedHole.get(endpoint)!
+        holes.set(endpoint, hole)
+        const terminalColumn = hole.match(/^BB\.(\d+)t\./)?.[1]
+        if (terminalColumn) {
+          const railColumn = Math.min(25, 1 + (orderedEndpoints.length + index) * railPitch)
+          bridges.push({ from: `BB.${rail}.${railColumn}`, to: `BB.${terminalColumn}t.a` })
+        }
+      })
+    } else if (mountedEndpoints.length > 0) {
+      const primaryHole = mountedHole.get(mountedEndpoints[0])!
+      const primaryColumn = primaryHole.match(/^BB\.(\d+)t\./)![1]
+      const freeRows = ['a', 'b', 'c', 'd']
+      let rowIndex = 0
+      for (const endpoint of net) {
+        const ownHole = mountedHole.get(endpoint)
+        if (ownHole) {
+          holes.set(endpoint, ownHole)
+          const ownColumn = ownHole.match(/^BB\.(\d+)t\./)![1]
+          if (ownColumn !== primaryColumn) {
+            bridges.push({ from: `BB.${primaryColumn}t.a`, to: `BB.${ownColumn}t.a` })
+          }
+        } else {
+          holes.set(endpoint, `BB.${primaryColumn}t.${freeRows[rowIndex++] ?? 'd'}`)
+        }
+      }
     } else {
       const rows = ['a', 'b', 'c', 'd', 'e']
       if (net.length > rows.length) {
@@ -154,7 +205,7 @@ export function planBreadboardWiring(recipe: Recipe): PlannedWiringConnection[] 
       net.forEach((endpoint, index) => holes.set(endpoint, `BB.${terminalColumn}t.${rows[index]}`))
       terminalIndex += 1
     }
-    boardNet.set(net, { holes, connected: new Set() })
+    boardNet.set(net, { holes, connected: new Set(), bridges, bridgesEmitted: false })
   }
 
   return recipe.wiring.flatMap((step, stepIndex) => {
@@ -172,6 +223,14 @@ export function planBreadboardWiring(recipe: Recipe): PlannedWiringConnection[] 
         color: step.color,
         stepIndex,
       })
+    }
+    if (!plan.bridgesEmitted) {
+      plan.bridgesEmitted = true
+      connections.push(...plan.bridges.map((bridge) => ({
+        ...bridge,
+        color: step.color,
+        stepIndex,
+      })))
     }
     return connections
   })

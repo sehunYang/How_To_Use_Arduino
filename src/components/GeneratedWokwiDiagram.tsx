@@ -194,51 +194,60 @@ function boardMountedParts(
 
 function boardMountedGraphic(mounted: BoardMountedPart) {
   const { part, start, end } = mounted
-  const dx = end.x - start.x
-  const dy = end.y - start.y
-  const length = Math.hypot(dx, dy)
-  const angle = Math.atan2(dy, dx) * 180 / Math.PI
-  const bodyWidth = Math.min(54, Math.max(28, length * 0.48))
-  const bodyX = (length - bodyWidth) / 2
+  const left = start.x <= end.x ? start : end
+  const right = start.x <= end.x ? end : start
+  const width = right.x - left.x
+  const holeY = Math.max(left.y, right.y)
+  const centerX = (left.x + right.x) / 2
   const resistor = part.type === 'wokwi-resistor'
   const led = part.type === 'wokwi-led'
+  const bodyTop = holeY - (resistor ? 20 : led ? 42 : 48)
+  const bodyHeight = resistor ? 12 : led ? 25 : 32
+  const visualLeft = resistor ? left.x : centerX - (led ? 14 : 16)
+  const visualRight = resistor ? right.x : centerX + (led ? 14 : 16)
   return (
     <g
       key={part.id}
       data-part-id={part.id}
       data-part-type={part.type}
-      data-part-left={Math.min(start.x, end.x)}
-      data-part-top={Math.min(start.y, end.y) - 7}
-      data-part-width={length}
-      data-part-height="14"
+      data-part-left={visualLeft}
+      data-part-top={bodyTop}
+      data-part-width={visualRight - visualLeft}
+      data-part-height={holeY - bodyTop}
       data-board-mounted-part={part.id}
       data-mounted-resistor={resistor ? part.id : undefined}
       data-mounted-led={led ? part.id : undefined}
       data-mounted-buzzer={!resistor && !led ? part.id : undefined}
       data-resistor-pin-1={`${start.x},${start.y}`}
       data-resistor-pin-2={`${end.x},${end.y}`}
-      transform={`translate(${start.x} ${start.y}) rotate(${angle})`}
     >
-      <line x1="0" y1="0" x2={bodyX} y2="0" stroke="#8b8b83" strokeWidth="2.2" />
-      <line x1={bodyX + bodyWidth} y1="0" x2={length} y2="0" stroke="#8b8b83" strokeWidth="2.2" />
+      <line x1={left.x} y1={holeY} x2={left.x} y2={bodyTop + bodyHeight} stroke="#8b8b83" strokeWidth="2.2" />
+      <line x1={right.x} y1={holeY} x2={right.x} y2={bodyTop + bodyHeight} stroke="#8b8b83" strokeWidth="2.2" />
       {resistor ? (
         <>
-          <rect x={bodyX} y="-7" width={bodyWidth} height="14" rx="3" fill="#e8c989" stroke="#8a6a34" strokeWidth="1.2" />
-          <line x1={bodyX + bodyWidth * 0.22} y1="-7" x2={bodyX + bodyWidth * 0.22} y2="7" stroke="#c2410c" strokeWidth="3" />
-          <line x1={bodyX + bodyWidth * 0.42} y1="-7" x2={bodyX + bodyWidth * 0.42} y2="7" stroke="#c2410c" strokeWidth="3" />
-          <line x1={bodyX + bodyWidth * 0.62} y1="-7" x2={bodyX + bodyWidth * 0.62} y2="7" stroke="#7c2d12" strokeWidth="3" />
-          <line x1={bodyX + bodyWidth * 0.82} y1="-7" x2={bodyX + bodyWidth * 0.82} y2="7" stroke="#d4a017" strokeWidth="2" />
+          <rect x={left.x} y={bodyTop} width={width} height={bodyHeight} rx="3" fill="#e8c989" stroke="#8a6a34" strokeWidth="1.2" />
+          {[0.22, 0.42, 0.62, 0.82].map((ratio, index) => (
+            <line
+              key={ratio}
+              x1={left.x + width * ratio}
+              y1={bodyTop}
+              x2={left.x + width * ratio}
+              y2={bodyTop + bodyHeight}
+              stroke={['#c2410c', '#c2410c', '#7c2d12', '#d4a017'][index]}
+              strokeWidth={index === 3 ? 2 : 3}
+            />
+          ))}
         </>
       ) : led ? (
         <>
-          <path d={`M${bodyX + 8} 0a${bodyWidth / 2 - 8} ${bodyWidth / 2 - 8} 0 0 1 ${bodyWidth - 16} 0v7h-${bodyWidth - 16}z`} fill="#ef4444" stroke="#991b1b" strokeWidth="1.4" />
-          <rect x={bodyX + 6} y="6" width={bodyWidth - 12} height="5" rx="2" fill="#b91c1c" />
+          <path d={`M${centerX - 12} ${bodyTop + 18}v-6a12 12 0 0 1 24 0v6z`} fill="#ef4444" stroke="#991b1b" strokeWidth="1.4" />
+          <rect x={centerX - 14} y={bodyTop + 18} width="28" height="7" rx="2" fill="#b91c1c" />
         </>
       ) : (
         <>
-          <circle cx={bodyX + bodyWidth / 2} cy="0" r={Math.min(20, bodyWidth / 2)} fill="#20262b" stroke="#050708" strokeWidth="2" />
-          <circle cx={bodyX + bodyWidth / 2} cy="0" r={Math.min(9, bodyWidth / 4)} fill="#080a0b" />
-          <text x={bodyX + bodyWidth / 2} y="4" textAnchor="middle" fill="#d7dcdf" fontSize="8">+</text>
+          <circle cx={centerX} cy={bodyTop + 16} r="16" fill="#20262b" stroke="#050708" strokeWidth="2" />
+          <circle cx={centerX} cy={bodyTop + 16} r="7" fill="#080a0b" />
+          <text x={centerX} y={bodyTop + 19} textAnchor="middle" fill="#d7dcdf" fontSize="8">+</text>
         </>
       )}
     </g>
@@ -498,7 +507,7 @@ export function GeneratedWokwiDiagram({
         <g key={`${part.id}-overlay`} data-part-overlay={part.id}>
           <text
             x={(start.x + end.x) / 2}
-            y={(start.y + end.y) / 2 - 13}
+            y={Math.min(start.y, end.y) - (part.type === 'wokwi-resistor' ? 25 : 54)}
             textAnchor="middle"
             fontSize="12"
             fontWeight="700"
