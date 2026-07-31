@@ -124,6 +124,9 @@ describe('WiringIllustration zoom and pan', () => {
     const { container } = render(<WiringIllustration recipe={pendulumRecipe} activeStep={0} />)
     const wireLines = Array.from(container.querySelectorAll('[data-wire-line]'))
     expect(wireLines).toHaveLength(2)
+    const breadboard = container.querySelector('[data-part-id="bb"]')!
+    const boardLeft = Number(breadboard.getAttribute('data-part-left'))
+    const boardTop = Number(breadboard.getAttribute('data-part-top'))
 
     const segments = (line: Element) => {
       const points = (line.getAttribute('points') ?? '').split(' ').map((point) => {
@@ -152,6 +155,19 @@ describe('WiringIllustration zoom and pan', () => {
       for (const right of segments(wireLines[1])) {
         expect(overlaps(left, right)).toBe(false)
       }
+    }
+
+    for (const wire of Array.from(container.querySelectorAll('[data-wire-to-pin^="bb:"]'))) {
+      const points = (wire.querySelector('[data-wire-line]')?.getAttribute('points') ?? '')
+        .split(' ')
+        .map((point) => point.split(',').map(Number))
+      const outsideCorner = points.at(-3)!
+      const abovePin = points.at(-2)!
+      const pin = points.at(-1)!
+      expect(outsideCorner[0]).toBeLessThan(boardLeft)
+      expect(outsideCorner[1]).toBeLessThan(boardTop)
+      expect(abovePin[0]).toBe(pin[0])
+      expect(abovePin[1]).toBeLessThan(boardTop)
     }
   })
 

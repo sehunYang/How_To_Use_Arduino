@@ -197,7 +197,8 @@ function pinUsages(diagram: Diagram): Map<string, string[]> {
   return result
 }
 
-function escapePoints(point: Point, part: PositionedPart): Point[] {
+function escapePoints(point: Point, part: PositionedPart, routeIndex: number): Point[] {
+  const clearance = 14 + routeIndex * 7
   const distances = [
     { edge: 'left', value: Math.abs(point.x - part.left) },
     { edge: 'right', value: Math.abs(point.x - (part.left + part.width)) },
@@ -205,12 +206,15 @@ function escapePoints(point: Point, part: PositionedPart): Point[] {
     { edge: 'bottom', value: Math.abs(point.y - (part.top + part.height)) },
   ] as const
   const edge = [...distances].sort((a, b) => a.value - b.value)[0].edge
-  if (edge === 'left') return [{ x: part.left - 14, y: point.y }]
-  if (edge === 'right') return [{ x: part.left + part.width + 14, y: point.y }]
+  if (edge === 'left') return [{ x: part.left - clearance, y: point.y }]
+  if (edge === 'right') return [{ x: part.left + part.width + clearance, y: point.y }]
   if (edge === 'top') {
-    return [{ x: point.x, y: part.top - 14 }]
+    return [
+      { x: point.x, y: part.top - clearance },
+      { x: part.left - clearance, y: part.top - clearance },
+    ]
   }
-  return [{ x: point.x, y: part.top + part.height + 14 }]
+  return [{ x: point.x, y: part.top + part.height + clearance }]
 }
 
 export function GeneratedWokwiDiagram({
@@ -235,8 +239,12 @@ export function GeneratedWokwiDiagram({
     const end = pinPointForEndpoint(to, partMap, usages)
     const startPart = partMap.get(from.split(':')[0])!
     const endPart = partMap.get(to.split(':')[0])!
-    const startEscape = escapePoints(start, startPart)
-    const endEscape = escapePoints(end, endPart)
+    const startPin = from.split(':')[1] ?? ''
+    const endPin = to.split(':')[1] ?? ''
+    const startRouteIndex = Math.max(0, (usages.get(startPart.id) ?? []).indexOf(startPin))
+    const endRouteIndex = Math.max(0, (usages.get(endPart.id) ?? []).indexOf(endPin))
+    const startEscape = escapePoints(start, startPart, startRouteIndex)
+    const endEscape = escapePoints(end, endPart, endRouteIndex)
     const startCorridor = startEscape.at(-1)!
     const endCorridor = endEscape.at(-1)!
     const laneY = contentBottom + 10 + index * 10
