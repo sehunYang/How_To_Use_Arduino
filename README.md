@@ -1,6 +1,17 @@
 # How to use Arduino
 
-아두이노를 전혀 모르는 중·고등학생이 탐구 주제 하나만 들고 와서, 생성형 AI 없이 센서 추천 → 대표 예제 → 프로젝트 배선·코드까지 완주하는 Notion 스타일 가이드 사이트.
+아두이노를 전혀 모르는 중·고등학생이 탐구 주제 하나만 들고 와서, 생성형 AI 없이 탐구를 끝까지 마치는 가이드 사이트.
+측정하고 싶은 것을 문장으로 적으면 센서 추천 → 대표 예제 → 프로젝트 배선·코드로 이어지고, 측정을 마친 뒤에는
+시리얼 모니터 내용을 붙여넣어 CSV 저장, 요약 통계, 논문 형식 그래프까지 같은 자리에서 처리합니다.
+
+학생 화면은 네 갈래입니다.
+
+| 화면 | 하는 일 |
+|---|---|
+| 아이디어 찾기 (`/`) | 탐구 문장으로 센서와 레시피 검색 |
+| 레시피 둘러보기 (`/recipes`) | 준비물·단계별 배선도·코드·바꿔 볼 값 |
+| 센서 학습하기 (`/sensors`) | 측정 물리량, 출력 방식, 배선 주의점 |
+| 데이터 변환·분석 (`/data-analysis`) | CSV 저장, 요약 통계, 회귀 분석, 반복 실험 상자그림, 그래프 PNG 저장 |
 
 - 요구사항 명세: [`.omc/specs/deep-interview-how-to-use-arduino.md`](.omc/specs/deep-interview-how-to-use-arduino.md) (모호도 4.9%, 인수 조건 44건)
 - 구현 계획: [`.omc/plans/how-to-use-arduino-implementation.md`](.omc/plans/how-to-use-arduino-implementation.md) (Revision 3.1, 합의 검토 완료)

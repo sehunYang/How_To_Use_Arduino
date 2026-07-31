@@ -21,6 +21,10 @@ export function RecipeListPage() {
     <div className="mx-auto max-w-6xl">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div><p className="text-caption font-semibold text-accent">레시피 데이터베이스</p><h1 className="text-3xl font-semibold">탐구 레시피 둘러보기</h1></div>
+        <p className="w-full max-w-3xl text-body text-muted">
+          레시피 하나에는 준비물, 단계별 배선도, 그대로 복사해 쓰는 코드, 바꿔 볼 값과 탐구 안내가 함께 들어 있습니다.
+          과목·난이도·센서로 추리거나, 짧은 시간에 끝나는 것부터 살펴보세요.
+        </p>
         <div className="flex rounded-card border border-border p-1" role="group" aria-label="보기 방식">
           <button className={`rounded-card px-3 py-2 ${view === 'gallery' ? 'bg-accent text-accent-foreground' : ''}`} onClick={() => setView('gallery')}>갤러리</button>
           <button className={`rounded-card px-3 py-2 ${view === 'table' ? 'bg-accent text-accent-foreground' : ''}`} onClick={() => setView('table')}>테이블</button>

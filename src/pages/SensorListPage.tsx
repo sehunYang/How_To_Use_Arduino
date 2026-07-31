@@ -32,7 +32,8 @@ export function SensorListPage() {
       <p className="text-caption font-semibold text-accent">센서 학습 데이터베이스</p>
       <h1 className="mt-1 text-3xl font-semibold">센서 학습하기</h1>
       <p className="mt-3 max-w-3xl text-body text-muted">
-        측정하려는 물리량에 맞는 센서를 고르고, 출력 방식과 배선 특성, 추천 실험을 자세히 살펴보세요.
+        측정하려는 물리량에 맞는 센서를 고르고, 값을 어떤 방식으로 내보내는지, 연결할 때 무엇을 조심해야 하는지,
+        어떤 실험에 쓸 수 있는지 자세히 살펴보세요.
       </p>
       <div className="mt-6 grid gap-3 rounded-card border border-border p-4 md:grid-cols-2">
         <label className="text-caption font-medium">

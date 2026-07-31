@@ -2,9 +2,29 @@
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!--
+      아이콘 경로는 빌드 때 배포 기본 경로(VITE_BASE_PATH)가 앞에 붙습니다.
+      og:image는 Vite가 손대지 않고 크롤러도 절대 주소를 요구하므로 전체 주소로 적습니다.
+    -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="256x256" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>How to use Arduino</title>
+    <title>Arduino Compass — 탐구 주제로 찾는 아두이노 실험 안내</title>
+    <meta
+      name="description"
+      content="측정하고 싶은 것을 적으면 필요한 센서와 검증된 실험 레시피를 찾아 줍니다. 단계별 배선도와 코드로 회로를 만들고, 시리얼 모니터에 찍힌 값을 붙여넣어 CSV 저장과 통계 요약, 논문 형식 그래프까지 한자리에서 끝냅니다."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="ko_KR" />
+    <meta property="og:site_name" content="Arduino Compass" />
+    <meta property="og:url" content="https://shy.ai.kr/How_To_Use_Arduino/" />
+    <meta property="og:title" content="Arduino Compass — 탐구 주제로 찾는 아두이노 실험 안내" />
+    <meta
+      property="og:description"
+      content="센서를 몰라도 괜찮습니다. 탐구 주제에서 센서 선택, 단계별 배선, 코드, 데이터 분석까지 이어지는 중·고등학생용 아두이노 안내서."
+    />
+    <meta property="og:image" content="https://shy.ai.kr/How_To_Use_Arduino/favicon.png" />
   </head>
   <body>
     <div id="root"></div>
