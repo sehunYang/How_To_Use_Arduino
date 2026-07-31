@@ -90,4 +90,44 @@ describe('WiringIllustration zoom and pan', () => {
     expect(container.querySelectorAll('[data-part-id]').length).toBeGreaterThan(1)
     expect(container.querySelectorAll('[data-wire-id]')).toHaveLength(2)
   })
+
+  it('anchors every Phase 5 wire endpoint to a visible pin center', () => {
+    for (const recipe of phase5Recipes) {
+      const { container, unmount } = render(
+        <WiringIllustration recipe={recipe} activeStep={recipe.wiring.length - 1} />,
+      )
+      const pinPoints = new Set(
+        Array.from(container.querySelectorAll('[data-pin-x][data-pin-y]'))
+          .map((pin) => `${pin.getAttribute('data-pin-x')},${pin.getAttribute('data-pin-y')}`),
+      )
+      const wires = Array.from(container.querySelectorAll('[data-wire-from][data-wire-to]'))
+      expect(wires, recipe.id).toHaveLength(recipe.wiring.length)
+      for (const wire of wires) {
+        expect(pinPoints.has(wire.getAttribute('data-wire-from') ?? ''), recipe.id).toBe(true)
+        expect(pinPoints.has(wire.getAttribute('data-wire-to') ?? ''), recipe.id).toBe(true)
+        const polyline = wire.querySelectorAll('polyline').item(
+          wire.querySelectorAll('polyline').length - 1,
+        )
+        const points = (polyline?.getAttribute('points') ?? '').split(' ').map((value) => {
+          const [x, y] = value.split(',').map(Number)
+          return { x, y }
+        })
+        for (let index = 1; index < points.length; index += 1) {
+          const previous = points[index - 1]
+          const current = points[index]
+          expect(
+            previous.x === current.x || previous.y === current.y,
+            `${recipe.id}: wire segment must be orthogonal`,
+          ).toBe(true)
+        }
+      }
+      for (const fallbackPin of Array.from(
+        container.querySelectorAll('[data-pin-source="fallback"]'),
+      )) {
+        expect(fallbackPin.querySelector('text')?.textContent, `${recipe.id}: fallback pin label`)
+          .toBeTruthy()
+      }
+      unmount()
+    }
+  })
 })

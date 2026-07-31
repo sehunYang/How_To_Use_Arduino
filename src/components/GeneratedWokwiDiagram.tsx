@@ -13,12 +13,22 @@ import '@wokwi/elements/dist/esm/servo-element.js'
 import '@wokwi/elements/dist/esm/slide-potentiometer-element.js'
 import { sensors } from '@/data/inventory-seed/sensors'
 import type { Recipe } from '@/schema'
-import { buildDiagram, type DiagramPart } from '@/wokwi/buildDiagram'
-import { Ina219Part, Tca9548aPart, Tsl2591Part } from './wokwiParts'
+import { buildDiagram, type Diagram, type DiagramPart } from '@/wokwi/buildDiagram'
+import { geometryFor } from '@/wokwi/partGeometry'
+import { HalfBreadboardPart, Ina219Part, Tca9548aPart, Tsl2591Part } from './wokwiParts'
+
+interface Point {
+  x: number
+  y: number
+}
 
 interface PositionedPart extends DiagramPart {
   width: number
   height: number
+}
+
+interface ElementWithPins extends HTMLElement {
+  pinInfo?: Array<{ name: string; x: number; y: number }>
 }
 
 const NATIVE_PARTS = new Set([
@@ -37,29 +47,86 @@ const NATIVE_PARTS = new Set([
 ])
 
 const PART_SIZE: Record<string, { width: number; height: number }> = {
-  'wokwi-arduino-uno': { width: 274, height: 202 },
-  'wokwi-hc-sr04': { width: 170, height: 95 },
+  'wokwi-hc-sr04': { width: 170.08, height: 94.49 },
   'wokwi-lcd1602': { width: 190, height: 95 },
-  'wokwi-mpu6050': { width: 112, height: 84 },
-  'wokwi-photoresistor-sensor': { width: 174, height: 62 },
-  'wokwi-pir-motion-sensor': { width: 92, height: 94 },
-  'wokwi-potentiometer': { width: 76, height: 76 },
-  'wokwi-resistor': { width: 118, height: 28 },
-  'wokwi-servo': { width: 170, height: 120 },
-  'wokwi-slide-potentiometer': { width: 150, height: 110 },
-  'chip-ina219': { width: 140, height: 92 },
-  'chip-tsl2591': { width: 140, height: 92 },
-  'custom-tca9548a': { width: 180, height: 106 },
+  'wokwi-led': { width: 42, height: 48 },
+  'wokwi-buzzer': { width: 64.25, height: 75.59 },
+  'wokwi-photoresistor-sensor': { width: 173.67, height: 61.48 },
+  'wokwi-pir-motion-sensor': { width: 90.71, height: 92.4 },
+  'wokwi-potentiometer': { width: 75.59, height: 75.59 },
+  'wokwi-resistor': { width: 59.13, height: 11.34 },
+  'wokwi-servo': { width: 170.08, height: 119.55 },
+  'wokwi-slide-potentiometer': { width: 150, height: 109.61 },
+}
+
+const GEOMETRY_TYPE: Record<string, string> = {
+  'custom-tca9548a': 'visual-tca9548a',
 }
 
 function displayName(part: DiagramPart): string {
   return part.id.replaceAll('-', ' ').replaceAll('_', ' ').toUpperCase()
 }
 
+function verifiedGeometry(type: string) {
+  return geometryFor(GEOMETRY_TYPE[type] ?? type)
+}
+
+function sizeFor(type: string): { width: number; height: number } {
+  const geometry = verifiedGeometry(type)
+  if (geometry) return { width: geometry.width, height: geometry.height }
+  return PART_SIZE[type] ?? { width: 132, height: 82 }
+}
+
+function normalizedPin(type: string, pin: string): string {
+  if (type === 'wokwi-arduino-uno') {
+    if (pin === 'GND') return 'GND.2'
+    const digital = /^D(\d+)$/.exec(pin)
+    if (digital) return digital[1]
+  }
+  return pin
+}
+
+function nativePin(type: string, pin: string): Point | null {
+  if (typeof document === 'undefined' || !NATIVE_PARTS.has(type)) return null
+  const element = document.createElement(type) as ElementWithPins
+  const match = element.pinInfo?.find((candidate) => candidate.name === normalizedPin(type, pin))
+  return match ? { x: match.x, y: match.y } : null
+}
+
+function localPinPoint(part: PositionedPart, pin: string, pins: string[]): Point {
+  const normalized = normalizedPin(part.type, pin)
+  const measured = verifiedPinPoint(part.type, normalized)
+  if (measured) return measured
+
+  const index = Math.max(0, pins.indexOf(pin))
+  return {
+    x: 0,
+    y: 14 + ((index + 1) * (part.height - 28)) / (pins.length + 1),
+  }
+}
+
+function verifiedPinPoint(type: string, pin: string): Point | null {
+  const geometry = verifiedGeometry(type)
+  return geometry?.pins.find((candidate) => candidate.name === pin) ?? nativePin(type, pin)
+}
+
+function pinPointForEndpoint(
+  endpoint: string,
+  parts: Map<string, PositionedPart>,
+  usages: Map<string, string[]>,
+): Point {
+  const [partId, pin = ''] = endpoint.split(':')
+  const part = parts.get(partId)
+  if (!part) throw new Error(`Generated Wokwi diagram references missing part "${partId}".`)
+  const local = localPinPoint(part, pin, usages.get(partId) ?? [pin])
+  return { x: part.left + local.x, y: part.top + local.y }
+}
+
 function partGraphic(part: PositionedPart) {
   if (part.type === 'chip-ina219') return <Ina219Part />
   if (part.type === 'chip-tsl2591') return <Tsl2591Part />
   if (part.type === 'custom-tca9548a') return <Tca9548aPart />
+  if (part.type === 'wokwi-breadboard-half') return <HalfBreadboardPart />
   if (NATIVE_PARTS.has(part.type)) {
     return createElement(part.type, {
       style: { width: '100%', height: '100%', display: 'block' },
@@ -74,7 +141,7 @@ function partGraphic(part: PositionedPart) {
 
 function positionParts(parts: DiagramPart[]): PositionedPart[] {
   return parts.map((part, index) => {
-    const size = PART_SIZE[part.type] ?? { width: 132, height: 82 }
+    const size = sizeFor(part.type)
     if (index === 0) return { ...part, left: 32, top: 64, ...size }
     const slot = index - 1
     return {
@@ -86,23 +153,39 @@ function positionParts(parts: DiagramPart[]): PositionedPart[] {
   })
 }
 
-function endpointPoint(
-  endpoint: string,
-  otherEndpoint: string,
-  parts: Map<string, PositionedPart>,
-  usages: Map<string, string[]>,
-): { x: number; y: number } {
-  const [partId, pin = ''] = endpoint.split(':')
-  const [otherPartId] = otherEndpoint.split(':')
-  const part = parts.get(partId)!
-  const other = parts.get(otherPartId)!
-  const pins = usages.get(partId) ?? [pin]
-  const pinIndex = Math.max(0, pins.indexOf(pin))
-  const y = part.top + 18 + ((pinIndex + 1) * (part.height - 36)) / (pins.length + 1)
-  return {
-    x: other.left >= part.left ? part.left + part.width : part.left,
-    y,
+function pinUsages(diagram: Diagram): Map<string, string[]> {
+  const result = new Map<string, string[]>()
+  for (const [from, to] of diagram.connections) {
+    for (const endpoint of [from, to]) {
+      const [partId, pin = ''] = endpoint.split(':')
+      const current = result.get(partId) ?? []
+      if (!current.includes(pin)) current.push(pin)
+      result.set(partId, current)
+    }
   }
+  return result
+}
+
+function escapePoints(point: Point, part: PositionedPart): Point[] {
+  const distances = [
+    { edge: 'left', value: Math.abs(point.x - part.left) },
+    { edge: 'right', value: Math.abs(point.x - (part.left + part.width)) },
+    { edge: 'top', value: Math.abs(point.y - part.top) },
+    { edge: 'bottom', value: Math.abs(point.y - (part.top + part.height)) },
+  ] as const
+  const edge = [...distances].sort((a, b) => a.value - b.value)[0].edge
+  if (edge === 'left') return [{ x: part.left - 14, y: point.y }]
+  if (edge === 'right') return [{ x: part.left + part.width + 14, y: point.y }]
+  if (edge === 'top') {
+    return [
+      { x: point.x, y: part.top - 14 },
+      { x: part.left - 14, y: part.top - 14 },
+    ]
+  }
+  return [
+    { x: point.x, y: part.top + part.height + 14 },
+    { x: part.left - 14, y: part.top + part.height + 14 },
+  ]
 }
 
 export function GeneratedWokwiDiagram({
@@ -115,19 +198,9 @@ export function GeneratedWokwiDiagram({
   const diagram = useMemo(() => buildDiagram(recipe, sensors), [recipe])
   const positioned = useMemo(() => positionParts(diagram.parts), [diagram.parts])
   const partMap = useMemo(() => new Map(positioned.map((part) => [part.id, part])), [positioned])
-  const usages = useMemo(() => {
-    const result = new Map<string, string[]>()
-    for (const [from, to] of diagram.connections) {
-      for (const endpoint of [from, to]) {
-        const [partId, pin = ''] = endpoint.split(':')
-        const current = result.get(partId) ?? []
-        if (!current.includes(pin)) current.push(pin)
-        result.set(partId, current)
-      }
-    }
-    return result
-  }, [diagram.connections])
-  const height = Math.max(330, ...positioned.map((part) => part.top + part.height + 40))
+  const usages = useMemo(() => pinUsages(diagram), [diagram])
+  const contentBottom = Math.max(290, ...positioned.map((part) => part.top + part.height + 24))
+  const height = contentBottom + diagram.connections.length * 10 + 30
   const visible = diagram.connections.slice(0, activeStep + 1)
 
   return (
@@ -141,7 +214,15 @@ export function GeneratedWokwiDiagram({
     >
       <rect width="900" height={height} rx="14" fill="#f7f7f5" />
       {positioned.map((part) => (
-        <g key={part.id} data-part-id={part.id}>
+        <g
+          key={part.id}
+          data-part-id={part.id}
+          data-part-type={part.type}
+          data-part-left={part.left}
+          data-part-top={part.top}
+          data-part-width={part.width}
+          data-part-height={part.height}
+        >
           <foreignObject x={part.left} y={part.top} width={part.width} height={part.height}>
             <div className="size-full">{partGraphic(part)}</div>
           </foreignObject>
@@ -155,17 +236,69 @@ export function GeneratedWokwiDiagram({
           >
             {displayName(part)}
           </text>
+          {(usages.get(part.id) ?? []).map((pin) => {
+            const point = pinPointForEndpoint(`${part.id}:${pin}`, partMap, usages)
+            const source = verifiedPinPoint(part.type, normalizedPin(part.type, pin))
+              ? 'verified'
+              : 'fallback'
+            return (
+              <g
+                key={pin}
+                data-pin={`${part.id}:${pin}`}
+                data-pin-x={point.x}
+                data-pin-y={point.y}
+                data-pin-source={source}
+              >
+                <circle cx={point.x} cy={point.y} r="3.5" fill="#fff" stroke="#172033" strokeWidth="1.5" />
+                {!NATIVE_PARTS.has(part.type) && (
+                  <text
+                    x={point.x + 7}
+                    y={point.y + 3}
+                    fontSize="9"
+                    fill="#172033"
+                    stroke="#fff"
+                    strokeWidth="3"
+                    paintOrder="stroke"
+                  >
+                    {pin}
+                  </text>
+                )}
+              </g>
+            )
+          })}
         </g>
       ))}
       <g fill="none" strokeLinecap="round" strokeLinejoin="round">
         {visible.map(([from, to, color], index) => {
-          const start = endpointPoint(from, to, partMap, usages)
-          const end = endpointPoint(to, from, partMap, usages)
-          const laneX = start.x + (end.x - start.x) * (0.42 + (index % 4) * 0.04)
-          const points = `${start.x},${start.y} ${laneX},${start.y} ${laneX},${end.y} ${end.x},${end.y}`
+          const start = pinPointForEndpoint(from, partMap, usages)
+          const end = pinPointForEndpoint(to, partMap, usages)
+          const startPart = partMap.get(from.split(':')[0])!
+          const endPart = partMap.get(to.split(':')[0])!
+          const startEscape = escapePoints(start, startPart)
+          const endEscape = escapePoints(end, endPart)
+          const startCorridor = startEscape.at(-1)!
+          const endCorridor = endEscape.at(-1)!
+          const laneY = contentBottom + 10 + index * 10
+          const route = [
+            start,
+            ...startEscape,
+            { x: startCorridor.x, y: laneY },
+            { x: endCorridor.x, y: laneY },
+            ...[...endEscape].reverse(),
+            end,
+          ]
+          const points = route.map((point) => `${point.x},${point.y}`).join(' ')
           const current = index === visible.length - 1
           return (
-            <g key={`${from}-${to}-${index}`} data-wire-id={`wire-${index}`} opacity={current ? 1 : 0.58}>
+            <g
+              key={`${from}-${to}-${index}`}
+              data-wire-id={`wire-${index}`}
+              data-wire-from-pin={from}
+              data-wire-to-pin={to}
+              data-wire-from={`${start.x},${start.y}`}
+              data-wire-to={`${end.x},${end.y}`}
+              opacity={current ? 1 : 0.58}
+            >
               {current && <polyline points={points} stroke="#fff" strokeWidth="9" />}
               <polyline points={points} stroke={color} strokeWidth={current ? 5 : 4} />
               <title>{`${from} → ${to}`}</title>

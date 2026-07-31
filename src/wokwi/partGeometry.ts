@@ -78,6 +78,8 @@ function tca9548aVisualGeometry(): PartGeometry {
       ['SD0', 0, 57],
       ['SC1', 220, 45],
       ['SD1', 220, 57],
+      ['SC2', 0, 81],
+      ['SD2', 0, 93],
     ]),
   }
 }

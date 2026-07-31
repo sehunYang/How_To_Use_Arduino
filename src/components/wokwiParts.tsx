@@ -89,6 +89,7 @@ export function Tca9548aPart() {
   const channels = [
     { side: 'left', channel: 0, y: 45 },
     { side: 'right', channel: 1, y: 45 },
+    { side: 'left', channel: 2, y: 81 },
   ] as const
 
   return (
