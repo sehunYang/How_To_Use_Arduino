@@ -24,6 +24,10 @@ function roleWeight(sensorId: string, index: number) {
  * Deduplicates sensors across matched recipes while retaining result order.
  * A subject-specific rationale wins; the subject-neutral rationale is the
  * fallback for sensors reused across subjects.
+ *
+ * 붙일 문구가 없으면 이유 없이 센서만 보여 줍니다. 레시피는 Firestore에서 오므로
+ * 앱이 모르는 센서가 나중에 올라올 수 있고, 그때 화면 전체가 사라지면 안 됩니다.
+ * 문구가 빠진 곳은 `aggregateSensors.test.ts`의 전수 검사가 빌드 단계에서 잡습니다.
  */
 export function aggregateSensors(
   entries: readonly Pick<SearchIndexEntry, 'sensors' | 'subject'>[],
@@ -60,11 +64,7 @@ export function aggregateSensors(
           candidate.sensorId === sensorId && candidate.subject === null,
       )
 
-    if (!rationale) {
-      throw new Error(`Missing rationale for displayed sensor "${sensorId}"`)
-    }
-
-    return { sensorId, whyText: rationale.whyText, score: 0, recipeCount: subjects.length }
+    return { sensorId, whyText: rationale?.whyText ?? '', score: 0, recipeCount: subjects.length }
   })
 }
 
@@ -109,11 +109,10 @@ export function rankSensors(
         .map((subject) => rationales.find((item) => item.sensorId === sensorId && item.subject === subject))
         .find((item) => item !== undefined)
       const rationale = exact ?? rationales.find((item) => item.sensorId === sensorId && item.subject === null)
-      if (!rationale) throw new Error(`Missing rationale for displayed sensor "${sensorId}"`)
 
       return {
         sensorId,
-        whyText: rationale.whyText,
+        whyText: rationale?.whyText ?? '',
         score: candidate.contribution * (1 + 0.15 * (candidate.recipeCount - 1)),
         recipeCount: candidate.recipeCount,
         firstSeen: candidate.firstSeen,

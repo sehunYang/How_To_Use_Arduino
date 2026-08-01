@@ -3,7 +3,10 @@ import type { SearchIndexEntry, SensorRationale } from '@/schema'
 import { aggregateSensors, rankSensors } from './aggregateSensors'
 import type { SearchResult } from '@/search'
 import { sensors } from '@/data/inventory-seed/sensors'
-import { canaryRationales } from '@/data/canary'
+import { phase5Recipes } from '@/data/phase5'
+import { phase6Recipes } from '@/data/phase6'
+import { publishedRecipes } from '@/data/studentCatalog'
+import { sensorRationales } from '@/data/sensorRationales'
 
 function entry(
   id: string,
@@ -75,13 +78,13 @@ describe('aggregateSensors', () => {
     expect(sensor.whyText).toBe('움직임을 측정할 수 있습니다.')
   })
 
-  it('rejects a displayed sensor without a rationale', () => {
-    expect(() =>
-      aggregateSensors(
-        [entry('unknown', ['missing-sensor'], '물리')],
-        rationales,
-      ),
-    ).toThrow('missing-sensor')
+  it('still shows a sensor whose rationale is missing, without one', () => {
+    // 레시피는 Firestore에서 오므로 앱이 모르는 센서가 나중에 올라올 수 있습니다.
+    // 그때 예외를 던지면 렌더 도중이라 검색 화면 전체가 사라집니다.
+    const [sensor] = aggregateSensors([entry('unknown', ['missing-sensor'], '물리')], rationales)
+
+    expect(sensor.sensorId).toBe('missing-sensor')
+    expect(sensor.whyText).toBe('')
   })
 })
 
@@ -139,15 +142,32 @@ describe('rankSensors', () => {
     expect(ranked.map((sensor) => sensor.sensorId)).toEqual(['mpu6050', 'tca9548a'])
   })
 
-  it('has a student-facing rationale for every published inventory sensor', () => {
+  it('has a student-facing rationale for every inventory sensor', () => {
     const missing = sensors
       .map((sensor) => sensor.id)
-      .filter((sensorId) => !canaryRationales.some((item) => item.sensorId === sensorId))
+      .filter((sensorId) => !sensorRationales.some((item) => item.sensorId === sensorId))
 
     expect(missing).toEqual([])
-    expect(() => rankSensors(
-      [result(entry('all-sensors', sensors.map((sensor) => sensor.id), '물리'), 3)],
-      canaryRationales,
-    )).not.toThrow()
+  })
+
+  /**
+   * 이 검사가 예전에는 물리 과목 하나로만 확인해서, 생물 레시피가 쓰는 MPU6050에
+   * 붙일 문구가 없다는 사실을 놓쳤습니다. 학생 화면에는 Firestore에 올라간 레시피가
+   * 모두 나오므로, 실제로 나올 수 있는 (센서 × 과목) 짝을 전부 확인합니다.
+   */
+  it('has a rationale for every sensor and subject the published catalogue can show', () => {
+    const catalogue = [...publishedRecipes, ...phase5Recipes, ...phase6Recipes]
+    const gaps = new Set<string>()
+
+    for (const recipe of catalogue) {
+      for (const sensorId of recipe.sensors) {
+        const resolved = sensorRationales.some(
+          (item) => item.sensorId === sensorId && (item.subject === recipe.subject || item.subject === null),
+        )
+        if (!resolved) gaps.add(`${sensorId} × ${recipe.subject}`)
+      }
+    }
+
+    expect([...gaps]).toEqual([])
   })
 })

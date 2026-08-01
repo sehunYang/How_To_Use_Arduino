@@ -6,7 +6,7 @@ import { buildIndex, search } from '@/search'
 import { normalizeSearchTokens, sendAnonymousEvent } from '@/telemetry/events'
 import { profileForSensor } from '@/data/sensorProfiles'
 import { SensorCard } from '@/components/SensorCard'
-import { canaryRationales } from '@/data/canary'
+import { sensorRationales } from '@/data/sensorRationales'
 import { rankSensors } from '@/results/aggregateSensors'
 import { useSensorInventory } from '@/firebase/sensorInventory'
 import { usePublishedRecipes } from '@/firebase/contentRepository'
@@ -28,7 +28,7 @@ export function SearchResultsPage() {
       }).catch(() => undefined)
     }
   }, [query, usedFuzzyFallback])
-  const rankedSensors = rankSensors(results, canaryRationales)
+  const rankedSensors = rankSensors(results, sensorRationales)
 
   return (
     <div className="mx-auto max-w-6xl">

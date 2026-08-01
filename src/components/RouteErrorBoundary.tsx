@@ -59,13 +59,16 @@ interface RouteErrorBoundaryProps {
 interface RouteErrorBoundaryState {
   failed: boolean
   stale: boolean
+  /** 화면에 그대로 보여 줄 오류 문구. 이 사이트에는 오류를 모아 보는 곳이 없어서 화면이 유일한 단서입니다. */
+  detail: string
 }
 
 export class RouteErrorBoundary extends Component<RouteErrorBoundaryProps, RouteErrorBoundaryState> {
-  state: RouteErrorBoundaryState = { failed: false, stale: false }
+  state: RouteErrorBoundaryState = { failed: false, stale: false, detail: '' }
 
   static getDerivedStateFromError(error: unknown): RouteErrorBoundaryState {
-    return { failed: true, stale: isStaleChunkError(error) }
+    const detail = error instanceof Error ? `${error.name}: ${error.message}` : String(error)
+    return { failed: true, stale: isStaleChunkError(error), detail }
   }
 
   componentDidCatch(error: unknown) {
@@ -83,7 +86,7 @@ export class RouteErrorBoundary extends Component<RouteErrorBoundaryProps, Route
   componentDidUpdate(previous: RouteErrorBoundaryProps) {
     // 다른 화면으로 옮겨 갔다면 그 화면은 멀쩡할 수 있으니 다시 그려 봅니다.
     if (this.state.failed && previous.resetKey !== this.props.resetKey) {
-      this.setState({ failed: false, stale: false })
+      this.setState({ failed: false, stale: false, detail: '' })
     }
   }
 
@@ -109,6 +112,12 @@ export class RouteErrorBoundary extends Component<RouteErrorBoundaryProps, Route
             처음으로
           </Link>
         </div>
+        {this.state.detail && (
+          <details className="mt-8 text-left">
+            <summary className="cursor-pointer text-caption text-muted">자세한 내용 (문제를 알릴 때 이 내용을 함께 알려 주세요)</summary>
+            <pre className="mt-2 overflow-x-auto whitespace-pre-wrap rounded-card border border-border bg-muted-background p-3 text-caption"><code>{this.state.detail}</code></pre>
+          </details>
+        )}
       </div>
     )
   }
