@@ -37,6 +37,25 @@ function splitRef(ref: string): [string, string] {
 }
 
 /**
+ * Translates an Uno pin from recipe vocabulary into Wokwi's.
+ *
+ * Recipes write digital pins as `D2`/`D9` because that is what the board's
+ * silkscreen, the sketch's `// @pin` manifest, and L1's UNO_PINS all use.
+ * Wokwi's `wokwi-arduino-uno` part names the same headers with bare numbers
+ * (`2`, `9`); analog (`A0`), power (`5V`, `3.3V`, `VIN`) and `GND` already
+ * agree and pass through untouched.
+ *
+ * Without this the simulator rejects the endpoint as an invalid pin and drops
+ * that wire, so the scenario runs against a circuit missing exactly the
+ * connections the recipe is about — and still passes, because the smoke
+ * scenario only waits for the sketch's ready banner.
+ */
+function unoWokwiPin(pin: string): string {
+  const digital = /^D(\d+)$/i.exec(pin)
+  return digital ? digital[1] : pin
+}
+
+/**
  * Resolves a wiring token (e.g. "TSL2591_1") to its underlying Sensor record
  * by matching against `sensor.id`/`sensor.name`, case-insensitively. Wiring
  * tokens for a second+ instance of the same sensor carry a trailing
@@ -301,7 +320,9 @@ export function resolveWiringRef(
   availableActuators: Actuator[] = actuators,
 ): { partId: string; pin: string; sensor: Sensor | undefined } {
   const [token, pin] = splitRef(ref)
-  if (token.toUpperCase() === UNO_TOKEN) return { partId: UNO_PART_ID, pin, sensor: undefined }
+  if (token.toUpperCase() === UNO_TOKEN) {
+    return { partId: UNO_PART_ID, pin: unoWokwiPin(pin), sensor: undefined }
+  }
   if (token.toUpperCase() === BREADBOARD_TOKEN) {
     return { partId: BREADBOARD_PART_ID, pin, sensor: undefined }
   }

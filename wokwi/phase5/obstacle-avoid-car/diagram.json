@@ -91,49 +91,49 @@
     ],
     [
       "hc-sr04:TRIG",
-      "uno:D8",
+      "uno:8",
       "blue",
       []
     ],
     [
       "hc-sr04:ECHO",
-      "uno:D9",
+      "uno:9",
       "green",
       []
     ],
     [
       "driver:DIR",
-      "uno:D2",
+      "uno:2",
       "orange",
       []
     ],
     [
       "driver:STEP",
-      "uno:D4",
+      "uno:4",
       "orange",
       []
     ],
     [
       "driver:MS2",
-      "uno:D3",
+      "uno:3",
       "purple",
       []
     ],
     [
       "driver:MS3",
-      "uno:D7",
+      "uno:7",
       "purple",
       []
     ],
     [
       "driver:ENABLE",
-      "uno:D5",
+      "uno:5",
       "yellow",
       []
     ],
     [
       "driver:MS1",
-      "uno:D6",
+      "uno:6",
       "white",
       []
     ],

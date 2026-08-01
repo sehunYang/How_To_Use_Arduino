@@ -196,7 +196,7 @@ describe('buildDiagram', () => {
         ['uno:5V', 'bb:tp.1', 'red', []],
         ['fake-sensor-11:GND', 'bb:tn.5', 'black', []],
         ['uno:GND', 'bb:tn.1', 'black', []],
-        ['fake-sensor-11:signal', 'uno:D2', 'blue', []],
+        ['fake-sensor-11:signal', 'uno:2', 'blue', []],
       ]),
     )
   })

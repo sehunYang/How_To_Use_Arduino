@@ -136,7 +136,9 @@ describe('recipe netlist', () => {
 
   it('resolves sensor pins through wokwi.pinMap, matching buildDiagram', () => {
     const nets = recipeNetlist(recipeWith([step('DS18B20.DATA', 'UNO.D2')]), sensors)
-    expect(nets).toEqual([['ds18b20:DQ', 'uno:D2']])
+    // "D2" is the recipe/silkscreen name; Wokwi's Uno part calls the same
+    // header "2", and both sides of the gate resolve through buildDiagram.
+    expect(nets).toEqual([['ds18b20:DQ', 'uno:2']])
   })
 
   it('treats a specific Uno ground header as the board ground net', () => {

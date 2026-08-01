@@ -61,13 +61,13 @@
     ],
     [
       "hc-sr501:OUT",
-      "uno:D2",
+      "uno:2",
       "yellow",
       []
     ],
     [
       "servo:PWM",
-      "uno:D9",
+      "uno:9",
       "orange",
       []
     ],

@@ -49,13 +49,13 @@
     ],
     [
       "hc-sr04:TRIG",
-      "uno:D7",
+      "uno:7",
       "blue",
       []
     ],
     [
       "hc-sr04:ECHO",
-      "uno:D6",
+      "uno:6",
       "green",
       []
     ]
