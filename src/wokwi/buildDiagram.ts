@@ -10,6 +10,8 @@ export interface DiagramPart {
   type: string
   top: number
   left: number
+  /** Wokwi part attributes, e.g. a resistor's `value` in ohms. Omitted when empty. */
+  attrs?: Record<string, string>
 }
 
 /** Wokwi's diagram.json connection tuple: [from, to, color, path]. */
@@ -263,6 +265,26 @@ interface ResolvableComponent {
   muxChannels?: number
 }
 
+/**
+ * Resolves the Wokwi attributes a part is emitted with.
+ *
+ * A `wokwi-resistor` with no `value` simulates as the part's own 1 kΩ default,
+ * regardless of what the recipe told the student to install — so a 4.7 kΩ
+ * pull-up and a 220 Ω current limiter would be the same component in the rig.
+ *
+ * A plain `RESISTOR_<n>` token already carries its resistance in ohms, so the
+ * value is read straight off the token the author wrote. That reading is
+ * deliberately restricted to this exact shape: `CDS_RESISTOR_1`/`CDS_RESISTOR_2`
+ * number the left and right dividers of a two-eye recipe, and taking "1" there
+ * as one ohm would be worse than the default. Components whose value is fixed
+ * regardless of recipe declare it once in the inventory (`wokwi.attrs`).
+ */
+function partAttrs(token: string, component: ResolvableComponent): Record<string, string> | undefined {
+  const ohms = /^RESISTOR_(\d+)$/i.exec(token)?.[1]
+  const attrs = { ...component.wokwi.attrs, ...(ohms === undefined ? {} : { value: ohms }) }
+  return Object.keys(attrs).length > 0 ? attrs : undefined
+}
+
 function matchesToken(component: ResolvableComponent, token: string): boolean {
   const upper = token.toUpperCase()
   return component.id.toUpperCase() === upper
@@ -396,7 +418,14 @@ export function buildDiagram(recipe: Recipe, sensors: Sensor[]): Diagram {
         )
       if (component) {
         seenPartIds.add(partId)
-        parts.push({ id: partId, type: component.wokwi.part, top: 0, left: nextLeft })
+        const attrs = partAttrs(token, component)
+        parts.push({
+          id: partId,
+          type: component.wokwi.part,
+          top: 0,
+          left: nextLeft,
+          ...(attrs === undefined ? {} : { attrs }),
+        })
         nextLeft += PART_SPACING
       }
     }

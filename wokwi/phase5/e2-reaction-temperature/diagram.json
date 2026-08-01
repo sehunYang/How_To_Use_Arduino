@@ -25,7 +25,10 @@
       "id": "resistor_4700",
       "type": "wokwi-resistor",
       "top": 0,
-      "left": 200
+      "left": 200,
+      "attrs": {
+        "value": "4700"
+      }
     }
   ],
   "connections": [

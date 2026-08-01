@@ -52,6 +52,12 @@ export const WokwiDescriptorSchema = z.object({
   simSupported: z.boolean(),
   /** Alternative labels used by recipe wiring (for example RELAY or SERVO). */
   aliases: z.array(z.string().min(1)).optional(),
+  /**
+   * Wokwi part attributes this component always carries (for example a fixed
+   * divider resistor's `value`). Parts whose value differs per recipe state it
+   * in the wiring token instead — see `partAttrs` in src/wokwi/buildDiagram.ts.
+   */
+  attrs: z.record(z.string(), z.string()).optional(),
 })
 export type WokwiDescriptor = z.infer<typeof WokwiDescriptorSchema>
 

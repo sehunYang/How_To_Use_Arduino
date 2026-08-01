@@ -205,6 +205,9 @@ export const wokwiAuxiliaryParts: WokwiAuxiliaryPart[] = [
       pinMap: { '1': '1', '2': '2' },
       simSupported: false,
       aliases: ['CDS_RESISTOR'],
+      // 이 토큰의 접미사는 저항값이 아니라 좌우 분압기 번호(CDS_RESISTOR_1/_2)라
+      // 값을 여기에 둔다. 모든 CDS 레시피가 10 kΩ 분압을 지시한다.
+      attrs: { value: '10000' },
     },
   },
   {
