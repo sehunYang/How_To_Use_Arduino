@@ -20,6 +20,12 @@
       "type": "wokwi-ds18b20",
       "top": 0,
       "left": 100
+    },
+    {
+      "id": "resistor_4700",
+      "type": "wokwi-resistor",
+      "top": 0,
+      "left": 200
     }
   ],
   "connections": [
@@ -32,6 +38,12 @@
     [
       "uno:5V",
       "bb:tp.1",
+      "red",
+      []
+    ],
+    [
+      "bb:tp.9",
+      "bb:4t.a",
       "red",
       []
     ],
@@ -49,8 +61,26 @@
     ],
     [
       "ds18b20:DQ",
-      "uno:2",
+      "bb:2t.a",
       "green",
+      []
+    ],
+    [
+      "uno:2",
+      "bb:2t.b",
+      "green",
+      []
+    ],
+    [
+      "resistor_4700:1",
+      "bb:2t.e",
+      "green",
+      []
+    ],
+    [
+      "resistor_4700:2",
+      "bb:4t.e",
+      "red",
       []
     ]
   ]

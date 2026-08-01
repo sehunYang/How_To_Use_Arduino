@@ -14,6 +14,16 @@
 <g>
   <rect x="400" y="30" width="150" height="60" rx="8" fill="#ffffff" stroke="green" stroke-width="4"/>
   <text x="410" y="55" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">3. DS18B20.DATA → UNO.D4</text>
-  <text x="410" y="77" font-family="sans-serif" font-size="11" fill="#455064">DATA를 D4에 연결하고 DATA와 5V </text>
+  <text x="410" y="77" font-family="sans-serif" font-size="11" fill="#455064">DATA를 D4에 연결하세요.</text>
+</g>
+<g>
+  <rect x="585" y="30" width="150" height="60" rx="8" fill="#ffffff" stroke="green" stroke-width="4"/>
+  <text x="595" y="55" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">4. DS18B20.DATA → RESISTOR_4700.1</text>
+  <text x="595" y="77" font-family="sans-serif" font-size="11" fill="#455064">DATA와 4.7 kΩ 저항의 한쪽 다리를 </text>
+</g>
+<g>
+  <rect x="30" y="120" width="150" height="60" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
+  <text x="40" y="145" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">5. RESISTOR_4700.2 → UNO.5V</text>
+  <text x="40" y="167" font-family="sans-serif" font-size="11" fill="#455064">4.7 kΩ 저항의 남은 다리를 5V에 연결</text>
 </g>
 </svg>

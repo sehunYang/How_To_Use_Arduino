@@ -67,6 +67,12 @@ describe('Phase 5 physics and chemistry/environment project recipes', () => {
     expect(p7?.applicationGuide).toContain('TCA9548A')
     expect(e5?.sensors).toEqual(['tca9548a', 'tsl2591'])
     expect(e5?.wiring.filter((step) => /TSL2591_[123]\.SDA/.test(step.from))).toHaveLength(3)
-    expect(e6?.wiring.some((step) => step.text.includes('4.7 kΩ 풀업'))).toBe(true)
+    // 풀업 저항은 안내 문구가 아니라 배선 단계로 선언되어야 한다. 문구로만 두면
+    // 생성되는 회로도에서 저항이 빠지고, 시뮬레이션은 학생이 만드는 회로와 달라진다.
+    const e6PullUp = e6?.wiring.filter((step) => /^RESISTOR_4700\./.test(step.from) || /^RESISTOR_4700\./.test(step.to)) ?? []
+    expect(e6PullUp.map((step) => `${step.from}->${step.to}`)).toEqual([
+      'DS18B20_1.DATA->RESISTOR_4700.1',
+      'RESISTOR_4700.2->UNO.5V',
+    ])
   })
 })

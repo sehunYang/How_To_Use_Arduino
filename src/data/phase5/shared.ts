@@ -76,7 +76,7 @@ export function oneWireConnections(instances: string[]): Connection[] {
     from: `${instances[0]}.DATA`,
     to: 'UNO.D2',
     color: 'green',
-    text: `모든 DS18B20 DATA를 D2에 함께 연결하고 DATA와 5V 사이에 4.7 kΩ 풀업 저항(신호선을 기본 HIGH 상태로 유지하는 저항)을 연결하세요.`,
+    text: `모든 DS18B20 DATA를 D2에 함께 연결하세요.`,
   })
   for (const instance of instances.slice(1)) {
     connections.push({
@@ -86,6 +86,22 @@ export function oneWireConnections(instances: string[]): Connection[] {
       text: `${instance} DATA를 공통 D2 버스에 연결하세요.`,
     })
   }
+  // 풀업 저항은 배선 단계로 선언한다. 안내 문장에만 적어 두면 생성되는 회로도에
+  // 저항이 빠지고, 넷리스트 검사도 학생이 실제로 꽂아야 할 이 부품을 보지 못한다.
+  connections.push(
+    {
+      from: `${instances[0]}.DATA`,
+      to: 'RESISTOR_4700.1',
+      color: 'green',
+      text: '공통 DATA 열과 4.7 kΩ 저항의 한쪽 다리를 같은 브레드보드 열에 꽂으세요. 이 저항이 신호선을 기본 HIGH 상태로 유지합니다.',
+    },
+    {
+      from: 'RESISTOR_4700.2',
+      to: 'UNO.5V',
+      color: 'red',
+      text: '4.7 kΩ 저항의 남은 다리를 5V에 연결하세요. 이 저항이 없으면 1-Wire 통신이 시작되지 않습니다.',
+    },
+  )
   return connections
 }
 

@@ -472,7 +472,9 @@ CDS의 저항은 빛에 따라 변합니다. CDS와 외부 10 kΩ 저항으로 �
     wiring: [
       wire('DS18B20.VCC', 'UNO.5V', 'red', 'VCC를 아두이노 5V에 연결하세요.', 0),
       wire('DS18B20.GND', 'UNO.GND', 'black', 'GND를 아두이노 GND에 연결하세요.', 1),
-      wire('DS18B20.DATA', 'UNO.D4', 'green', 'DATA를 D4에 연결하고 DATA와 5V 사이에 신호선을 기본 HIGH 상태로 유지하는 4.7 kΩ 저항을 연결하세요.', 2),
+      wire('DS18B20.DATA', 'UNO.D4', 'green', 'DATA를 D4에 연결하세요.', 2),
+      wire('DS18B20.DATA', 'RESISTOR_4700.1', 'green', 'DATA와 4.7 kΩ 저항의 한쪽 다리를 브레드보드의 같은 열에 꽂으세요. 이 저항이 신호선을 기본 HIGH 상태로 유지합니다.', 3),
+      wire('RESISTOR_4700.2', 'UNO.5V', 'red', '4.7 kΩ 저항의 남은 다리를 5V에 연결하세요. 이 저항이 없으면 1-Wire 통신이 시작되지 않습니다.', 4),
     ],
     sketch: s5Sketch,
     tunables: [{ anchor: 'conversionIntervalMs', name: '측정 간격', hint: '기본 12비트 변환 시간보다 충분히 길게 두세요.' }],
