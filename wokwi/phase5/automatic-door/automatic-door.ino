@@ -36,6 +36,6 @@ void loop() {
     lastLog=millis();
     Serial.print(millis());
     Serial.print(',');
-    Serial.println(open ? "open" : "closed");
+    Serial.println(open ? 1 : 0);
   }
 }

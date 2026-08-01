@@ -61,6 +61,8 @@ const tslReadDriver = `uint16_t lightRaw(){
  * recipes actually need to compute a frequency.
  */
 export const hallPulseDriver = (pin: string) => `const byte HALL_PIN=${pin};
+// 자석을 대었을 때 값이 '내려가는' 극이 센서를 향해야 펄스가 세어집니다.
+// 기준값은 자석 없이 읽은 값(대개 512 부근)에 맞춰 조절하세요.
 const int MAGNET_THRESHOLD=400,RELEASE_THRESHOLD=500;
 unsigned long pulseCount=0,lastPulseUs=0,lastIntervalUs=0;
 bool magnetDetected=false;int hallRaw=0;
@@ -139,8 +141,10 @@ function defaultConnections(definition: Phase6RecipeDefinition): Connection[] {
         // GY-521 breakout (no level shifter), so the HIGH strap must come from
         // the Uno's 3.3V pin — 5V exceeds the chip's absolute maximum rating.
         connections.push({ from: `${token}.AD0`, to: 'UNO.3.3V', color: 'orange', text: `${token} AD0를 UNO 3.3V 핀에 연결해 I2C 주소를 0x69로 설정하세요. 5V 레일에 연결하면 센서가 손상될 수 있습니다.` })
-      } else if (base === 'MPU6050' && token === 'MPU6050_1') {
-        connections.push({ from: `${token}.AD0`, to: 'UNO.GND', color: 'black', text: `${token} AD0 low for I2C address 0x68` })
+      } else if (base === 'MPU6050' && (token === 'MPU6050_1' || token === 'MPU6050')) {
+        // 단독 MPU6050도 AD0를 GND에 묶어 코드가 가정하는 0x68 주소를 보드
+        // 종류와 무관하게 보장한다(브레이크아웃 풀다운에만 기대지 않는다).
+        connections.push({ from: `${token}.AD0`, to: 'UNO.GND', color: 'black', text: `${token} AD0를 - 레일에 연결해 I2C 주소를 0x68로 고정하세요.` })
       }
     } else if (base === 'TSL2591' || base === 'TCA9548A') {
       connections.push(...i2c(token, 'VIN'))
@@ -218,12 +222,14 @@ unsigned long samplingIntervalMs = 100;
 ${header}
 ${bme280Driver}
 const byte TRIG_PIN=7,ECHO_PIN=6;
-void setup(){Serial.begin(9600);Wire.begin();bmeBegin();pinMode(TRIG_PIN,OUTPUT);pinMode(ECHO_PIN,INPUT);Serial.println("time_ms,temperature_c,pressure_hpa,distance_m");}
+void setup(){Serial.begin(9600);Wire.begin();if(!bmeBegin())Serial.println("# BME280_ERROR");pinMode(TRIG_PIN,OUTPUT);pinMode(ECHO_PIN,INPUT);Serial.println("time_ms,temperature_c,pressure_hpa,echo_time_us,distance_m");}
 void loop(){
   digitalWrite(TRIG_PIN,LOW);delayMicroseconds(2);digitalWrite(TRIG_PIN,HIGH);delayMicroseconds(10);digitalWrite(TRIG_PIN,LOW);
+  // 왕복시간 원시값도 함께 남겨, 고정 음속(343 m/s)으로 계산한 거리와
+  // 온도 보정 거리(distance_m)를 나중에 모두 만들 수 있게 합니다.
   unsigned long us=pulseIn(ECHO_PIN,HIGH,30000);float t=bmeTemperatureC(),p=bmePressureHpa();
   float soundSpeed=331.3f+0.606f*t,distanceM=us*soundSpeed/2000000.0f;
-  Serial.print(millis());Serial.print(',');Serial.print(t,2);Serial.print(',');Serial.print(p,2);Serial.print(',');Serial.println(distanceM,4);
+  Serial.print(millis());Serial.print(',');Serial.print(t,2);Serial.print(',');Serial.print(p,2);Serial.print(',');Serial.print(us);Serial.print(',');Serial.println(distanceM,4);
   delay(samplingIntervalMs);
 }`
   }
@@ -280,7 +286,7 @@ void loop(){Serial.print(millis());Serial.print(',');Serial.print(readIna(1)*0.0
 ${header}
 ${oneWireDriver}
 ${bme280Driver}
-void setup(){Serial.begin(9600);Wire.begin();bmeBegin();Serial.println("time_ms,object_temperature_c,ambient_temperature_c,humidity_pct");}
+void setup(){Serial.begin(9600);Wire.begin();if(!bmeBegin())Serial.println("# BME280_ERROR");Serial.println("time_ms,object_temperature_c,ambient_temperature_c,humidity_pct");}
 void loop(){startAllTemperatures();delay(750);float objectT=readOnlyTemperatureC(),ambientT=bmeTemperatureC();
 Serial.print(millis());Serial.print(',');Serial.print(objectT,3);Serial.print(',');Serial.print(ambientT,3);Serial.print(',');Serial.println(bmeHumidity(),2);delay(samplingIntervalMs);}`
   }
@@ -292,7 +298,9 @@ void loop(){
   digitalWrite(TRIG_PIN,LOW);delayMicroseconds(2);digitalWrite(TRIG_PIN,HIGH);
   delayMicroseconds(10);digitalWrite(TRIG_PIN,LOW);
   unsigned long us=pulseIn(ECHO_PIN,HIGH,30000);
-  float distanceM=us?us*0.000343f/2.0f:NAN;
+  // 미수신은 nan 대신 -1로 표시합니다. nan 문자열은 표 계산 프로그램이
+  // 숫자로 읽지 못해 그래프가 조용히 깨집니다.
+  float distanceM=us?us*0.000343f/2.0f:-1.0f;
   Serial.print(millis());Serial.print(',');Serial.println(distanceM,4);
   delay(samplingIntervalMs);
 }`
@@ -331,8 +339,18 @@ void loop(){
     return `#include <Wire.h>
 ${header}
 ${tslReadDriver}
-void setup(){Serial.begin(9600);Wire.begin();Wire.beginTransmission(0x29);Wire.write(0xA0);Wire.write(0x03);Wire.endTransmission();Serial.println("time_ms,light_raw");}
+// 증폭·측정시간 설정: 0x00=1배·100ms(기본), 0x10=25배, 0x20=428배.
+// 어두운 쪽이 0에 붙으면 값을 올리고, light_raw가 65535 근처에 붙으면 낮추세요.
+const byte LIGHT_CONFIG=0x00;
+void setup(){Serial.begin(9600);Wire.begin();Wire.beginTransmission(0x29);Wire.write(0xA0);Wire.write(0x03);Wire.endTransmission();Wire.beginTransmission(0x29);Wire.write(0xA1);Wire.write(LIGHT_CONFIG);Wire.endTransmission();Serial.println("time_ms,light_raw");}
 void loop(){Serial.print(millis());Serial.print(',');Serial.println(lightRaw());delay(samplingIntervalMs);}`
+  }
+  if (sensors.has('hbe0704')) {
+    // 자기장 측정에는 hall_raw 이름이 맞습니다. 일반 fallback의 analog_raw는
+    // 전압 변환 안내로 이어져 학생을 엉뚱한 해석으로 보냅니다.
+    return `${header}
+void setup(){Serial.begin(9600);Serial.println("time_ms,hall_raw");}
+void loop(){Serial.print(millis());Serial.print(',');Serial.println(analogRead(A0));delay(samplingIntervalMs);}`
   }
   if (sensors.has('ds18b20')) {
     return definition.sensors.filter((sensor) => sensor === 'ds18b20').length > 1
@@ -343,7 +361,7 @@ void loop(){Serial.print(millis());Serial.print(',');Serial.println(lightRaw());
     return `#include <Wire.h>
 ${header}
 ${bme280Driver}
-void setup(){Serial.begin(9600);Wire.begin();bmeBegin();Serial.println("time_ms,temperature_c,pressure_hpa");}
+void setup(){Serial.begin(9600);Wire.begin();if(!bmeBegin())Serial.println("# BME280_ERROR");Serial.println("time_ms,temperature_c,pressure_hpa");}
 void loop(){float t=bmeTemperatureC(),p=bmePressureHpa();Serial.print(millis());Serial.print(',');Serial.print(t,3);Serial.print(',');Serial.println(p,3);delay(samplingIntervalMs);}`
   }
   return `${header}

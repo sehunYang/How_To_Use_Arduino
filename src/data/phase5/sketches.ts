@@ -151,7 +151,9 @@ float distanceM() {
   digitalWrite(TRIG,LOW); delayMicroseconds(2);
   digitalWrite(TRIG,HIGH); delayMicroseconds(10); digitalWrite(TRIG,LOW);
   unsigned long us=pulseIn(ECHO,HIGH,30000);
-  return us ? us*0.0001715 : NAN;
+  // 미수신은 nan 대신 -1로 표시합니다. nan 문자열은 표 계산 프로그램이
+  // 숫자로 읽지 못합니다. -1인 행은 지우고 분석하세요.
+  return us ? us*0.0001715 : -1.0;
 }
 void setup() {
   Serial.begin(9600); pinMode(TRIG,OUTPUT); pinMode(ECHO,INPUT);
@@ -176,7 +178,7 @@ const unsigned long samplingIntervalMs = 60;
 float distanceM() {
   digitalWrite(TRIG,LOW); delayMicroseconds(2); digitalWrite(TRIG,HIGH);
   delayMicroseconds(10); digitalWrite(TRIG,LOW);
-  unsigned long us=pulseIn(ECHO,HIGH,30000); return us ? us*0.0001715 : NAN;
+  unsigned long us=pulseIn(ECHO,HIGH,30000); return us ? us*0.0001715 : -1.0;
 }
 void setup() {
   Serial.begin(9600); Wire.begin(); imu.initialize();
@@ -246,6 +248,10 @@ uint16_t inaRead(byte reg){
 }
 void setup() {
   Serial.begin(9600); Wire.begin(); inaWrite(0x05,4096); tsl.begin();
+  // 패널을 비출 만큼 강한 빛은 기본 증폭(25배)의 측정 범위를 넘습니다.
+  // 가장 낮은 증폭으로 두어야 lux가 -1(포화)로 떨어지지 않습니다.
+  tsl.setGain(TSL2591_GAIN_LOW);
+  tsl.setTiming(TSL2591_INTEGRATIONTIME_100MS);
   Serial.println("time_ms,voltage_v,current_ma,power_mw,lux,power_density_mw_cm2");
 }
 void loop() {
@@ -279,10 +285,16 @@ float lightLux() {
 float distanceM() {
   digitalWrite(TRIG,LOW);delayMicroseconds(2);digitalWrite(TRIG,HIGH);
   delayMicroseconds(10);digitalWrite(TRIG,LOW);
-  return pulseIn(ECHO,HIGH,30000)*0.0001715;
+  unsigned long us=pulseIn(ECHO,HIGH,30000);
+  // 미수신이 조용히 0 m가 되면 d2_times_lux도 0이 되어 표를 망칩니다.
+  return us ? us*0.0001715 : -1.0;
 }
 void setup() {
   Serial.begin(9600); Wire.begin(); tsl.begin();
+  // 0.2 m 거리의 램프는 기본 증폭(25배)의 측정 범위를 넘으므로 가장 낮은
+  // 증폭으로 둡니다. 가까운 점이 포화되면 역제곱 검증이 무너집니다.
+  tsl.setGain(TSL2591_GAIN_LOW);
+  tsl.setTiming(TSL2591_INTEGRATIONTIME_100MS);
   pinMode(TRIG,OUTPUT);pinMode(ECHO,INPUT);
   Serial.println("time_ms,distance_m,mean_lux,d2_times_lux");
 }
@@ -305,16 +317,24 @@ ${bme280Driver}
 const byte RELAY=7;
 // @tunable humidityOnPercent
 float humidityOnPercent = 70.0;
+// 끄는 기준. 켜는 기준과 같게 두면 경계에서 팬이 반복해 켜졌다 꺼집니다.
+// 기준 차이 실험은 이 값을 켜는 기준과 같게(차이 0) 또는 5 낮게 두고 반복하세요.
+float humidityOffPercent = 65.0;
+bool fanOn = false;
 void setup() {
-  Serial.begin(9600); Wire.begin(); bmeBegin();
+  Serial.begin(9600); Wire.begin();
+  if(!bmeBegin())Serial.println("# BME280_ERROR");
   pinMode(RELAY,OUTPUT); digitalWrite(RELAY,LOW);
-  Serial.println("temperature_c,humidity_percent,fan");
+  Serial.println("time_s,temperature_c,humidity_percent,fan");
 }
 void loop() {
   float t=bmeTemperatureC(), h=bmeHumidity();
-  bool on=h>=humidityOnPercent || t>=30.0; digitalWrite(RELAY,on);
+  if (h>=humidityOnPercent || t>=30.0) fanOn=true;
+  else if (h<=humidityOffPercent && t<30.0) fanOn=false;
+  digitalWrite(RELAY,fanOn);
+  Serial.print(millis()/1000.0,1);Serial.print(',');
   Serial.print(t,2);Serial.print(',');Serial.print(h,2);Serial.print(',');
-  Serial.println(on ? 1 : 0); delay(1000);
+  Serial.println(fanOn ? 1 : 0); delay(1000);
 }`
 
 export const e2Sketch = `// @pin ONE_WIRE=D2
@@ -355,7 +375,8 @@ ${bme280Driver}
 // @tunable seaLevelPressureHpa
 float seaLevelPressureHpa = 1013.25;
 void setup() {
-  Serial.begin(9600); Wire.begin(); bmeBegin();
+  Serial.begin(9600); Wire.begin();
+  if(!bmeBegin())Serial.println("# BME280_ERROR");
   Serial.println("time_min,pressure_hpa,relative_altitude_m");
 }
 void loop() {
@@ -384,7 +405,13 @@ float readLight() {
 }
 void setup() {
   Serial.begin(9600);Wire.begin();
-  for(byte channel=0;channel<3;channel++){selectChannel(channel);tsl.begin();}
+  for(byte channel=0;channel<3;channel++){
+    selectChannel(channel);
+    if(!tsl.begin())Serial.println("# TSL2591_ERROR");
+    // 창가처럼 밝은 자리는 기본 증폭(25배)의 측정 범위를 넘으므로 낮춰 둡니다.
+    tsl.setGain(TSL2591_GAIN_LOW);
+    tsl.setTiming(TSL2591_INTEGRATIONTIME_100MS);
+  }
   Serial.println("time_ms,position,lux");
 }
 void loop() {

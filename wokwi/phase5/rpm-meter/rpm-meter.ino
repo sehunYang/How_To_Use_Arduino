@@ -22,8 +22,10 @@ void loop() {
     magnetDetected=false;
   }
 
+  // 측정 창 실험은 이 값을 1000(1초)과 5000(5초)으로 바꿔 가며 반복하세요.
+  const unsigned long windowMs = 1000;
   static unsigned long last=0;
-  if(millis()-last<1000) return;
+  if(millis()-last<windowMs) return;
   unsigned long elapsed=millis()-last;
   last=millis();
   unsigned long pulses=pulseCount;

@@ -16,6 +16,7 @@ void setup() {
 void loop() {
   Serial.print(millis());
   Serial.print(',');
-  Serial.println(digitalRead(PIR_PIN) == HIGH ? "motion" : "clear");
+  // 숫자 0/1로 남겨야 표 계산 프로그램에서 바로 세고 그릴 수 있습니다.
+  Serial.println(digitalRead(PIR_PIN) == HIGH ? 1 : 0);
   delay(holdoffMs);
 }

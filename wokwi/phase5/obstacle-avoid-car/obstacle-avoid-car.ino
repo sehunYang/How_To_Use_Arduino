@@ -49,12 +49,29 @@ void setup() {
   pinMode(RIGHT_PWM,OUTPUT);
   Serial.println("time_ms,distance_cm,tilt_x_g");
 }
+// 속도 단계 실험은 이 값을 120, 150, 180처럼 바꿔 가며 반복하세요.
+byte cruiseSpeed = 150;
 void loop() {
+  static bool avoiding=false;
+  static byte missedEchoes=0;
   float d=distanceCm();
   int16_t ax,ay,az;
   imu.getAcceleration(&ax,&ay,&az);
-  if (isnan(d) || d < stopDistanceCm) drive(0,150);
-  else drive(150,150);
+  // 일시적인 미수신에 바로 반응하지 않도록 nan이 세 번 이어질 때만 장애물로 봅니다.
+  missedEchoes = isnan(d) ? missedEchoes+1 : 0;
+  if (missedEchoes >= 3 || d < stopDistanceCm) {
+    // 정지까지 이동한 거리를 잴 수 있도록 먼저 완전히 멈춘 뒤 제자리에서 회전합니다.
+    if (!avoiding) {
+      drive(0,0);
+      delay(300);
+      avoiding=true;
+    }
+    drive(0,cruiseSpeed);
+  }
+  else {
+    avoiding=false;
+    drive(cruiseSpeed,cruiseSpeed);
+  }
   Serial.print(millis());
   Serial.print(',');
   Serial.print(d,1);

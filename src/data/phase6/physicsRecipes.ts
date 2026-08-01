@@ -13,7 +13,7 @@ const mechanics: Phase6RecipeDefinition[] = [
     difficulty: '초급', minutes: 45, sensors: ['hc-sr04'],
     keywords: ['등속운동', '위치', '속도', '기울기'],
     law: '등속 직선운동에서는 위치가 $x=x_0+vt$를 따라 시간에 선형적으로 변하며 위치-시간 그래프의 기울기가 속도입니다.',
-    apparatus: 'HC-SR04, 저속 카트, 직선 트랙, 자, Arduino UNO, 브레드보드',
+    apparatus: 'HC-SR04, 저속 카트, 카트에 붙일 평평한 반사판(카드), 직선 트랙, 자, Arduino UNO, 브레드보드',
     method: '센서를 트랙 끝에 고정하고 카트를 일정한 속력으로 움직여 거리와 시간을 기록합니다. 출발 위치와 속력을 바꿔 각각 3회 반복하세요.',
     graph: '$x$-$t$ 산점도에 직선을 적합하고 기울기 $v$, 절편 $x_0$, 결정계수와 반복 측정 불확도를 구합니다.',
   },
@@ -32,10 +32,10 @@ const mechanics: Phase6RecipeDefinition[] = [
     title: '발사체의 비행시간과 포물선 운동',
     difficulty: '고급', minutes: 70, sensors: ['mpu6050', 'hc-sr04'],
     keywords: ['포물선운동', '비행시간', '수평속도', '중력'],
-    law: '공기저항을 무시하면 수평 운동은 등속, 수직 운동은 중력가속도에 의한 등가속 운동입니다.',
-    apparatus: 'MPU6050, HC-SR04, 안전한 저속 발사대, 포획 상자, Arduino UNO, 브레드보드',
-    method: '발사각과 초기 높이를 고정하고 낮은 속도로 발사합니다. 거리 변화와 이륙·착지 가속도 사건으로 비행시간을 구하세요.',
-    graph: '수평거리와 비행시간으로 초기 수평속도를 구하고 이론 궤적의 예측값과 측정값의 차이를 비교합니다.',
+    law: '공기저항을 무시하면 수평으로 발사된 물체의 수평 운동은 등속, 수직 운동은 등가속이므로, 비행시간은 높이가 정하고 수평 도달 거리는 발사 속력과 비행시간의 곱입니다.',
+    apparatus: 'MPU6050, HC-SR04, 수평 책상, 공을 굴릴 낮은 경사로, 쇠구슬 또는 단단한 작은 공, 줄자, 착지점을 표시할 먹지와 흰 종이, 포획 상자, Arduino UNO, 브레드보드',
+    method: 'MPU6050을 책상에 올려 두 축 가속도로 책상이 수평인지 먼저 확인합니다. HC-SR04를 책상 위에서 굴러오는 공을 향해 고정하고, 공이 가장자리로 접근하는 거리-시간 기록의 기울기로 발사 속력 $v$를 구합니다. 책상 높이 $h$를 재어 비행시간 $t=\\sqrt{2h/g}$를 계산하고, 바닥의 먹지에 찍힌 착지점까지의 수평 거리를 줄자로 재어 예측 거리 $v\\,t$와 비교합니다. 날아가는 공을 센서로 추적하지는 않습니다.',
+    graph: '발사 속력을 바꿔 가며 예측 수평거리와 실측 수평거리를 같은 그래프에 그리고, 기울기 1의 직선에서 벗어나는 정도로 공기저항과 속력 측정 오차를 평가합니다.',
     safety: '사람을 향해 발사하지 말고 가벼운 물체와 포획 상자를 사용하세요.',
   },
   {
@@ -45,9 +45,37 @@ const mechanics: Phase6RecipeDefinition[] = [
     sensorTokens: ['MPU6050_1', 'MPU6050_2'],
     keywords: ['운동량', '충돌', '보존법칙', '충격량'],
     law: '외력이 무시되는 짧은 충돌 동안 두 물체의 전체 운동량은 보존됩니다.',
-    apparatus: 'MPU6050 2개, 저속 카트 2대, 질량추, 트랙, Arduino UNO, 브레드보드',
-    method: 'AD0로 두 센서 주소를 분리하고 두 카트의 충돌 전후 속도를 가속도 적분으로 추정합니다. 질량과 충돌 형태를 바꿔 반복하세요.',
-    graph: '충돌 전후 총운동량과 상대 오차를 표로 만들고 탄성·비탄성 조건별 차이를 비교합니다.',
+    apparatus: 'MPU6050 2개, 저속 카트 2대, 용수철·스펀지 완충 범퍼, 질량추, 트랙, Arduino UNO, 브레드보드 (시리얼 모니터 115200 baud)',
+    method: 'AD0로 두 센서 주소를 분리해 카트마다 하나씩 단단히 고정하고, 리드선은 느슨하게 늘어뜨려 카트 운동을 방해하지 않게 합니다. 두 카트 사이에 완충 범퍼를 붙여 충돌이 50 ms 이상 걸리게 하고, 시리얼 모니터를 115200으로 맞추세요. 등속으로 굴러가는 동안 가속도계는 0을 읽으므로 속도 자체는 적분으로 얻을 수 없습니다. 대신 충돌 구간의 가속도를 시간 적분해 각 카트의 속도 변화량 $\\Delta v$를 구합니다. 질량과 충돌 형태를 바꿔 반복하세요.',
+    graph: '두 카트의 $m\\,\\Delta v$를 비교해 $m_1\\Delta v_1+m_2\\Delta v_2=0$이 측정 불확도 안에서 성립하는지 확인하고, 탄성·비탄성 조건별 차이를 비교합니다.',
+    sketch: `#include <Wire.h>
+// @baud 115200
+const byte MPU_ADDRESSES[2]={0x68,0x69};
+// @tunable samplingIntervalMs
+unsigned long samplingIntervalMs=5; // 200 Hz — 수십 ms 충돌에 표본 10개 이상을 남깁니다.
+void mpuWrite(byte a,byte r,byte v){Wire.beginTransmission(a);Wire.write(r);Wire.write(v);Wire.endTransmission();}
+int16_t mpuRead16(byte a,byte r){
+  Wire.beginTransmission(a);Wire.write(r);Wire.endTransmission(false);Wire.requestFrom(a,(byte)2);
+  byte high=Wire.read();byte low=Wire.read(); // 한 식에 두 번 읽으면 순서가 정해지지 않습니다.
+  return (int16_t)(((uint16_t)high<<8)|low);
+}
+void setup(){
+  Serial.begin(115200);Wire.begin();Wire.setClock(400000);
+  for(byte i=0;i<2;i++){
+    mpuWrite(MPU_ADDRESSES[i],0x6B,0);
+    mpuWrite(MPU_ADDRESSES[i],0x1A,0x01); // 대역폭 184 Hz — 짧은 충돌 봉우리를 뭉개지 않습니다.
+    mpuWrite(MPU_ADDRESSES[i],0x1C,0x18); // ±16 g — 충돌 봉우리는 ±2 g 기본 범위를 넘습니다.
+  }
+  Serial.println("time_ms,mpu0_ax_g,mpu1_ax_g");
+}
+void loop(){
+  static unsigned long last=0;
+  if(millis()-last<samplingIntervalMs)return;
+  last=millis();
+  Serial.print(last);
+  for(byte i=0;i<2;i++){Serial.print(',');Serial.print(mpuRead16(MPU_ADDRESSES[i],0x3B)/2048.0f,4);}
+  Serial.println();
+}`,
   },
   {
     id: 'ph05-restitution-coefficient',
@@ -156,7 +184,7 @@ const thermal: Phase6RecipeDefinition[] = [
     difficulty: '중급', minutes: 90, sensors: ['ds18b20'],
     keywords: ['융해', '잠열', '상변화', '가열곡선'],
     law: '상변화 중에는 공급된 열이 잠열에 쓰이므로 온도 상승이 일시적으로 작아지는 평탄 구간이 나타납니다.',
-    apparatus: 'DS18B20, 잘게 부순 얼음, 단열 컵, 저전압 정격 히터, 저울, Arduino UNO, 브레드보드',
+    apparatus: 'DS18B20, 잘게 부순 얼음, 단열 컵, 저전압 정격 히터, 전력계, 저울, Arduino UNO, 브레드보드',
     method: '얼음과 물의 질량을 기록하고 일정한 낮은 전력으로 가열하면서 완전히 녹을 때까지 온도를 기록합니다.',
     graph: '온도-시간 가열곡선에서 평탄 구간의 시간과 전력으로 융해에 사용된 에너지를 추정합니다.',
     safety: '센서의 방수 등급을 확인하고 히터 단자와 물이 접촉하지 않게 분리하세요.',
@@ -285,7 +313,7 @@ void loop() {
     id: 'ph18-series-parallel-resistance', title: '직렬·병렬 저항의 등가저항', difficulty: '중급', minutes: 60, sensors: ['ina219'],
     keywords: ['직렬회로', '병렬회로', '등가저항', '전류'],
     law: '직렬은 $R_{\\mathrm{eq}}=\\sum_i R_i$, 병렬은 $1/R_{\\mathrm{eq}}=\\sum_i(1/R_i)$를 만족합니다.',
-    apparatus: 'INA219, 220 Ω 저항 1개, 1 kΩ 저항 1개, 3~5 V 저전압 전원, Arduino UNO, 브레드보드',
+    apparatus: 'INA219, 220 Ω 저항 1개, 1 kΩ 저항 1개, 5 V 저전압 전원(3 V에서는 직렬 전류가 분해능에 가까워집니다), Arduino UNO, 브레드보드',
     method: '그림처럼 220 Ω과 1 kΩ을 직렬로 연결하고 코드의 conditionId를 SERIES_220_1000으로 맞춰 측정합니다. 전원을 끈 뒤 두 저항의 양 끝을 각각 같은 두 마디에 꽂아 병렬로 다시 배선하고 conditionId를 PARALLEL_220_1000으로 바꿔 측정합니다. 두 조건에서 INA219는 항상 전원과 저항망 사이에 직렬로 둡니다.',
     graph: 'V/I로 계산한 등가저항을 이론값과 비교하고 저항 허용오차가 결과 범위에 포함되는지 판단합니다.',
     connections: [
@@ -323,7 +351,7 @@ void loop(){
     keywords: ['키르히호프', '마디', '폐회로', '전류보존'],
     law: '마디에서 전류의 대수합은 0이고 폐회로에서 전위차의 대수합은 0입니다.',
     apparatus: 'INA219, 220 Ω·470 Ω·1 kΩ 저항, 저전압 전원, 측정점 전환 점퍼, Arduino UNO, 브레드보드',
-    method: '그림처럼 220 Ω과 470 Ω의 두 갈래 병렬 회로를 구성합니다. 먼저 INA219를 분기 전 공통선에 두고 conditionId=TOTAL로 전체 전류를 기록합니다. 전원을 끈 뒤 INA219를 220 Ω 가지와 470 Ω 가지에 차례로 직렬 이동하고 conditionId를 BRANCH_220, BRANCH_470으로 바꿔 기록합니다. 각 조건에서 저항 양단 전압도 함께 기록해 전체 전류와 두 가지 전류의 합, 각 고리 전압강하를 비교합니다.',
+    method: '그림처럼 220 Ω과 470 Ω의 두 갈래 병렬 회로를 구성합니다. 먼저 INA219를 분기 전 공통선에 두고 conditionId=TOTAL로 전체 전류를 기록합니다. 전원을 끈 뒤 INA219를 220 Ω 가지와 470 Ω 가지에 차례로 직렬 이동하고 conditionId를 BRANCH_220, BRANCH_470으로 바꿔 기록합니다. 각 조건에서 저항 양단 전압도 함께 기록해 전체 전류와 두 가지 전류의 합, 각 고리 전압강하를 비교합니다. 가지로 옮길 때는 분기 마디를 VIN+에, 해당 저항 1번 다리를 VIN-에 연결합니다. 전원 전압은 TOTAL 조건에서 bus_V에 shunt_mV÷1000을 더해 구합니다.',
     graph: '마디 전류의 측정값-예측값 차이와 고리 전압의 측정값-예측값 차이를 계산해 측정 불확도 범위에서 0인지 확인합니다.',
     connections: [
       { from: 'INA219.VCC', to: 'UNO.5V', color: 'red', text: 'INA219 VCC를 UNO 5V에 연결하세요.' },
@@ -356,9 +384,9 @@ void loop(){float busV=(readIna(2)>>3)*0.004f,shuntMv=readIna(1)*0.01f,currentMa
     keywords: ['줄열', '전력', '온도', '에너지보존'],
     law: '저항에서 발생하는 전력은 $P=VI=I^2R$이며 공급 에너지는 시간 적분 $E=\\int P\\,dt$로 구합니다.',
     apparatus: 'INA219, DS18B20, 10 Ω·정격 5 W 이상 전력저항, 단열 용기, 3~5 V 전류 제한 전원, 열전도 테이프, Arduino UNO, 브레드보드',
-    method: 'DS18B20 프로브를 10 Ω 전력저항 몸체에 열전도 테이프로 고정합니다. 전원-INA219-전력저항을 직렬 연결하고 conditionId=HEATING으로 전압·전류·온도를 기록합니다. 저항 소비전력이 2.5 W 이하인지 확인한 뒤, 전원을 끄고 conditionId=COOLING으로 바꾸어 냉각 구간도 계속 기록합니다.',
+    method: 'DS18B20 프로브를 10 Ω 전력저항 몸체에 열전도 테이프로 고정합니다. 전원-INA219-전력저항을 직렬 연결하고 conditionId=HEATING으로 전압·전류·온도를 기록합니다. 저항 소비전력이 1 W 이하인지 확인한 뒤, 전원을 끄고 conditionId=COOLING으로 바꾸어 냉각 구간도 계속 기록합니다. 냉각 분석에 쓸 주변 온도를 온도계로 재어 관찰 노트에 적어 두세요.',
     graph: '누적 전기에너지와 온도상승을 비교해 유효 열용량과 주변 손실을 추정합니다.',
-    safety: '일반 1/4 W 저항을 가열 소자로 쓰지 말고 전력저항의 표면을 만지지 마세요.',
+    safety: '일반 1/4 W 저항을 가열 소자로 쓰지 말고 전력저항의 표면을 만지지 마세요. 단열 용기 안에서는 온도가 계속 오르므로 90 °C에 접근하면 즉시 전원을 끄세요(DS18B20 상한 125 °C).',
     connections: [
       { from: 'INA219.VCC', to: 'UNO.5V', color: 'red', text: 'INA219 VCC를 UNO 5V에 연결하세요.' },
       { from: 'INA219.GND', to: 'UNO.GND', color: 'black', text: 'INA219 GND를 UNO GND에 연결하세요.' },
@@ -397,7 +425,7 @@ void loop(){float busV=(readIna(2)>>3)*0.004f,currentMa=(readIna(1)*0.01f)/INA_S
     keywords: ['RC회로', '시간상수', '충전', '방전'],
     law: '커패시터 전압은 충전 시 $V=V_0\\left(1-e^{-t/(RC)}\\right)$, 방전 시 $V=V_0e^{-t/(RC)}$를 따릅니다.',
     apparatus: 'INA219, 10 kΩ 저항, 100 µF 전해 커패시터, 5 V 전원, 방전 스위치, Arduino UNO, 브레드보드',
-    method: '그림의 CHARGE 조건에서 5 V-10 kΩ-INA219-100 µF 순서로 연결하고 커패시터 +극을 A0에도 연결한 뒤 conditionId=CHARGE로 기록합니다. 완전히 충전되면 전원을 끄고, 커패시터 +극-INA219-10 kΩ-커패시터 -극의 폐회로가 되도록 점퍼를 옮긴 뒤 conditionId=DISCHARGE로 바꾸어 기록합니다. 충전과 방전 모두 A0가 커패시터 +극에 연결되어 있는지 확인하세요.',
+    method: '기록을 시작하기 전 10 kΩ 저항을 커패시터 양 끝에 잠시 대어 완전히 방전하고, 시리얼 모니터를 먼저 연 뒤 전원을 연결해 t=0의 상승 시작이 기록에 담기게 하세요. 그림의 CHARGE 조건에서 5 V-10 kΩ-INA219-100 µF 순서로 연결하고 커패시터 +극을 A0에도 연결한 뒤 conditionId=CHARGE로 기록합니다. 완전히 충전되면 전원을 끄고, 커패시터 +극-INA219-10 kΩ-커패시터 -극의 폐회로가 되도록 점퍼를 옮긴 뒤 conditionId=DISCHARGE로 바꾸어 기록합니다. 충전과 방전 모두 A0가 커패시터 +극에 연결되어 있는지 확인하세요.',
     graph: '63.2% 충전 시점과 로그 선형화 기울기에서 τ를 각각 구해 명목 RC값과 비교합니다.',
     safety: '전해 커패시터의 극성과 정격전압을 반드시 확인하고 전원 재연결 전 방전하세요.',
     connections: [
@@ -407,7 +435,7 @@ void loop(){float busV=(readIna(2)>>3)*0.004f,currentMa=(readIna(1)*0.01f)/INA_S
       { from: 'INA219.SCL', to: 'UNO.A5', color: 'yellow', text: 'INA219 SCL을 UNO A5에 연결하세요.' },
       { from: 'BATTERY.+', to: 'RESISTOR_10000.1', color: 'red', text: 'CHARGE 조건에서 5 V 전원 +를 10 kΩ 저항 1번 다리에 연결하세요.' },
       { from: 'RESISTOR_10000.2', to: 'INA219.VIN+', color: 'orange', text: '10 kΩ 저항 2번 다리를 INA219 VIN+에 연결하세요.' },
-      { from: 'INA219.VIN-', to: 'CAPACITOR.1', color: 'purple', text: 'INA219 VIN-를 100 µF 커패시터 +극에 연결해 이 노드의 전압을 측정하세요.' },
+      { from: 'INA219.VIN-', to: 'CAPACITOR.1', color: 'purple', text: 'INA219 VIN-를 100 µF 커패시터 +극에 연결하세요. 이 노드의 전압은 A0가 잽니다.' },
       { from: 'CAPACITOR.1', to: 'UNO.A0', color: 'blue', text: '100 µF 커패시터 +극을 UNO A0에도 연결해 커패시터 전압을 직접 측정하세요.' },
       { from: 'CAPACITOR.2', to: 'BATTERY.-', color: 'black', text: '100 µF 커패시터 -극을 전원 -에 연결하세요.' },
       { from: 'BATTERY.-', to: 'UNO.GND', color: 'black', text: '전원 -와 UNO GND를 공통 접지하세요.' },
@@ -431,7 +459,7 @@ void loop(){float capacitorV=analogRead(CAPACITOR_VOLTAGE_PIN)*(5.0f/1023.0f),cu
     id: 'ph22-battery-internal-resistance', title: '건전지 내부저항 추정', difficulty: '중급', minutes: 55, sensors: ['ina219'],
     keywords: ['내부저항', '기전력', '단자전압', '건전지'],
     law: '전지의 단자전압은 $V=E-Ir$로 근사되므로 연결한 저항을 바꿔 전류를 달리했을 때의 전압강하에서 내부저항 $r$을 구할 수 있습니다.',
-    apparatus: 'INA219, 새 건전지와 홀더, 100 Ω·220 Ω·470 Ω 정격저항, Arduino UNO, 브레드보드',
+    apparatus: 'INA219, 새 9 V 사각 건전지(006P)와 홀더, 100 Ω·220 Ω·470 Ω 정격저항(1 W 이상), Arduino UNO, 브레드보드 — 1.5 V 건전지는 내부저항에 의한 전압 강하(수 mV)가 센서 분해능(4 mV)보다 작아 측정할 수 없습니다',
     method: '먼저 저항을 떼고 INA219 VIN+와 VIN-를 모두 건전지 +에 연결해 conditionId=OPEN으로 개방전압을 기록합니다. 전원을 분리한 뒤 그림처럼 저항을 연결하고 470 Ω, 220 Ω, 100 Ω 순서로 교체하며 conditionId를 각각 R470, R220, R100으로 맞춥니다. 각 저항은 5초 이내로 측정하고 조건 사이에 건전지를 쉬게 하세요.',
     graph: 'V-I 그래프의 음의 기울기에서 내부저항, 절편에서 기전력을 구합니다.',
     safety: '건전지를 단락하지 말고 저항 정격과 최대 측정전류를 넘지 마세요.',
@@ -507,8 +535,8 @@ const magnetism: Phase6RecipeDefinition[] = [
     keywords: ['솔레노이드', '전류', '자기장', '비례관계'],
     law: '긴 솔레노이드 중심 자기장은 $B\\approx\\mu_0nI$로 전류에 비례합니다.',
     apparatus: 'INA219, HBE0704, 교육용 솔레노이드, 전류 제한 저전압 전원, 솔레노이드 규격에 맞는 직렬 전력저항, 비자성 센서 지그, Arduino UNO, 브레드보드',
-    method: 'HBE0704 OUT을 A0에 연결하고 센서 수광면을 솔레노이드 중심축에 고정합니다. 그림처럼 전원-INA219-솔레노이드(LOAD)-전력저항을 직렬로 구성합니다. 전원 전류 제한값을 I050, I100, I150처럼 단계적으로 바꿀 때마다 실제 전류가 안정된 뒤 코드의 conditionId도 같은 ID로 바꾸어 기록합니다. 전류를 0으로 내린 기준 조건은 I000으로 기록합니다.',
-    graph: '홀 출력-I 그래프의 선형 구간을 찾고 코일 가열에 따른 드리프트를 분리합니다.',
+    method: 'HBE0704 OUT을 A0에 연결합니다. 홀 센서는 감지면(패키지 평면)을 수직으로 지나는 자기장 성분에만 반응하므로, 감지면이 코일 축과 수직이 되도록 코일 중심에 고정합니다. 그림처럼 전원-INA219-솔레노이드(LOAD)-전력저항을 직렬로 구성합니다. 전원 전류 제한값을 I050, I100, I150처럼 단계적으로 바꿀 때마다 실제 전류가 안정된 뒤 코드의 conditionId도 같은 ID로 바꾸어 기록합니다. 전류를 0으로 내린 기준 조건은 I000으로 기록합니다.',
+    graph: '홀 출력-I 그래프의 선형 구간을 찾고 코일 가열에 따른 드리프트를 분리합니다. 교육용 솔레노이드에서 기대되는 변화는 전체 20~50카운트 수준이므로 좁은 범위도 정상이며, 조건마다 30개 표본을 평균해야 합니다.',
     safety: '코일 정격전류를 넘지 말고 측정 사이에 충분히 냉각하세요.',
     connections: [
       { from: 'INA219.VCC', to: 'UNO.5V', color: 'red', text: 'INA219 VCC를 UNO 5V에 연결하세요.' },
@@ -543,7 +571,7 @@ void loop(){float currentMa=(readIna(1)*0.01f)/INA_SHUNT_OHMS;Serial.print(condi
     keywords: ['코일', '감은수', '자기장', '암페어법칙'],
     law: '길이와 전류가 같을 때 솔레노이드 자기장은 단위 길이당 감은 수 n에 비례합니다.',
     apparatus: 'INA219, HBE0704, 같은 길이·지름이면서 감은 수가 다른 코일 3개, 전류 제한 전원, 규격에 맞는 직렬 전력저항, 비자성 센서 지그, Arduino UNO, 브레드보드',
-    method: 'HBE0704를 코일 중심의 같은 위치와 방향에 고정합니다. 그림의 LOAD 자리에 첫 코일을 연결하고 전류 제한 전원으로 모든 코일의 실제 전류를 같은 값에 맞춥니다. 전원을 끄고 코일을 N50, N100, N150 순서로 교체할 때마다 코드의 conditionId를 실제 감은 수 ID로 바꾸어 전류와 홀 출력을 함께 기록합니다.',
+    method: 'HBE0704를 코일 중심의 같은 위치와 방향에 고정합니다. 그림의 LOAD 자리에 첫 코일을 연결하고 전류 제한 전원으로 모든 코일의 실제 전류를 같은 값에 맞춥니다. 전원을 끄고 코일을 N50, N100, N150 순서로 교체할 때마다 코드의 conditionId를 실제 감은 수 ID로 바꾸어 전류와 홀 출력을 함께 기록합니다. 전류를 0으로 내린 영점 기준은 conditionId=N000으로 따로 기록합니다.',
     graph: '영점 보정 홀 출력-N 그래프를 만들고 코일 끝 효과로 생기는 비선형성을 분석합니다.',
     safety: '코일을 교체하기 전에 반드시 전원을 끄고 각 코일의 정격전류를 넘지 마세요.',
     connections: [
@@ -563,7 +591,7 @@ void loop(){float currentMa=(readIna(1)*0.01f)/INA_SHUNT_OHMS;Serial.print(condi
     sketch: `#include <Wire.h>
 // @baud 9600
 // @pin HALL_IN=A0
-const byte HALL_IN=A0;const float INA_SHUNT_OHMS=0.1f;const char* conditionId="N50";
+const byte HALL_IN=A0;const float INA_SHUNT_OHMS=0.1f;const char* conditionId="N50"; // N000(전류 0), N50, N100, N150 중 실제 조건과 맞추세요.
 // @tunable samplingIntervalMs
 unsigned long samplingIntervalMs=250;
 int16_t readIna(byte reg){
@@ -579,7 +607,7 @@ void loop(){float currentMa=(readIna(1)*0.01f)/INA_SHUNT_OHMS;Serial.print(condi
     keywords: ['회전자석', '주파수', '각속도', '홀효과'],
     law: '회전축에 자석 $N$개가 있으면 홀 센서 펄스 주파수 $f$와 각속도는 $\\omega=2\\pi f/N$ 관계를 가집니다.',
     apparatus: 'HBE0704, 자석 1~4개, 손 회전 원판 또는 저속 모터, 보호 덮개, Arduino UNO, 브레드보드',
-    method: '홀 센서와 자석 사이 간격을 고정하고 펄스 사이 시간을 기록합니다. 자석 수를 바꿔 같은 회전속도를 측정하세요. 스케치는 표본을 출력하는 사이에도 홀 신호를 계속 살펴 자석 통과를 세므로, pulse_count와 pulse_interval_us 열에서 주파수를 구합니다.',
+    method: '기록을 시작하기 전 자석을 손으로 천천히 센서 앞을 지나가게 하여, hall_raw가 400 아래로 떨어지는 극이 센서를 향하도록 자석 방향을 맞추고 그때 pulse_count가 1씩 늘어나는지 확인하세요. 반대 극은 값이 올라가기만 해 펄스가 세어지지 않습니다. 홀 센서와 자석 사이 간격을 고정하고 펄스 사이 시간을 기록합니다. 자석 수를 바꿔 같은 회전속도를 측정하세요. 스케치는 표본을 출력하는 사이에도 홀 신호를 계속 살펴 자석 통과를 세므로, pulse_count와 pulse_interval_us 열에서 주파수를 구합니다.',
     graph: '펄스 주파수/N으로 계산한 회전수를 비교하고 누락·중복 펄스 비율을 구합니다. 주파수는 $f=10^6/\\text{pulse\\_interval\\_us}$ 또는 두 행의 pulse_count 차이를 시간 차이로 나누어 얻습니다.',
     // A magnet pulse is only milliseconds wide, so the default fixed-interval
     // analogRead() sampled almost none of them. Edge counting runs continuously.
@@ -598,8 +626,8 @@ void loop(){
     id: 'ph27-magnetic-shielding', title: '자기 차폐 재료 비교', difficulty: '중급', minutes: 55, sensors: ['hbe0704'],
     keywords: ['자기차폐', '투자율', '홀센서', '재료'],
     law: '자성 재료는 자기선속 경로를 바꿔 특정 위치의 자기장 크기를 감소시키거나 집중시킬 수 있습니다.',
-    apparatus: 'HBE0704, 고정 자석, 철·알루미늄·플라스틱 시료, 비자성 거리 지그, Arduino UNO, 브레드보드',
-    method: '자석-센서 거리와 방향을 고정하고 시료만 차례로 삽입해 영점 대비 출력을 측정합니다.',
+    apparatus: 'HBE0704, 고정 자석, 철·알루미늄·플라스틱 시료(각 2가지 두께), 비자성 거리 지그, Arduino UNO, 브레드보드',
+    method: '자석-센서 거리와 방향을 고정하고 시료만 차례로 삽입해 영점 대비 출력을 측정합니다. 시료를 바꾸거나 넣고 뺀 시각을 관찰 노트에 적어 CSV 구간을 나누세요.',
     graph: '재료별 차폐율 $(B_0-B)/B_0$를 비교하고 시료 두께와 위치에 따른 변화를 오차막대로 나타냅니다.',
   },
 ]
@@ -610,7 +638,7 @@ const optics: Phase6RecipeDefinition[] = [
     keywords: ['말뤼스법칙', '편광', '광세기', '코사인제곱'],
     law: '선편광이 분석기를 통과한 세기는 $I=I_0\\cos^2\\theta$를 따릅니다.',
     apparatus: 'TSL2591, 선형 편광판 2장, 일정한 LED 광원, 각도 눈금판, 차광통, Arduino UNO, 브레드보드',
-    method: '센서와 광원을 고정하고 분석기 각도를 10° 간격으로 돌리며 빛을 완전히 막았을 때의 기준값을 포함한 조도를 기록합니다.',
+    method: '센서와 광원을 고정하고 분석기 각도를 10° 간격으로 돌리며 빛을 완전히 막았을 때의 기준값을 포함한 조도를 기록합니다. 각도를 바꾼 시각을 관찰 노트에 적어 CSV 구간을 나누세요. 0°에서 light_raw가 최댓값(65535) 근처면 광원을 멀리 두고, 90° 잔광이 0에 붙으면 스케치의 LIGHT_CONFIG를 0x10(25배)으로 올리세요.',
     graph: '빛을 완전히 막았을 때의 기준값을 뺀 $I$를 $\\cos^2\\theta$에 대해 그려 선형성과 편광판의 최소 투과 잔광을 평가합니다.',
   },
   {
@@ -647,11 +675,11 @@ const optics: Phase6RecipeDefinition[] = [
   },
   {
     id: 'ph33-light-source-stability', title: '서로 다른 광원의 시간 안정성', difficulty: '초급', minutes: 50, sensors: ['tsl2591'],
-    keywords: ['광원', '안정성', '플리커', '드리프트'],
+    keywords: ['광원', '안정성', '변동계수', '드리프트'],
     law: '광원의 짧은 시간 변화와 온도 때문에 기준값이 장시간에 걸쳐 서서히 변하는 현상은 평균 광량이 같아도 서로 다른 시간 범위의 흔들림으로 나타납니다.',
     apparatus: 'TSL2591, LED·형광등 등 비교 광원, 고정 지그, 차광통, Arduino UNO, 브레드보드',
     method: '센서 위치와 주변광을 고정하고 각 광원을 켠 직후부터 충분한 시간 동안 같은 표본 간격으로 기록합니다.',
-    graph: '이동평균, 변동계수, 시간에 따른 추세와 가능한 플리커 주파수를 비교합니다.',
+    graph: '이동평균, 변동계수, 예열 추세를 광원별로 비교합니다. 이 센서는 약 0.1초 동안 빛을 모아 한 값을 만들므로 전원 주파수의 빠른 깜빡임(플리커)은 평균되어 보이지 않으며, 초 단위 이상의 변동만 비교할 수 있습니다.',
   },
 ]
 
@@ -660,8 +688,8 @@ const fluidsSound: Phase6RecipeDefinition[] = [
     id: 'ph34-torricelli-drain', title: '물 빠지는 속도와 토리첼리 법칙', difficulty: '고급', minutes: 75, sensors: ['hc-sr04'],
     keywords: ['토리첼리법칙', '수면높이', '유출속도', '유체'],
     law: '작은 구멍의 이상 유출 속도는 $v=\\sqrt{2gh}$이며 일정 단면 용기의 수면 하강률과 연결됩니다.',
-    apparatus: 'HC-SR04, 투명 원통 용기, 작은 배출구, 물받이, 방수 차폐판, Arduino UNO, 브레드보드',
-    method: '초음파 센서를 수면 위에 수직으로 고정하고 배출구를 연 순간부터 수면 높이를 기록합니다.',
+    apparatus: 'HC-SR04, 안지름 12 cm 이상의 넓은 투명 원통 용기(비커·양동이), 작은 배출구, 물받이, 방수 차폐판, Arduino UNO, 브레드보드',
+    method: '초음파 센서를 처음 수면보다 5 cm 이상 위, 용기 중심축에 수직으로 고정합니다. 좁은 병에서는 초음파가 벽이나 입구 테두리에 먼저 반사되므로 넓은 용기를 쓰세요. 측정 전에 용기의 안지름과 센서에서 배출구까지의 거리를 자로 재어 두고, 배출구를 연 순간부터 수면 높이를 기록합니다.',
     graph: '수면 높이 $h$와 시간, 또는 $\\sqrt{h}$와 시간의 관계를 그려 이상식과 점성·수축 효과의 차이를 분석합니다.',
     safety: '전자부품과 물을 물리적으로 분리하고 넘침을 받을 수 있는 큰 물받이를 사용하세요.',
   },

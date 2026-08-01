@@ -19,13 +19,19 @@ float distanceM() {
   digitalWrite(TRIG,HIGH);
   delayMicroseconds(10);
   digitalWrite(TRIG,LOW);
-  return pulseIn(ECHO,HIGH,30000)*0.0001715;
+  unsigned long us=pulseIn(ECHO,HIGH,30000);
+  // 미수신이 조용히 0 m가 되면 d2_times_lux도 0이 되어 표를 망칩니다.
+  return us ? us*0.0001715 : -1.0;
 }
 void setup() {
   Serial.begin(9600);
   Serial.println("# PHASE5_READY:p8-inverse-square-light");
   Wire.begin();
   tsl.begin();
+  // 0.2 m 거리의 램프는 기본 증폭(25배)의 측정 범위를 넘으므로 가장 낮은
+  // 증폭으로 둡니다. 가까운 점이 포화되면 역제곱 검증이 무너집니다.
+  tsl.setGain(TSL2591_GAIN_LOW);
+  tsl.setTiming(TSL2591_INTEGRATIONTIME_100MS);
   pinMode(TRIG,OUTPUT);
   pinMode(ECHO,INPUT);
   Serial.println("time_ms,distance_m,mean_lux,d2_times_lux");

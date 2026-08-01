@@ -47,8 +47,11 @@ describe('inquiry workbook experiment plans', () => {
     expect(body).not.toContain('조건 간 반복')
   })
 
+  // ph06(용수철 진동)은 여기서 뺐습니다: 진동 파형을 기록하는 실험이라 조건표가
+  // 아니라 과도 기록 계획(transient)을 받아야 합니다 — 조건표를 주면 1초 간격
+  // 표집 지시가 0.9초 주기와 모순됩니다(레시피 검증에서 확인된 결함).
   it('keeps structured levels and repeats for condition comparisons', () => {
-    for (const id of ['ph06-spring-oscillation', 'ph14-insulation-performance', 'ph17-ohms-law', 'ph24-solenoid-current-field']) {
+    for (const id of ['ph02-newton-second-law', 'ph14-insulation-performance', 'ph17-ohms-law', 'ph24-solenoid-current-field']) {
       const body = recipe(id).body
       expect(body, id).toContain('독립 변인 조건 수')
       expect(body, id).toContain('조건 간 반복')
@@ -59,8 +62,10 @@ describe('inquiry workbook experiment plans', () => {
   it('states that p1 and p2 calculations happen after raw CSV logging', () => {
     expect(recipe('p1-pendulum-period').body).toContain('원시값만 CSV로 기록')
     expect(recipe('p1-pendulum-period').body).toContain('주기 계산은 저장한 CSV를 후처리')
-    expect(recipe('p2-mechanical-energy').body).toContain('원시값만 CSV로 기록')
-    expect(recipe('p2-mechanical-energy').body).toContain('에너지 계산은 저장한 CSV를 후처리')
+    // p2는 가속도 적분(자유 진동에서는 불가능)이 아니라 최하점 g_norm 봉우리로
+    // 속력을 구하는 방식으로 재설계되었습니다. 원시 기록 후처리라는 원칙은 같습니다.
+    expect(recipe('p2-mechanical-energy').body).toContain('g_norm)를 CSV로 기록')
+    expect(recipe('p2-mechanical-energy').body).toContain('g_norm 봉우리에서 속력')
   })
 })
 

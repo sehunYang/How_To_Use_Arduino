@@ -30,6 +30,10 @@ void setup() {
   Wire.begin();
   inaWrite(0x05,4096);
   tsl.begin();
+  // 패널을 비출 만큼 강한 빛은 기본 증폭(25배)의 측정 범위를 넘습니다.
+  // 가장 낮은 증폭으로 두어야 lux가 -1(포화)로 떨어지지 않습니다.
+  tsl.setGain(TSL2591_GAIN_LOW);
+  tsl.setTiming(TSL2591_INTEGRATIONTIME_100MS);
   Serial.println("time_ms,voltage_v,current_ma,power_mw,lux,power_density_mw_cm2");
 }
 void loop() {

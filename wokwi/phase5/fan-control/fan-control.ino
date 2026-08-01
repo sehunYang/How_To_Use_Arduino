@@ -100,23 +100,30 @@ float bmeHumidity() {
 const byte RELAY=7;
 // @tunable humidityOnPercent
 float humidityOnPercent = 70.0;
+// 끄는 기준. 켜는 기준과 같게 두면 경계에서 팬이 반복해 켜졌다 꺼집니다.
+// 기준 차이 실험은 이 값을 켜는 기준과 같게(차이 0) 또는 5 낮게 두고 반복하세요.
+float humidityOffPercent = 65.0;
+bool fanOn = false;
 void setup() {
   Serial.begin(9600);
   Serial.println("# PHASE5_READY:fan-control");
   Wire.begin();
-  bmeBegin();
+  if(!bmeBegin())Serial.println("# BME280_ERROR");
   pinMode(RELAY,OUTPUT);
   digitalWrite(RELAY,LOW);
-  Serial.println("temperature_c,humidity_percent,fan");
+  Serial.println("time_s,temperature_c,humidity_percent,fan");
 }
 void loop() {
   float t=bmeTemperatureC(), h=bmeHumidity();
-  bool on=h>=humidityOnPercent || t>=30.0;
-  digitalWrite(RELAY,on);
+  if (h>=humidityOnPercent || t>=30.0) fanOn=true;
+  else if (h<=humidityOffPercent && t<30.0) fanOn=false;
+  digitalWrite(RELAY,fanOn);
+  Serial.print(millis()/1000.0,1);
+  Serial.print(',');
   Serial.print(t,2);
   Serial.print(',');
   Serial.print(h,2);
   Serial.print(',');
-  Serial.println(on ? 1 : 0);
+  Serial.println(fanOn ? 1 : 0);
   delay(1000);
 }

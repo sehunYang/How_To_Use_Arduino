@@ -11,7 +11,9 @@ float distanceM() {
   delayMicroseconds(10);
   digitalWrite(TRIG,LOW);
   unsigned long us=pulseIn(ECHO,HIGH,30000);
-  return us ? us*0.0001715 : NAN;
+  // 미수신은 nan 대신 -1로 표시합니다. nan 문자열은 표 계산 프로그램이
+  // 숫자로 읽지 못합니다. -1인 행은 지우고 분석하세요.
+  return us ? us*0.0001715 : -1.0;
 }
 void setup() {
   Serial.begin(9600);

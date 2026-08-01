@@ -16,7 +16,7 @@ float distanceM() {
   delayMicroseconds(10);
   digitalWrite(TRIG,LOW);
   unsigned long us=pulseIn(ECHO,HIGH,30000);
-  return us ? us*0.0001715 : NAN;
+  return us ? us*0.0001715 : -1.0;
 }
 void setup() {
   Serial.begin(9600);

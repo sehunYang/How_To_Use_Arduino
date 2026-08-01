@@ -43,7 +43,9 @@ void setup() {
 
 void loop() {
   Serial.print(millis()); Serial.print(',');
-  Serial.println(readRegister(0x04));
+  // 전류 레지스터는 부호 있는 16비트입니다. 그대로 출력하면 0 근처의 음수가
+  // 65535 부근의 큰 수로 보입니다.
+  Serial.println((int16_t)readRegister(0x04));
   delay(samplingIntervalMs);
 }
 `
@@ -82,10 +84,10 @@ export const ina219CurrentRecipe: Recipe = withInquiryWorkbook(canaryPlans)({
   ],
   body: `## 이 예제는 무엇을 하나요
 
-INA219의 전류 레지스터를 I2C로 읽어 부하 변화가 측정값에 반영되는지 확인합니다.
+INA219의 전류 레지스터를 I2C로 읽어 부하 변화가 측정값에 반영되는지 확인합니다. 이 배선(0.1 Ω 션트)과 캘리브레이션 값 4096에서는 **전류(mA) = current_raw ÷ 10**입니다.
 
 :::callout warn
-실물 회로에서는 측정할 부하를 INA219의 VIN+와 VIN- 사이에 연결해야 합니다.
+실물 회로에서는 측정할 부하를 INA219의 VIN+와 VIN- 사이에 연결해야 합니다. LED를 부하로 쓸 때는 반드시 220 Ω 저항을 직렬로 연결하세요. 저항 없이 5 V에 직접 연결하면 LED가 타 버립니다.
 :::`,
   applicationGuide: '모터나 LED 부하를 바꿔가며 전류와 전력의 관계를 비교할 수 있습니다.',
   troubleshooting: [

@@ -14,8 +14,10 @@ const byte TSL=0x29, INT_PIN=2;
 volatile bool lightEvent=false;
 volatile unsigned long eventMs=0;
 unsigned long interruptCount=0;
+// 알림 기준값. 기준 조합 실험은 이 두 값을 바꿔 가며 반복하세요.
+const uint16_t lowThreshold=1000, highThreshold=10000;
 // @tunable samplingIntervalMs
-unsigned long samplingIntervalMs=200;
+unsigned long samplingIntervalMs=50;
 void writeReg(byte reg,byte value){Wire.beginTransmission(TSL);Wire.write(0xA0|reg);Wire.write(value);Wire.endTransmission();}
 uint16_t read16(byte reg){
   Wire.beginTransmission(TSL);Wire.write(0xA0|reg);Wire.endTransmission(false);Wire.requestFrom(TSL,(byte)2);
@@ -30,8 +32,8 @@ void setup(){
   Serial.begin(9600);Wire.begin();
   pinMode(INT_PIN,INPUT); // INT는 오픈 드레인이고 외부 10 kΩ이 3VO로 끌어올립니다.
   attachInterrupt(digitalPinToInterrupt(INT_PIN),onLight,FALLING);
-  writeReg(0x04,0xE8);writeReg(0x05,0x03); // low=1000
-  writeReg(0x06,0x10);writeReg(0x07,0x27); // high=10000
+  writeReg(0x04,lowThreshold&0xFF);writeReg(0x05,lowThreshold>>8);
+  writeReg(0x06,highThreshold&0xFF);writeReg(0x07,highThreshold>>8);
   writeReg(0x0C,0x03); // APERS: 연속 3회 벗어날 때만 알림
   writeReg(0x00,0x13); // PON|AEN|AIEN
   clearInterrupt();
@@ -83,8 +85,10 @@ void onData(){interruptUs=micros();sampleReady=true;}
 void setup(){
   Serial.begin(115200);Wire.begin();Wire.setClock(400000);
   writeReg(0x6B,0);
-  writeReg(0x1A,0x03); // 저역통과 필터를 켜면 내부 출력 속도가 1 kHz가 됩니다.
+  writeReg(0x1A,0x01); // 대역폭 184 Hz — 필터를 켜 내부 출력이 1 kHz가 되면서도 짧은 충돌 봉우리를 뭉개지 않습니다.
+  writeReg(0x1C,0x18); // ±16 g — 충돌 봉우리는 ±2 g 기본 범위를 훌쩍 넘습니다.
   writeReg(0x19,sampleRateDivider);
+  writeReg(0x37,0x10); // 값을 읽기만 해도 INT가 풀리도록 설정합니다.
   writeReg(0x38,1); // 표본이 준비될 때마다 INT로 알립니다.
   pinMode(INT_PIN,INPUT);
   attachInterrupt(digitalPinToInterrupt(INT_PIN),onData,RISING);
@@ -93,7 +97,7 @@ void setup(){
 void loop(){
   if(!sampleReady) return;
   noInterrupts();sampleReady=false;unsigned long t=interruptUs;interrupts();
-  float ax=read16(0x3B)/16384.0f,ay=read16(0x3D)/16384.0f,az=read16(0x3F)/16384.0f;
+  float ax=read16(0x3B)/2048.0f,ay=read16(0x3D)/2048.0f,az=read16(0x3F)/2048.0f;
   Serial.print(t);Serial.print(',');Serial.print(ax,4);Serial.print(',');
   Serial.print(ay,4);Serial.print(',');Serial.println(az,4);
 }`
@@ -103,14 +107,25 @@ const auxBusSketch = `#include <Wire.h>
 // @tunable samplingIntervalMs
 unsigned long samplingIntervalMs=200;
 void mpuWrite(byte r,byte v){Wire.beginTransmission(0x68);Wire.write(r);Wire.write(v);Wire.endTransmission();}
+int16_t mpuRead16(byte r){
+  Wire.beginTransmission(0x68);Wire.write(r);Wire.endTransmission(false);Wire.requestFrom(0x68,(byte)2);
+  byte high=Wire.read();byte low=Wire.read(); // 한 식에 두 번 읽으면 순서가 정해지지 않습니다.
+  return (int16_t)(((uint16_t)high<<8)|low);
+}
 uint16_t lightRaw(){
   mpuWrite(0x25,0xA9);mpuWrite(0x26,0xB4);mpuWrite(0x27,0x82);delay(2);
   Wire.beginTransmission(0x68);Wire.write(0x49);Wire.endTransmission(false);Wire.requestFrom(0x68,(byte)2);
   byte low=Wire.read();byte high=Wire.read();
   return (uint16_t)low|((uint16_t)high<<8);
 }
-void setup(){Serial.begin(9600);Wire.begin();mpuWrite(0x6B,0);mpuWrite(0x37,0x02);Wire.beginTransmission(0x29);Wire.write(0xA0);Wire.write(3);Wire.endTransmission();mpuWrite(0x37,0);mpuWrite(0x6A,0x20);mpuWrite(0x24,0x0D);Serial.println("time_ms,light_raw");}
-void loop(){Serial.print(millis());Serial.print(',');Serial.println(lightRaw());delay(samplingIntervalMs);}`
+void setup(){Serial.begin(9600);Wire.begin();mpuWrite(0x6B,0);mpuWrite(0x37,0x02);Wire.beginTransmission(0x29);Wire.write(0xA0);Wire.write(3);Wire.endTransmission();mpuWrite(0x37,0);mpuWrite(0x6A,0x20);mpuWrite(0x24,0x0D);Serial.println("time_ms,acceleration_x_g,acceleration_y_g,acceleration_z_g,light_raw");}
+void loop(){
+  // 같은 행에 자세(가속도)와 조도를 함께 남겨 두 값을 같은 시간축에 놓습니다.
+  float ax=mpuRead16(0x3B)/16384.0f,ay=mpuRead16(0x3D)/16384.0f,az=mpuRead16(0x3F)/16384.0f;
+  Serial.print(millis());Serial.print(',');Serial.print(ax,4);Serial.print(',');
+  Serial.print(ay,4);Serial.print(',');Serial.print(az,4);Serial.print(',');
+  Serial.println(lightRaw());delay(samplingIntervalMs);
+}`
 
 const tcaResetSketch = `#include <Wire.h>
 // @baud 9600
@@ -191,7 +206,7 @@ const definitions: Phase6RecipeDefinition[] = [
     law: 'AD0의 HIGH/LOW 전압 상태로 같은 통신선에 연결된 두 MPU6050 주소를 0x68과 0x69로 나누고 두 물체의 운동을 동시에 비교합니다.',
     apparatus: 'MPU6050 2개, Arduino UNO, 브레드보드, 수-암(MF) 점퍼선',
     method: '첫 센서 AD0는 GND, 둘째 센서 AD0는 UNO의 3.3V 핀에 연결합니다. MPU6050 칩의 전원 전압은 3.3V이고 AD0는 모듈에서 전압 변환 없이 칩에 바로 연결되므로 5V를 넣으면 센서가 손상될 수 있습니다. I²C 스캔 후 두 센서를 서로 다른 방향으로 기울여 값이 독립적으로 변하는지 확인하세요.',
-    graph: '두 센서의 시간-가속도 곡선을 한 좌표계에 그리고, 두 파형을 시간 방향으로 옮겨 가장 잘 겹치는 시간차를 찾습니다.',
+    graph: '두 센서의 시간-가속도 곡선을 한 좌표계에 그리고, 한쪽만 기울일 때와 같은 판에 붙여 함께 흔들 때의 곡선 모양을 비교합니다.',
     sketch: dualMpuSketch,
     connections: [
       ...i2cBase('MPU6050_1'),
@@ -230,8 +245,8 @@ const definitions: Phase6RecipeDefinition[] = [
     keywords: ['MPU6050', 'XDA', 'XCL', '보조 I2C', 'TSL2591'],
     law: 'MPU6050의 XDA/XCL 보조 I²C 버스에 TSL2591을 연결해 주 버스와 보조 버스의 계층 구조를 이해합니다.',
     apparatus: 'MPU6050, TSL2591(3.3V로 공급), Arduino UNO, 브레드보드, 수-암(MF) 점퍼선',
-    method: 'MPU6050은 UNO의 주 I²C에 연결하고 TSL2591 SDA/SCL은 각각 XDA/XCL에 연결합니다. 보조 통신선은 3.3V 로직이므로 TSL2591 전원도 반드시 3.3V에서 공급합니다. 보조 센서를 주 통신선에 직접 연결하는 모드(bypass)와 MPU6050이 보조 통신선을 제어하는 모드(master)의 접근 경로를 비교하세요.',
-    graph: '자세 변화와 조도값을 같은 시간 기준으로 나타내고 보조 통신선 갱신 주기에 따른 지연을 계산합니다.',
+    method: 'MPU6050은 UNO의 주 I²C에 연결하고 TSL2591 SDA/SCL은 각각 XDA/XCL에 연결합니다. 보조 통신선은 3.3V 로직이므로 TSL2591 전원도 반드시 3.3V에서 공급합니다. 설정 단계에서 잠시 직접 연결 모드(bypass)로 센서를 초기화한 뒤, MPU6050이 보조 통신선을 대신 읽어 주는 제어 모드(master)로 자세와 조도를 함께 기록합니다.',
+    graph: '자세(가속도) 변화와 조도값을 같은 시간 기준으로 겹쳐 그려, 주 통신선 하나로 두 센서의 값을 함께 얻을 수 있음을 확인합니다.',
     sketch: auxBusSketch,
     connections: [
       ...i2cBase('MPU6050'),
@@ -250,9 +265,9 @@ const definitions: Phase6RecipeDefinition[] = [
     sensorTokens: ['TCA9548A_1', 'TCA9548A_2'],
     keywords: ['TCA9548A', 'A0', 'A1', 'A2', 'RST', '버스 복구'],
     law: '주소 선택 핀으로 여러 센서 연결 중 하나를 고르는 장치(멀티플렉서) 두 개를 0x70/0x71로 나누고, LOW일 때 작동하는 RST로 선택 상태와 멈춘 통신선을 복구합니다.',
-    apparatus: 'TCA9548A 2개, 신호선을 기본 HIGH 상태로 유지하는 10 kΩ 저항 2개, Arduino UNO, 브레드보드, 수-암(MF) 점퍼선',
-    method: '첫 모듈 A0~A2는 GND, 둘째 모듈은 A0만 5V에 연결합니다. 스케치는 채널 0을 연 뒤 RST에 LOW 펄스를 주고, 모듈이 다시 응답하며 채널 선택 레지스터가 0으로 지워질 때까지의 시간을 마이크로초로 잽니다.',
-    graph: '두 모듈의 recovery_us 분포를 비교하고, channels 열이 리셋 뒤 0으로 돌아오는지 확인해 복구 성공률을 계산합니다.',
+    apparatus: 'TCA9548A 2개, Arduino UNO, 브레드보드, 수-암(MF) 점퍼선',
+    method: '첫 모듈 A0~A2는 GND, 둘째 모듈은 A0만 5V에 연결합니다. 스케치는 채널 0을 연 뒤 RST에 LOW 펄스를 주고, 모듈이 다시 응답하며 채널 선택 레지스터가 0으로 지워질 때까지의 시간을 마이크로초로 잽니다. 이 값에는 응답을 확인하는 I²C 통신 자체의 시간(약 100 µs)이 포함되므로 그 아래로는 내려가지 않습니다.',
+    graph: '두 모듈의 mux_0x70_recovery_us·mux_0x71_recovery_us 분포를 비교하고, mux_0x70_channels·mux_0x71_channels 열이 리셋 뒤 0으로 돌아오는지 확인해 복구 성공률을 계산합니다.',
     sketch: tcaResetSketch,
     connections: [
       ...i2cBase('TCA9548A_1', 'VIN'),

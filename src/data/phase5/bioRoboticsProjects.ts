@@ -153,13 +153,23 @@ void setup() {
   delay(30000);
 }
 void loop() {
+  static bool lastMotion = false;
+  static unsigned long lastLog = 0;
   int light = analogRead(LIGHT_PIN);
   bool motion = digitalRead(PIR_PIN) == HIGH;
-  if (motion && light < darkThreshold) darkMotionCount++;
-  Serial.print(millis()); Serial.print(',');
-  Serial.print(light); Serial.print(',');
-  Serial.print(motion); Serial.print(',');
-  Serial.println(darkMotionCount);
+  // PIR 출력은 한 번의 움직임에도 수 초간 HIGH로 유지되므로, 표본 수가 아니라
+  // LOW에서 HIGH로 바뀌는 순간만 한 사건으로 셉니다.
+  if (motion && !lastMotion && light < darkThreshold) darkMotionCount++;
+  // 밤새 0.5초마다 출력하면 행이 수만 개가 되어 복사해 쓸 수 없습니다.
+  // 상태가 바뀔 때와 60초 주기에만 기록을 남깁니다.
+  if (motion != lastMotion || millis() - lastLog >= 60000) {
+    lastLog = millis();
+    Serial.print(millis()); Serial.print(',');
+    Serial.print(light); Serial.print(',');
+    Serial.print(motion); Serial.print(',');
+    Serial.println(darkMotionCount);
+  }
+  lastMotion = motion;
   delay(500);
 }`
 
@@ -186,8 +196,13 @@ void loop() {
   uint32_t raw = light.getFullLuminosity();
   float lux = light.calculateLux(raw & 0xffff, raw >> 16);
   static bool lamp = false;
-  if (lux < targetLux * 0.9) lamp = true;
-  if (lux > targetLux * 1.1) lamp = false;
+  static unsigned long lastSwitch = 0;
+  // 조명 자신이 센서 밝기를 크게 바꾸므로, 기준 간격만으로는 릴레이가 초 단위로
+  // 반복 동작해 접점이 빨리 상합니다. 최소 유지 시간을 함께 둡니다.
+  if (millis() - lastSwitch >= 10000) {
+    if (lux < targetLux * 0.9 && !lamp) { lamp = true; lastSwitch = millis(); }
+    else if (lux > targetLux * 1.1 && lamp) { lamp = false; lastSwitch = millis(); }
+  }
   digitalWrite(RELAY_PIN, lamp ? HIGH : LOW);
   Serial.print(millis()); Serial.print(',');
   Serial.print(lux, 2); Serial.print(',');
@@ -261,10 +276,22 @@ void setup() {
   pinMode(LEFT_PWM,OUTPUT); pinMode(RIGHT_PWM,OUTPUT);
   Serial.println("time_ms,distance_cm,tilt_x_g");
 }
+// 속도 단계 실험은 이 값을 120, 150, 180처럼 바꿔 가며 반복하세요.
+byte cruiseSpeed = 150;
 void loop() {
+  static bool avoiding=false; static byte missedEchoes=0;
   float d=distanceCm();
   int16_t ax,ay,az; imu.getAcceleration(&ax,&ay,&az);
-  if (isnan(d) || d < stopDistanceCm) drive(0,150); else drive(150,150);
+  // 일시적인 미수신에 바로 반응하지 않도록 nan이 세 번 이어질 때만 장애물로 봅니다.
+  missedEchoes = isnan(d) ? missedEchoes+1 : 0;
+  if (missedEchoes >= 3 || d < stopDistanceCm) {
+    // 정지까지 이동한 거리를 잴 수 있도록 먼저 완전히 멈춘 뒤 제자리에서 회전합니다.
+    if (!avoiding) { drive(0,0); delay(300); avoiding=true; }
+    drive(0,cruiseSpeed);
+  } else {
+    avoiding=false;
+    drive(cruiseSpeed,cruiseSpeed);
+  }
   Serial.print(millis()); Serial.print(',');
   Serial.print(d,1); Serial.print(',');
   Serial.println(ax/16384.0,3);
@@ -338,7 +365,7 @@ void loop() {
   if (open!=lastOpen || millis()-lastLog>=1000) {
     lastOpen=open; lastLog=millis();
     Serial.print(millis()); Serial.print(',');
-    Serial.println(open ? "open" : "closed");
+    Serial.println(open ? 1 : 0);
   }
 }`
 
@@ -390,8 +417,10 @@ void loop() {
     magnetDetected=false;
   }
 
+  // 측정 창 실험은 이 값을 1000(1초)과 5000(5초)으로 바꿔 가며 반복하세요.
+  const unsigned long windowMs = 1000;
   static unsigned long last=0;
-  if(millis()-last<1000) return;
+  if(millis()-last<windowMs) return;
   unsigned long elapsed=millis()-last; last=millis();
   unsigned long pulses=pulseCount; pulseCount=0;
   float rpm=pulsesPerRevolution ? pulses*60000.0/(elapsed*pulsesPerRevolution) : 0;
@@ -406,19 +435,31 @@ const smartLightingSketch = `// @pin PIR=D2
 const byte PIR_PIN=2,LIGHT_PIN=A0,RELAY_PIN=7;
 // @tunable darkThreshold
 int darkThreshold = 350;
-unsigned long lastMotion=0;
+// 끄는 기준은 켜는 기준보다 높게 두어(히스테리시스) 조명 빛이 CDS로
+// 되먹임되어 생기는 빠른 반복 동작을 막습니다.
+int brightThreshold = 450;
+// 조명 유지 시간 실험은 이 값을 10000, 30000, 60000으로 바꿔 가며 반복하세요.
+unsigned long holdOnMs = 30000;
+unsigned long lastMotion=0,lastSwitch=0;
+bool lamp=false;
 void setup() {
   Serial.begin(9600);
   pinMode(PIR_PIN,INPUT); pinMode(RELAY_PIN,OUTPUT);
   digitalWrite(RELAY_PIN,LOW);
-  delay(30000);
+  // PIR 안정화를 기다리는 동안 시리얼 모니터를 연 학생이 헤더를 놓치지 않도록
+  // 헤더를 먼저 출력합니다.
   Serial.println("time_ms,light_adc,occupied,lamp");
+  delay(30000);
 }
 void loop() {
   int light=analogRead(LIGHT_PIN);
   if(digitalRead(PIR_PIN)==HIGH) lastMotion=millis();
-  bool occupied=millis()-lastMotion<30000;
-  bool lamp=occupied && light<darkThreshold;
+  bool occupied=millis()-lastMotion<holdOnMs;
+  // 릴레이 보호를 위해 상태를 바꾼 뒤 10초 동안은 다시 바꾸지 않습니다.
+  if (millis()-lastSwitch>=10000) {
+    if (!lamp && occupied && light<darkThreshold) { lamp=true; lastSwitch=millis(); }
+    else if (lamp && (!occupied || light>brightThreshold)) { lamp=false; lastSwitch=millis(); }
+  }
   digitalWrite(RELAY_PIN,lamp ? HIGH : LOW);
   Serial.print(millis());Serial.print(',');
   Serial.print(light);Serial.print(',');
@@ -439,7 +480,7 @@ export const biologyProjectRecipes: Recipe[] = [
     connections: [...i2cConnections('TSL2591'), ...i2cConnections('BME280')],
     sketch: plantGrowthSketch,
     tunable: { anchor: 'loggingIntervalMs', name: '기록 간격', hint: '장기 관찰에서는 수 분 단위로 늘리세요.' },
-    overview: '식물 주변의 조도, 온도, 상대습도와 기압을 같은 시각에 기록하고 생장 길이·잎 수처럼 별도로 관찰한 생장 지표와 비교합니다.',
+    overview: '식물 주변의 조도, 온도, 상대습도를 같은 시각에 기록하고 생장 길이·잎 수처럼 별도로 관찰한 생장 지표와 비교합니다.',
     procedure: '센서를 잎에 가려지지 않고 물이 닿지 않는 위치에 고정합니다. 매일 같은 시각에 생장 지표를 직접 측정하고, 센서 로그는 일평균뿐 아니라 밝은 시간의 누적 시간도 계산합니다.',
     science: '환경 센서는 생장을 직접 측정하지 않습니다. 조도는 광합성에 이용되는 광합성유효복사(PAR)와 같지 않고, 상대습도는 온도에 의존합니다. 따라서 관찰된 상관관계를 한 요인의 인과효과로 단정하지 말고 식물 종류, 물, 토양을 통제해야 합니다.',
     applicationGuide: '빛 조건만 다르게 한 두 화분을 두고 물과 온도를 최대한 같게 유지하여 생장률과 일일 조도 노출을 비교하세요.',
@@ -544,7 +585,7 @@ export const roboticsProjectRecipes: Recipe[] = [
     sketch: obstacleCarSketch,
     tunable: { anchor: 'stopDistanceCm', name: '회피 시작 거리', hint: '차량 속도와 정지거리를 고려해 여유 있게 설정하세요.' },
     overview: '초음파 거리로 전방 장애물을 감지해 좌우 모터 속도를 바꾸고, MPU6050의 기울기 값을 함께 기록해 주행 상태를 관찰합니다.',
-    procedure: '바퀴를 지면에서 띄운 상태에서 방향과 정지 동작을 먼저 확인합니다. 넓고 평평한 구역에서 낮은 속도로 시작해 여러 재질과 각도의 장애물에 대한 검출 실패를 기록합니다.',
+    procedure: '모터 드라이버의 5V-EN 점퍼(또는 별도 5V 논리 전원)가 연결되어 있는지 먼저 확인합니다. 바퀴를 지면에서 띄운 상태에서 방향과 정지 동작을 확인한 뒤, 넓고 평평한 구역에서 낮은 속도로 시작해 여러 재질과 각도의 장애물에 대한 검출 실패를 기록합니다. 센서의 측정 범위(약 4 m)를 넘는 빈 공간에서는 미검출을 장애물로 보고 제자리 회전을 하므로, 시험 주행은 벽에서 4 m 안쪽에서 시작합니다.',
     science: '초음파는 부드럽거나 비스듬한 표면에서 반사가 센서로 돌아오지 않을 수 있습니다. 단일 전방 센서만으로는 측면과 낭떠러지를 알 수 없고 MPU6050도 절대 위치를 제공하지 않습니다. 따라서 이 예제는 안전 기능이 아닌 제한된 교실 실험입니다.',
     applicationGuide: '속도별 정지거리보다 회피 임계값이 충분히 큰지 측정하고, 반사 재질별 미검출률을 표로 비교하세요.',
     troubleshooting: [{ symptom: '모터를 켜면 센서가 재시작하거나 값이 튐', cause: '모터 돌입전류와 브러시 잡음이 Uno 전원에 유입될 수 있습니다.', fix: '모터는 외부 전원으로 구동하고 GND만 공유하며 디커플링과 짧은 배선을 사용하세요.' }, noisyProblem],
@@ -580,7 +621,7 @@ export const roboticsProjectRecipes: Recipe[] = [
     sketch: lightFollowSketch,
     tunable: { anchor: 'deadband', name: '좌우 밝기 무시 범위', hint: '정면 조명에서 떨지 않을 만큼 크게 설정하세요.' },
     overview: '좌우 CDS의 상대 밝기 차이를 두 모터의 속도 차이로 바꾸어 밝은 방향으로 조향합니다.',
-    procedure: '두 센서를 같은 각도와 높이에 좌우 대칭으로 설치합니다. 정면의 균일한 빛에서 두 센서 오프셋을 기록한 뒤, 낮은 속도로 광원의 위치를 바꾸며 오차와 회전 방향을 확인합니다.',
+    procedure: '모터 드라이버의 5V-EN 점퍼(또는 별도 5V 논리 전원)가 연결되어 있는지 먼저 확인합니다. 두 센서를 같은 각도와 높이에 좌우 대칭으로 설치합니다. 정면의 균일한 빛에서 두 센서 오프셋을 기록한 뒤, 낮은 속도로 광원의 위치를 바꾸며 오차와 회전 방향을 확인합니다.',
     science: 'CDS에서 아날로그 전압을 숫자로 바꾼 값(ADC 값)은 lux가 아니며 두 저항의 연결 방향에 따라 밝을수록 값이 커지거나 작아질 수 있습니다. 센서 편차와 주변 반사광 때문에 영점 보정이 필요하고, 작은 차이에는 반응하지 않는 범위를 두면 조향 진동을 줄일 수 있습니다.',
     applicationGuide: '센서 사이 간격과 차광판 길이를 바꾸며 방향 오차와 추종 안정성을 비교하세요.',
     troubleshooting: [{ symptom: '빛과 반대 방향으로 회전함', cause: 'CDS의 두 저항 연결 방향 또는 좌우 모터·센서 대응이 코드 가정과 반대일 수 있습니다.', fix: '각 센서를 손으로 가려 ADC 값의 변화 방향을 확인하고 좌우 보정 부호 또는 모터 연결을 바꾸세요.' }, noisyProblem],
@@ -606,7 +647,7 @@ export const roboticsProjectRecipes: Recipe[] = [
     sketch: automaticDoorSketch,
     tunable: { anchor: 'holdOpenMs', name: '문 열림 유지 시간', hint: '통과에 필요한 시간보다 짧지 않게 설정하세요.' },
     overview: 'PIR 움직임 신호가 들어오면 서보로 모형 문을 열고, 마지막 감지 뒤 일정 시간 동안 열린 상태를 유지합니다.',
-    procedure: '서보 혼을 분리한 채 0°와 90° 동작을 먼저 확인한 후 기구물의 실제 한계각 안에서 연결합니다. 손이 끼이지 않는 가벼운 모형 문에서만 시험합니다.',
+    procedure: '서보 혼을 분리한 채 0°와 90° 동작을 먼저 확인한 후 기구물의 실제 한계각 안에서 연결합니다. 손이 끼이지 않는 가벼운 모형 문에서만 시험합니다. PIR 모듈의 출력 유지 시간(Tx) 노브는 최소로 돌려 두고, 실제 열림 유지 시간은 그 Tx에 holdOpenMs를 더한 값으로 기록합니다.',
     science: 'PIR은 접근 거리나 정지한 사람을 알 수 없습니다. 시간 유지 방식은 출력이 잠시 끊겨도 바로 닫히는 것을 막지만, 실제 자동문에는 광전식 안전센서, 힘 제한, 비상 개방 등 중복 안전장치가 필요합니다.',
     applicationGuide: '접근 방향별 감지 성공률과 필요한 열림 유지 시간을 측정하되 실제 출입문 제어에는 사용하지 마세요.',
     troubleshooting: [{ symptom: '서보가 떨거나 Uno가 재시작함', cause: '서보 전류를 Uno 5V 핀에서 공급했거나 공통 GND가 빠졌을 수 있습니다.', fix: '서보는 충분한 별도 5V 전원으로 공급하고 전원 GND와 Uno GND를 연결하세요.' }, { symptom: '문이 끝에서 걸리며 소리가 남', cause: '명령 각도가 기구물의 물리적 이동 범위를 넘었을 수 있습니다.', fix: '전원을 끄고 링크를 풀어 걸림을 제거한 뒤 열림·닫힘 각도를 더 좁게 조정하세요.' }],
@@ -654,7 +695,7 @@ export const roboticsProjectRecipes: Recipe[] = [
     sketch: rpmSketch,
     tunable: { anchor: 'pulsesPerRevolution', name: '회전당 펄스 수', hint: '바퀴 한 바퀴에 센서를 지나는 자석 수와 같게 설정하세요.' },
     overview: '바퀴의 자석이 홀 센서를 지날 때 아날로그 값이 임계값을 넘는 에지를 세어 일정 시간 동안의 분당 회전수(RPM)를 계산합니다.',
-    procedure: '바퀴를 손으로 천천히 한 바퀴 돌려 펄스 수를 확인한 뒤 회전당 자석 수를 설정합니다. 자석을 단단히 고정하고 회전체에서 충분히 떨어져 시험합니다.',
+    procedure: '바퀴를 손으로 천천히 한 바퀴 돌려 펄스 수를 확인한 뒤 회전당 자석 수를 설정합니다. 자석을 단단히 고정하고 회전체에서 충분히 떨어져 시험합니다. 같은 속도를 오래 유지해야 하는 측정은 손 대신 자석을 붙인 선풍기 날개나 소형 모터처럼 일정하게 도는 회전체로 하세요.',
     science: 'RPM은 펄스 수×60을 측정시간(초)과 회전당 펄스 수로 나눈 값입니다. 낮은 속도에서는 짧은 측정 시간 때문에 생기는 회전수 반올림 오차가 크므로 펄스 사이 주기를 재는 방법이 더 정밀할 수 있습니다. HBE0704의 아날로그 OUT은 진입 기준과 해제 기준을 다르게 두어 신호가 기준을 넘는 순간을 찾고, 자석이 한 번 통과할 때 한 펄스로 셉니다.',
     applicationGuide: '1초와 5초 측정 창에서 응답속도와 RPM 변동을 비교하고 기준 회전계가 있으면 보정하세요.',
     troubleshooting: [{ symptom: '한 번 통과할 때 펄스가 여러 번 증가함', cause: '자석 경계에서 아날로그 값이 흔들리거나 진입·해제 임계값 간격이 좁을 수 있습니다.', fix: '센서와 자석 간격을 조정하고 magnetThreshold와 releaseThreshold 간격을 넓히세요.' }, { symptom: '회전해도 펄스가 없음', cause: '자석 방향·거리가 맞지 않거나 실제 A0 값이 코드의 임계값을 통과하지 않을 수 있습니다.', fix: '자석을 가까이 대기 전후의 A0 값을 기록하고 두 임계값을 그 범위 사이로 조정하세요.' }],
@@ -686,7 +727,7 @@ export const roboticsProjectRecipes: Recipe[] = [
     sketch: smartLightingSketch,
     tunable: { anchor: 'darkThreshold', name: '어두움 임계값', hint: '설치 위치의 낮과 밤 값을 측정해 중간 범위로 정하세요.' },
     overview: '사람의 움직임이 최근에 감지되었고 주변이 어두울 때만 저전압 조명을 켜는 논리 제어를 구현합니다.',
-    procedure: 'CDS의 밝고 어두울 때 ADC 값을 먼저 기록하고 인체 움직임 감지용 적외선 센서(PIR 센서)가 안정된 뒤 점등 조건을 확인합니다. 릴레이 접점에는 교실용 안전 저전압 부하만 연결합니다.',
+    procedure: 'CDS의 밝고 어두울 때 ADC 값을 먼저 기록하고 인체 움직임 감지용 적외선 센서(PIR 센서)가 안정된 뒤 점등 조건을 확인합니다. 릴레이 접점에는 교실용 안전 저전압 부하만 연결합니다. 조명 빛이 CDS에 직접 닿지 않도록 가림판을 두고, 실험 중에는 실제로 사람이 있었던 시간을 관찰 노트에 함께 적어 둡니다.',
     science: 'PIR의 HIGH는 재실을 완전히 증명하지 않으며 정지한 사람을 놓칠 수 있습니다. CDS는 상대 밝기만 제공하므로 설치 위치에서 임계값을 보정해야 합니다. 이중 조건은 불필요한 점등을 줄이지만 오검출과 미검출을 제거하지는 않습니다.',
     applicationGuide: '유지 시간을 10초, 30초, 60초로 바꾸며 불필요 점등 시간과 사용 중 꺼짐 횟수를 함께 비교하세요.',
     troubleshooting: [{ symptom: '밝은데도 조명이 켜짐', cause: 'CDS의 두 저항 연결 방향이 코드 가정과 반대거나 기준값이 설치 환경에 맞지 않을 수 있습니다.', fix: '밝고 어두울 때 ADC 값을 확인해 비교 방향과 기준값을 조정하세요.' }, { symptom: '사람이 가만히 있으면 조명이 꺼짐', cause: 'PIR 센서는 온도 변화가 없는 정지 상태를 감지하지 못합니다.', fix: '켜진 상태를 유지하는 시간을 늘리되 실제 재실 제어에는 다른 센서와 수동 스위치를 함께 사용하세요.' }],

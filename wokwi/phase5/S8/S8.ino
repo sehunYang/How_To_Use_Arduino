@@ -13,6 +13,8 @@ void setup() {
   Serial.begin(9600);
   Serial.println("# PHASE5_READY:S8");
   if (!tsl.begin()) Serial.println("# TSL2591_ERROR");
+  // 신호 증폭 정도와 측정 시간은 아래 두 줄을 바꿔 조절합니다.
+  // 밝은 곳: GAIN_LOW, 어두운 곳: GAIN_HIGH. lux가 -1이면 범위를 넘은 것입니다.
   tsl.setGain(TSL2591_GAIN_MED);
   tsl.setTiming(TSL2591_INTEGRATIONTIME_100MS);
   Serial.println("time_ms,lux");

@@ -7,7 +7,7 @@ const sketch = `#include <Wire.h>
 
 // @pin SDA=A4
 // @pin SCL=A5
-// @baud 9600
+// @baud 115200
 
 MPU6050 mpu;
 
@@ -17,7 +17,9 @@ MPU6050 mpu;
 int samplingIntervalMs = 10;
 
 void setup() {
-  Serial.begin(9600);
+  // 10 ms 간격은 9600 baud로는 한 행을 내보내는 시간(약 20 ms)보다 짧아
+  // 실제 간격이 밀립니다. 115200이면 여유가 있습니다.
+  Serial.begin(115200);
   Wire.begin();
   mpu.initialize();
   Serial.println("# WOKWI_READY");
@@ -26,12 +28,14 @@ void setup() {
   } else {
     Serial.println("# MPU6050_ERROR");
   }
-  Serial.println("accel_x_raw,accel_y_raw,accel_z_raw");
+  Serial.println("time_ms,accel_x_raw,accel_y_raw,accel_z_raw");
 }
 
 void loop() {
   int16_t ax, ay, az;
   mpu.getAcceleration(&ax, &ay, &az);
+  // 주기를 그래프에서 읽으려면 각 행의 시각이 필요하므로 millis()를 먼저 씁니다.
+  Serial.print(millis()); Serial.print(",");
   Serial.print(ax); Serial.print(",");
   Serial.print(ay); Serial.print(",");
   Serial.println(az);
@@ -60,7 +64,7 @@ export const pendulumRecipe: Recipe = withInquiryWorkbook(canaryPlans)({
     { from: 'MPU6050.SCL', to: 'UNO.A5', color: 'yellow', focus: { x: 120, y: 300, w: 140, h: 60 }, text: '노란 점퍼선을 센서 SCL에서 아두이노 A5로 연결하세요' },
   ],
   sketch,
-  baudRate: 9600,
+  baudRate: 115200,
   tunables: [
     {
       anchor: 'samplingIntervalMs',

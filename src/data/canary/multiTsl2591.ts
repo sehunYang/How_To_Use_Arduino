@@ -22,16 +22,25 @@ void readChannel(uint8_t channel) {
   mux.openChannel(channel);
   delay(channelDelayMs);
   uint32_t lum = tsl.getFullLuminosity();
+  Serial.print(millis()); Serial.print(',');
   Serial.print(channel); Serial.print(',');
-  Serial.println(lum);
+  // getFullLuminosity()는 상위 16비트가 적외선, 하위 16비트가 전체 광량인
+  // 32비트 묶음입니다. 하위 16비트만 잘라야 밝기 값이 됩니다.
+  Serial.println(lum & 0xffff);
   mux.closeChannel(channel);
 }
 
 void setup() {
   Serial.begin(9600);
   Wire.begin();
+  // 채널 선택 장치에 어떤 Wire를 쓸지 알려 줘야 합니다. 이 호출이 없으면
+  // 채널이 전혀 열리지 않아 두 센서 모두 응답하지 않습니다.
+  mux.begin(Wire);
+  // 센서 설정(tsl.begin)도 채널을 통해서만 전달되므로 채널 0을 연 채 수행합니다.
+  mux.openChannel(0);
   tsl.begin();
-  Serial.println("channel,light_raw");
+  mux.closeChannel(0);
+  Serial.println("time_ms,channel,light_raw");
 }
 
 void loop() {

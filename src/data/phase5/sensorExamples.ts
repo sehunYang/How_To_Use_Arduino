@@ -153,7 +153,8 @@ void setup() {
 
 void loop() {
   Serial.print(millis()); Serial.print(',');
-  Serial.println(digitalRead(PIR_PIN) == HIGH ? "motion" : "clear");
+  // 숫자 0/1로 남겨야 표 계산 프로그램에서 바로 세고 그릴 수 있습니다.
+  Serial.println(digitalRead(PIR_PIN) == HIGH ? 1 : 0);
   delay(holdoffMs);
 }
 `
@@ -279,6 +280,8 @@ int samplingIntervalMs = 500;
 void setup() {
   Serial.begin(9600);
   if (!tsl.begin()) Serial.println("# TSL2591_ERROR");
+  // 신호 증폭 정도와 측정 시간은 아래 두 줄을 바꿔 조절합니다.
+  // 밝은 곳: GAIN_LOW, 어두운 곳: GAIN_HIGH. lux가 -1이면 범위를 넘은 것입니다.
   tsl.setGain(TSL2591_GAIN_MED);
   tsl.setTiming(TSL2591_INTEGRATIONTIME_100MS);
   Serial.println("time_ms,lux");
@@ -501,7 +504,7 @@ BME280은 온도, 상대습도, 절대기압을 함께 측정합니다. 상대�
 센서의 자체 발열과 손의 열을 피하고 공기가 통하게 두세요. 해면기압과 현지 절대기압은 다르므로 날씨 앱과 비교할 때 고도 보정 여부를 맞춰야 합니다.
 :::`,
     applicationGuide: '실내외를 오가며 세 값의 안정화 시간과 상관관계를 기록하세요.',
-    troubleshooting: guidance('BME280', 'I2C 스캐너로 모듈 주소가 0x76인지 0x77인지 확인하고 코드와 맞추세요.'),
+    troubleshooting: guidance('BME280', 'I2C 스캐너로 모듈 주소가 0x76인지 0x77인지 확인하고 코드와 맞추세요. 전압 조정기가 없는 3.3 V 전용 모듈은 5 V에 연결하면 손상되므로 3.3 V 핀에 연결하세요.'),
   }),
   example({
     id: 'S7',
@@ -523,7 +526,7 @@ BME280은 온도, 상대습도, 절대기압을 함께 측정합니다. 상대�
 INA219는 전류 측정용 작은 저항(션트 저항) 양단의 전압 차로 전류를 구하고 회로 쪽 전압도 측정합니다. 전력은 같은 순간의 전압과 전류를 곱해 계산합니다.
 
 :::callout warn
-부하는 VIN+와 VIN- 사이에 직렬로 연결해야 합니다. 센서 입력에 허용되는 전체 전압 범위와 전류 측정 경로의 정격 전류를 넘기지 마세요.
+부하는 VIN+와 VIN- 사이에 직렬로 연결해야 합니다. 센서 입력에 허용되는 전체 전압 범위와 전류 측정 경로의 정격 전류를 넘기지 마세요. LED를 부하로 쓸 때는 반드시 220 Ω 저항을 직렬로 연결하세요. 저항 없이 5 V에 직접 연결하면 LED가 타 버립니다.
 :::
 
 :::toggle 단위 확인

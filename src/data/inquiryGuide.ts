@@ -15,17 +15,23 @@ function experimentPlan(recipe: Recipe): ExperimentPlan {
     .toLowerCase()
   const description = `${headline} ${recipe.body} ${recipe.applicationGuide}`.toLowerCase()
 
-  if (/(interrupt|인터럽트|이벤트|발생 시점|회전수|rpm|유도 신호)/.test(headline)) {
+  // 회전수·RPM류는 사건 하나하나가 아니라 조건별 집계를 다루므로 event가 아니라
+  // 비교 실험으로 보낸다. PIR 통과 감지(S3)만 event로 남긴다.
+  if (/(interrupt|인터럽트|이벤트|발생 시점|지나가면)/.test(headline)) {
     return 'event'
   }
-  if (/(24시간|장시간|시계열|시간에 따른|시간 변화|시간 안정성|이동평균|시간 추세|변화량|온도 구배|열전달 방향)/.test(description)) {
+  if (/(24시간|장시간|시계열|시간에 따른|시간 변화|시간 안정성|이동평균|시간 추세|변화량을 계산|온도 구배|열전달 방향|환경 기록)/.test(description)) {
     return 'time-series'
+  }
+  // transient를 제목 비교보다 먼저 검사한다. "물의 냉각 곡선 (뉴턴 냉각법칙)"이나
+  // "충돌 전후 운동량 비교"처럼 제목에 '법칙'·'비교'가 들어 있어도 실제 측정은
+  // 한 번의 과도 파형 기록이므로, 순서를 뒤에 두면 파형 실험이 조건표 실행
+  // 계획을 받아 분석 절과 모순된다.
+  if (/(pendulum-period|mechanical-energy|자유낙하|냉각 곡선|충돌 전후|반발계수|회전 감쇠|융해 잠열|충전|방전|시간상수|줄열|발열|흡열|에너지 보존|단진자|용수철|토리첼리|마찰에 의한)/.test(headline)) {
+    return 'transient'
   }
   if (/(에 따른|별 |각도별|관계|분포|법칙|비교|효율)/.test(recipe.title)) {
     return 'condition-comparison'
-  }
-  if (/(pendulum-period|mechanical-energy|자유낙하|냉각 곡선|충돌|반발계수|회전 감쇠|융해 잠열|충전|방전|시간상수|줄열|발열|흡열|에너지 보존)/.test(headline)) {
-    return 'transient'
   }
   return 'condition-comparison'
 }
@@ -380,7 +386,7 @@ function comparisonWorkbook(recipe: Recipe) {
   const { levels, repeats, samples, intervalSeconds, settlingSeconds } = samplingPlan(recipe)
   const totalRows = levels * repeats
   const durationMinutes = Math.max(1, Math.ceil(totalRows * (settlingSeconds + samples * intervalSeconds) / 60))
-  return `아래 수치는 기본 권장값입니다. 장치의 응답이 느리면 **안정화 시간만 늘리고**, 모든 조건에서 표본 수와 측정 간격은 같게 유지하세요.
+  return `아래 수치는 기본 권장값입니다. **변인 설계 표에 조건 수가 따로 적혀 있으면 그 값을 우선**하고, 장치의 응답이 느리면 **안정화 시간만 늘리고**, 모든 조건에서 표본 수와 측정 간격은 같게 유지하세요. 안정화 시간 자체가 분석 대상인 탐구라면 기다리지 말고 조건을 바꾼 순간부터 기록을 계속하세요.
 
 | 항목 | 권장값 | 실제 사용값 | 확인 |
 |:---|---:|---:|:---:|
