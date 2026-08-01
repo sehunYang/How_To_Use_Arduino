@@ -20,6 +20,21 @@
 
 Vite + React + TypeScript, Tailwind CSS v4 + shadcn/ui, React Router, Firebase (Firestore/Auth/Storage, BaaS 직접 호출), GitHub Pages 배포.
 
+## 로고와 파비콘
+
+원본은 [`assets/logo.png`](assets/logo.png)(2380×2473, 배경 투명)입니다. `assets/`는 배포되지 않는 원본
+보관용이고, 실제로 서비스되는 아이콘은 `public/`에 있는 아래 세 개입니다.
+
+| 파일 | 크기 | 비고 |
+|---|---|---|
+| `public/favicon-32.png` | 32×32 | 브라우저 탭. 16px로 줄여도 글자 모양이 남는 크기 |
+| `public/favicon.png` | 256×256 | 북마크·고해상도 화면, `og:image` |
+| `public/apple-touch-icon.png` | 180×180 | 흰 바탕으로 합성. iOS가 투명한 부분을 검게 채우기 때문 |
+
+원본을 바꾸면 위 세 크기를 다시 만들어야 합니다. 정사각형 화폭 가운데에 비율을 지켜 배치하고,
+애플 터치 아이콘만 흰 바탕을 깝니다. `index.html`의 아이콘 경로에는 빌드 때 `VITE_BASE_PATH`가
+자동으로 붙지만 `og:image`는 그렇지 않으므로 전체 주소로 적어야 합니다.
+
 ## 개발
 
 ```bash
