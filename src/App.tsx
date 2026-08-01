@@ -1,7 +1,8 @@
 import { lazy, Suspense } from 'react'
-import { BrowserRouter, Link, Navigate, Routes, Route, useParams } from 'react-router-dom'
+import { BrowserRouter, Link, Navigate, Routes, Route, useLocation, useParams } from 'react-router-dom'
 import { routerBasename } from '@/lib/basePath'
 import { AppShell } from '@/components/AppShell'
+import { RouteErrorBoundary } from '@/components/RouteErrorBoundary'
 import { type AdminServices } from '@/admin/AdminServices'
 
 /**
@@ -56,25 +57,38 @@ function RecipeRoute() {
   return <RecipeDetailPage key={id} />
 }
 
+/**
+ * 화면 코드를 받다 실패해도 머리글과 메뉴는 남기고 본문만 오류 안내로 바꿉니다.
+ * 울타리를 AppShell 안에 두는 이유입니다. 주소가 바뀌면 울타리를 걷어 다시 그려 봅니다.
+ */
+function StudentRoutes({ adminServices }: { adminServices?: AdminServices }) {
+  const location = useLocation()
+  return (
+    <RouteErrorBoundary resetKey={location.pathname}>
+      <Suspense fallback={<PageLoading />}>
+        <Routes>
+          <Route path="/" element={<DiscoveryPage />} />
+          <Route path="/search" element={<SearchResultsPage />} />
+          <Route path="/recipes" element={<RecipeListPage />} />
+          <Route path="/recipes/:id" element={<RecipeRoute />} />
+          <Route path="/sensors" element={<SensorListPage />} />
+          <Route path="/sensors/:id" element={<SensorDetailPage />} />
+          <Route path="/data-analysis" element={<DataAnalysisPage />} />
+          {/* 변환 전용 화면이던 시절의 주소를 저장해 둔 학생이 있어 새 주소로 넘겨 줍니다. */}
+          <Route path="/data-converter" element={<Navigate to="/data-analysis" replace />} />
+          <Route path="/admin/*" element={<AdminRoute services={adminServices} />} />
+          <Route path="*" element={<div className="py-20 text-center"><h1 className="text-3xl font-semibold">페이지를 찾을 수 없어요</h1><Link className="mt-4 inline-block text-accent" to="/">처음으로</Link></div>} />
+        </Routes>
+      </Suspense>
+    </RouteErrorBoundary>
+  )
+}
+
 function App({ adminServices }: { adminServices?: AdminServices }) {
   return (
     <BrowserRouter basename={routerBasename}>
       <AppShell>
-        <Suspense fallback={<PageLoading />}>
-          <Routes>
-            <Route path="/" element={<DiscoveryPage />} />
-            <Route path="/search" element={<SearchResultsPage />} />
-            <Route path="/recipes" element={<RecipeListPage />} />
-            <Route path="/recipes/:id" element={<RecipeRoute />} />
-            <Route path="/sensors" element={<SensorListPage />} />
-            <Route path="/sensors/:id" element={<SensorDetailPage />} />
-            <Route path="/data-analysis" element={<DataAnalysisPage />} />
-            {/* 변환 전용 화면이던 시절의 주소를 저장해 둔 학생이 있어 새 주소로 넘겨 줍니다. */}
-            <Route path="/data-converter" element={<Navigate to="/data-analysis" replace />} />
-            <Route path="/admin/*" element={<AdminRoute services={adminServices} />} />
-            <Route path="*" element={<div className="py-20 text-center"><h1 className="text-3xl font-semibold">페이지를 찾을 수 없어요</h1><Link className="mt-4 inline-block text-accent" to="/">처음으로</Link></div>} />
-          </Routes>
-        </Suspense>
+        <StudentRoutes adminServices={adminServices} />
       </AppShell>
     </BrowserRouter>
   )
