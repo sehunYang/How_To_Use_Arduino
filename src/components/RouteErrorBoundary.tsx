@@ -1,6 +1,7 @@
 import { Component, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
+import { reloadBypassingCache } from '@/lib/cacheBust'
 
 /**
  * 화면 코드를 내려받다 실패했을 때 앱 전체가 사라지지 않게 막는 울타리.
@@ -12,6 +13,9 @@ import { Button } from '@/components/ui/button'
  *
  * 그래서 배포 때문에 생긴 실패는 한 번만 새로 고쳐 새 파일을 받게 하고, 그래도
  * 안 되면(연결이 끊겼거나 다른 이유라면) 이유와 함께 되돌아갈 길을 보여 줍니다.
+ *
+ * 새로 고침은 반드시 캐시를 건너뛰어야 합니다. index.html 자체가 10분간 캐시되므로
+ * 평범한 새로 고침은 옛 파일 이름이 적힌 문서를 다시 읽어 똑같이 실패합니다.
  */
 
 const RELOAD_MARK = 'arduino-stale-chunk-reload'
@@ -72,7 +76,7 @@ export class RouteErrorBoundary extends Component<RouteErrorBoundaryProps, Route
     if (at - readReloadMark() < RELOAD_COOLDOWN_MS) return
 
     writeReloadMark(at)
-    const reload = this.props.reload ?? (() => window.location.reload())
+    const reload = this.props.reload ?? reloadBypassingCache
     reload()
   }
 
@@ -95,7 +99,7 @@ export class RouteErrorBoundary extends Component<RouteErrorBoundaryProps, Route
             : '화면을 그리는 중에 문제가 생겼어요. 새로 고쳐도 같은 화면이 나오면 다른 메뉴로 이동해 보세요.'}
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <Button size="lg" onClick={() => (this.props.reload ?? (() => window.location.reload()))()}>
+          <Button size="lg" onClick={() => (this.props.reload ?? reloadBypassingCache)()}>
             새로 고침
           </Button>
           <Link
