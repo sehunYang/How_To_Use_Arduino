@@ -111,6 +111,16 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
   const stepRefs = useRef<Array<HTMLLIElement | null>>([])
   /** 화면 위에 붙어 있는 배선도. 현재 단계를 이 아래로 내려 보내는 데 씁니다. */
   const stickyRef = useRef<HTMLDivElement>(null)
+  const [linkCopied, setLinkCopied] = useState<'idle' | 'copied' | 'failed'>('idle')
+
+  async function copyPageLink() {
+    try {
+      await navigator.clipboard.writeText(window.location.href)
+      setLinkCopied('copied')
+    } catch {
+      setLinkCopied('failed')
+    }
+  }
 
   useEffect(() => {
     if (previewRequested) return
@@ -290,7 +300,22 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
             <Button disabled={active >= recipe.wiring.length - 1} onClick={() => machine.setActiveStep(active + 1)}>다음</Button>
           </div>
         </div>
-        {machine.completed && <aside className="mt-6 rounded-card border border-success bg-success-background p-5"><h3 className="font-semibold text-success">배선 완료 → 이제 코드를 실행할 차례예요</h3><p className="mt-2">PC에서 이 페이지를 열고 아래 코드를 Arduino IDE에 복사하세요.</p><Button className="mt-3" variant="outline" onClick={() => void navigator.clipboard?.writeText(window.location.href)}>페이지 주소 복사</Button></aside>}
+        {machine.completed && (
+          <aside className="mt-6 rounded-card border border-success bg-success-background p-5">
+            <h3 className="font-semibold text-success">배선 완료 → 이제 코드를 실행할 차례예요</h3>
+            <p className="mt-2">PC에서 이 페이지를 열고 아래 코드를 Arduino IDE에 복사하세요.</p>
+            <Button className="mt-3" variant="outline" onClick={() => void copyPageLink()}>
+              {linkCopied === 'copied' ? '주소 복사됨' : linkCopied === 'failed' ? '복사 실패' : '페이지 주소 복사'}
+            </Button>
+            {/* 눌러도 아무 표시가 없으면 학생은 눌린 것인지 알 수 없어 계속 다시 누릅니다. */}
+            <span className="sr-only" aria-live="polite">
+              {linkCopied === 'copied' ? '페이지 주소가 클립보드에 복사되었습니다.' : ''}
+            </span>
+            {linkCopied === 'failed' && (
+              <p className="mt-2 text-caption">이 브라우저에서는 복사할 수 없습니다. 주소 표시줄의 주소를 직접 옮겨 적으세요.</p>
+            )}
+          </aside>
+        )}
       </section>
 
       <section className="mt-12" aria-labelledby="code-title"><h2 id="code-title" className="text-2xl font-semibold">2. 코드 넣기</h2><div className="mt-4 overflow-hidden rounded-card border border-border"><CodeBlock code={recipe.sketch} tunables={recipe.tunables} /></div></section>

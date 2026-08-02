@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import '@testing-library/jest-dom/vitest'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { CodeBlock } from './CodeBlock'
 import { SafeMarkdown } from './SafeMarkdown'
@@ -15,6 +15,40 @@ describe('student content components', () => {
     expect(screen.queryByText(/@pin|@baud|@tunable/)).toBeNull()
     await userEvent.click(screen.getByRole('button', { name: '코드 복사' }))
     expect(writeText).toHaveBeenCalledWith('int delayMs=10;')
+  })
+
+  /**
+   * 예전에는 `복사됨`이 한 번 뜨면 그대로 굳었습니다. 코드를 고쳐 다시 복사할 때
+   * 눌렸는지 알 길이 없었습니다.
+   */
+  it('returns the copy button to its name so the next copy still gives an answer', async () => {
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: vi.fn().mockResolvedValue(undefined) },
+    })
+    render(<CodeBlock code={'int a=1;'} />)
+
+    await userEvent.click(screen.getByRole('button', { name: '코드 복사' }))
+    expect(screen.getByRole('button', { name: '복사됨' })).toBeInTheDocument()
+
+    await waitFor(
+      () => expect(screen.getByRole('button', { name: '코드 복사' })).toBeInTheDocument(),
+      { timeout: 4000 },
+    )
+  }, 10_000)
+
+  /** 클립보드를 막아 둔 브라우저에서 아무 일도 없던 것처럼 보이면 안 됩니다. */
+  it('says so and offers a way out when the browser refuses the clipboard', async () => {
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: vi.fn().mockRejectedValue(new Error('denied')) },
+    })
+    render(<CodeBlock code={'int a=1;'} />)
+
+    await userEvent.click(screen.getByRole('button', { name: '코드 복사' }))
+
+    expect(screen.getByRole('button', { name: '복사 실패' })).toBeInTheDocument()
+    expect(screen.getByText(/직접 선택해 복사하세요/)).toBeInTheDocument()
   })
 
   it('syntax-highlights Arduino code without changing its text', () => {
