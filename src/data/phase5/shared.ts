@@ -76,7 +76,11 @@ export function oneWireConnections(instances: string[]): Connection[] {
     from: `${instances[0]}.DATA`,
     to: 'UNO.D2',
     color: 'green',
-    text: `모든 DS18B20 DATA를 D2에 함께 연결하세요.`,
+    // 센서가 하나뿐인 레시피에 "모든 DS18B20"이라고 적으면, 봉투에 하나만 들어
+    // 있는 학생은 나머지를 어디서 찾아야 하는지부터 헤맵니다.
+    text: instances.length > 1
+      ? 'DS18B20 DATA는 모두 한 선을 함께 씁니다. 첫 번째 DATA를 D2에 연결하세요.'
+      : 'DS18B20 DATA를 D2에 연결하세요.',
   })
   for (const instance of instances.slice(1)) {
     connections.push({

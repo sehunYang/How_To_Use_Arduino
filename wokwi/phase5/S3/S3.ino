@@ -9,8 +9,11 @@ void setup() {
   Serial.begin(9600);
   Serial.println("# PHASE5_READY:S3");
   pinMode(PIR_PIN, INPUT);
-  delay(30000);
+  // 안정화되는 30초 동안 화면이 비어 있으면 고장으로 오해합니다.
+  // 헤더와 안내를 먼저 내보내고 기다립니다.
   Serial.println("time_ms,motion");
+  Serial.println("# 센서가 안정될 때까지 30초 기다립니다. 그동안 감지 범위를 비워 두세요.");
+  delay(30000);
 }
 
 void loop() {

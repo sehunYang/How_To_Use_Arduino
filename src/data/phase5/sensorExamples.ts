@@ -147,8 +147,11 @@ int holdoffMs = 250;
 void setup() {
   Serial.begin(9600);
   pinMode(PIR_PIN, INPUT);
-  delay(30000);
+  // 안정화되는 30초 동안 화면이 비어 있으면 고장으로 오해합니다.
+  // 헤더와 안내를 먼저 내보내고 기다립니다.
   Serial.println("time_ms,motion");
+  Serial.println("# 센서가 안정될 때까지 30초 기다립니다. 그동안 감지 범위를 비워 두세요.");
+  delay(30000);
 }
 
 void loop() {
@@ -377,7 +380,7 @@ export const sensorExampleRecipes: Recipe[] = [
     coreKeywords: ['MPU6050', '가속도', '기울기', '흔들림', 'I2C'],
     wiring: i2cWiring('MPU6050'),
     sketch: s1Sketch,
-    tunables: [{ anchor: 'samplingIntervalMs', name: '측정 간격', hint: '빠른 흔들림을 보려면 값을 줄이세요.' }],
+    tunables: [{ anchor: 'samplingIntervalMs', name: '측정 간격 (ms)', hint: '빠른 흔들림을 보려면 값을 줄이세요.' }],
     body: `## 기울기와 흔들림 읽기
 
 정지해 있을 때 가속도계는 중력가속도의 방향을 측정하므로 roll과 pitch를 계산할 수 있습니다. 움직이는 동안에는 운동 가속도도 함께 섞이므로 값의 빠른 변화는 흔들림으로 해석합니다.
@@ -402,7 +405,7 @@ roll은 y축과 z축 가속도의 비, pitch는 x축과 나머지 두 축의 합
       wire('HC-SR04.ECHO', 'UNO.D6', 'green', 'ECHO를 디지털 6번 핀에 연결하세요.', 3),
     ],
     sketch: s2Sketch,
-    tunables: [{ anchor: 'measurementIntervalMs', name: '측정 간격', hint: '반사파가 겹치지 않도록 너무 짧게 줄이지 마세요.' }],
+    tunables: [{ anchor: 'measurementIntervalMs', name: '측정 간격 (ms)', hint: '반사파가 겹치지 않도록 너무 짧게 줄이지 마세요.' }],
     body: `## 초음파의 왕복 시간으로 거리 구하기
 
 센서가 짧은 초음파를 보내고 반사파가 돌아오는 시간을 잽니다. 소리가 물체까지 갔다가 돌아오므로 이동 거리를 2로 나눕니다.
@@ -426,7 +429,7 @@ roll은 y축과 z축 가속도의 비, pitch는 x축과 나머지 두 축의 합
       wire('HC-SR501.OUT', 'UNO.D2', 'yellow', 'OUT을 디지털 2번 핀에 연결하세요.', 2),
     ],
     sketch: s3Sketch,
-    tunables: [{ anchor: 'holdoffMs', name: '판독 간격', hint: '출력 유지 시간을 관찰하려면 값을 조절하세요.' }],
+    tunables: [{ anchor: 'holdoffMs', name: '판독 간격 (ms)', hint: '출력 유지 시간을 관찰하려면 값을 조절하세요.' }],
     body: `## 움직이는 사람 감지하기
 
 인체 움직임 감지용 적외선(PIR) 센서는 사람 자체를 식별하지 않고, 렌즈 구역 사이에서 변하는 적외선 복사를 감지해 디지털 HIGH를 냅니다. 전원을 켠 뒤 센서가 안정화되는 시간이 필요합니다.
@@ -451,7 +454,7 @@ roll은 y축과 z축 가속도의 비, pitch는 x축과 나머지 두 축의 합
       wire('CDS_RESISTOR.2', 'UNO.GND', 'black', '분압 저항의 다른 쪽을 GND에 연결하세요.', 3),
     ],
     sketch: s4Sketch,
-    tunables: [{ anchor: 'samples', name: '평균 표본 수', hint: '늘리면 값은 안정되지만 반응은 느려집니다.' }],
+    tunables: [{ anchor: 'samples', name: '평균 표본 수 (회)', hint: '늘리면 값은 안정되지만 반응은 느려집니다.' }],
     body: `## 밝기에 따른 저항 변화 읽기
 
 CDS의 저항은 빛에 따라 변합니다. CDS와 외부 10 kΩ 저항으로 분압 회로를 만들면 아두이노가 두 저항 사이 전압을 0~1023의 숫자(ADC 값)로 변환합니다.
@@ -477,7 +480,7 @@ CDS의 저항은 빛에 따라 변합니다. CDS와 외부 10 kΩ 저항으로 �
       wire('RESISTOR_4700.2', 'UNO.5V', 'red', '4.7 kΩ 저항의 남은 다리를 5V에 연결하세요. 이 저항이 없으면 1-Wire 통신이 시작되지 않습니다.', 4),
     ],
     sketch: s5Sketch,
-    tunables: [{ anchor: 'conversionIntervalMs', name: '측정 간격', hint: '기본 12비트 변환 시간보다 충분히 길게 두세요.' }],
+    tunables: [{ anchor: 'conversionIntervalMs', name: '측정 간격 (ms)', hint: '기본 12비트 변환 시간보다 충분히 길게 두세요.' }],
     body: `## 방수 프로브로 수온 읽기
 
 DS18B20은 내부에서 온도를 디지털 값으로 바꾸고 각 센서의 고유 64비트 주소로 1-Wire 버스에서 통신합니다. 금속 프로브와 물 사이의 열평형을 기다려야 합니다.
@@ -497,7 +500,7 @@ DS18B20은 내부에서 온도를 디지털 값으로 바꾸고 각 센서의 �
     coreKeywords: ['BME280', '온도', '상대습도', '기압', 'I2C'],
     wiring: i2cWiring('BME280'),
     sketch: s6Sketch,
-    tunables: [{ anchor: 'samplingIntervalMs', name: '측정 간격', hint: '환경 변화는 느리므로 보통 1초 이상이 적절합니다.' }],
+    tunables: [{ anchor: 'samplingIntervalMs', name: '측정 간격 (ms)', hint: '환경 변화는 느리므로 보통 1000 ms 이상이 적절합니다.' }],
     body: `## 세 가지 환경량 함께 읽기
 
 BME280은 온도, 상대습도, 절대기압을 함께 측정합니다. 상대습도는 같은 수증기량에서도 온도에 따라 달라지고, 기압은 고도와 날씨 모두의 영향을 받습니다.
@@ -522,7 +525,7 @@ BME280은 온도, 상대습도, 절대기압을 함께 측정합니다. 상대�
       wire('LOAD.NEGATIVE', 'UNO.GND', 'black', '부하 음극을 공통 GND에 연결해 직렬 경로를 완성하세요.', 6),
     ],
     sketch: s7Sketch,
-    tunables: [{ anchor: 'samplingIntervalMs', name: '측정 간격', hint: '부하 변화 속도에 맞춰 조절하세요.' }],
+    tunables: [{ anchor: 'samplingIntervalMs', name: '측정 간격 (ms)', hint: '부하 변화 속도에 맞춰 조절하세요.' }],
     body: `## 부하의 전력 측정하기
 
 INA219는 전류 측정용 작은 저항(션트 저항) 양단의 전압 차로 전류를 구하고 회로 쪽 전압도 측정합니다. 전력은 같은 순간의 전압과 전류를 곱해 계산합니다.
@@ -546,7 +549,7 @@ INA219는 전류 측정용 작은 저항(션트 저항) 양단의 전압 차로 
     coreKeywords: ['TSL2591', 'lux', '조도', '적외선', 'I2C'],
     wiring: i2cWiring('TSL2591'),
     sketch: s8Sketch,
-    tunables: [{ anchor: 'samplingIntervalMs', name: '측정 간격', hint: '빛을 모아 측정하는 시간보다 길게 유지하세요.' }],
+    tunables: [{ anchor: 'samplingIntervalMs', name: '측정 간격 (ms)', hint: '빛을 모아 측정하는 시간보다 길게 유지하세요.' }],
     body: `## 넓은 범위의 조도 측정하기
 
 TSL2591은 전체광 채널과 적외선 채널을 함께 읽어 사람 눈의 감도에 가까운 lux를 계산합니다. 신호 증폭 정도와 빛을 모아 측정하는 시간은 어두운 곳의 분해능과 밝은 곳에서 측정 범위를 넘어 값이 최댓값에 머무는 현상 사이를 조절합니다.
@@ -576,7 +579,7 @@ TSL2591은 전체광 채널과 적외선 채널을 함께 읽어 사람 눈의 �
       wire('TSL2591_2.SCL', 'TCA9548A.SC1', 'yellow', '두 번째 센서 SCL을 채널 1의 SC1에 연결하세요.', 11),
     ],
     sketch: s9Sketch,
-    tunables: [{ anchor: 'channelDelayMs', name: '채널 전환 대기', hint: '적분이 끝날 시간을 확보하도록 조절하세요.' }],
+    tunables: [{ anchor: 'channelDelayMs', name: '채널 전환 대기 (ms)', hint: '적분이 끝날 시간을 확보하도록 조절하세요.' }],
     body: `## 고정 주소 센서를 채널로 분리하기
 
 TSL2591 두 개는 모두 고정 주소 0x29를 사용하므로 같은 I2C 버스에 직접 병렬 연결하면 동시에 응답합니다. TCA9548A는 한 번에 선택한 하위 채널만 상위 버스에 연결해 충돌을 막습니다.

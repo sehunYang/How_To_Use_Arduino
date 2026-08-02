@@ -28,10 +28,19 @@
       "left": 200
     },
     {
+      "id": "resistor_220",
+      "type": "wokwi-resistor",
+      "top": 0,
+      "left": 300,
+      "attrs": {
+        "value": "220"
+      }
+    },
+    {
       "id": "led",
       "type": "wokwi-led",
       "top": 0,
-      "left": 300
+      "left": 400
     }
   ],
   "connections": [
@@ -61,7 +70,7 @@
     ],
     [
       "bb:tn.9",
-      "bb:9t.a",
+      "bb:14t.a",
       "black",
       []
     ],
@@ -102,7 +111,7 @@
       []
     ],
     [
-      "led:A",
+      "resistor_220:1",
       "bb:7t.e",
       "orange",
       []
@@ -114,8 +123,26 @@
       []
     ],
     [
-      "led:C",
+      "led:A",
+      "bb:12t.e",
+      "orange",
+      []
+    ],
+    [
+      "resistor_220:2",
       "bb:9t.e",
+      "orange",
+      []
+    ],
+    [
+      "bb:12t.a",
+      "bb:9t.a",
+      "orange",
+      []
+    ],
+    [
+      "led:C",
+      "bb:14t.e",
       "black",
       []
     ]
