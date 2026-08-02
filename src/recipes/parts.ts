@@ -109,12 +109,39 @@ const PART_NOTES: Record<string, string> = {
   RELAY: '접점 쪽(COM·NO)에는 아두이노가 아니라 별도 전원을 연결합니다.',
 }
 
+/**
+ * 배선 토큰이 가리키는 재고 센서의 id. 준비물에서 센서 설명 화면으로 건너가는
+ * 데 씁니다. 토큰과 id가 글자 그대로 이어지지 않는 경우(`HC-SR04` ↔ `hc-sr04`,
+ * `CDS` ↔ 재고 이름 `CDS 조도센서`)가 있어 표로 둡니다. 표가 재고와 어긋나면
+ * 링크가 없는 화면으로 보내게 되므로 검사에서 양방향으로 맞춰 봅니다.
+ */
+const SENSOR_ID_BY_TOKEN: Record<string, string> = {
+  MPU6050: 'mpu6050',
+  BME280: 'bme280',
+  DS18B20: 'ds18b20',
+  'HC-SR04': 'hc-sr04',
+  'HC-SR501': 'hc-sr501',
+  TSL2591: 'tsl2591',
+  INA219: 'ina219',
+  TCA9548A: 'tca9548a',
+  CDS: 'cds',
+  HBE0704: 'hbe0704',
+}
+
+export function sensorIdForToken(component: string): string | undefined {
+  return SENSOR_ID_BY_TOKEN[baseToken(component)]
+}
+
+export const sensorTokens = Object.keys(SENSOR_ID_BY_TOKEN)
+
 export interface PartLine {
   /** 화면에 그대로 적는 부품 이름. */
   name: string
   /** 같은 부품을 몇 개 쓰는지. */
   count: number
   note?: string
+  /** 재고에 등록된 센서라면 그 id. 있으면 센서 설명 화면으로 이어 줍니다. */
+  sensorId?: string
 }
 
 /** 브레드보드와 아두이노 사이 두 끝이 각각 암 소켓인지 보고 점퍼선 종류를 고릅니다. */
@@ -166,6 +193,7 @@ export function partsFor(recipe: Pick<Recipe, 'wiring'>): PartsList {
     name: partLabel(base),
     count: tokens.size,
     note: PART_NOTES[base],
+    sensorId: SENSOR_ID_BY_TOKEN[base],
   }))
 
   return {

@@ -4,7 +4,15 @@ import { phase5Recipes } from '@/data/phase5'
 import { phase6Recipes } from '@/data/phase6'
 import { firstRunTroubleshooting, safetyNotice } from './firstRun'
 import { librariesFor } from './libraries'
-import { hasPartLabel, jumperWireLabel, partsFor, shortComponentLabel } from './parts'
+import { sensors } from '@/data/inventory-seed/sensors'
+import {
+  hasPartLabel,
+  jumperWireLabel,
+  partsFor,
+  sensorIdForToken,
+  sensorTokens,
+  shortComponentLabel,
+} from './parts'
 
 /**
  * 이 화면의 독자는 아두이노도, 배선도, 코딩도 처음인 학생입니다. 아래 검사는
@@ -31,6 +39,27 @@ describe('모든 레시피의 첫 실행 안내', () => {
           if (component === 'UNO' || component === 'BB') continue
           expect(hasPartLabel(component), `${recipe.id} / ${component}`).toBe(true)
         }
+      }
+    }
+  })
+
+  /**
+   * 준비물의 센서 이름은 센서 설명 화면으로 가는 링크입니다. 표가 재고와
+   * 어긋나면 링크가 사라지거나 없는 주소로 보내므로 양방향으로 맞춰 봅니다.
+   */
+  it('센서 토큰이 재고에 등록된 센서와 빠짐없이 이어진다', () => {
+    const inventoryIds = new Set(sensors.map((sensor) => sensor.id))
+    for (const token of sensorTokens) {
+      expect(inventoryIds, token).toContain(sensorIdForToken(token))
+    }
+    expect(new Set(sensorTokens.map((token) => sensorIdForToken(token)))).toEqual(inventoryIds)
+  })
+
+  it('레시피가 선언한 센서는 모두 준비물에서 링크를 받는다', () => {
+    for (const recipe of allRecipes) {
+      const linked = new Set(partsFor(recipe).specific.map((line) => line.sensorId).filter(Boolean))
+      for (const sensorId of recipe.sensors) {
+        expect(linked, `${recipe.id} / ${sensorId}`).toContain(sensorId)
       }
     }
   })

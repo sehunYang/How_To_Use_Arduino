@@ -95,6 +95,31 @@ describe('Phase 3 student flow', () => {
     expect(screen.getByText('MPU6050.SDA → UNO.A4')).toBeInTheDocument()
   })
 
+  /**
+   * 두 번째 레시피부터는 설치 안내가 이미 아는 내용입니다. 늘 펼쳐 두면 코드가
+   * 화면 밖으로 밀려나므로, 무엇이 들었는지 알 만한 요약만 남기고 접어 둡니다.
+   */
+  it('folds the setup guidance away but says what is inside', () => {
+    renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
+
+    const firstRun = screen.getByText(/아두이노가 처음이라면/)
+    expect(firstRun.closest('details')).not.toHaveAttribute('open')
+    // 요약 줄만 읽고도 무엇을 설치해야 하는지 알 수 있어야 열지 말지 고릅니다.
+    // 문제 해결 항목도 "필요한 라이브러리"를 가리키므로 요약 줄만 집어냅니다.
+    const libraries = screen.getByText(/^필요한 라이브러리 \d+개/)
+    expect(libraries).toHaveTextContent('MPU6050')
+    expect(libraries.closest('details')).not.toHaveAttribute('open')
+    // 속도는 접지 않습니다. 틀리면 깨진 기호만 나오고 단서가 없습니다.
+    expect(screen.getByText(/시리얼 모니터 속도 115200 baud/)).toBeInTheDocument()
+  })
+
+  it('sends the student from a part in the list to that sensor page', () => {
+    renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
+
+    expect(screen.getByRole('link', { name: /MPU6050 가속도·자이로 센서/ }))
+      .toHaveAttribute('href', '/sensors/mpu6050')
+  })
+
   it('shows the completion handoff after the final wiring step', async () => {
     renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
     for (const checkbox of screen.getAllByRole('checkbox')) await userEvent.click(checkbox)

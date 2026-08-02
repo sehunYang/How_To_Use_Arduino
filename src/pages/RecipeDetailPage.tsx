@@ -14,7 +14,7 @@ import { authorizeAdminPreview, loadAdminPreviewRecipe } from '@/firebase/adminP
 import { loadDynamicSearchIndex, loadPublishedRecipe } from '@/firebase/contentRepository'
 import { ARDUINO_IDE_URL, firstRunSteps, firstRunTroubleshooting, safetyNotice } from '@/recipes/firstRun'
 import { librariesFor } from '@/recipes/libraries'
-import { jumperWireLabel, partsFor, shortComponentLabel } from '@/recipes/parts'
+import { jumperWireLabel, partsFor, shortComponentLabel, type PartLine } from '@/recipes/parts'
 import type { Recipe } from '@/schema'
 import { planBreadboardWiring } from '@/wokwi/buildDiagram'
 
@@ -240,11 +240,10 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
 
       <section aria-labelledby="parts-title" className="mt-8 max-w-3xl">
         <h2 id="parts-title" className="text-2xl font-semibold">1. 준비물 챙기기</h2>
-        <p className="mt-3 text-caption text-muted">아래 배선 단계에 나오는 부품을 모두 모아 놓고 시작하세요. 중간에 하나가 없으면 배선을 다시 뜯어야 합니다.</p>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <PartsGroup title="어떤 레시피든 필요한 것" lines={parts.always} />
           <PartsGroup title="이 레시피에서 쓰는 부품" lines={parts.specific} />
-          <PartsGroup title="점퍼선" lines={parts.wires} note="종류가 헷갈리면 양쪽이 모두 뾰족한 것이 수-수(MM), 한쪽이 구멍인 것이 수-암(MF)입니다." />
+          <PartsGroup title="점퍼선" lines={parts.wires} note="양쪽이 모두 뾰족한 것이 수-수(MM), 한쪽이 구멍인 것이 수-암(MF)입니다." />
         </div>
       </section>
 
@@ -332,8 +331,10 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
 
       <section className="mt-12" aria-labelledby="code-title">
         <h2 id="code-title" className="text-2xl font-semibold">3. 코드 넣기</h2>
-        <div className="mt-4 max-w-3xl rounded-card border border-border p-5">
-          <h3 className="font-semibold">아두이노가 처음이라면 이 순서대로</h3>
+        {/* 두 번째 레시피부터는 이미 아는 내용이라 늘 펼쳐 두면 코드가 화면 밖으로
+            밀려납니다. 접어 두되 요약 줄만 읽고도 열지 말지 고를 수 있게 합니다. */}
+        <details className="mt-4 max-w-3xl rounded-card border border-border p-4">
+          <summary className="cursor-pointer font-semibold">아두이노가 처음이라면 — IDE 설치부터 시리얼 모니터 열기까지</summary>
           <ol className="mt-3 space-y-3">
             {steps.map((step, index) => (
               <li key={step.title} className="grid grid-cols-[1.75rem_minmax(0,1fr)]">
@@ -349,13 +350,16 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
             아두이노 IDE 내려받는 곳:{' '}
             <a className="text-accent hover:underline" href={ARDUINO_IDE_URL} target="_blank" rel="noreferrer noopener">arduino.cc/en/software</a>
           </p>
-        </div>
+        </details>
 
-        <div className="mt-4 max-w-3xl rounded-card border border-border p-5">
-          <h3 className="font-semibold">필요한 라이브러리</h3>
-          {libraries.install.length === 0 ? (
-            <p className="mt-2 text-caption text-muted">따로 설치할 것이 없습니다. 코드를 붙여 넣고 바로 업로드하세요.</p>
-          ) : (
+        {/* 설치할 것이 없으면 절 자체를 내보내지 않습니다. "없습니다"라는 줄은
+            학생이 읽고 나서 할 일이 없는 문장입니다. 이름은 요약 줄에 적어 두어
+            이미 설치한 학생은 열지 않고도 넘어갈 수 있게 합니다. */}
+        {libraries.install.length > 0 && (
+          <details className="mt-4 max-w-3xl rounded-card border border-border p-4">
+            <summary className="cursor-pointer font-semibold">
+              필요한 라이브러리 {libraries.install.length}개 — {libraries.install.map((library) => library.search).join(', ')}
+            </summary>
             <ul className="mt-3 space-y-3">
               {libraries.install.map((library) => (
                 <li key={library.header}>
@@ -366,22 +370,22 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
                 </li>
               ))}
             </ul>
-          )}
-          {libraries.builtin.length > 0 && (
-            <p className="mt-3 text-caption text-muted">
-              아두이노 IDE에 이미 들어 있어 설치하지 않아도 되는 것: <code>{libraries.builtin.join(', ')}</code>
-            </p>
-          )}
-        </div>
+            {libraries.builtin.length > 0 && (
+              <p className="mt-3 text-caption text-muted">
+                아두이노 IDE에 이미 들어 있어 설치하지 않아도 되는 것: <code>{libraries.builtin.join(', ')}</code>
+              </p>
+            )}
+          </details>
+        )}
 
-        {/* 속도를 맞추지 않으면 시리얼 모니터에 깨진 기호만 나옵니다. 그동안 이 값은
-            일부 레시피의 측정 방법 문장 안에만 묻혀 있었고 나머지는 아예 없었습니다. */}
-        <aside className="mt-4 max-w-3xl rounded-card border border-accent bg-muted-background p-4">
-          <strong>시리얼 모니터 속도: {recipe.baudRate} baud</strong>
-          <p className="mt-1 text-caption">업로드가 끝나면 [도구] → [시리얼 모니터]를 열고 창 오른쪽 아래 속도를 이 값으로 맞추세요.</p>
-        </aside>
+        {/* 속도만은 접지 않습니다. 맞추지 않으면 시리얼 모니터에 깨진 기호만 나오고,
+            학생은 무엇이 잘못됐는지 짐작할 단서를 얻지 못합니다. */}
+        <p className="mt-4 max-w-3xl text-caption">
+          <strong>시리얼 모니터 속도 {recipe.baudRate} baud</strong>
+          <span className="text-muted"> · 업로드 뒤 [도구] → [시리얼 모니터]를 열고 오른쪽 아래에서 맞추세요.</span>
+        </p>
 
-        <div className="mt-4 overflow-hidden rounded-card border border-border"><CodeBlock code={recipe.sketch} tunables={recipe.tunables} /></div>
+        <div className="mt-3 overflow-hidden rounded-card border border-border"><CodeBlock code={recipe.sketch} tunables={recipe.tunables} /></div>
       </section>
       <section className="prose mt-12 max-w-3xl" aria-labelledby="guide-title"><h2 id="guide-title" className="text-2xl font-semibold">4. 탐구 가이드</h2><SafeMarkdown source={recipe.body} /></section>
       <section className="mt-12 max-w-3xl" aria-labelledby="record-title">
@@ -395,7 +399,7 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
   )
 }
 
-function PartsGroup({ title, lines, note }: { title: string; lines: Array<{ name: string; count: number; note?: string }>; note?: string }) {
+function PartsGroup({ title, lines, note }: { title: string; lines: PartLine[]; note?: string }) {
   if (!lines.length) return null
   return (
     <div className="rounded-card border border-border p-4">
@@ -403,7 +407,12 @@ function PartsGroup({ title, lines, note }: { title: string; lines: Array<{ name
       <ul className="mt-2 space-y-2">
         {lines.map((line) => (
           <li key={line.name}>
-            {line.name} <span className="text-muted">{line.count}개</span>
+            {/* 등록된 센서는 이름 자체를 설명 화면으로 가는 문이 되게 합니다.
+                무엇을 재는 물건인지 모른 채 부품만 챙기게 두지 않기 위해서입니다. */}
+            {line.sensorId
+              ? <Link className="text-accent hover:underline" to={`/sensors/${line.sensorId}`}>{line.name}</Link>
+              : line.name}
+            {' '}<span className="text-muted">{line.count}개</span>
             {line.note && <span className="mt-1 block text-caption text-muted">{line.note}</span>}
           </li>
         ))}
