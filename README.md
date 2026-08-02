@@ -11,7 +11,7 @@
 | 아이디어 찾기 (`/`) | 탐구 문장으로 센서와 레시피 검색 |
 | 레시피 둘러보기 (`/recipes`) | 준비물·단계별 배선도·코드·바꿔 볼 값 |
 | 센서 학습하기 (`/sensors`) | 측정 물리량, 출력 방식, 배선 주의점 |
-| 데이터 변환·분석 (`/data-analysis`) | CSV 저장, 요약 통계, 회귀 분석, 반복 실험 상자그림, 그래프 PNG 저장 |
+| 데이터 변환·분석 (`/data-analysis`) | 기본은 붙여넣기 → 요약 통계 → 그래프 → 회귀 → CSV·PNG 저장. 고급으로 바꾸면 구간 자르기, 조건 값 열·계산 열 더하기(로그·삼각함수·차분·누적·이동평균), 계열 나누기와 열로 펼치기, 격자 표 |
 
 - 요구사항 명세: [`.omc/specs/deep-interview-how-to-use-arduino.md`](.omc/specs/deep-interview-how-to-use-arduino.md) (모호도 4.9%, 인수 조건 44건)
 - 구현 계획: [`.omc/plans/how-to-use-arduino-implementation.md`](.omc/plans/how-to-use-arduino-implementation.md) (Revision 3.1, 합의 검토 완료)
