@@ -160,6 +160,8 @@ export interface WokwiAuxiliaryPart {
     pinMap: Record<string, string>
     simSupported: false
     aliases: string[]
+    /** Fixed Wokwi part attributes such as a resistor's ohm value (see `partAttrs`). */
+    attrs?: Record<string, string>
   }
 }
 
