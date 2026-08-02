@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { studentRecipes } from '@/data/studentCatalog'
 import { phase5Recipes } from '@/data/phase5'
 import { phase6Recipes } from '@/data/phase6'
+import { phase7Recipes } from '@/data/phase7'
 import { firstRunTroubleshooting, safetyNotice } from './firstRun'
 import { librariesFor } from './libraries'
 import { sensors } from '@/data/inventory-seed/sensors'
@@ -20,7 +21,7 @@ import {
  * 막히는 자리를 메우고 있는지를 봅니다. 새 레시피를 넣을 때 준비물이나 설치할
  * 라이브러리를 빠뜨리면 여기서 걸립니다.
  */
-const allRecipes = [...studentRecipes, ...phase5Recipes, ...phase6Recipes]
+const allRecipes = [...studentRecipes, ...phase5Recipes, ...phase6Recipes, ...phase7Recipes]
 
 describe('모든 레시피의 첫 실행 안내', () => {
   it('부품 목록을 배선에서 끌어내 빈 목록을 남기지 않는다', () => {

@@ -46,6 +46,10 @@ const LIBRARY_BY_HEADER: Record<string, Omit<SketchLibrary, 'header'>> = {
     note: 'OneWire 라이브러리도 함께 있어야 동작합니다.',
   },
   'TCA9548A.h': { search: 'TCA9548A' },
+  'LiquidCrystal_I2C.h': {
+    search: 'LiquidCrystal I2C',
+    note: 'Frank de Brabander가 올린 것을 고르세요. 화면에 글자가 안 보이면 코드의 주소를 0x27과 0x3F로 번갈아 시험합니다.',
+  },
 }
 
 export interface SketchDependencies {

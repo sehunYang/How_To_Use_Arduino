@@ -2,8 +2,9 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import { phase5Recipes } from '../src/data/phase5'
 import { phase6Recipes } from '../src/data/phase6'
+import { phase7Recipes } from '../src/data/phase7'
 
-const bundledRecipes = [...phase5Recipes, ...phase6Recipes]
+const bundledRecipes = [...phase5Recipes, ...phase6Recipes, ...phase7Recipes]
 
 function escapeXml(value: string): string {
   return value
@@ -36,4 +37,4 @@ await mkdir('public/wiring', { recursive: true })
 for (const recipe of bundledRecipes) {
   await writeFile(`public/${recipe.imageUrl}`, svgFor(recipe), 'utf8')
 }
-console.log(`Generated ${bundledRecipes.length} Phase 5/6 wiring SVG files.`)
+console.log(`Generated ${bundledRecipes.length} Phase 5/6/7 wiring SVG files.`)

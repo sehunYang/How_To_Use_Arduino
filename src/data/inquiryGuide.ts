@@ -215,6 +215,9 @@ function sensorBridge(recipe: Recipe, plan: ExperimentPlan): string {
   const names = recipe.sensors
     .map((id) => sensorProfileById.get(id)?.id.toUpperCase() ?? id.toUpperCase())
     .join(', ')
+  // 출력 장치 예제처럼 센서를 쓰지 않는 레시피는 이 절을 아예 내지 않습니다.
+  // 빈 이름으로 "쓰는 센서는 입니다" 같은 문장을 내보내지 않기 위해서입니다.
+  if (!recipe.sensors.length) return ''
   const measured = quantities.length ? quantities.join(', ') : '측정값'
   const reading = plan === 'condition-comparison'
     ? '조건을 한 번에 하나씩만 바꾸고, 값이 어느 쪽으로 얼마나 달라지는지 견줍니다.'

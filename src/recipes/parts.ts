@@ -54,6 +54,7 @@ const COMPONENT_LABELS: Record<string, string> = {
   DRIVER: 'DC모터 드라이버',
   FAN: '5V 소형 팬',
   RELAY: '릴레이 모듈',
+  LCD: 'LCD1602 화면 (I2C 변환 보드 포함)',
   PANEL: '태양광 패널',
   CAPACITOR: '커패시터',
   // 부하는 레시피마다 다릅니다. 태양광 레시피는 수십 Ω 저항을, 전류 예제는

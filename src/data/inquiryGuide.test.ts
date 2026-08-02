@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { ina219CurrentRecipe, multiTsl2591Recipe, pendulumRecipe } from '@/data/canary'
 import { phase5Recipes } from '@/data/phase5'
 import { phase6Recipes } from '@/data/phase6'
+import { phase7Recipes } from '@/data/phase7'
 import { concepts } from '@/data/inquiry/concepts'
 import { findCsvHeader } from '@/data/inquiry/columns'
 import { formatArduinoCode } from '@/lib/formatArduinoCode'
@@ -9,7 +10,7 @@ import { inquiryPlans } from '@/data/inquiry/plans'
 import { isStatement } from '@/data/inquiryGuide'
 
 const canaryRecipes = [pendulumRecipe, multiTsl2591Recipe, ina219CurrentRecipe]
-const allRecipes = [...canaryRecipes, ...phase5Recipes, ...phase6Recipes]
+const allRecipes = [...canaryRecipes, ...phase5Recipes, ...phase6Recipes, ...phase7Recipes]
 
 function recipe(id: string) {
   const found = allRecipes.find((candidate) => candidate.id === id)

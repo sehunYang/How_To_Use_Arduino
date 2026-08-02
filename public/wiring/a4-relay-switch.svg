@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="800" viewBox="0 0 1100 800">
+<rect width="100%" height="100%" fill="#f3f6fa"/>
+<text x="30" y="585" font-family="sans-serif" font-size="14" fill="#172033">릴레이로 별도 전원 장치 켜기 · 배선 단계 카드</text>
+<g>
+  <rect x="30" y="30" width="165" height="78" rx="8" fill="#ffffff" stroke="orange" stroke-width="4"/>
+  <text x="40" y="55" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">1. RELAY.IN → UNO.D7</text>
+  <text x="40" y="77" font-family="sans-serif" font-size="11" fill="#455064">릴레이 모듈의 IN을 D7에 연결하세요.</text>
+</g>
+<g>
+  <rect x="220" y="30" width="165" height="78" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
+  <text x="230" y="55" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">2. RELAY.VCC → UNO.5V</text>
+  <text x="230" y="77" font-family="sans-serif" font-size="11" fill="#455064">릴레이 모듈의 VCC를 아두이노 5V에 연결</text>
+</g>
+<g>
+  <rect x="410" y="30" width="165" height="78" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
+  <text x="420" y="55" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">3. RELAY.GND → UNO.GND</text>
+  <text x="420" y="77" font-family="sans-serif" font-size="11" fill="#455064">릴레이 모듈의 GND를 아두이노 GND에 연</text>
+</g>
+<g>
+  <rect x="600" y="30" width="165" height="78" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
+  <text x="610" y="55" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">4. FAN_SUPPLY.+ → RELAY.COM</text>
+  <text x="610" y="77" font-family="sans-serif" font-size="11" fill="#455064">팬 정격에 맞는 별도 5V 전원의 + 단자를</text>
+</g>
+<g>
+  <rect x="790" y="30" width="165" height="78" rx="8" fill="#ffffff" stroke="purple" stroke-width="4"/>
+  <text x="800" y="55" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">5. RELAY.NO → FAN.POSITIVE</text>
+  <text x="800" y="77" font-family="sans-serif" font-size="11" fill="#455064">릴레이 NO를 팬의 + 선에 연결하세요. 릴</text>
+</g>
+<g>
+  <rect x="30" y="135" width="165" height="78" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
+  <text x="40" y="160" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">6. FAN.NEGATIVE → FAN_SUPPLY.-</text>
+  <text x="40" y="182" font-family="sans-serif" font-size="11" fill="#455064">팬의 - 선을 별도 전원의 - 단자에 연결해</text>
+</g>
+</svg>

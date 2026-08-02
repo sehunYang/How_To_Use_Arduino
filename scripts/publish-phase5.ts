@@ -13,6 +13,7 @@ import 'firebase/compat/firestore'
 import { recipeVerifyHash, validatePublish } from '../src/admin/authoring'
 import { phase5Recipes } from '../src/data/phase5'
 import { phase6Recipes } from '../src/data/phase6'
+import { phase7Recipes } from '../src/data/phase7'
 import { actuators } from '../src/data/inventory-seed/actuators'
 import { sensors } from '../src/data/inventory-seed/sensors'
 import { createCiAppCheckProvider } from '../src/firebase/ciAppCheckProvider'
@@ -22,10 +23,11 @@ import type { Recipe, SearchIndexEntry, SimStatus } from '../src/schema'
 
 const SIMULATION_UNSUPPORTED = new Set(['S9', 'e5-spatial-light-map'])
 const publishingPhase6 = process.argv.includes('--phase6')
-const phaseLabel = publishingPhase6 ? 'Phase 6' : 'Phase 5'
-const versionPrefix = publishingPhase6 ? 'phase6' : 'phase5'
-const sourceRecipes = publishingPhase6 ? phase6Recipes : phase5Recipes
-const expectedCount = publishingPhase6 ? 41 : 34
+const publishingPhase7 = process.argv.includes('--phase7')
+const phaseLabel = publishingPhase7 ? 'Phase 7' : publishingPhase6 ? 'Phase 6' : 'Phase 5'
+const versionPrefix = publishingPhase7 ? 'phase7' : publishingPhase6 ? 'phase6' : 'phase5'
+const sourceRecipes = publishingPhase7 ? phase7Recipes : publishingPhase6 ? phase6Recipes : phase5Recipes
+const expectedCount = publishingPhase7 ? 6 : publishingPhase6 ? 41 : 34
 
 function required(name: string): string {
   const value = process.env[name]?.trim()
@@ -179,7 +181,7 @@ async function main(): Promise<void> {
       // Phase 6 has compile and static/netlist evidence but has not yet been
       // executed as a generated Wokwi project. Record that distinction
       // honestly instead of manufacturing a simulation pass.
-      simPass: publishingPhase6 || SIMULATION_UNSUPPORTED.has(recipe.id) ? null : true,
+      simPass: publishingPhase6 || publishingPhase7 || SIMULATION_UNSUPPORTED.has(recipe.id) ? null : true,
       logicPass: true,
       staticIssues: [],
       verifiedAt: reviewedAt,
