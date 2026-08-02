@@ -12,12 +12,26 @@
 | 레시피 둘러보기 (`/recipes`) | 준비물·단계별 배선도·코드·바꿔 볼 값 |
 | 레시피 상세 (`/recipes/:id`) | 준비물 → 배선 → 코드 넣기 → 탐구 가이드 → 측정값 분석 순서 |
 | 센서 학습하기 (`/sensors`) | 측정 물리량, 출력 방식, 배선 주의점 |
-| 데이터 변환·분석 (`/data-analysis`) | 기본은 붙여넣기 → 요약 통계 → 그래프 → 회귀 → CSV·PNG 저장. 고급으로 바꾸면 구간 자르기, 조건 값 열·계산 열 더하기(로그·삼각함수·차분·누적·이동평균), 계열 나누기와 열로 펼치기, 격자 표 |
+| 데이터 변환·분석 (`/data-analysis`) | 기본은 붙여넣기 → 요약 통계 → 그래프(상자그림 또는 평균±표준편차 오차막대) → 회귀 → CSV·PNG 저장. 고급으로 바꾸면 구간 자르기, 조건 값 열·계산 열 더하기(로그·삼각함수·차분·누적·이동평균), 계열 나누기와 열로 펼치기, 격자 표 |
 
 레시피 상세 화면의 준비물·설치할 라이브러리·시리얼 모니터 속도·첫 실행 문제 해결은 레시피마다 손으로 적지 않고
 [`src/recipes/`](src/recipes/)에서 배선과 스케치를 읽어 만듭니다. 손으로 적은 목록은 배선이나 `#include`를 고칠 때
 같이 고쳐지지 않고 조용히 어긋나기 때문입니다. 새 부품이나 새 라이브러리를 쓰는 레시피가 목록에서 빠지면
 `src/recipes/beginnerFlow.test.ts`가 잡아냅니다.
+
+같은 자리에서 만드는 것이 더 있습니다. 아두이노도 배선도 코딩도 처음인 학생이 **화면 밖에서** 멈추던 자리들이라,
+모두 레시피 데이터에서 끌어내 모든 레시피가 빠짐없이 받도록 했습니다. 검사는 `src/recipes/beginnerHelp.test.ts`입니다.
+
+| 무엇 | 어디서 만드나 | 왜 |
+|---|---|---|
+| 저항 색띠 그림 | [`resistorBands.ts`](src/recipes/resistorBands.ts) — 저항값에서 계산 | `4.7 kΩ 저항`이라고 적어 줘도 저항에는 값이 인쇄되어 있지 않아 서랍에서 고를 수 없습니다 |
+| 브레드보드 연결 안내 | [`firstRun.ts`](src/recipes/firstRun.ts) + [`BreadboardMap.tsx`](src/components/BreadboardMap.tsx) | 한 칸 밀려 꽂아도 화면은 그대로 넘어갑니다. 되짚으려면 어떤 구멍이 이어져 있는지를 알아야 합니다 |
+| 전원 넣기 전 최종 점검 | [`powerCheck.ts`](src/recipes/powerCheck.ts) — 배선 끝점에서 | 체크 상자는 "꽂았는가"만 묻고 "맞게 꽂았는가"는 묻지 않습니다 |
+| 처음 나온 값 점검표 | [`firstReading.ts`](src/recipes/firstReading.ts) — 센서별 | `-127.00`처럼 고장났을 때만 나오는 값을 정상으로 알고 한 시간을 헛측정합니다 |
+| 코드가 하는 일 요약 | [`sketchSummary.ts`](src/recipes/sketchSummary.ts) — 스케치에서 | 코딩이 처음이면 스케치는 복사할 덩어리일 뿐이라 노란 줄을 바꿔도 무엇이 달라지는지 모릅니다 |
+| 용어 뜻 | [`glossary.ts`](src/recipes/glossary.ts) — 이 레시피에 나온 말만 | `VCC`·`SDA`를 뜻도 모른 채 모양만 맞춰 꽂으면 값이 이상할 때 의심할 곳을 고를 수 없습니다 |
+| 차시 나누기·도움 요청 카드 | [`classroom.ts`](src/recipes/classroom.ts) | 수업은 45분에 끊기고, "안 돼요"라는 말만으로는 선생님도 처음부터 다시 짚어야 합니다 |
+| 시뮬레이터용 파일 | [`studentSimulation.ts`](src/wokwi/studentSimulation.ts) | 부품이 없어도 예습할 수 있게. 커스텀 칩이 필요한 레시피에는 **내주지 않습니다**(111개 중 59개) |
 
 - 요구사항 명세: [`.omc/specs/deep-interview-how-to-use-arduino.md`](.omc/specs/deep-interview-how-to-use-arduino.md) (모호도 4.9%, 인수 조건 44건)
 - 구현 계획: [`.omc/plans/how-to-use-arduino-implementation.md`](.omc/plans/how-to-use-arduino-implementation.md) (Revision 3.1, 합의 검토 완료)
