@@ -12,6 +12,9 @@ import { loadProgress, PROGRESS_VERSION, saveProgress } from '@/progress'
 import { sendAnonymousEvent } from '@/telemetry/events'
 import { authorizeAdminPreview, loadAdminPreviewRecipe } from '@/firebase/adminPreview'
 import { loadDynamicSearchIndex, loadPublishedRecipe } from '@/firebase/contentRepository'
+import { ARDUINO_IDE_URL, firstRunSteps, firstRunTroubleshooting, safetyNotice } from '@/recipes/firstRun'
+import { librariesFor } from '@/recipes/libraries'
+import { jumperWireLabel, partsFor, shortComponentLabel } from '@/recipes/parts'
 import type { Recipe } from '@/schema'
 import { planBreadboardWiring } from '@/wokwi/buildDiagram'
 
@@ -35,30 +38,13 @@ function scrollWindowBy(top: number) {
   window.scrollBy({ top, behavior: reduce ? 'auto' : 'smooth' })
 }
 
-function jumperWireLabel(from: string, to: string): string {
-  const endpoints = [from, to].map((endpoint) => endpoint.split('.')[0].toUpperCase())
-  const femaleSocketCount = endpoints.filter(
-    (endpoint) => endpoint === 'UNO' || endpoint === 'BB' || endpoint.includes('BREADBOARD'),
-  ).length
-  if (femaleSocketCount === 2) return '수-수(MM) 점퍼선'
-  if (femaleSocketCount === 1) return '수-암(MF) 점퍼선'
-  return '암-암(FF) 점퍼선'
-}
-
 function EndpointLabel({ value }: { value: string }) {
   const separator = value.indexOf('.')
   const component = separator === -1 ? value : value.slice(0, separator)
   const pin = separator === -1 ? '' : value.slice(separator + 1)
-  const componentLabel = component.startsWith('CDS_RESISTOR')
-    ? '10 kΩ 저항'
-    : /^RESISTOR_(\d+)$/.test(component)
-      ? `${Number(component.match(/\d+/)?.[0]) >= 1000 ? `${Number(component.match(/\d+/)?.[0]) / 1000} kΩ` : `${component.match(/\d+/)?.[0]} Ω`} 저항`
-    : component === 'LOAD' || component === 'LAMP'
-      ? '220 Ω 저항'
-      : component
   return (
     <span data-wiring-endpoint={value}>
-      <span className="text-syntax-type">{componentLabel}</span>
+      <span className="text-syntax-type">{shortComponentLabel(component)}</span>
       {pin && <><span className="text-syntax-operator">.</span><span className="text-syntax-property">{pin}</span></>}
     </span>
   )
@@ -221,6 +207,18 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
   const activeRecipe = recipe
   const active = machine.activeStep ?? 0
   const plannedWiring = planBreadboardWiring(recipe)
+  const parts = partsFor(recipe)
+  const safety = safetyNotice(recipe.body)
+  const libraries = librariesFor(recipe.sketch)
+  const steps = firstRunSteps(libraries.install.length > 0)
+  // 레시피가 쓴 증상을 먼저 보여 주고, 어느 레시피에서나 똑같이 겪는 첫 실행
+  // 문제를 뒤에 붙입니다. 같은 증상을 이미 적어 둔 레시피는 그것을 남깁니다.
+  const troubleshooting = [
+    ...recipe.troubleshooting,
+    ...firstRunTroubleshooting(recipe.baudRate).filter(
+      (item) => !recipe.troubleshooting.some((authored) => authored.symptom === item.symptom),
+    ),
+  ]
   function toggleStep(index: number, checked: boolean) {
     if (checked) machine.checkStep(index)
     else machine.uncheckStep(index)
@@ -240,8 +238,23 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
         <h1 className="mt-3 text-4xl font-semibold">{recipe.title}</h1>
       </header>
 
-      <section aria-labelledby="wiring-title" className="mt-8">
-        <h2 id="wiring-title" className="text-2xl font-semibold">1. 배선하기</h2>
+      <section aria-labelledby="parts-title" className="mt-8 max-w-3xl">
+        <h2 id="parts-title" className="text-2xl font-semibold">1. 준비물 챙기기</h2>
+        <p className="mt-3 text-caption text-muted">아래 배선 단계에 나오는 부품을 모두 모아 놓고 시작하세요. 중간에 하나가 없으면 배선을 다시 뜯어야 합니다.</p>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <PartsGroup title="어떤 레시피든 필요한 것" lines={parts.always} />
+          <PartsGroup title="이 레시피에서 쓰는 부품" lines={parts.specific} />
+          <PartsGroup title="점퍼선" lines={parts.wires} note="종류가 헷갈리면 양쪽이 모두 뾰족한 것이 수-수(MM), 한쪽이 구멍인 것이 수-암(MF)입니다." />
+        </div>
+      </section>
+
+      <section aria-labelledby="wiring-title" className="mt-12">
+        <h2 id="wiring-title" className="text-2xl font-semibold">2. 배선하기</h2>
+        {/* 안전 안내는 꽂기 전에 읽어야 뜻이 있습니다. 본문 안에 두면 다 꽂은 뒤에 만납니다. */}
+        <aside className="mt-4 rounded-card border border-warning bg-warning-background p-4">
+          <strong className="text-warning">꽂기 전에 읽으세요</strong>
+          <p className="mt-1 text-caption">{safety}</p>
+        </aside>
         <div data-testid="wiring-layout" className="mt-5 min-w-0 space-y-6">
           <div ref={stickyRef} className="sticky top-16 z-20 w-full bg-background pb-2 lg:top-20"><WiringIllustration recipe={recipe} activeStep={active} /></div>
           <ol data-testid="wiring-steps" className="min-w-0 space-y-3">
@@ -317,10 +330,85 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
         )}
       </section>
 
-      <section className="mt-12" aria-labelledby="code-title"><h2 id="code-title" className="text-2xl font-semibold">2. 코드 넣기</h2><div className="mt-4 overflow-hidden rounded-card border border-border"><CodeBlock code={recipe.sketch} tunables={recipe.tunables} /></div></section>
-      <section className="prose mt-12 max-w-3xl" aria-labelledby="guide-title"><h2 id="guide-title" className="text-2xl font-semibold">3. 탐구 가이드</h2><SafeMarkdown source={recipe.body} /></section>
+      <section className="mt-12" aria-labelledby="code-title">
+        <h2 id="code-title" className="text-2xl font-semibold">3. 코드 넣기</h2>
+        <div className="mt-4 max-w-3xl rounded-card border border-border p-5">
+          <h3 className="font-semibold">아두이노가 처음이라면 이 순서대로</h3>
+          <ol className="mt-3 space-y-3">
+            {steps.map((step, index) => (
+              <li key={step.title} className="grid grid-cols-[1.75rem_minmax(0,1fr)]">
+                <span aria-hidden="true" className="font-semibold text-muted">{index + 1}.</span>
+                <span>
+                  <strong>{step.title}</strong>
+                  <span className="mt-1 block text-caption text-muted">{step.detail}</span>
+                </span>
+              </li>
+            ))}
+          </ol>
+          <p className="mt-4 text-caption">
+            아두이노 IDE 내려받는 곳:{' '}
+            <a className="text-accent hover:underline" href={ARDUINO_IDE_URL} target="_blank" rel="noreferrer noopener">arduino.cc/en/software</a>
+          </p>
+        </div>
+
+        <div className="mt-4 max-w-3xl rounded-card border border-border p-5">
+          <h3 className="font-semibold">필요한 라이브러리</h3>
+          {libraries.install.length === 0 ? (
+            <p className="mt-2 text-caption text-muted">따로 설치할 것이 없습니다. 코드를 붙여 넣고 바로 업로드하세요.</p>
+          ) : (
+            <ul className="mt-3 space-y-3">
+              {libraries.install.map((library) => (
+                <li key={library.header}>
+                  <strong>[도구] → [라이브러리 관리]에서 <code className="text-syntax-string">{library.search}</code> 검색</strong>
+                  <span className="mt-1 block text-caption text-muted">
+                    코드의 <code>{library.header}</code> 줄이 이 라이브러리를 부릅니다.{library.note ? ` ${library.note}` : ''}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+          {libraries.builtin.length > 0 && (
+            <p className="mt-3 text-caption text-muted">
+              아두이노 IDE에 이미 들어 있어 설치하지 않아도 되는 것: <code>{libraries.builtin.join(', ')}</code>
+            </p>
+          )}
+        </div>
+
+        {/* 속도를 맞추지 않으면 시리얼 모니터에 깨진 기호만 나옵니다. 그동안 이 값은
+            일부 레시피의 측정 방법 문장 안에만 묻혀 있었고 나머지는 아예 없었습니다. */}
+        <aside className="mt-4 max-w-3xl rounded-card border border-accent bg-muted-background p-4">
+          <strong>시리얼 모니터 속도: {recipe.baudRate} baud</strong>
+          <p className="mt-1 text-caption">업로드가 끝나면 [도구] → [시리얼 모니터]를 열고 창 오른쪽 아래 속도를 이 값으로 맞추세요.</p>
+        </aside>
+
+        <div className="mt-4 overflow-hidden rounded-card border border-border"><CodeBlock code={recipe.sketch} tunables={recipe.tunables} /></div>
+      </section>
+      <section className="prose mt-12 max-w-3xl" aria-labelledby="guide-title"><h2 id="guide-title" className="text-2xl font-semibold">4. 탐구 가이드</h2><SafeMarkdown source={recipe.body} /></section>
+      <section className="mt-12 max-w-3xl" aria-labelledby="record-title">
+        <h2 id="record-title" className="text-2xl font-semibold">5. 측정값 저장하고 분석하기</h2>
+        <p className="mt-3">시리얼 모니터에 쌓인 글을 <strong>열 이름이 적힌 첫 줄부터 끝까지</strong> 끌어서 복사한 뒤, 데이터 화면에 붙여 넣으세요. CSV 저장, 요약 통계, 그래프까지 같은 자리에서 이어집니다.</p>
+        <Link className="mt-4 inline-block text-accent hover:underline" to="/data-analysis">데이터 변환·분석 화면 열기 →</Link>
+      </section>
       <section className="mt-12 max-w-3xl" aria-labelledby="application-title"><h2 id="application-title" className="text-2xl font-semibold">응용해 보기</h2><div className="mt-3 text-muted"><SafeMarkdown source={recipe.applicationGuide} /></div></section>
-      <section className="mt-12 max-w-3xl" aria-labelledby="trouble-title"><h2 id="trouble-title" className="text-2xl font-semibold">문제가 생겼나요?</h2><div className="mt-4 space-y-3">{recipe.troubleshooting.map((item) => <details key={item.symptom} className="rounded-card border border-border p-4"><summary className="cursor-pointer font-semibold">{item.symptom}</summary><p className="mt-3 text-muted">원인: {item.cause}</p><p className="mt-2">해결: {item.fix}</p></details>)}</div></section>
+      <section className="mt-12 max-w-3xl" aria-labelledby="trouble-title"><h2 id="trouble-title" className="text-2xl font-semibold">문제가 생겼나요?</h2><div className="mt-4 space-y-3">{troubleshooting.map((item) => <details key={item.symptom} className="rounded-card border border-border p-4"><summary className="cursor-pointer font-semibold">{item.symptom}</summary><p className="mt-3 text-muted">원인: {item.cause}</p><p className="mt-2">해결: {item.fix}</p></details>)}</div></section>
     </article>
+  )
+}
+
+function PartsGroup({ title, lines, note }: { title: string; lines: Array<{ name: string; count: number; note?: string }>; note?: string }) {
+  if (!lines.length) return null
+  return (
+    <div className="rounded-card border border-border p-4">
+      <h3 className="font-semibold">{title}</h3>
+      <ul className="mt-2 space-y-2">
+        {lines.map((line) => (
+          <li key={line.name}>
+            {line.name} <span className="text-muted">{line.count}개</span>
+            {line.note && <span className="mt-1 block text-caption text-muted">{line.note}</span>}
+          </li>
+        ))}
+      </ul>
+      {note && <p className="mt-3 text-caption text-muted">{note}</p>}
+    </div>
   )
 }
