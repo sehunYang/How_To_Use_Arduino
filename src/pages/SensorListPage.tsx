@@ -57,11 +57,17 @@ export function SensorListPage() {
           </select>
         </label>
       </div>
-      <p className="mt-4 text-caption text-muted">{cards.length}개의 센서·버스 부품</p>
+      <p aria-live="polite" className="mt-4 text-caption text-muted">{cards.length}개의 센서·버스 부품</p>
+      <h2 className="sr-only">센서 목록</h2>
       <div className="mt-4 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
         {cards.map(({ sensor, profile }) => <SensorCard key={sensor.id} sensor={sensor} profile={profile} />)}
       </div>
-      {cards.length === 0 && <p className="mt-8 rounded-card border border-border p-8 text-center text-muted">조건에 맞는 센서가 없습니다.</p>}
+      {cards.length === 0 && (
+        <div className="mt-8 rounded-card border border-border p-8 text-center">
+          <p className="font-semibold">조건에 맞는 센서가 없습니다.</p>
+          <p className="mt-2 text-caption text-muted">검색어를 지우거나 출력 인터페이스를 ‘전체’로 되돌려 보세요.</p>
+        </div>
+      )}
     </div>
   )
 }

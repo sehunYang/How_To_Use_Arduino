@@ -7,6 +7,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import type { ReactNode } from 'react'
 import { SearchResultsPage } from './SearchResultsPage'
 import { RecipeDetailPage } from './RecipeDetailPage'
+import { RecipeListPage } from './RecipeListPage'
 import { progressKey } from '@/progress'
 import { WiringIllustration } from '@/components/WiringIllustration'
 import { pendulumRecipe } from '@/data/canary'
@@ -19,6 +20,8 @@ function renderAt(path: string, element: ReactNode, route = path.split('?')[0]) 
 beforeEach(() => {
   window.localStorage.clear()
   Element.prototype.scrollIntoView = vi.fn()
+  // jsdom은 스크롤을 구현하지 않아 호출마다 경고를 냅니다. 실제 실패를 가립니다.
+  window.scrollBy = vi.fn()
 })
 afterEach(cleanup)
 
@@ -30,6 +33,46 @@ describe('Phase 3 student flow', () => {
     expect(screen.getByText(/진자의 길이를 바꿔가며/)).toBeInTheDocument()
     expect(screen.getAllByRole('link', { name: /센서 자세히 보기/ }).length).toBeGreaterThan(0)
     expect(screen.getAllByText('추천 이유').length).toBeGreaterThan(0)
+  })
+
+  /**
+   * 검색은 딱 맞는 게 없으면 비슷해 보이는 것을 대신 내놓습니다. 그 사실을 말해 주지 않으면
+   * 학생은 화면에 뜬 레시피가 자기가 적은 탐구의 답이라고 믿게 됩니다.
+   */
+  it('says how many recipes matched, and how many are only near misses', () => {
+    renderAt('/search?q=zzzqqqxyz', <SearchResultsPage />, '/search')
+
+    expect(screen.getByText(/딱 맞는 레시피는 찾지 못해/)).toBeInTheDocument()
+    // 맞는 센서가 없을 때 제목만 남고 아래가 텅 빈 자리를 두지 않습니다.
+    expect(screen.queryByRole('heading', { name: '필요한 센서' })).not.toBeInTheDocument()
+  })
+
+  it('counts the recipes it actually matched', () => {
+    renderAt('/search?q=진자', <SearchResultsPage />, '/search')
+
+    expect(screen.getByText(/레시피 1개를 찾았습니다/)).toBeInTheDocument()
+  })
+
+  /** 조건을 좁혀 아무것도 남지 않으면 개수만 적힌 빈 자리가 아니라 빠져나갈 길을 줍니다. */
+  it('offers a way out when the recipe filters leave nothing', async () => {
+    renderAt('/recipes', <RecipeListPage />)
+
+    await userEvent.selectOptions(screen.getByLabelText('과목'), '생물')
+
+    expect(screen.getByText('0개의 레시피')).toBeInTheDocument()
+    expect(screen.getByText('고른 조건에 맞는 레시피가 없습니다.')).toBeInTheDocument()
+
+    await userEvent.click(screen.getAllByRole('button', { name: '필터 지우기' })[0])
+    expect(screen.queryByText('0개의 레시피')).not.toBeInTheDocument()
+  })
+
+  /** 센서 고르개의 값은 저장용 id라 학생이 부품에서 읽는 이름과 달랐습니다. */
+  it('names sensors in the filter the way the parts are labelled', () => {
+    renderAt('/recipes', <RecipeListPage />)
+
+    const options = Array.from(screen.getByLabelText('센서').querySelectorAll('option'), (option) => option.textContent)
+    expect(options).toContain('MPU6050')
+    expect(options).not.toContain('mpu6050')
   })
 
   it('advances wiring focus, persists progress, and reverses on uncheck', async () => {
