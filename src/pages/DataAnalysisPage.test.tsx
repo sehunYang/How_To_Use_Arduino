@@ -124,7 +124,29 @@ describe('DataAnalysisPage', () => {
     expect(screen.queryByRole('img')).not.toBeInTheDocument()
   })
 
-  describe('반복 실험', () => {
+  /**
+   * 붙여넣은 회차는 이 화면 안에만 있고 어디에도 저장되지 않습니다. 실수로 지웠을 때
+   * 되돌릴 수 없다면 실험을 여러 번 되풀이해 모은 값이 그대로 사라집니다.
+   */
+  it('takes the clearing back so a mistaken click does not cost the measurements', async () => {
+    const user = userEvent.setup()
+    render(<DataAnalysisPage />)
+    await paste(user, RUN_1)
+
+    await user.click(screen.getByRole('button', { name: '전체 지우기' }))
+    await user.click(screen.getByRole('button', { name: '되돌리기' }))
+
+    expect(screen.getByRole('status')).toHaveTextContent('1개 회차')
+    expect(screen.getByRole('img')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '되돌리기' })).not.toBeInTheDocument()
+  })
+
+  /**
+   * 이 묶음은 회차를 여러 번 붙여넣고 그때마다 그래프를 다시 그립니다. 한 건에 3~5초가
+   * 걸려 기본 제한 5초에 아슬아슬하게 걸쳐 있었고, 전체 테스트를 한꺼번에 돌려 기계가
+   * 바쁠 때마다 무작위로 끊겼습니다. 느린 것이지 잘못된 것이 아니므로 시간을 넉넉히 줍니다.
+   */
+  describe('반복 실험', { timeout: 30_000 }, () => {
     it('empties the box after each run so the next one can be pasted straight in', async () => {
       const user = userEvent.setup()
       render(<DataAnalysisPage />)

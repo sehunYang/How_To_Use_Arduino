@@ -85,6 +85,13 @@ export function DataAnalysisPage() {
   const [showTrialPoints, setShowTrialPoints] = useState(true)
   const [showTrendLine, setShowTrendLine] = useState(true)
   const [chartError, setChartError] = useState<string | null>(null)
+  /**
+   * 붙여넣은 회차는 이 화면 안에만 있고 어디에도 저장되지 않습니다. 잘못 지우면 실험을
+   * 여러 번 되풀이해 모은 값이 사라지므로, 지우기 전 상태를 한 벌 들고 있다가 되돌릴 수
+   * 있게 합니다. 지우기 전에 한 번 더 묻는 대신 이렇게 한 이유는, 지우기는 자주 하는 일이라
+   * 매번 확인을 받으면 성가시고 결국 읽지 않고 누르게 되기 때문입니다.
+   */
+  const [undoable, setUndoable] = useState<{ input: string; trials: Trial[]; xName: string | null; yNames: string[] } | null>(null)
   const chartRef = useRef<SVGSVGElement>(null)
 
   const hasRepeats = trials.length >= 2
@@ -277,6 +284,7 @@ export function DataAnalysisPage() {
   }
 
   function reset() {
+    if (input || trials.length > 0) setUndoable({ input, trials, xName, yNames })
     setInput('')
     setTrials([])
     setLastResult(null)
@@ -284,6 +292,15 @@ export function DataAnalysisPage() {
     setXName(null)
     setYNames([])
     setChartError(null)
+  }
+
+  function undoReset() {
+    if (!undoable) return
+    setInput(undoable.input)
+    setTrials(undoable.trials)
+    setXName(undoable.xName)
+    setYNames(undoable.yNames)
+    setUndoable(null)
   }
 
   function changeXColumn(nextName: string) {
@@ -397,6 +414,16 @@ export function DataAnalysisPage() {
             전체 지우기
           </Button>
         </div>
+        {undoable && trials.length === 0 && (
+          <div className="mt-4 flex flex-wrap items-center gap-3 rounded-card border border-border bg-muted-background p-4">
+            <p className="text-caption">
+              {undoable.trials.length > 0
+                ? `${undoable.trials.length}개 회차를 지웠습니다.`
+                : '붙여넣은 내용을 지웠습니다.'}
+            </p>
+            <Button size="sm" onClick={undoReset}>되돌리기</Button>
+          </div>
+        )}
 
         {mismatchError && (
           <div role="alert" className="mt-6 rounded-card border border-danger bg-danger-background p-4 text-danger">
