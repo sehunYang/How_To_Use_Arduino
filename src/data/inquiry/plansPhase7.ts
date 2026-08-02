@@ -243,6 +243,7 @@ export const phase7Plans: Record<string, InquiryPlan> = {
       'USB 케이블을 연결하고 시리얼 모니터를 9600 baud로 엽니다.',
       '뚜껑을 닫기 전 압력값을 읽어 그날의 대기압으로 적어 둡니다.',
     ],
+    recording: 'curve',
     variables: {
       independent: '물중탕의 온도 20, 30, 40, 50, 60 °C',
       dependent: '압력이 오르는 기울기(hPa/분)',
@@ -317,6 +318,7 @@ export const phase7Plans: Record<string, InquiryPlan> = {
       'USB 케이블을 연결하고 시리얼 모니터를 9600 baud로 엽니다.',
       '램프를 끈 상태로 5분 기록해 어두울 때의 기울기를 먼저 얻습니다.',
     ],
+    recording: 'curve',
     variables: {
       independent: '용기에 닿는 조도 6단계(램프 거리로 조절)',
       dependent: '압력이 오르는 기울기(hPa/분)',
@@ -628,6 +630,7 @@ export const phase7Plans: Record<string, InquiryPlan> = {
       '맑은 물 상태에서 기록을 시작해 투과율이 100 % 근처인지 확인합니다.',
       '시약을 한 번에 붓고 막대로 세 번 저은 뒤 손을 뗍니다.',
     ],
+    recording: 'curve',
     variables: {
       independent: '넣는 시약의 농도 4단계',
       dependent: '투과율이 처음 값의 절반이 될 때까지 걸린 시간(s)',
@@ -749,6 +752,7 @@ export const phase7Plans: Record<string, InquiryPlan> = {
       'USB 케이블을 연결하고 시리얼 모니터를 9600 baud로 엽니다.',
       '램프를 켜기 전 5분간 기록해 두 온도가 같은 값에서 출발하는지 확인합니다.',
     ],
+    recording: 'curve',
     variables: {
       independent: '가열 20분과 냉각 20분의 두 구간',
       dependent: '흙과 물의 온도(°C)',
@@ -864,6 +868,7 @@ export const phase7Plans: Record<string, InquiryPlan> = {
       '바퀴를 손으로 한 바퀴 천천히 돌려 자석이 지날 때 값이 세어지는지 확인합니다.',
       '속도 값을 고정해 두고 30초 돌려 회전수가 안정되는지 먼저 봅니다.',
     ],
+    recording: 'curve',
     variables: {
       independent: '한 번에 고치는 크기 2, 5, 20과 부하 유무',
       dependent: '목표 회전수로 돌아오기까지 걸린 시간과 출렁임의 크기',
@@ -937,6 +942,7 @@ export const phase7Plans: Record<string, InquiryPlan> = {
       '차를 흰 종이 위에 세워 두 CDS 값을 읽고 그 차이를 영점으로 적습니다.',
       '차를 선 위에 올려 한쪽 값이 확실히 낮아지는지 확인합니다.',
     ],
+    recording: 'curve',
     variables: {
       independent: '조향 민감도 0.15, 0.35, 0.7',
       dependent: '좌우 밝기 차이가 0 둘레에서 진동한 폭과 선을 놓친 횟수',
@@ -974,6 +980,7 @@ export const phase7Plans: Record<string, InquiryPlan> = {
       'USB 케이블을 연결하고 시리얼 모니터를 9600 baud로 엽니다.',
       '상자를 천천히 밀며 차단기가 열리는 거리를 자로 재어 적습니다.',
     ],
+    recording: 'curve',
     variables: {
       independent: '여는 거리와 닫는 거리의 간격 0, 2, 5, 10 cm',
       dependent: '30초 동안 열림·닫힘 상태가 뒤집힌 횟수',
@@ -1010,6 +1017,7 @@ export const phase7Plans: Record<string, InquiryPlan> = {
       'USB 케이블을 연결하고 시리얼 모니터를 9600 baud로 엽니다.',
       '손전등과 손바닥으로 밝기를 오르내리며 열림과 닫힘이 바뀌는 값을 적습니다.',
     ],
+    recording: 'curve',
     variables: {
       independent: '여는 밝기와 닫는 밝기의 비 1.2배, 2배, 3배',
       dependent: '하루 동안 커튼 상태가 바뀐 횟수',
@@ -1046,6 +1054,7 @@ export const phase7Plans: Record<string, InquiryPlan> = {
       'USB 케이블을 연결하고 시리얼 모니터를 9600 baud로 엽니다.',
       '경보가 울리지 않는 실온 상태에서 30초 기록해 기준선을 얻습니다.',
     ],
+    recording: 'curve',
     variables: {
       independent: '프로브를 감싼 것(없음 / 비닐 한 겹 / 얇은 천)',
       dependent: '물에 담근 시각부터 경보가 울린 시각까지의 지연(s)',
@@ -1168,6 +1177,7 @@ export const phase7Plans: Record<string, InquiryPlan> = {
       'USB 케이블을 연결하고 시리얼 모니터를 115200 baud로 엽니다.',
       '필터 없이 5초 기록해 천장까지의 거리가 안정적으로 읽히는지 확인합니다.',
     ],
+    recording: 'curve',
     variables: {
       independent: '겹친 필터의 장수 1, 2, 3, 4, 5장',
       dependent: '낙하 후반의 종단 속도(m/s)',

@@ -185,6 +185,7 @@ export const phase5Plans: Record<string, InquiryPlan> = {
       'USB 케이블을 연결하고 시리얼 모니터를 9600 baud로 엽니다.',
       '값이 더 이상 오르내리지 않을 때까지 2분쯤 기다린 뒤, 온도계 눈금과 센서 값을 나란히 적습니다.',
     ],
+    recording: 'curve',
     variables: {
       independent: '물의 온도 조건(얼음물, 실온, 40 °C 정도의 따뜻한 물)',
       dependent: 'water_c 값과 값이 안정되기까지 걸린 시간',
@@ -768,6 +769,7 @@ export const phase5Plans: Record<string, InquiryPlan> = {
       'USB 케이블을 연결하고 시리얼 모니터를 9600 baud로 엽니다.',
       '팬이 꺼진 상태에서 5분 동안 온도와 습도를 읽어 기준값으로 적어 둡니다.',
     ],
+    recording: 'curve',
     variables: {
       independent: '켜는 습도 기준(60, 65, 70%)과 끄는 기준의 차이(0, 5%p)',
       dependent: '팬 작동 횟수, 총 작동 시간, 작동 뒤 습도 회복 시간',
@@ -1039,6 +1041,7 @@ export const phase5Plans: Record<string, InquiryPlan> = {
       'USB 케이블을 연결하고 시리얼 모니터를 9600 baud로 엽니다.',
       '감지 범위를 비운 채 밝을 때와 어두울 때의 CDS 값을 각각 읽고, 그 가운데 값을 코드의 어두움 기준값에 적어 넣습니다.',
     ],
+    recording: 'curve',
     variables: {
       independent: '주변 밝기로 나눈 시간대(밝음/어두움)',
       dependent: '시간당 움직임 사건 수',
@@ -1076,6 +1079,7 @@ export const phase5Plans: Record<string, InquiryPlan> = {
       'USB 케이블을 연결하고 시리얼 모니터를 9600 baud로 엽니다.',
       '조명을 끈 상태의 조도를 읽어 주변광으로 적고, 목표 조도를 그보다 충분히 높게 정합니다.',
     ],
+    recording: 'curve',
     variables: {
       independent: '목표 조도 수준(3단계)',
       dependent: 'lux 값의 유지 범위, 총 점등 시간, 식물의 생장 지표',
@@ -1192,6 +1196,7 @@ export const phase5Plans: Record<string, InquiryPlan> = {
       '정면에서 고르게 빛을 비춘 상태로 좌우 CDS 값을 읽어, 두 값의 차이를 오프셋으로 적어 둡니다.',
       '한쪽 센서만 손으로 가려 보며 바퀴가 그 반대쪽으로 도는지 확인한 뒤 바닥에 내려놓습니다.',
     ],
+    recording: 'curve',
     variables: {
       independent: '두 센서 사이 간격과 차광판 길이(각 2~3단계)',
       dependent: 'error 값의 크기와 광원을 향할 때까지 걸린 시간',
@@ -1349,6 +1354,7 @@ export const phase5Plans: Record<string, InquiryPlan> = {
       '조명을 끈 채 밝을 때와 어두울 때의 CDS 값을 각각 읽어 그 가운데 값을 코드의 어두움 임계값에 적어 넣습니다.',
       '감지 범위를 비운 상태로 30초를 기다려 PIR가 안정되는지 확인합니다.',
     ],
+    recording: 'curve',
     variables: {
       independent: '조명 유지 시간(10, 30, 60초)',
       dependent: '총 점등 시간, 사용 중에 꺼진 횟수',

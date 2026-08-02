@@ -7,7 +7,7 @@ import { concepts } from '@/data/inquiry/concepts'
 import { findCsvHeader } from '@/data/inquiry/columns'
 import { formatArduinoCode } from '@/lib/formatArduinoCode'
 import { inquiryPlans } from '@/data/inquiry/plans'
-import { isStatement } from '@/data/inquiryGuide'
+import { RESTATEMENT_THRESHOLD, isStatement, similarity } from '@/data/inquiryGuide'
 
 const canaryRecipes = [pendulumRecipe, multiTsl2591Recipe, ina219CurrentRecipe]
 const allRecipes = [...canaryRecipes, ...phase5Recipes, ...phase6Recipes, ...phase7Recipes]
@@ -32,33 +32,69 @@ describe('inquiry workbook experiment plans', () => {
     (id) => {
       const body = recipe(id).body
       expect(body).toContain('한 번의 운동이나 과도 변화 전체 파형')
-      expect(body).not.toContain('조건 변경 후 안정화')
-      expect(body).not.toContain('조건 순서를 **낮음 → 높음**')
+      expect(body).not.toContain('조건을 바꾼 뒤 기다릴 시간')
+      expect(body).not.toContain('조건 순서를 적어 둔 차례대로')
     },
   )
 
   it('uses an event plan for interrupt-triggered measurements', () => {
     const body = recipe('s11-tsl2591-interrupt').body
     expect(body).toContain('사건이 발생한 시점과 센서 응답')
-    expect(body).not.toContain('독립 변인 조건 수')
+    expect(body).not.toContain('바꿔 가며 잴 조건')
   })
 
   it('uses a continuous plan for time-series measurements', () => {
     const body = recipe('ph33-light-source-stability').body
     expect(body).toContain('끊김 없는 연속 기록')
-    expect(body).not.toContain('조건 간 반복')
+    expect(body).not.toContain('조건마다 반복')
   })
 
   // ph06(용수철 진동)은 여기서 뺐습니다: 진동 파형을 기록하는 실험이라 조건표가
   // 아니라 과도 기록 계획(transient)을 받아야 합니다 — 조건표를 주면 1초 간격
   // 표집 지시가 0.9초 주기와 모순됩니다(레시피 검증에서 확인된 결함).
-  it('keeps structured levels and repeats for condition comparisons', () => {
-    for (const id of ['ph02-newton-second-law', 'ph14-insulation-performance', 'ph17-ohms-law', 'ph24-solenoid-current-field']) {
+  it('keeps structured conditions and repeats for condition comparisons', () => {
+    for (const id of ['ph02-newton-second-law', 'ph17-ohms-law', 'ph24-solenoid-current-field']) {
       const body = recipe(id).body
-      expect(body, id).toContain('독립 변인 조건 수')
-      expect(body, id).toContain('조건 간 반복')
-      expect(body, id).toContain('조건 변경 후 안정화')
+      expect(body, id).toContain('바꿔 가며 잴 조건')
+      expect(body, id).toContain('조건마다 반복')
+      expect(body, id).toContain('조건을 바꾼 뒤 기다릴 시간')
     }
+  })
+
+  /**
+   * 실행 계획이 조건 수를 지어내면 변인 설계와 어긋납니다. "단열재 종류
+   * 3~4가지"라고 적어 둔 탐구에 "최솟값과 최댓값 사이를 5단계로 등분하라"는
+   * 지시가 나가면, 재료 종류는 등분할 수 있는 것이 아니므로 학생은 여기서
+   * 멈춥니다. 조건은 변인 설계에 적힌 문장을 그대로 옮겨 씁니다.
+   */
+  it('never invents a condition count that contradicts the variable design', () => {
+    for (const entry of allRecipes) {
+      const plan = inquiryPlans[entry.id]
+      if (!entry.body.includes('바꿔 가며 잴 조건')) continue
+      expect(entry.body, entry.id).toContain(`| 바꿔 가며 잴 조건 | ${plan.variables.independent} |`)
+      expect(entry.body, entry.id).not.toMatch(/독립 변인의 최솟값과 최댓값/)
+      expect(entry.body, entry.id).not.toMatch(/단계로 등분/)
+      expect(entry.body, entry.id).not.toMatch(/개 조건 묶음/)
+    }
+  })
+
+  /**
+   * 냉각 곡선처럼 조건 하나가 그 자체로 변해 가는 탐구에서는 "값이 안정되면
+   * 30개를 저장"할 수 없습니다. 값이 끝내 안정되지 않고, 변해 가는 모양이 곧
+   * 답이기 때문입니다. 그대로 따라 하면 40초짜리 자료로 냉각 상수를 구하게 됩니다.
+   */
+  it('tells curve experiments to record the whole change instead of a fixed sample count', () => {
+    for (const entry of allRecipes) {
+      if (inquiryPlans[entry.id]?.recording !== 'curve') continue
+      expect(entry.body, entry.id).toContain('조건마다 기록할 구간')
+      expect(entry.body, entry.id).toContain('끊지 말고 저장')
+      expect(entry.body, entry.id).not.toMatch(/조건마다 저장할 표본 수/)
+      expect(entry.body, entry.id).not.toMatch(/조건을 바꾼 뒤 \d+초 기다려/)
+    }
+  })
+
+  it('records a cooling curve for the insulation comparison', () => {
+    expect(recipe('ph14-insulation-performance').body).toContain('조건마다 기록할 구간')
   })
 
   it('states that p1 and p2 calculations happen after raw CSV logging', () => {
@@ -224,6 +260,42 @@ describe('rendered guide structure', () => {
       expect(entry.body, entry.id).toContain('**통제 변인 — 끝까지 같게 유지할 것**')
       expect(entry.body, entry.id).not.toMatch(/통제 변인[^\n]*\|\s*1\)/)
     }
+  })
+
+  /**
+   * 레시피 원문의 '데이터 처리' 한 줄과 탐구 설계의 계산 단계는 같은 계산을
+   * 가리킵니다. 둘을 그냥 이어 붙이면 학생은 방금 한 일을 알아보지 못한 채
+   * 기호가 잔뜩 붙은 문장을 또 만나 "이건 뭘 더 하라는 거지"에서 멈춥니다.
+   */
+  it('does not repeat a calculation step it already spelled out', () => {
+    const analysisBody = (body: string) =>
+      /## \d+\. 데이터 처리와 그래프\n\n([\s\S]*?)(?=\n## |\n:::|$)/.exec(body)?.[1]
+    for (const entry of allRecipes) {
+      const section = analysisBody(entry.body)
+      if (!section) continue
+      const steps = [...section.matchAll(/^\d+\. \[ \] (.+)$/gm)].map((match) => match[1])
+      const designed = inquiryPlans[entry.id].analysis
+      // 설계가 쓴 단계 뒤에 붙는 것이 레시피 원문에서 온 문장입니다. 설계 단계
+      // 끼리는 서로 닮아도 됩니다 — "점등 시간"과 "불필요한 점등 시간"처럼
+      // 말이 겹칠 뿐 실제로 다른 계산인 경우가 있습니다.
+      for (const carried of steps.slice(designed.length)) {
+        for (const step of designed) {
+          expect(similarity(step, carried), `${entry.id}\n  ${step}\n  ${carried}`)
+            .toBeLessThanOrEqual(RESTATEMENT_THRESHOLD)
+        }
+      }
+    }
+  })
+
+  /** 실제로 겹쳐 있던 자리들. 원문 쪽 문장이 사라졌는지 눈으로 고정합니다. */
+  it('drops the terse restatement that used to follow the plain steps', () => {
+    expect(recipe('ph17-ohms-law').body).toContain('기울기 또는 각 점의 $V/I$로 저항을 구해 부품 표시값과 비교합니다.')
+    expect(recipe('ph17-ohms-law').body).not.toContain('각 직선의 V/I 또는 기울기에서 저항을 구해 표시값과 비교합니다.')
+    expect(recipe('ph14-insulation-performance').body).not.toContain('기울기로 냉각상수를 구해 단열 성능을 비교합니다.')
+    // 원문에만 있는 내용은 남습니다. 센서가 얼마나 잘게 구별하는지는 설계 쪽
+    // 계산 단계 어디에도 없으므로 지우면 학생이 알 길이 없습니다.
+    expect(recipe('p9-motion-interrupt').body).toContain('time_us는 마이크로초 단위입니다.')
+    expect(recipe('ph33-light-source-stability').body).toContain('전원 주파수의 빠른 깜빡임(플리커)은 평균되어 보이지 않으며')
   })
 
   it('describes exactly the CSV columns the sketch actually prints', () => {

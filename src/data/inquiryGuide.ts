@@ -37,14 +37,13 @@ function experimentPlan(recipe: Recipe): ExperimentPlan {
 }
 
 function samplingPlan(recipe: Recipe) {
-  const levels = recipe.difficulty === '초급' ? 5 : recipe.difficulty === '중급' ? 6 : 8
   const repeats = 3
   const samples = recipe.difficulty === '초급' ? 20 : 30
   const intervalSeconds = recipe.sensors.some((sensor) => sensor === 'ds18b20' || sensor === 'bme280')
     ? 2
     : 1
   const settlingSeconds = recipe.sensors.includes('ds18b20') ? 60 : recipe.sensors.includes('bme280') ? 30 : 10
-  return { levels, repeats, samples, intervalSeconds, settlingSeconds }
+  return { repeats, samples, intervalSeconds, settlingSeconds }
 }
 
 function latexize(source: string) {
@@ -376,8 +375,41 @@ ${rows}`,
   }
 }
 
+/** 글자 두 개씩 겹쳐 보는 방식으로 잰 두 문장의 닮은 정도(0~1). */
+export function similarity(left: string, right: string): number {
+  const pairs = (text: string) => {
+    const letters = text.replace(/[^0-9A-Za-z가-힣]/g, '')
+    const out = new Set<string>()
+    for (let index = 0; index + 1 < letters.length; index += 1) out.add(letters.slice(index, index + 2))
+    return out
+  }
+  const a = pairs(left)
+  const b = pairs(right)
+  if (!a.size || !b.size) return 0
+  let shared = 0
+  for (const pair of a) if (b.has(pair)) shared += 1
+  return (2 * shared) / (a.size + b.size)
+}
+
+/**
+ * 이 값을 넘으면 "이미 한 말"로 봅니다. 0.28은 눈으로 맞춘 값입니다. 더 낮추면
+ * 원문에만 있는 센서 한계·단위 설명까지 함께 사라지고, 더 높이면 기호만 바꿔
+ * 쓴 같은 계산이 그대로 남습니다.
+ */
+export const RESTATEMENT_THRESHOLD = 0.28
+
+/**
+ * 레시피 원문의 '데이터 처리'는 한 줄짜리 요약이고, 탐구 설계의 계산 단계는 그
+ * 요약을 학생이 손으로 따라 할 수 있게 풀어 쓴 것입니다. 둘을 그냥 이어 붙이면
+ * 같은 계산이 두 번 나오는데, 뒤에 오는 원문 쪽이 기호가 훨씬 많습니다. 학생은
+ * 앞에서 이미 한 일을 알아보지 못하고 "이건 또 뭘 하라는 거지"에서 멈춥니다.
+ * 그래서 앞 단계와 닮은 문장은 버리고, 원문에만 있는 내용(센서 분해능, 단위,
+ * 기대할 만한 값의 크기 같은 것)은 그대로 남깁니다.
+ */
 function analysisSection(plan: InquiryPlan, authored: AuthoredBody): Section {
-  const steps = [...plan.analysis, ...toSteps(authored.sections.get('데이터 처리') ?? '')]
+  const authoredSteps = toSteps(authored.sections.get('데이터 처리') ?? '')
+    .filter((sentence) => !plan.analysis.some((step) => similarity(step, sentence) > RESTATEMENT_THRESHOLD))
+  const steps = [...plan.analysis, ...authoredSteps]
   if (!steps.length) return null
   return {
     title: '데이터 처리와 그래프',
@@ -471,41 +503,86 @@ function transientWorkbook(recipe: Recipe) {
 4. [ ] 주기, 봉우리, 적분값, 시간상수 또는 에너지는 스케치에서 미리 확정하지 말고 저장한 CSV를 후처리하여 구합니다.`
 }
 
-function comparisonWorkbook(recipe: Recipe) {
-  const { levels, repeats, samples, intervalSeconds, settlingSeconds } = samplingPlan(recipe)
-  const totalRows = levels * repeats
-  const durationMinutes = Math.max(1, Math.ceil(totalRows * (settlingSeconds + samples * intervalSeconds) / 60))
+/**
+ * 조건을 바꿔 가며 견주는 탐구의 실행 계획.
+ *
+ * 조건 수는 **지어내지 않고 변인 설계에 적힌 문장을 그대로 옮깁니다.** 예전에는
+ * 난이도에서 "초급이면 5단계" 식으로 숫자를 만들어 냈는데, 그러면 변인 설계에
+ * "단열재 종류 3~4가지"라고 적힌 탐구에서도 "최솟값과 최댓값 사이를 5단계로
+ * 등분하라"는 지시가 나갔습니다. 재료 종류는 등분할 수 있는 것이 아니라서,
+ * 탐구가 서툰 학생은 두 절이 서로 다른 말을 하는 자리에서 그대로 멈춥니다.
+ *
+ * 측정 순서도 "낮음 → 높음"이 아니라 "적어 둔 차례대로"로 씁니다. 크기 순으로
+ * 놓을 수 없는 조건에도 그대로 통하면서, 순서를 바꿔 재는 이유(순서가 만드는
+ * 치우침 걸러 내기)를 함께 알려 줄 수 있습니다.
+ */
+function comparisonWorkbook(recipe: Recipe, plan: InquiryPlan | undefined) {
+  const { repeats, samples, intervalSeconds, settlingSeconds } = samplingPlan(recipe)
+  const conditions = plan?.variables.independent ?? '변인 설계에 적은 조건'
+  // 조건 하나가 그 자체로 시간에 따라 변해 가는 탐구(냉각 곡선, 발효 압력,
+  // 되먹임 회복 시간…)에서는 "안정된 뒤 30개"라는 지시가 성립하지 않습니다.
+  // 값이 끝내 안정되지 않거나, 안정되기까지의 모양 자체가 답이기 때문입니다.
+  const curve = plan?.recording === 'curve'
+
+  const rows = [
+    `| 바꿔 가며 잴 조건 | ${conditions} |`,
+    `| 조건마다 반복 | ${repeats}회 |`,
+    curve
+      ? `| 조건마다 기록할 구간 | 조건을 시작한 순간부터 변화가 멎을 때까지 통째로 |`
+      : `| 조건마다 저장할 표본 수 | ${samples}개 |`,
+    `| 표본 간격 | ${intervalSeconds}초 |`,
+    curve
+      ? `| 기록을 멈추는 시점 | 변화가 멎었을 때 또는 정해 둔 관찰 시간이 끝났을 때 |`
+      : `| 조건을 바꾼 뒤 기다릴 시간 | ${settlingSeconds}초 |`,
+  ]
+
+  const record = curve
+    ? `조건을 시작한 순간부터 ${intervalSeconds}초 간격으로 끊지 말고 저장하고, 값이 더 이상 변하지 않거나 정해 둔 관찰 시간이 끝나면 멈춥니다. 조건마다 걸린 시간이 서로 달라도 그대로 둡니다.`
+    : `조건을 바꾼 뒤 ${settlingSeconds}초 기다려 값이 안정되면 ${intervalSeconds}초 간격으로 ${samples}개를 저장합니다.`
+
+  // 규칙은 표에 실제로 있는 칸만 이야기해야 합니다. 표에 없는 "기다리는 시간"을
+  // 늘리라고 하면 학생은 없는 칸을 찾아 헤맵니다.
+  const rules = curve
+    ? [
+        '- 측정 간격은 **모든 조건에서 같게** 유지합니다.',
+        '- 조건마다 기록이 걸린 시간은 서로 달라도 됩니다. 얼마나 걸렸는지가 결과의 일부입니다.',
+        '- 기록 도중 장치를 건드렸다면 그 부분을 지우지 말고 몇 분쯤이었는지 노트에 적어 둡니다.',
+      ]
+    : [
+        '- 장치의 응답이 느리면 **기다리는 시간만** 늘립니다.',
+        '- 표본 수와 측정 간격은 **모든 조건에서 같게** 유지합니다.',
+        '- 값이 안정되기까지 걸리는 시간 자체가 알고 싶은 것이라면, 기다리지 말고 조건을 바꾼 순간부터 계속 기록합니다.',
+      ]
+
   return `아래 수치는 기본 권장값입니다. 고칠 때는 이 규칙을 지키세요.
 
-- 변인 설계에 조건 수가 따로 적혀 있으면 **그 값을 우선**합니다.
-- 장치의 응답이 느리면 **안정화 시간만** 늘립니다.
-- 표본 수와 측정 간격은 **모든 조건에서 같게** 유지합니다.
-- 안정화 시간 자체가 분석 대상이면 기다리지 말고 조건을 바꾼 순간부터 계속 기록합니다.
+${rules.join('\n')}
 
 | 항목 | 권장값 |
 |:---|---:|
-| 독립 변인 조건 수 | ${levels}단계 |
-| 조건 간 반복 | ${repeats}회 |
-| 조건별 표본 수 | ${samples}개 |
-| 표본 간격 | ${intervalSeconds}초 |
-| 조건 변경 후 안정화 | ${settlingSeconds}초 |
-| 예상 순수 측정 시간 | 약 ${durationMinutes}분 |
+${rows.join('\n')}
 
-1. [ ] 전원을 넣고 센서값을 **60초간 예비 관찰**하여 영점, 측정 범위를 넘어 최댓값에 머무는 현상, 단선 여부를 확인합니다.
-2. [ ] 독립 변인의 최솟값과 최댓값을 먼저 안전하게 확인한 뒤, 그 사이를 ${levels}단계로 등분합니다.
-3. [ ] 각 조건에서 ${settlingSeconds}초 기다린 후 ${intervalSeconds}초 간격으로 ${samples}개를 저장합니다.
-4. [ ] 조건 순서를 **낮음 → 높음**으로 1회, **높음 → 낮음**으로 1회 실시하고 나머지 1회는 무작위 순서로 측정합니다.
-5. [ ] 총 **${totalRows}개 조건 묶음**이 빠짐없이 측정되었는지 조건 번호와 반복 번호를 확인합니다.`
+1. [ ] 전원을 넣고 센서값을 **60초간 예비 관찰**하여 아무 자극이 없을 때의 기준값(영점), 값이 한계에 붙어 더 변하지 않는지, 선이 빠지지 않았는지를 확인합니다.
+2. [ ] 위 표의 조건을 실험 노트에 하나씩 줄로 적고, 조건마다 이름을 붙여 스케치가 찍는 조건 이름과 맞춥니다.
+3. [ ] 첫 조건과 마지막 조건을 한 번씩 미리 시험해 장치가 그 범위를 견디는지 확인합니다.
+4. [ ] ${record}
+5. [ ] 조건 순서를 적어 둔 차례대로 1회, 거꾸로 1회, 무작위로 1회 측정합니다. 순서 때문에 생기는 치우침은 이렇게만 걸러 낼 수 있습니다.
+6. [ ] 적어 둔 조건이 저마다 ${repeats}회씩 빠짐없이 채워졌는지 조건 이름과 반복 번호로 확인합니다.`
 }
 
-function executionSection(recipe: Recipe, kind: ExperimentPlan, intervalSeconds: number): Section {
+function executionSection(
+  recipe: Recipe,
+  kind: ExperimentPlan,
+  intervalSeconds: number,
+  plan: InquiryPlan | undefined,
+): Section {
   const body = kind === 'event'
     ? eventWorkbook(recipe)
     : kind === 'time-series'
       ? timeSeriesWorkbook(recipe, intervalSeconds)
       : kind === 'transient'
         ? transientWorkbook(recipe)
-        : comparisonWorkbook(recipe)
+        : comparisonWorkbook(recipe, plan)
   return { title: '실험 실행 계획', body }
 }
 
@@ -540,7 +617,7 @@ function buildGuide(recipe: Recipe, plan: InquiryPlan | undefined): Recipe {
         safetySection(authored),
         // 몇 번 반복할지 정한 다음에 손을 대야 합니다. 순서가 반대면 학생은
         // 측정을 다 끝낸 뒤에야 시행 횟수가 모자랐다는 것을 알게 됩니다.
-        executionSection(recipe, kind, intervalSeconds),
+        executionSection(recipe, kind, intervalSeconds, plan),
         procedureSection(plan, authored),
         columnSection(recipe),
         analysisSection(plan, authored),
@@ -549,7 +626,7 @@ function buildGuide(recipe: Recipe, plan: InquiryPlan | undefined): Recipe {
       ]
     : [
         safetySection(authored),
-        executionSection(recipe, kind, intervalSeconds),
+        executionSection(recipe, kind, intervalSeconds, plan),
         // 설계가 없는 레시피는 조립 단계도 없으므로 측정 방법만 냅니다.
         procedureSection({ setup: [] } as unknown as InquiryPlan, authored),
         columnSection(recipe),

@@ -723,6 +723,7 @@ export const phase6Plans: Record<string, InquiryPlan> = {
       'USB 케이블을 연결하고 시리얼 모니터를 9600 baud로 엽니다.',
       '히터를 켜기 전에 두 온도가 같아질 때까지 기다리며 초기 온도를 적습니다.',
     ],
+    recording: 'curve',
     variables: {
       independent: '시료의 종류(2가지 이상)',
       dependent: '초기 선형 구간의 온도 상승 속도',
@@ -818,6 +819,7 @@ export const phase6Plans: Record<string, InquiryPlan> = {
       'USB 케이블을 연결하고 시리얼 모니터를 9600 baud로 엽니다.',
       '히터를 켜기 전에 두 온도가 같아질 때까지 기다리며 초기 온도를 적습니다.',
     ],
+    recording: 'curve',
     variables: {
       independent: '막대 재료 3가지(치수는 동일)',
       dependent: '정상 상태의 양 끝 온도 차와 그 상태에 이르는 시간',
@@ -865,6 +867,7 @@ export const phase6Plans: Record<string, InquiryPlan> = {
       '두 용기를 바람이 닿지 않고 햇빛이 들지 않는 자리에 나란히 놓습니다.',
       'USB 케이블을 연결하고 시리얼 모니터를 9600 baud로 엽니다.',
     ],
+    recording: 'curve',
     variables: {
       independent: '단열재 종류 3~4가지',
       dependent: '냉각 상수 $k$',
@@ -1004,7 +1007,7 @@ export const phase6Plans: Record<string, InquiryPlan> = {
       '첫 저항을 꽂고 값이 안정될 때까지 10초를 기다린 뒤 코드의 조건 이름을 그 저항에 맞게 적습니다.',
     ],
     variables: {
-      independent: 'PWM 듀티 5단계와 측정 저항 3가지(1 kΩ, 2.2 kΩ, 4.7 kΩ)',
+      independent: 'PWM 듀티 9단계(스케치가 26부터 234까지 26씩 올립니다)와 측정 저항 3가지(1 kΩ, 2.2 kΩ, 4.7 kΩ)',
       dependent: 'bus_V와 current_mA 값',
       controls: ['RC 필터 구성', '안정화 시간', '주변 온도', '조건마다 conditionId를 실제 저항과 맞추기'],
     },
