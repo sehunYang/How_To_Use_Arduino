@@ -132,6 +132,61 @@ describe('rendered guide structure', () => {
     }
   })
 
+  /** 몇 번 반복할지 정한 다음에 손을 대야 합니다. 반대면 다 재고 나서 부족을 압니다. */
+  it('plans the run before it tells the student to start measuring', () => {
+    for (const entry of allRecipes) {
+      const titles = numberedHeadings(entry.body).map((heading) => heading.title)
+      const procedure = titles.indexOf('측정 순서')
+      if (procedure === -1) continue
+      expect(titles.indexOf('실험 실행 계획'), entry.id).toBeLessThan(procedure)
+    }
+  })
+
+  /**
+   * 체크 상자는 손으로 할 일에만 답니다. "봉우리 수의 절반이 주기 수입니다"
+   * 같은 설명에 상자가 붙으면 무엇을 해야 끝나는지 알 수 없습니다. 설명은
+   * 번호를 받지 않고 바로 앞 단계의 딸림 줄로 내려갑니다.
+   */
+  // `m` 없이 씁니다. `$`가 줄 끝을 뜻하면 제목 바로 아래 빈 줄에서 멈춰
+  // 본문을 하나도 담지 못합니다.
+  const procedureBody = (body: string) =>
+    /## \d+\. 측정 순서\n\n([\s\S]*?)(?=\n## |\n:::|$)/.exec(body)?.[1]
+
+  it('checkboxes only the sentences that tell the student to do something', () => {
+    for (const entry of allRecipes) {
+      const section = procedureBody(entry.body)
+      if (!section) continue
+      const boxed = [...section.matchAll(/^\d+\. □ (.+)$/gm)].map((match) => match[1])
+      expect(boxed.length, entry.id).toBeGreaterThan(0)
+      for (const step of boxed) {
+        expect(step, `${entry.id}: ${step}`).not.toMatch(/(입니다|있습니다|없습니다)[.!?]$/)
+      }
+    }
+  })
+
+  it('demotes an explanation to a sub-note under the step it belongs to', () => {
+    const p1 = procedureBody(recipe('p1-pendulum-period').body)!
+    expect(p1).toMatch(/^\d+\. □ .*기록하세요\.$/m)
+    expect(p1).toContain('   - 봉우리는 추가 최하점을 지날 때마다(반주기마다) 생기므로 봉우리 수의 절반이 주기 수입니다.')
+
+    const p4 = procedureBody(recipe('p4-friction-energy-loss').body)!
+    expect(p4).toContain('   - 경사면 위에서는 센서가 중력 성분을 함께 읽어 어긋나는 것이 정상입니다.')
+  })
+
+  /** `…합니다.`로 지시하는 레시피가 통째로 딸림 줄로 밀려나면 안 됩니다. */
+  it('keeps the -합니다 style recipes as numbered steps', () => {
+    const plantGrowth = procedureBody(recipe('plant-growth').body)!
+    expect([...plantGrowth.matchAll(/^\d+\. □ /gm)]).toHaveLength(2)
+    expect(plantGrowth).not.toMatch(/^\s+- /m)
+  })
+
+  it('lists the controlled variables one per line instead of packing them into a cell', () => {
+    for (const entry of allRecipes) {
+      expect(entry.body, entry.id).toContain('**통제 변인 — 끝까지 같게 유지할 것**')
+      expect(entry.body, entry.id).not.toMatch(/통제 변인[^\n]*\|\s*1\)/)
+    }
+  })
+
   it('describes exactly the CSV columns the sketch actually prints', () => {
     for (const entry of allRecipes) {
       const header = findCsvHeader(entry.sketch)
