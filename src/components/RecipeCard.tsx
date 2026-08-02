@@ -60,7 +60,13 @@ export function RecipeCard({
         </p>
       )}
       {fuzzy && <p className="mt-3 text-caption text-warning">정확히 맞는 건 없지만, 이런 탐구는 어때요?</p>}
-      <Link className="mt-auto pt-5 font-medium text-accent underline-offset-4 hover:underline" to={`/recipes/${recipe.id}`}>
+      {/* 화면 낭독기는 링크만 모아 훑을 수 있습니다. 모두 "레시피 보기 →"라고만 적혀 있으면
+          그 목록이 똑같은 줄의 나열이 되어 어느 레시피로 가는 링크인지 가릴 수 없습니다. */}
+      <Link
+        className="mt-auto pt-5 font-medium text-accent underline-offset-4 hover:underline"
+        to={`/recipes/${recipe.id}`}
+        aria-label={`${recipe.title} 레시피 보기`}
+      >
         레시피 보기 →
       </Link>
     </article>

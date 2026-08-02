@@ -55,7 +55,7 @@ export function DiscoveryPage() {
           id="inquiry"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          className="min-h-28 w-full resize-y bg-transparent p-3 text-body outline-none"
+          className="min-h-28 w-full resize-y bg-transparent p-3 text-body"
           placeholder="예: 진자 길이에 따라 움직임이 어떻게 달라지는지 측정하고 싶어요"
         />
         <div className="flex justify-end"><Button type="submit" size="lg">레시피 찾기</Button></div>
@@ -64,8 +64,8 @@ export function DiscoveryPage() {
         {examples.map((example) => <Button key={example} variant="outline" size="sm" onClick={() => submit(example)}>{example}</Button>)}
       </div>
       {resume && (
-        <aside className="mt-10 rounded-card border border-accent bg-muted-background p-5">
-          <p className="text-caption font-semibold text-accent">이어서 하기</p>
+        <aside aria-labelledby="resume-title" className="mt-10 rounded-card border border-accent bg-muted-background p-5">
+          <p id="resume-title" className="text-caption font-semibold text-accent">이어서 하기</p>
           <p className="mt-1">{resume.activeStep + 1}단계부터 배선을 계속할 수 있어요.</p>
           <Button className="mt-4" onClick={() => navigate(`/recipes/${resume.recipeId}#step-${resume.activeStep + 1}`)}>계속하기</Button>
         </aside>

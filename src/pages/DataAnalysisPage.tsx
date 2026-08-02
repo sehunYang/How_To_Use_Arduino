@@ -400,7 +400,7 @@ export function DataAnalysisPage() {
               setLastResult(null)
               setMismatchError(null)
             }}
-            className="mt-2 min-h-64 w-full resize-y rounded-card border border-border bg-background p-4 font-mono text-caption outline-none focus:border-accent"
+            className="mt-2 min-h-64 w-full resize-y rounded-card border border-border bg-background p-4 font-mono text-caption focus:border-accent"
             placeholder="시리얼 모니터에서 Ctrl+A, Ctrl+C로 복사한 내용을 붙여넣으세요."
             spellCheck={false}
           />
@@ -567,7 +567,7 @@ export function DataAnalysisPage() {
                       id="x-axis-column"
                       value={xName ?? ''}
                       onChange={(event) => changeXColumn(event.target.value)}
-                      className="mt-2 w-full rounded-card border border-border bg-background p-2 text-body outline-none focus:border-accent"
+                      className="mt-2 w-full rounded-card border border-border bg-background p-2 text-body focus:border-accent"
                     >
                       {numericColumns.map((column) => (
                         <option key={column.name} value={column.name}>{column.name}</option>
@@ -586,7 +586,7 @@ export function DataAnalysisPage() {
                         id="y-axis-column"
                         value={yNames[0] ?? ''}
                         onChange={(event) => setYNames([event.target.value])}
-                        className="mt-2 w-full rounded-card border border-border bg-background p-2 text-body outline-none focus:border-accent"
+                        className="mt-2 w-full rounded-card border border-border bg-background p-2 text-body focus:border-accent"
                       >
                         {numericColumns
                           .filter((column) => column.name !== xName)

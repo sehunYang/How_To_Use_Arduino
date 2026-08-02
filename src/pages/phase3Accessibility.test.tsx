@@ -5,7 +5,17 @@ import axe from 'axe-core'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App, { PAGE_LOADING_LABEL } from '@/App'
 
-const studentRoutes = ['/', '/recipes', '/recipes/pendulum', '/sensors', '/data-analysis']
+// 검색 결과는 두 갈래로 나뉩니다. 맞는 레시피가 있을 때와, 하나도 없어 비슷한 것만
+// 내놓을 때입니다. 뒤쪽이 오래 빠져 있어서 제목만 있고 아래가 빈 화면을 놓쳤습니다.
+const studentRoutes = [
+  '/',
+  '/search?q=%EC%A7%84%EC%9E%90',
+  '/search?q=zzzqqqxyz',
+  '/recipes',
+  '/recipes/pendulum',
+  '/sensors',
+  '/data-analysis',
+]
 const themes = ['light', 'dark'] as const
 
 // 화면은 필요할 때 내려받으므로 이 검사는 실제 import가 끝나기를 기다립니다.
@@ -24,6 +34,8 @@ beforeEach(() => {
     removeEventListener: vi.fn(),
   })
   Element.prototype.scrollIntoView = vi.fn()
+  // jsdom은 스크롤을 구현하지 않아 호출마다 경고를 냅니다. 실제 실패를 가립니다.
+  window.scrollBy = vi.fn()
 })
 
 afterEach(() => {
@@ -55,6 +67,9 @@ describe('Phase 3 WCAG AA automated checks', () => {
           // jsdom does not calculate painted colors or element geometry.
           rules: {
             'color-contrast': { enabled: false },
+            // 제목 단계 건너뛰기는 WCAG 태그가 붙지 않아 이 검사에서 오래 빠져 있었습니다.
+            // 목록 화면들이 h1 다음에 곧바로 카드의 h3를 내놓고 있었습니다.
+            'heading-order': { enabled: true },
           },
         })
 
@@ -65,4 +80,19 @@ describe('Phase 3 WCAG AA automated checks', () => {
       }, LAZY_ROUTE_TIMEOUT)
     }
   }
+
+  it('lets keyboard users jump past the header and menu to the page body', async () => {
+    window.history.replaceState({}, '', '/')
+    const { container, queryByText } = render(<App />)
+    await waitFor(
+      () => expect(queryByText(PAGE_LOADING_LABEL)).not.toBeInTheDocument(),
+      { timeout: LAZY_ROUTE_WAIT },
+    )
+
+    const skip = container.querySelector('a[href="#main-content"]')
+    expect(skip).toBeInTheDocument()
+    // 건너뛰기 링크는 머리글보다 먼저 나와야 첫 Tab에서 닿습니다.
+    expect(container.querySelector('a, button')).toBe(skip)
+    expect(container.querySelector('#main-content')?.tagName).toBe('MAIN')
+  }, LAZY_ROUTE_TIMEOUT)
 })

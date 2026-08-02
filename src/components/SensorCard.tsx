@@ -27,7 +27,12 @@ export function SensorCard({
             <p className="mt-1 text-caption text-muted">{reason}</p>
           </div>
         )}
-        <Link className="mt-auto pt-5 font-semibold text-accent hover:underline" to={`/sensors/${sensor.id}`}>
+        {/* 링크만 모아 훑을 때 어느 센서로 가는 링크인지 가릴 수 있어야 합니다. */}
+        <Link
+          className="mt-auto pt-5 font-semibold text-accent hover:underline"
+          to={`/sensors/${sensor.id}`}
+          aria-label={`${sensor.name} 센서 자세히 보기`}
+        >
           센서 자세히 보기 →
         </Link>
       </div>

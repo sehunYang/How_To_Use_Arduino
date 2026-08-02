@@ -68,6 +68,16 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-dvh bg-background text-foreground">
+      {/*
+        화면마다 머리글과 메뉴 링크 다섯 개가 먼저 나옵니다. 키보드나 화면 낭독기로
+        읽는 학생은 화면을 옮길 때마다 그 앞부분을 처음부터 다시 지나야 했습니다.
+      */}
+      <a
+        href="#main-content"
+        className="sr-only rounded-card bg-accent px-4 py-2 text-accent-foreground focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50"
+      >
+        본문 바로가기
+      </a>
       <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur">
         <div className="mx-auto flex max-w-screen-2xl items-center justify-between px-page py-3">
           <Link to="/" className="font-semibold tracking-tight">Arduino Compass</Link>
@@ -87,15 +97,20 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </header>
       <div className="app-layout mx-auto max-w-screen-2xl">
-        <aside className="hidden min-h-[calc(100dvh-4rem)] border-r border-border p-page md:block">
+        {/*
+          이 자리는 메뉴를 담는 칸일 뿐이고 landmark는 안쪽 nav입니다. aside로 두면 이름 없는
+          '보조' 영역이 하나 더 생겨, 화면에 다른 aside(이어서 하기 안내)가 뜨는 순간 둘을
+          구별할 수 없게 됩니다.
+        */}
+        <div className="hidden min-h-[calc(100dvh-4rem)] border-r border-border p-page md:block">
           <nav aria-label="학습 메뉴" className="sticky top-20">{renderMenu('student')}</nav>
-        </aside>
+        </div>
         {open && (
           <nav id="mobile-navigation" aria-label="모바일 메뉴" className="border-b border-border p-page md:hidden">
             {renderMenu('mobile')}
           </nav>
         )}
-        <main className="min-w-0 p-page">{children}</main>
+        <main id="main-content" tabIndex={-1} className="min-w-0 p-page">{children}</main>
       </div>
     </div>
   )
