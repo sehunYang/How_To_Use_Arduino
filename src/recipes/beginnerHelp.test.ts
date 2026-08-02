@@ -4,8 +4,7 @@ import { phase5Recipes } from '@/data/phase5'
 import { phase6Recipes } from '@/data/phase6'
 import { phase7Recipes } from '@/data/phase7'
 import { sensors } from '@/data/inventory-seed/sensors'
-import { studentSimulationFor } from '@/wokwi/studentSimulation'
-import { CLASS_MINUTES, helpCardText, lessonPlan } from './classroom'
+import { helpCardText } from './classroom'
 import { firstReadingFor, sensorsWithReadingGuide } from './firstReading'
 import { glossaryFor } from './glossary'
 import { splitEndpoint } from './parts'
@@ -143,48 +142,13 @@ describe('코드 요약', () => {
   })
 })
 
-describe('교실에서 쓰는 안내', () => {
-  it('한 차시를 넘는 레시피는 차시 수를 올려 잡는다', () => {
-    expect(lessonPlan({ minutes: CLASS_MINUTES }).classes).toBe(1)
-    expect(lessonPlan({ minutes: CLASS_MINUTES + 1 }).classes).toBe(2)
-  })
-
-  it('단계별 시간을 5분 단위로 끊어 적는다', () => {
-    for (const recipe of allRecipes) {
-      for (const stage of lessonPlan(recipe).stages) {
-        expect(stage.minutes % 5, `${recipe.id}: ${stage.title}`).toBe(0)
-      }
-    }
-  })
-
-  it('도움 카드는 화면이 아는 것만 채우고 빈칸을 남긴다', () => {
+describe('도움 요청 카드', () => {
+  it('화면이 아는 것만 채우고 빈칸을 남긴다', () => {
     const recipe = studentRecipes[0]
     const card = helpCardText({ recipe, checkedSteps: 2 })
     expect(card).toContain(recipe.title)
     expect(card).toContain(`${recipe.baudRate} baud`)
     expect(card).toContain(`${recipe.wiring.length}단계 중 2단계`)
     expect(card).toContain('무엇이 안 되나요: ')
-  })
-})
-
-describe('시뮬레이터 파일', () => {
-  it('우리가 만든 칩 모형이 필요한 레시피에는 내주지 않는다', () => {
-    // TSL2591·INA219·BME280은 공개 Wokwi에 없는 커스텀 칩으로 돕니다.
-    const customChipRecipes = allRecipes.filter((recipe) =>
-      recipe.sensors.some((sensorId) => ['tsl2591', 'ina219', 'bme280'].includes(sensorId)),
-    )
-    expect(customChipRecipes.length).toBeGreaterThan(0)
-    for (const recipe of customChipRecipes) {
-      expect(studentSimulationFor(recipe, sensors), recipe.id).toBeNull()
-    }
-  })
-
-  it('공개 부품만 쓰는 레시피에는 두 파일을 그대로 내준다', () => {
-    const openRecipes = allRecipes.filter((recipe) => studentSimulationFor(recipe, sensors) !== null)
-    expect(openRecipes.length).toBeGreaterThan(0)
-
-    const simulation = studentSimulationFor(openRecipes[0], sensors)!
-    expect(JSON.parse(simulation.diagram).parts.length).toBeGreaterThan(0)
-    expect(simulation.sketch).toContain('void loop')
   })
 })

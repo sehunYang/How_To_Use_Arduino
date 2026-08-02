@@ -8,15 +8,20 @@ import { SafeMarkdown } from '@/components/ui/SafeMarkdown'
 import { SimBadge } from '@/components/ui/SimBadge'
 import { WiringIllustration } from '@/components/WiringIllustration'
 import { canarySimStatus, studentRecipes } from '@/data/studentCatalog'
-import { sensors } from '@/data/inventory-seed/sensors'
 import { INVENTORY_VERSION } from '@/data/inventory-seed/version'
 import { useWiringSteps } from '@/hooks/useWiringSteps'
-import { downloadBlob } from '@/lib/downloadFile'
-import { loadProgress, PROGRESS_VERSION, saveProgress } from '@/progress'
+import {
+  loadChecklist,
+  loadProgress,
+  PROGRESS_VERSION,
+  saveChecklist,
+  saveProgress,
+  type ChecklistState,
+} from '@/progress'
 import { sendAnonymousEvent } from '@/telemetry/events'
 import { authorizeAdminPreview, loadAdminPreviewRecipe } from '@/firebase/adminPreview'
 import { loadDynamicSearchIndex, loadPublishedRecipe } from '@/firebase/contentRepository'
-import { helpCardText, lessonPlan } from '@/recipes/classroom'
+import { helpCardText } from '@/recipes/classroom'
 import {
   ARDUINO_IDE_URL,
   breadboardBasics,
@@ -28,11 +33,10 @@ import { firstReadingFor } from '@/recipes/firstReading'
 import { glossaryFor } from '@/recipes/glossary'
 import { librariesFor } from '@/recipes/libraries'
 import { jumperWireLabel, partsFor, shortComponentLabel, type PartLine } from '@/recipes/parts'
-import { powerChecks } from '@/recipes/powerCheck'
+import { powerChecks, type PowerCheck } from '@/recipes/powerCheck'
 import { sketchSummary } from '@/recipes/sketchSummary'
 import type { Recipe } from '@/schema'
 import { planBreadboardWiring } from '@/wokwi/buildDiagram'
-import { studentSimulationFor, WOKWI_NEW_PROJECT_URL } from '@/wokwi/studentSimulation'
 
 export interface PreviewServices {
   authorize: () => Promise<boolean>
@@ -231,13 +235,7 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
   const reading = firstReadingFor(recipe)
   const glossary = glossaryFor(recipe)
   const summary = sketchSummary(recipe)
-  const plan = lessonPlan(recipe)
-  const simulation = studentSimulationFor(recipe, sensors)
   const checkedSteps = machine.checked.filter(Boolean).length
-
-  function downloadSimulationFile(name: string, text: string) {
-    downloadBlob(new Blob([text], { type: 'text/plain;charset=utf-8' }), name)
-  }
   // 레시피가 쓴 증상을 먼저 보여 주고, 어느 레시피에서나 똑같이 겪는 첫 실행
   // 문제를 뒤에 붙입니다. 같은 증상을 이미 적어 둔 레시피는 그것을 남깁니다.
   const troubleshooting = [
@@ -264,55 +262,6 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
         <div className="flex flex-wrap items-center gap-3"><span className="text-caption text-muted">{recipe.subject ?? '융합'} · {recipe.difficulty} · {recipe.minutes}분</span><SimBadge recipe={recipe} status={canarySimStatus[recipe.id]} inventoryVersion={INVENTORY_VERSION} /></div>
         <h1 className="mt-3 text-4xl font-semibold">{recipe.title}</h1>
       </header>
-
-      {/* 수업이 45분에 끊기는 것을 화면은 모릅니다. 시작하기 전에 알아야 어디에서
-          끊을지 정할 수 있으므로 준비물보다 앞에 둡니다. */}
-      <details className="mt-6 max-w-3xl rounded-card border border-border p-4">
-        <summary className="cursor-pointer font-semibold">
-          수업 시간에 어떻게 나눌까요 — 45분 수업 {plan.classes}차시 분량
-        </summary>
-        <ul className="mt-3 space-y-2">
-          {plan.stages.map((stage) => (
-            <li key={stage.title} className="flex justify-between gap-4">
-              <span>{stage.title}</span>
-              <span className="shrink-0 text-muted">약 {stage.minutes}분</span>
-            </li>
-          ))}
-        </ul>
-        <p className="mt-3 text-caption text-muted">{plan.breakAdvice.replace(/\*\*/g, '')}</p>
-      </details>
-
-      {simulation && (
-        <details className="mt-4 max-w-3xl rounded-card border border-border p-4">
-          <summary className="cursor-pointer font-semibold">
-            부품이 없나요 — 브라우저 시뮬레이터에서 먼저 해보기
-          </summary>
-          <p className="mt-3 text-caption text-muted">
-            이 레시피는 공개 시뮬레이터에 있는 부품만 씁니다. 아래 두 파일을 받아 넣으면 실제 보드 없이 같은
-            값을 볼 수 있습니다. 다만 시뮬레이터의 값은 진짜 측정값이 아니므로, 탐구 결과로 쓰려면 실제 보드로
-            다시 재야 합니다.
-          </p>
-          <ol className="mt-3 space-y-2">
-            <li>
-              1. <a className="text-accent hover:underline" href={WOKWI_NEW_PROJECT_URL} target="_blank" rel="noreferrer noopener">wokwi.com에서 새 아두이노 우노 프로젝트</a>를 엽니다.
-            </li>
-            <li>2. 아래에서 받은 두 파일의 내용을 각각 같은 이름의 칸에 붙여 넣습니다.</li>
-            {simulation.libraries.length > 0 && (
-              <li>
-                3. 라이브러리 관리자에 <code className="text-syntax-string">{simulation.libraries.join(', ')}</code>를 더합니다.
-              </li>
-            )}
-          </ol>
-          <div className="mt-4 flex flex-wrap gap-3">
-            <Button variant="outline" onClick={() => downloadSimulationFile('diagram.json', simulation.diagram)}>
-              diagram.json 내려받기
-            </Button>
-            <Button variant="outline" onClick={() => downloadSimulationFile('sketch.ino', simulation.sketch)}>
-              sketch.ino 내려받기
-            </Button>
-          </div>
-        </details>
-      )}
 
       <section aria-labelledby="parts-title" className="mt-8 max-w-3xl">
         <h2 id="parts-title" className="text-2xl font-semibold">1. 준비물 챙기기</h2>
@@ -397,19 +346,7 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
             ))}
           </ol>
         </div>
-        {/* 체크 상자는 "꽂았는가"만 묻습니다. 맞게 꽂았는지는 여기에서 한 번 더 봅니다.
-            전원을 넣은 뒤에 읽으면 늦으므로 코드 절로 넘어가기 전에 둡니다. */}
-        <section aria-labelledby="power-check-title" className="mt-6 max-w-3xl rounded-card border border-warning bg-warning-background p-5">
-          <h3 id="power-check-title" className="font-semibold text-warning">USB를 꽂기 전에 — 마지막 점검 {checks.length}가지</h3>
-          <ul className="mt-3 space-y-3">
-            {checks.map((check) => (
-              <li key={check.question}>
-                <strong>{check.question}</strong>
-                <span className="mt-1 block text-caption">{check.detail}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
+        <PowerCheckList checks={checks} recipeId={recipe.id} />
 
         <details className="mt-4 max-w-3xl rounded-card border border-border p-4">
           <summary className="cursor-pointer font-semibold">이 화면에 나오는 말의 뜻</summary>
@@ -559,6 +496,67 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
         <HelpCard recipe={activeRecipe} checkedSteps={checkedSteps} />
       </section>
     </article>
+  )
+}
+
+/**
+ * 전원을 넣기 직전에 하나씩 짚어 보는 목록.
+ *
+ * 배선 단계의 체크 상자는 "꽂았는가"만 묻습니다. 맞게 꽂았는지는 여기에서 다시
+ * 봅니다. 읽기만 하는 글로 두었더니 배선 단계와 달리 어디까지 봤는지 표시할
+ * 자리가 없어, 중간에 끊기면 처음부터 다시 읽어야 했습니다. 그래서 탐구 가이드의
+ * 체크 목록과 같은 방식으로 눌리고 브라우저에 남게 합니다.
+ */
+function PowerCheckList({ checks, recipeId }: { checks: PowerCheck[]; recipeId: string }) {
+  const scope = `power:${recipeId}`
+  const [checked, setChecked] = useState<ChecklistState>({})
+
+  useEffect(() => {
+    setChecked(loadChecklist(scope, typeof window === 'undefined' ? undefined : window.localStorage))
+  }, [scope])
+
+  function toggle(question: string, value: boolean) {
+    setChecked((previous) => {
+      const next = { ...previous }
+      if (value) next[question] = true
+      else delete next[question]
+      saveChecklist(scope, next, typeof window === 'undefined' ? undefined : window.localStorage)
+      return next
+    })
+  }
+
+  const done = checks.filter((check) => checked[check.question]).length
+
+  return (
+    <section
+      aria-labelledby="power-check-title"
+      className="mt-6 max-w-3xl rounded-card border border-warning bg-warning-background p-5"
+    >
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h3 id="power-check-title" className="font-semibold text-warning">
+          USB를 꽂기 전에 — 마지막 점검 {checks.length}가지
+        </h3>
+        <span className="text-caption text-warning">{done}/{checks.length} 확인</span>
+      </div>
+      <ul className="mt-3 space-y-3">
+        {checks.map((check) => (
+          <li key={check.question}>
+            <label className="flex min-h-11 cursor-pointer items-start gap-3">
+              <input
+                className="mt-1 size-5 accent-accent"
+                type="checkbox"
+                checked={checked[check.question] ?? false}
+                onChange={(event) => toggle(check.question, event.target.checked)}
+              />
+              <span>
+                <strong>{check.question}</strong>
+                <span className="mt-1 block text-caption">{check.detail}</span>
+              </span>
+            </label>
+          </li>
+        ))}
+      </ul>
+    </section>
   )
 }
 

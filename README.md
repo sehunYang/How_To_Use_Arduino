@@ -26,12 +26,11 @@
 |---|---|---|
 | 저항 색띠 그림 | [`resistorBands.ts`](src/recipes/resistorBands.ts) — 저항값에서 계산 | `4.7 kΩ 저항`이라고 적어 줘도 저항에는 값이 인쇄되어 있지 않아 서랍에서 고를 수 없습니다 |
 | 브레드보드 연결 안내 | [`firstRun.ts`](src/recipes/firstRun.ts) + [`BreadboardMap.tsx`](src/components/BreadboardMap.tsx) | 한 칸 밀려 꽂아도 화면은 그대로 넘어갑니다. 되짚으려면 어떤 구멍이 이어져 있는지를 알아야 합니다 |
-| 전원 넣기 전 최종 점검 | [`powerCheck.ts`](src/recipes/powerCheck.ts) — 배선 끝점에서 | 체크 상자는 "꽂았는가"만 묻고 "맞게 꽂았는가"는 묻지 않습니다 |
+| 전원 넣기 전 최종 점검 (체크 목록) | [`powerCheck.ts`](src/recipes/powerCheck.ts) — 배선 끝점에서 | 배선 단계의 체크 상자는 "꽂았는가"만 묻고 "맞게 꽂았는가"는 묻지 않습니다 |
 | 처음 나온 값 점검표 | [`firstReading.ts`](src/recipes/firstReading.ts) — 센서별 | `-127.00`처럼 고장났을 때만 나오는 값을 정상으로 알고 한 시간을 헛측정합니다 |
 | 코드가 하는 일 요약 | [`sketchSummary.ts`](src/recipes/sketchSummary.ts) — 스케치에서 | 코딩이 처음이면 스케치는 복사할 덩어리일 뿐이라 노란 줄을 바꿔도 무엇이 달라지는지 모릅니다 |
 | 용어 뜻 | [`glossary.ts`](src/recipes/glossary.ts) — 이 레시피에 나온 말만 | `VCC`·`SDA`를 뜻도 모른 채 모양만 맞춰 꽂으면 값이 이상할 때 의심할 곳을 고를 수 없습니다 |
-| 차시 나누기·도움 요청 카드 | [`classroom.ts`](src/recipes/classroom.ts) | 수업은 45분에 끊기고, "안 돼요"라는 말만으로는 선생님도 처음부터 다시 짚어야 합니다 |
-| 시뮬레이터용 파일 | [`studentSimulation.ts`](src/wokwi/studentSimulation.ts) | 부품이 없어도 예습할 수 있게. 커스텀 칩이 필요한 레시피에는 **내주지 않습니다**(111개 중 59개) |
+| 도움 요청 카드 | [`classroom.ts`](src/recipes/classroom.ts) | "안 돼요"라는 말만으로는 선생님도 처음부터 다시 짚어야 합니다 |
 
 - 요구사항 명세: [`.omc/specs/deep-interview-how-to-use-arduino.md`](.omc/specs/deep-interview-how-to-use-arduino.md) (모호도 4.9%, 인수 조건 44건)
 - 구현 계획: [`.omc/plans/how-to-use-arduino-implementation.md`](.omc/plans/how-to-use-arduino-implementation.md) (Revision 3.1, 합의 검토 완료)

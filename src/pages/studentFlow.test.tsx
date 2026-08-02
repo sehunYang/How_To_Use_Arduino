@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import '@testing-library/jest-dom/vitest'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import type { ReactNode } from 'react'
@@ -229,6 +229,28 @@ describe('처음인 학생이 멈추던 자리', () => {
     expect(check).toHaveTextContent('MPU6050.VCC')
     expect(check).toHaveTextContent('MPU6050.GND')
     expect(check).toHaveTextContent(/탄 냄새/)
+  })
+
+  /**
+   * 읽기만 하는 글이면 어디까지 봤는지 표시할 자리가 없어, 중간에 끊기면 처음부터
+   * 다시 읽어야 합니다. 배선 단계와 마찬가지로 눌리고 남아 있어야 합니다.
+   */
+  it('lets the student tick each pre-power check and remembers it', () => {
+    renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
+
+    const check = screen.getByRole('region', { name: /USB를 꽂기 전에/ })
+    const boxes = within(check).getAllByRole('checkbox')
+    expect(boxes.length).toBeGreaterThan(0)
+    expect(check).toHaveTextContent(`0/${boxes.length} 확인`)
+
+    fireEvent.click(boxes[0])
+    expect(boxes[0]).toBeChecked()
+    expect(check).toHaveTextContent(`1/${boxes.length} 확인`)
+
+    cleanup()
+    renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
+    const reopened = screen.getByRole('region', { name: /USB를 꽂기 전에/ })
+    expect(within(reopened).getAllByRole('checkbox')[0]).toBeChecked()
   })
 
   /**
