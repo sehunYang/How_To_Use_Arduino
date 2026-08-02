@@ -47,7 +47,7 @@ export function RecipeCard({
           <span className="text-muted">난이도 · </span>
           <span className={DIFFICULTY_COLOR[recipe.difficulty]}>{recipe.difficulty}</span>
         </span>
-        <span title="30분 이하 짧음 · 31~60분 보통 · 61분 이상 김">
+        <span>
           <span className="text-muted">시간 · </span>
           <span className={timeColor(recipe.minutes)}>{recipe.minutes}분</span>
         </span>
@@ -59,7 +59,7 @@ export function RecipeCard({
           {matchedKeywords.map((keyword) => `#${keyword}`).join(' ')}와 연결됨
         </p>
       )}
-      {fuzzy && <p className="mt-3 text-caption text-warning">정확히 맞는 건 없지만, 이런 탐구는 어때요?</p>}
+      {fuzzy && <p className="mt-3 text-caption text-warning">비슷한 탐구</p>}
       {/* 화면 낭독기는 링크만 모아 훑을 수 있습니다. 모두 "레시피 보기 →"라고만 적혀 있으면
           그 목록이 똑같은 줄의 나열이 되어 어느 레시피로 가는 링크인지 가릴 수 없습니다. */}
       <Link

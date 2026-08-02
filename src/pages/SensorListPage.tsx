@@ -29,15 +29,10 @@ export function SensorListPage() {
 
   return (
     <div className="mx-auto max-w-6xl">
-      <p className="text-caption font-semibold text-accent">센서 학습 데이터베이스</p>
-      <h1 className="mt-1 text-3xl font-semibold">센서 학습하기</h1>
-      <p className="mt-3 max-w-3xl text-body text-muted">
-        측정하려는 물리량에 맞는 센서를 고르고, 값을 어떤 방식으로 내보내는지, 연결할 때 무엇을 조심해야 하는지,
-        어떤 실험에 쓸 수 있는지 자세히 살펴보세요.
-      </p>
+      <h1 className="text-3xl font-semibold">센서 학습하기</h1>
       <div className="mt-6 grid gap-3 rounded-card border border-border p-4 md:grid-cols-2">
         <label className="text-caption font-medium">
-          센서명 또는 물리량 검색
+          센서·물리량 검색
           <input
             className="mt-1 h-11 w-full rounded-card border border-border bg-background px-3 text-body"
             value={query}
@@ -65,7 +60,6 @@ export function SensorListPage() {
       {cards.length === 0 && (
         <div className="mt-8 rounded-card border border-border p-8 text-center">
           <p className="font-semibold">조건에 맞는 센서가 없습니다.</p>
-          <p className="mt-2 text-caption text-muted">검색어를 지우거나 출력 인터페이스를 ‘전체’로 되돌려 보세요.</p>
         </div>
       )}
     </div>

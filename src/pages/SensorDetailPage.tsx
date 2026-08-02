@@ -82,7 +82,7 @@ export function SensorDetailPage() {
         <h2 id="related-recipes" className="text-heading font-semibold">이 센서를 사용하는 레시피</h2>
         {recipes.length > 0
           ? <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">{recipes.map((recipe) => <RecipeCard key={recipe.id} recipe={recipe} />)}</div>
-          : <p className="mt-3 rounded-card border border-border p-5 text-muted">현재 공개된 레시피를 준비하고 있습니다. 위 추천 실험을 새 탐구 아이디어로 활용해보세요.</p>}
+          : <p className="mt-3 rounded-card border border-border p-5 text-muted">아직 공개된 레시피가 없습니다.</p>}
       </section>
     </article>
   )

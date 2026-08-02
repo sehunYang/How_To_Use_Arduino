@@ -209,7 +209,7 @@ export function WiringIllustration({
           onPointerDown={(event) => event.stopPropagation()}
         >
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-micro leading-tight">Ctrl(⌘)+휠·핀치로 최대 500% 확대 · 드래그 또는 화살표로 이동</span>
+            <span className="text-micro leading-tight">Ctrl+휠·핀치로 최대 500% 확대 · 드래그로 이동</span>
             <span className="flex gap-1">
               <Button size="sm" variant="ghost" aria-label="배선도 축소" onClick={() => zoomAt(viewRef.current.scale - 0.5)}>−</Button>
               <Button size="sm" variant="ghost" aria-label="배선도 원래 크기" onClick={() => commitView({ scale: 1, x: 0, y: 0 })}>{Math.round(view.scale * 100)}%</Button>

@@ -53,11 +53,7 @@ export function SearchResultsPage() {
 
       {results.length === 0 ? (
         <div className="mt-8 rounded-card border border-border p-8">
-          <p className="font-semibold">이렇게 해 보세요</p>
-          <ul className="mt-3 space-y-2 text-body text-muted">
-            <li>· 재고 싶은 것을 한 낱말로 적어 보세요. 예: 온도, 거리, 밝기, 전류</li>
-            <li>· 부품 이름 대신 무엇을 측정하고 싶은지로 적어 보세요.</li>
-          </ul>
+          <p className="font-semibold">재고 싶은 것을 한 낱말로 적어 보세요. 예: 온도, 거리, 밝기, 전류</p>
           <div className="mt-5 flex flex-wrap gap-3">
             <Link className="inline-flex h-10 items-center rounded-card bg-accent px-4 text-accent-foreground" to="/">다시 검색하기</Link>
             <Link className="inline-flex h-10 items-center rounded-card border border-border px-4 hover:bg-muted-background" to="/recipes">레시피 전체 둘러보기</Link>

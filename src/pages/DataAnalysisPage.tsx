@@ -333,7 +333,7 @@ export function DataAnalysisPage() {
       return {
         label: activeGroupName,
         heading: `${activeGroupName} 값별 기울기 비교`,
-        description: `${activeGroupName} 값마다 따로 맞춘 직선입니다. 조건마다 기울기가 어떻게 달라지는지 견주세요.`,
+        description: `${activeGroupName} 값마다 따로 맞춘 직선입니다.`,
         entries: groups.map((group, index) => ({
           label: group.value,
           relation: summarizeRelation(groupPoints[index] ?? []),
@@ -344,7 +344,7 @@ export function DataAnalysisPage() {
       return {
         label: TRIAL_COLUMN_NAME,
         heading: '회차별 기울기 비교',
-        description: '회차마다 따로 맞춘 직선입니다. 기울기가 회차마다 크게 달라지면 실험 조건이 회차 사이에 바뀌었을 수 있습니다.',
+        description: '회차마다 따로 맞춘 직선입니다.',
         entries: builtTrials.map((trial, index) => ({
           label: trial.label,
           relation: summarizeRelation(trialPoints[index] ?? []),
@@ -624,58 +624,28 @@ export function DataAnalysisPage() {
    */
   const suggestion = !advanced && trials.length > 0
     ? numericColumns.length < 2
-      ? '숫자로 읽을 수 있는 열이 하나뿐이라 그래프를 그릴 수 없습니다. 실의 길이나 각도처럼 직접 잰 값을 열로 더하면 가로축이 생깁니다.'
+      ? '숫자로 읽을 수 있는 열이 하나뿐입니다. 직접 잰 값을 열로 더하면 가로축이 생깁니다.'
       : spreadWarning
-        ? '회차마다 가로축 값이 크게 다릅니다. 회차마다 다른 조건을 쟀다면, 그 조건 값을 열로 더해 가로축에 놓을 수 있습니다.'
+        ? '회차마다 가로축 값이 크게 다릅니다. 조건 값을 열로 더해 가로축에 놓을 수 있습니다.'
         : null
     : null
 
   return (
     <div className="mx-auto max-w-5xl py-8 md:py-12">
-      <p className="text-caption font-semibold uppercase tracking-widest text-accent">시리얼 데이터 분석</p>
-      <h1 className="mt-3 text-3xl font-semibold md:text-4xl">데이터 변환·분석</h1>
-      <p className="mt-4 max-w-3xl text-body text-muted">
-        Arduino IDE 시리얼 모니터에서 전체 내용을 복사해 붙여넣으면 요약 통계와 그래프가 바로 나옵니다. 결과는 CSV 파일과
-        논문 형식 PNG 그림으로 저장할 수 있습니다.
+      <h1 className="text-3xl font-semibold md:text-4xl">데이터 변환·분석</h1>
+      <p className="mt-3 max-w-3xl text-body text-muted">
+        시리얼 모니터 내용을 붙여넣으면 요약 통계와 그래프가 바로 나옵니다.
       </p>
 
       <section aria-labelledby="paste-step" className="mt-8">
         <h2 id="paste-step" className="text-heading font-semibold">{sectionNumber('paste')}. 측정값 붙여넣기</h2>
 
-        <div className="mt-4 rounded-card border border-border bg-muted-background p-5">
-          <h3 className="text-body font-semibold">붙여넣기 형식</h3>
+        <details className="mt-4 rounded-card border border-border bg-muted-background p-4">
+          <summary className="cursor-pointer text-caption font-semibold">붙여넣기 형식 보기</summary>
           <pre className="mt-3 overflow-x-auto whitespace-pre rounded-card border border-border bg-background p-4 text-caption"><code>{example}</code></pre>
-          <p className="mt-3 text-caption text-muted">
-            쉼표는 값과 값 사이에만 넣고, 각 행의 마지막에는 넣지 않습니다. 회차를 더할 때는 열 이름이 1회차와 같아야
-            합니다.
-          </p>
-        </div>
-
-        {/*
-          같은 자료라도 붙여넣는 방법에 따라 결과가 달라집니다. 다만 처음 오는 사람에게
-          먼저 읽힐 내용은 아니므로 접어 둡니다.
-        */}
-        <details className="mt-4 rounded-card border border-border bg-muted-background p-5">
-          <summary className="cursor-pointer text-body font-semibold">조건을 바꿔 가며 여러 번 쟀다면</summary>
-          <ul className="mt-3 space-y-3 text-caption text-muted">
-            <li>
-              <span className="font-semibold text-foreground">조건마다 기울기를 따로 구할 때는 회차로 나눠 넣으세요.</span>{' '}
-              저항 세 개의 V-I 직선처럼 조건마다 별개의 직선이 나오는 실험입니다. <b>회차별 기울기 비교</b> 표에 조건별
-              기울기가 함께 실립니다.
-            </li>
-            <li>
-              <span className="font-semibold text-foreground">조건 전체가 직선 하나를 이룰 때는 회차를 합쳐 보세요.</span>{' '}
-              전지의 단자전압-전류처럼 조건 하나가 그래프의 점 하나가 되는 실험입니다. 회차로 넣은 뒤 그래프 절에서
-              “회차를 합쳐 한 계열로 보기”를 고르면 됩니다.
-            </li>
-            <li>
-              <span className="font-semibold text-foreground">같은 조건을 되풀이했다면 회차로 나눠 넣으세요.</span>{' '}
-              같은 순번의 값을 모아 상자그림으로 그려 값이 얼마나 되풀이되는지 보여 줍니다.
-            </li>
-          </ul>
         </details>
 
-        <div className="mt-6">
+        <div className="mt-4">
           <label htmlFor="serial-data" className="text-body font-semibold">시리얼 모니터 내용</label>
           <textarea
             id="serial-data"
@@ -731,8 +701,8 @@ export function DataAnalysisPage() {
               읽었습니다.
             </p>
             <p className="mt-1 text-caption">
-              그중 숫자로 읽을 수 있는 측정값 열은 {numericColumns.length}개입니다.
-              {croppedAway > 0 && ` 구간을 잘라 ${croppedAway.toLocaleString('ko-KR')}개 행을 뺐습니다.`}
+              숫자 열 {numericColumns.length}개
+              {croppedAway > 0 && ` · 구간 자르기로 ${croppedAway.toLocaleString('ko-KR')}개 행 제외`}
             </p>
             {/* 행 수는 실제로 분석에 쓰인 수를 보여 줍니다. 구간을 자른 뒤에도 원래
                 행 수가 남아 있으면 위의 합계와 어긋나 보입니다. */}
@@ -756,9 +726,6 @@ export function DataAnalysisPage() {
             </ul>
             <div className="mt-3">
               <Button variant="outline" onClick={saveCsv}>CSV 파일로 저장</Button>
-              <span className="ml-3 text-caption">
-                {hasRepeats ? '회차를 구분하는 열이 맨 앞에 함께 저장됩니다. ' : ''}더한 열도 함께 저장됩니다.
-              </span>
             </div>
           </div>
         )}
@@ -785,22 +752,19 @@ export function DataAnalysisPage() {
               <legend className="text-body font-semibold">분석 방식</legend>
               <div className="mt-2 flex flex-wrap gap-6">
                 {([
-                  { value: 'basic', label: '기본', hint: '붙여넣은 값을 그대로 요약하고 그립니다.' },
-                  { value: 'advanced', label: '고급', hint: '구간 자르기, 열 더하기, 격자 표까지 씁니다.' },
+                  { value: 'basic', label: '기본' },
+                  { value: 'advanced', label: '고급 (구간 자르기 · 열 더하기 · 격자)' },
                 ] as const).map((option) => (
-                  <label key={option.value} className="flex items-start gap-2 text-body">
+                  <label key={option.value} className="flex items-center gap-2 text-body">
                     <input
                       type="radio"
                       name="analysis-level"
                       value={option.value}
                       checked={level === option.value}
                       onChange={() => setLevel(option.value)}
-                      className="mt-1 size-4 accent-accent"
+                      className="size-4 accent-accent"
                     />
-                    <span>
-                      {option.label}
-                      <span className="block text-caption text-muted">{option.hint}</span>
-                    </span>
+                    <span>{option.label}</span>
                   </label>
                 ))}
               </div>
@@ -816,12 +780,6 @@ export function DataAnalysisPage() {
 
           <section aria-labelledby="summary-step" className="mt-12">
             <h2 id="summary-step" className="text-heading font-semibold">{sectionNumber('summary')}. 측정값 요약</h2>
-            <p className="mt-2 text-body text-muted">
-              각 측정값 열이 어떤 범위에 얼마나 퍼져 있는지 보여 줍니다. 표준편차는 반복 측정한 값들이 평균에서 흩어진
-              정도이며, 결과를 얼마나 믿을 수 있는지 보여 줍니다. 사분위수는 값을 크기순으로 늘어놓았을 때의 25%·50%·75%
-              지점입니다.
-              {hasRepeats && ' 회차별 행을 함께 두어 실험을 다시 했을 때 값이 얼마나 되풀이되는지 볼 수 있습니다.'}
-            </p>
 
             {summaries.length === 0 ? (
               <p className="mt-4 rounded-card border border-border bg-muted-background p-4 text-body text-muted">
@@ -876,18 +834,9 @@ export function DataAnalysisPage() {
           {advanced && (
             <section aria-labelledby="columns-step" className="mt-12">
               <h2 id="columns-step" className="text-heading font-semibold">{sectionNumber('columns')}. 구간과 열 다듬기</h2>
-              <p className="mt-2 max-w-3xl text-body text-muted">
-                레시피가 요구하는 그래프의 축이 붙여넣은 표에 없을 때 씁니다. 볼 구간을 먼저 자르고, 사람이 재어 적는 값과
-                계산해서 나오는 값을 열로 더합니다. 더한 열은 요약표·그래프·CSV에 모두 함께 실립니다.
-              </p>
 
-              <div className="mt-6 rounded-card border border-border p-5">
+              <div className="mt-4 rounded-card border border-border p-5">
                 <h3 className="text-body font-semibold">구간 자르기</h3>
-                <p className="mt-2 text-caption text-muted">
-                  기록 전체가 아니라 한 토막만 볼 때 씁니다. 낙하하는 동안, 가속하는 동안, 가열하는 동안처럼요. 자르기는
-                  계산보다 먼저 이루어지므로, 자른 뒤에 <code>time_ms - first(time_ms)</code>로 시간을 0부터 다시 셀 수
-                  있습니다.
-                </p>
                 <div className="mt-4 grid gap-4 sm:grid-cols-3">
                   <div>
                     <label htmlFor="range-column" className="text-caption font-medium">기준 열</label>
@@ -936,11 +885,8 @@ export function DataAnalysisPage() {
 
               <div className="mt-6 grid gap-6 lg:grid-cols-2">
                 <div className="rounded-card border border-border p-5">
-                  <h3 className="text-body font-semibold">조건 값 열 — 회차마다 값 하나</h3>
-                  <p className="mt-2 text-caption text-muted">
-                    회차 하나가 조건 하나일 때 씁니다. 열을 만들고 회차마다 잰 값을 적으면, 그 값이 회차의 모든 행에 들어가
-                    가로축으로 쓸 수 있게 됩니다.
-                  </p>
+                  <h3 className="text-body font-semibold">조건 값 열</h3>
+                  <p className="mt-1 text-caption text-muted">회차마다 직접 잰 값 하나를 적어 넣습니다.</p>
 
                   <div className="mt-4 flex flex-wrap items-end gap-3">
                     <div className="grow">
@@ -1006,14 +952,10 @@ export function DataAnalysisPage() {
                 </div>
 
                 <div className="rounded-card border border-border p-5">
-                  <h3 className="text-body font-semibold">계산 열 — 다른 열로 만드는 값</h3>
-                  <p className="mt-2 text-caption text-muted">
-                    열 이름과 숫자를 <code>+ - * /</code>와 괄호, 거듭제곱 <code>^</code>으로 엮어 적습니다. 삼각함수는
-                    라디안이 아니라 <b>도(°)</b>로 계산합니다. 앞서 만든 계산 열을 다음 식에서 다시 쓸 수 있습니다.
-                  </p>
-                  <p className="mt-2 text-caption text-muted">
-                    예: <code>ln(excess_temperature_c)</code> · <code>cos(각도_deg)^2</code> ·{' '}
-                    <code>hall_raw - mean(hall_raw)</code> · <code>diff(distance_m)/diff(time_ms)*1000</code>
+                  <h3 className="text-body font-semibold">계산 열</h3>
+                  <p className="mt-1 text-caption text-muted">
+                    열 이름과 숫자를 <code>+ - * / ^</code>와 괄호로 엮습니다. 예:{' '}
+                    <code>diff(distance_m)/diff(time_ms)*1000</code>
                   </p>
 
                   <div className="mt-4 space-y-3">
@@ -1103,9 +1045,8 @@ export function DataAnalysisPage() {
                     <span>
                       {activeGroupName} 값마다 열을 따로 만들기
                       <span className="block text-caption text-muted">
-                        같은 순번끼리 나란히 놓아 <code>측정값_{groupCandidates.find((candidate) => candidate.name === activeGroupName)?.values[0] ?? '0'}</code>{' '}
-                        같은 열을 만듭니다. 같은 시각 두 지점의 온도 차처럼 계열끼리 빼야 나오는 값을 계산 열로 구할 수
-                        있습니다. 펼치는 동안에는 계열 나누기를 쓰지 않습니다.
+                        <code>측정값_{groupCandidates.find((candidate) => candidate.name === activeGroupName)?.values[0] ?? '0'}</code>{' '}
+                        같은 열이 생겨 계열끼리 빼는 계산을 할 수 있습니다.
                       </span>
                     </span>
                   </label>
@@ -1116,15 +1057,10 @@ export function DataAnalysisPage() {
 
           <section aria-labelledby="chart-step" className="mt-12">
             <h2 id="chart-step" className="text-heading font-semibold">{sectionNumber('chart')}. 그래프 그리기</h2>
-            <p className="mt-2 text-body text-muted">
-              가로축과 세로축에 놓을 변인을 고르세요. 그래프는 흰 바탕·검은 축의 논문 그림 형식으로 그려지며, 화면 테마와
-              상관없이 항상 같은 모습으로 저장됩니다.
-            </p>
 
             {numericColumns.length < 2 ? (
               <p className="mt-4 rounded-card border border-border bg-muted-background p-4 text-body text-muted">
-                그래프를 그리려면 숫자 열이 두 개 이상 필요합니다. 시간과 측정값을 함께 출력하도록 스케치를 고치거나, 고급
-                분석에서 조건 값 열을 더해 보세요.
+                그래프를 그리려면 숫자 열이 두 개 이상 필요합니다.
               </p>
             ) : (
               <>
@@ -1147,9 +1083,7 @@ export function DataAnalysisPage() {
                     <div>
                       <label htmlFor="y-axis-column" className="text-body font-semibold">세로축(y) 변인</label>
                       <p className="mt-1 text-caption text-muted">
-                        {usesGrouping
-                          ? '계열을 나눌 때는 변인 하나만 그립니다. 계열과 변인을 함께 겹치면 선이 너무 많아 어느 것이 무엇인지 읽을 수 없습니다.'
-                          : '회차를 비교할 때는 변인 하나만 그립니다. 회차와 변인을 함께 겹치면 선이 너무 많아 어느 것이 무엇인지 읽을 수 없습니다.'}
+                        {usesGrouping ? '계열을 나눌 때는' : '회차를 비교할 때는'} 변인 하나만 그립니다.
                       </p>
                       <select
                         id="y-axis-column"
@@ -1168,8 +1102,7 @@ export function DataAnalysisPage() {
                     <fieldset>
                       <legend className="text-body font-semibold">세로축(y) 변인</legend>
                       <p className="mt-1 text-caption text-muted">
-                        최대 {MAX_SERIES}개까지 함께 그립니다. 단위가 다른 변인을 겹쳐 그리면 세로축 눈금이 한쪽에만
-                        맞으니 단위가 같은 변인끼리 고르세요.
+                        단위가 같은 변인끼리 최대 {MAX_SERIES}개.
                       </p>
                       <div className="mt-2 space-y-2">
                         {numericColumns
@@ -1212,11 +1145,7 @@ export function DataAnalysisPage() {
                 {groupCandidates.length > 0 && !pivotActive && (
                   <div className="mt-6 rounded-card border border-border p-4">
                     <label htmlFor="group-column" className="text-body font-semibold">계열 나누기 기준</label>
-                    <p className="mt-1 text-caption text-muted">
-                      한 열의 값마다 계열을 하나씩 그립니다. 센서를 번갈아 기록하는 <code>channel</code>·<code>index</code>·
-                      <code>position</code> 열이나 조건 이름을 담은 <code>condition_id</code> 열을 고르세요. 나누기를 쓰면
-                      회차는 모두 합쳐 그립니다.
-                    </p>
+                    <p className="mt-1 text-caption text-muted">고른 열의 값마다 계열을 하나씩 그립니다.</p>
                     <select
                       id="group-column"
                       value={activeGroupName}
@@ -1258,10 +1187,7 @@ export function DataAnalysisPage() {
                           />
                           <span>
                             상자그림으로 모아 보기
-                            <span className="block text-caption text-muted">
-                              같은 순번의 측정값을 모아 사분위수 상자와 최솟값·최댓값 수염으로 그립니다. 같은 조건을
-                              되풀이해 잰 회차에 씁니다.
-                            </span>
+                            <span className="block text-caption text-muted">같은 조건을 되풀이해 잰 회차</span>
                           </span>
                         </label>
                         <label className="flex items-start gap-2 text-body">
@@ -1278,8 +1204,8 @@ export function DataAnalysisPage() {
                             회차별로 나누어 보기
                             <span className="block text-caption text-muted">
                               {tooManyTrialsForPerTrialView
-                                ? `회차가 ${MAX_TRIAL_SERIES}개를 넘으면 색으로 구분할 수 없어 상자그림 보기만 쓸 수 있습니다.`
-                                : '회차마다 다른 색과 점 모양으로 그립니다. 회차마다 조건을 바꿔 잰 경우에는 이 보기를 쓰세요.'}
+                                ? `회차 ${MAX_TRIAL_SERIES}개까지만 색으로 나눌 수 있습니다`
+                                : '회차마다 조건을 바꿔 잰 경우'}
                             </span>
                           </span>
                         </label>
@@ -1294,10 +1220,7 @@ export function DataAnalysisPage() {
                           />
                           <span>
                             회차를 합쳐 한 계열로 보기
-                            <span className="block text-caption text-muted">
-                              모든 회차의 점을 한 계열로 그리고 직선 하나를 맞춥니다. 회차 하나가 조건 하나여서 조건들이
-                              함께 직선을 이루는 실험(실 길이별 주기, 부하별 단자전압)에 씁니다.
-                            </span>
+                            <span className="block text-caption text-muted">회차 하나가 점 하나가 되는 경우</span>
                           </span>
                         </label>
                       </div>
@@ -1314,11 +1237,6 @@ export function DataAnalysisPage() {
                           />
                           <span>회차별 측정값도 옅게 함께 표시</span>
                         </label>
-                        <p className="mt-2 text-caption text-muted">
-                          상자는 값의 절반이 모인 구간(제1~제3사분위수)이고, 가운데 굵은 선은 중앙값, 점은 평균입니다.
-                          수염은 최솟값과 최댓값까지 뻗으므로 모든 측정값이 수염 안에 들어옵니다. 회차가 서너 번뿐이면
-                          상자는 사실상 값이 퍼진 범위를 나타냅니다.
-                        </p>
                       </div>
                     )}
 
@@ -1326,16 +1244,13 @@ export function DataAnalysisPage() {
                       <p className="mt-4 text-caption text-muted">
                         측정 순번 {aggregate.points.length.toLocaleString('ko-KR')}개 중{' '}
                         {aggregate.repeatedCount.toLocaleString('ko-KR')}개에서 두 회차 이상 측정되어 상자를 그릴 수
-                        있습니다. 한 회차에서만 측정된 순번은 평균 점만 찍힙니다.
+                        있습니다.
                       </p>
                     )}
 
                     {spreadWarning && (
                       <p role="alert" className="mt-2 rounded-card border border-warning bg-warning-background p-3 text-caption text-warning">
-                        회차마다 가로축 값이 크게 다릅니다. 같은 순번끼리 모으는 방식이므로, 회차별로 다른 조건을
-                        측정했다면 상자그림은 뜻을 잃습니다. 조건마다 기울기를 따로 구하려면 <b>회차별로 나누어 보기</b>로
-                        바꿔 아래 회차별 기울기 표를 읽고, 조건들이 함께 직선 하나를 이루는 실험이라면{' '}
-                        <b>회차를 합쳐 한 계열로 보기</b>를 고르세요.
+                        회차마다 가로축 값이 크게 다릅니다. 회차마다 조건을 바꿔 쟀다면 위에서 다른 보기 방식을 고르세요.
                       </p>
                     )}
                   </div>
@@ -1379,10 +1294,10 @@ export function DataAnalysisPage() {
                     {!relation && (
                       <p className="mt-1 text-caption text-muted">
                         {usesGrouping
-                          ? '계열마다의 직선은 아래 기울기 비교 표에 있습니다.'
+                          ? '계열마다의 직선은 아래 비교 표에 있습니다.'
                           : hasRepeats
-                            ? '상자그림 보기나 합쳐 보기에서 회귀직선을 그릴 수 있습니다.'
-                            : '세로축 변인을 하나만 고르면 회귀직선을 그릴 수 있습니다.'}
+                            ? '상자그림 보기나 합쳐 보기에서 그릴 수 있습니다.'
+                            : '세로축 변인을 하나만 고르면 그릴 수 있습니다.'}
                       </p>
                     )}
                   </div>
@@ -1417,9 +1332,7 @@ export function DataAnalysisPage() {
                   <Button onClick={() => void saveChartPng()} disabled={chartSeries.length === 0}>
                     그래프를 PNG 그림으로 저장
                   </Button>
-                  <span className="text-caption text-muted">
-                    {CHART_WIDTH * 2}×{CHART_HEIGHT * 2} 크기로 저장되어 보고서에 붙여도 글자가 또렷합니다.
-                  </span>
+                  <span className="text-caption text-muted">{CHART_WIDTH * 2}×{CHART_HEIGHT * 2}px</span>
                 </div>
 
                 {chartError && (
@@ -1435,7 +1348,7 @@ export function DataAnalysisPage() {
             <section aria-labelledby="relation-step" className="mt-12">
               <h2 id="relation-step" className="text-heading font-semibold">{sectionNumber('relation')}. 두 변인의 관계</h2>
               <p className="mt-2 text-body text-muted">
-                가로축 {xColumn.name}, 세로축 {yColumns[0].name}의 관계를 최소제곱법으로 직선에 맞춘 결과입니다.
+                {xColumn.name} · {yColumns[0].name}을 최소제곱법으로 직선에 맞춘 결과입니다.
               </p>
 
               {relation && (
@@ -1456,7 +1369,7 @@ export function DataAnalysisPage() {
                       </dd>
                     </div>
                     <div className="rounded-card border border-border p-4">
-                      <dt className="text-caption text-muted">직선이 측정값을 얼마나 잘 설명하는지 나타내는 값(R²)</dt>
+                      <dt className="text-caption text-muted">설명력(R²)</dt>
                       <dd className="mt-1 text-body font-semibold">
                         {relation.determination === null ? '—' : formatMeasurement(relation.determination)}
                       </dd>
@@ -1464,8 +1377,7 @@ export function DataAnalysisPage() {
                   </dl>
                   {relation.correlation !== null && (
                     <p className="mt-4 text-body text-muted">
-                      {describeCorrelation(relation.correlation)} 다만 r과 R²는 두 값이 함께 변한 정도만 알려 줄 뿐,
-                      한쪽이 다른 쪽의 원인이라는 뜻은 아닙니다.
+                      {describeCorrelation(relation.correlation)} 다만 인과관계를 뜻하지는 않습니다.
                     </p>
                   )}
                 </>
@@ -1516,7 +1428,7 @@ export function DataAnalysisPage() {
                     <p className="mt-3 text-body text-muted">
                       {comparison.label}별 기울기의 평균은 {formatMeasurement(slopeSpread.mean)}이고, 표준편차는{' '}
                       {slopeSpread.standardDeviation === null ? '—' : formatMeasurement(slopeSpread.standardDeviation)}
-                      입니다. 표준편차가 평균에 비해 작을수록 실험이 잘 되풀이된 것입니다.
+                      입니다.
                     </p>
                   )}
                 </div>
@@ -1527,10 +1439,7 @@ export function DataAnalysisPage() {
           {showGrid && (
             <section aria-labelledby="grid-step" className="mt-12">
               <h2 id="grid-step" className="text-heading font-semibold">{sectionNumber('grid')}. 격자로 보기</h2>
-              <p className="mt-2 max-w-3xl text-body text-muted">
-                센서를 놓은 자리 그대로 평균값을 늘어놓습니다. 교실 격자의 조도 분포처럼 어디가 밝고 어디가 어두운지를
-                보는 탐구는 꺾은선보다 이 표가 읽기 쉽습니다. 색은 거들 뿐이고 값은 언제나 숫자로 함께 적힙니다.
-              </p>
+              <p className="mt-2 max-w-3xl text-body text-muted">센서를 놓은 자리 그대로 평균값을 늘어놓습니다.</p>
 
               <div className="mt-4 flex flex-wrap items-end gap-4">
                 {usesGrouping && (
@@ -1573,8 +1482,8 @@ export function DataAnalysisPage() {
           <section aria-labelledby="table-step" className="mt-12">
             <h2 id="table-step" className="text-heading font-semibold">{sectionNumber('table')}. 데이터 확인</h2>
             <p className="mt-2 text-body text-muted">
-              그래프의 점 하나하나에 해당하는 값입니다. 전체 {totalRowCount.toLocaleString('ko-KR')}개 행 중 처음{' '}
-              {Math.min(PREVIEW_ROW_LIMIT, totalRowCount)}개를 보여 줍니다. 나머지는 CSV 파일에서 확인하세요.
+              전체 {totalRowCount.toLocaleString('ko-KR')}개 행 중 처음 {Math.min(PREVIEW_ROW_LIMIT, totalRowCount)}개.
+              나머지는 CSV 파일에 들어 있습니다.
             </p>
             <div className="mt-4 overflow-x-auto">
               <table className="w-full border-collapse text-caption">
@@ -1611,7 +1520,7 @@ export function DataAnalysisPage() {
       )}
 
       <p className="mt-12 text-caption text-muted">
-        붙여넣은 내용은 이 브라우저 안에서만 계산되며 서버나 Firebase로 전송되지 않습니다.
+        붙여넣은 내용은 이 브라우저 밖으로 나가지 않습니다.
       </p>
     </div>
   )

@@ -242,7 +242,6 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
 
       <section aria-labelledby="wiring-title" className="mt-8">
         <h2 id="wiring-title" className="text-2xl font-semibold">1. 배선하기</h2>
-        <p className="mt-2 text-muted">먼저 완성 모습을 확인한 뒤 한 단계씩 체크하세요.</p>
         <div data-testid="wiring-layout" className="mt-5 min-w-0 space-y-6">
           <div ref={stickyRef} className="sticky top-16 z-20 w-full bg-background pb-2 lg:top-20"><WiringIllustration recipe={recipe} activeStep={active} /></div>
           <ol data-testid="wiring-steps" className="min-w-0 space-y-3">
@@ -303,7 +302,7 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
         {machine.completed && (
           <aside className="mt-6 rounded-card border border-success bg-success-background p-5">
             <h3 className="font-semibold text-success">배선 완료 → 이제 코드를 실행할 차례예요</h3>
-            <p className="mt-2">PC에서 이 페이지를 열고 아래 코드를 Arduino IDE에 복사하세요.</p>
+            <p className="mt-2 text-caption">PC에서 이어서 하려면 주소를 옮겨 가세요.</p>
             <Button className="mt-3" variant="outline" onClick={() => void copyPageLink()}>
               {linkCopied === 'copied' ? '주소 복사됨' : linkCopied === 'failed' ? '복사 실패' : '페이지 주소 복사'}
             </Button>

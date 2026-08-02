@@ -66,8 +66,8 @@ export function CodeBlock({ code, tunables = [] }: { code: string; tunables?: Tu
         <aside key={tunable.anchor} className="border-t border-border bg-warning-background p-4">
           <strong className="text-warning">바꿔볼 값: {tunable.name}</strong>
           <p className="mt-1 text-caption">
-            표시 줄 {Math.max(1, lines.findIndex((line) => line.tunableAnchor === tunable.anchor || line.text.includes(tunable.anchor)) + 1)}의
-            {' '}{tunable.anchor} 값을 바꾸세요. {tunable.hint}
+            {Math.max(1, lines.findIndex((line) => line.tunableAnchor === tunable.anchor || line.text.includes(tunable.anchor)) + 1)}번 줄{' '}
+            <code>{tunable.anchor}</code> · {tunable.hint}
           </p>
         </aside>
       ))}
