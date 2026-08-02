@@ -1,22 +1,38 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
+import { BreadboardMap } from '@/components/BreadboardMap'
+import { ResistorBands } from '@/components/ResistorBands'
 import { Button } from '@/components/ui/button'
 import { CodeBlock } from '@/components/ui/CodeBlock'
 import { SafeMarkdown } from '@/components/ui/SafeMarkdown'
 import { SimBadge } from '@/components/ui/SimBadge'
 import { WiringIllustration } from '@/components/WiringIllustration'
 import { canarySimStatus, studentRecipes } from '@/data/studentCatalog'
+import { sensors } from '@/data/inventory-seed/sensors'
 import { INVENTORY_VERSION } from '@/data/inventory-seed/version'
 import { useWiringSteps } from '@/hooks/useWiringSteps'
+import { downloadBlob } from '@/lib/downloadFile'
 import { loadProgress, PROGRESS_VERSION, saveProgress } from '@/progress'
 import { sendAnonymousEvent } from '@/telemetry/events'
 import { authorizeAdminPreview, loadAdminPreviewRecipe } from '@/firebase/adminPreview'
 import { loadDynamicSearchIndex, loadPublishedRecipe } from '@/firebase/contentRepository'
-import { ARDUINO_IDE_URL, firstRunSteps, firstRunTroubleshooting, safetyNotice } from '@/recipes/firstRun'
+import { helpCardText, lessonPlan } from '@/recipes/classroom'
+import {
+  ARDUINO_IDE_URL,
+  breadboardBasics,
+  firstRunSteps,
+  firstRunTroubleshooting,
+  safetyNotice,
+} from '@/recipes/firstRun'
+import { firstReadingFor } from '@/recipes/firstReading'
+import { glossaryFor } from '@/recipes/glossary'
 import { librariesFor } from '@/recipes/libraries'
 import { jumperWireLabel, partsFor, shortComponentLabel, type PartLine } from '@/recipes/parts'
+import { powerChecks } from '@/recipes/powerCheck'
+import { sketchSummary } from '@/recipes/sketchSummary'
 import type { Recipe } from '@/schema'
 import { planBreadboardWiring } from '@/wokwi/buildDiagram'
+import { studentSimulationFor, WOKWI_NEW_PROJECT_URL } from '@/wokwi/studentSimulation'
 
 export interface PreviewServices {
   authorize: () => Promise<boolean>
@@ -211,6 +227,17 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
   const safety = safetyNotice(recipe.body)
   const libraries = librariesFor(recipe.sketch)
   const steps = firstRunSteps(libraries.install.length > 0)
+  const checks = powerChecks(recipe)
+  const reading = firstReadingFor(recipe)
+  const glossary = glossaryFor(recipe)
+  const summary = sketchSummary(recipe)
+  const plan = lessonPlan(recipe)
+  const simulation = studentSimulationFor(recipe, sensors)
+  const checkedSteps = machine.checked.filter(Boolean).length
+
+  function downloadSimulationFile(name: string, text: string) {
+    downloadBlob(new Blob([text], { type: 'text/plain;charset=utf-8' }), name)
+  }
   // 레시피가 쓴 증상을 먼저 보여 주고, 어느 레시피에서나 똑같이 겪는 첫 실행
   // 문제를 뒤에 붙입니다. 같은 증상을 이미 적어 둔 레시피는 그것을 남깁니다.
   const troubleshooting = [
@@ -238,6 +265,55 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
         <h1 className="mt-3 text-4xl font-semibold">{recipe.title}</h1>
       </header>
 
+      {/* 수업이 45분에 끊기는 것을 화면은 모릅니다. 시작하기 전에 알아야 어디에서
+          끊을지 정할 수 있으므로 준비물보다 앞에 둡니다. */}
+      <details className="mt-6 max-w-3xl rounded-card border border-border p-4">
+        <summary className="cursor-pointer font-semibold">
+          수업 시간에 어떻게 나눌까요 — 45분 수업 {plan.classes}차시 분량
+        </summary>
+        <ul className="mt-3 space-y-2">
+          {plan.stages.map((stage) => (
+            <li key={stage.title} className="flex justify-between gap-4">
+              <span>{stage.title}</span>
+              <span className="shrink-0 text-muted">약 {stage.minutes}분</span>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-3 text-caption text-muted">{plan.breakAdvice.replace(/\*\*/g, '')}</p>
+      </details>
+
+      {simulation && (
+        <details className="mt-4 max-w-3xl rounded-card border border-border p-4">
+          <summary className="cursor-pointer font-semibold">
+            부품이 없나요 — 브라우저 시뮬레이터에서 먼저 해보기
+          </summary>
+          <p className="mt-3 text-caption text-muted">
+            이 레시피는 공개 시뮬레이터에 있는 부품만 씁니다. 아래 두 파일을 받아 넣으면 실제 보드 없이 같은
+            값을 볼 수 있습니다. 다만 시뮬레이터의 값은 진짜 측정값이 아니므로, 탐구 결과로 쓰려면 실제 보드로
+            다시 재야 합니다.
+          </p>
+          <ol className="mt-3 space-y-2">
+            <li>
+              1. <a className="text-accent hover:underline" href={WOKWI_NEW_PROJECT_URL} target="_blank" rel="noreferrer noopener">wokwi.com에서 새 아두이노 우노 프로젝트</a>를 엽니다.
+            </li>
+            <li>2. 아래에서 받은 두 파일의 내용을 각각 같은 이름의 칸에 붙여 넣습니다.</li>
+            {simulation.libraries.length > 0 && (
+              <li>
+                3. 라이브러리 관리자에 <code className="text-syntax-string">{simulation.libraries.join(', ')}</code>를 더합니다.
+              </li>
+            )}
+          </ol>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <Button variant="outline" onClick={() => downloadSimulationFile('diagram.json', simulation.diagram)}>
+              diagram.json 내려받기
+            </Button>
+            <Button variant="outline" onClick={() => downloadSimulationFile('sketch.ino', simulation.sketch)}>
+              sketch.ino 내려받기
+            </Button>
+          </div>
+        </details>
+      )}
+
       <section aria-labelledby="parts-title" className="mt-8 max-w-3xl">
         <h2 id="parts-title" className="text-2xl font-semibold">1. 준비물 챙기기</h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -254,6 +330,23 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
           <strong className="text-warning">꽂기 전에 읽으세요</strong>
           <p className="mt-1 text-caption">{safety}</p>
         </aside>
+
+        {/* 단계는 "어디에 꽂는가"만 알려 줍니다. 한 칸 밀려 꽂았을 때 스스로 되짚으려면
+            어떤 구멍이 서로 이어져 있는지를 알아야 하므로 단계보다 먼저 둡니다. */}
+        <details className="mt-4 max-w-3xl rounded-card border border-border p-4">
+          <summary className="cursor-pointer font-semibold">
+            브레드보드가 처음이라면 — 어떤 구멍이 서로 이어져 있나
+          </summary>
+          <BreadboardMap />
+          <ul className="mt-3 space-y-3">
+            {breadboardBasics.map((item) => (
+              <li key={item.title}>
+                <strong>{item.title}</strong>
+                <span className="mt-1 block text-caption text-muted">{item.detail}</span>
+              </li>
+            ))}
+          </ul>
+        </details>
         <div data-testid="wiring-layout" className="mt-5 min-w-0 space-y-6">
           <div ref={stickyRef} className="sticky top-16 z-20 w-full bg-background pb-2 lg:top-20"><WiringIllustration recipe={recipe} activeStep={active} /></div>
           <ol data-testid="wiring-steps" className="min-w-0 space-y-3">
@@ -304,6 +397,32 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
             ))}
           </ol>
         </div>
+        {/* 체크 상자는 "꽂았는가"만 묻습니다. 맞게 꽂았는지는 여기에서 한 번 더 봅니다.
+            전원을 넣은 뒤에 읽으면 늦으므로 코드 절로 넘어가기 전에 둡니다. */}
+        <section aria-labelledby="power-check-title" className="mt-6 max-w-3xl rounded-card border border-warning bg-warning-background p-5">
+          <h3 id="power-check-title" className="font-semibold text-warning">USB를 꽂기 전에 — 마지막 점검 {checks.length}가지</h3>
+          <ul className="mt-3 space-y-3">
+            {checks.map((check) => (
+              <li key={check.question}>
+                <strong>{check.question}</strong>
+                <span className="mt-1 block text-caption">{check.detail}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <details className="mt-4 max-w-3xl rounded-card border border-border p-4">
+          <summary className="cursor-pointer font-semibold">이 화면에 나오는 말의 뜻</summary>
+          <dl className="mt-3 space-y-2">
+            {glossary.map((entry) => (
+              <div key={entry.term}>
+                <dt className="inline font-semibold">{entry.term}</dt>
+                <dd className="ml-2 inline text-caption text-muted">{entry.meaning}</dd>
+              </div>
+            ))}
+          </dl>
+        </details>
+
         <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background px-page pt-3 [padding-bottom:calc(0.75rem+env(safe-area-inset-bottom))] lg:static lg:mt-5 lg:border-0 lg:p-0">
           <div className="mx-auto flex max-w-3xl items-center justify-between gap-3">
             <Button variant="outline" disabled={active === 0} onClick={() => machine.setActiveStep(active - 1)}>이전</Button>
@@ -385,7 +504,49 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
           <span className="text-muted"> · 업로드 뒤 [도구] → [시리얼 모니터]를 열고 오른쪽 아래에서 맞추세요.</span>
         </p>
 
+        {/* 코드를 처음 보는 학생에게 스케치는 복사할 덩어리일 뿐입니다. 흐름을
+            먼저 알려 주어야 노란 줄을 바꿀 때 무엇이 달라지는지 짐작할 수 있습니다. */}
+        <div className="mt-4 max-w-3xl rounded-card border border-border p-4">
+          <h3 className="font-semibold">이 코드가 하는 일</h3>
+          <div className="prose mt-2">
+            <SafeMarkdown source={summary.map((line) => `- ${line}`).join('\n')} />
+          </div>
+        </div>
+
         <div className="mt-3 overflow-hidden rounded-card border border-border"><CodeBlock code={recipe.sketch} tunables={recipe.tunables} /></div>
+
+        {/* 값이 나오기만 하면 측정이 되고 있다고 믿기 쉽습니다. 고장났을 때만 나오는
+            값을 여기에서 걸러 내지 못하면 한 시간을 헛측정하고 데이터 화면에서야 압니다. */}
+        <section aria-labelledby="first-reading-title" className="mt-6 max-w-3xl rounded-card border border-border p-5">
+          <h3 id="first-reading-title" className="font-semibold">처음 나온 값이 정상인지 확인하기</h3>
+          {reading.normal.length > 0 && (
+            <ul className="mt-3 space-y-2">
+              {reading.normal.map((line) => (
+                <li key={line}>
+                  <span className="font-semibold text-success">정상</span>
+                  <span className="ml-2">{line}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+          <table className="mt-4 w-full text-left">
+            <caption className="sr-only">시리얼 모니터에 나온 값과 그 뜻</caption>
+            <thead>
+              <tr className="border-b border-border">
+                <th scope="col" className="py-2 pr-4 font-semibold">이런 값이 나오면</th>
+                <th scope="col" className="py-2 font-semibold">무엇을 다시 보나</th>
+              </tr>
+            </thead>
+            <tbody>
+              {reading.signals.map((signal) => (
+                <tr key={signal.sign} className="border-b border-border align-top">
+                  <td className="py-2 pr-4">{signal.sign}</td>
+                  <td className="py-2 text-muted">{signal.meaning}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
       </section>
       <section className="prose mt-12 max-w-3xl" aria-labelledby="guide-title"><h2 id="guide-title" className="text-2xl font-semibold">4. 탐구 가이드</h2><SafeMarkdown source={recipe.body} checklistScope={`guide:${recipe.id}`} /></section>
       <section className="mt-12 max-w-3xl" aria-labelledby="record-title">
@@ -394,8 +555,48 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
         <Link className="mt-4 inline-block text-accent hover:underline" to="/data-analysis">데이터 변환·분석 화면 열기 →</Link>
       </section>
       <section className="mt-12 max-w-3xl" aria-labelledby="application-title"><h2 id="application-title" className="text-2xl font-semibold">응용해 보기</h2><div className="mt-3 text-muted"><SafeMarkdown source={recipe.applicationGuide} /></div></section>
-      <section className="mt-12 max-w-3xl" aria-labelledby="trouble-title"><h2 id="trouble-title" className="text-2xl font-semibold">문제가 생겼나요?</h2><div className="mt-4 space-y-3">{troubleshooting.map((item) => <details key={item.symptom} className="rounded-card border border-border p-4"><summary className="cursor-pointer font-semibold">{item.symptom}</summary><p className="mt-3 text-muted">원인: {item.cause}</p><p className="mt-2">해결: {item.fix}</p></details>)}</div></section>
+      <section className="mt-12 max-w-3xl" aria-labelledby="trouble-title"><h2 id="trouble-title" className="text-2xl font-semibold">문제가 생겼나요?</h2><div className="mt-4 space-y-3">{troubleshooting.map((item) => <details key={item.symptom} className="rounded-card border border-border p-4"><summary className="cursor-pointer font-semibold">{item.symptom}</summary><p className="mt-3 text-muted">원인: {item.cause}</p><p className="mt-2">해결: {item.fix}</p></details>)}</div>
+        <HelpCard recipe={activeRecipe} checkedSteps={checkedSteps} />
+      </section>
     </article>
+  )
+}
+
+/**
+ * 위 목록에서 답을 찾지 못했을 때 물어보러 가는 자리.
+ *
+ * "안 돼요"라는 말만으로는 선생님도 처음부터 다시 짚어야 합니다. 화면이 이미
+ * 아는 것(레시피, 속도, 어디까지 했는지)을 채워 두면 그만큼을 건너뜁니다.
+ * 빈칸은 학생이 채워야 하는 것이라 지어내지 않고 그대로 둡니다.
+ */
+function HelpCard({ recipe, checkedSteps }: { recipe: Recipe; checkedSteps: number }) {
+  const [copied, setCopied] = useState<'idle' | 'copied' | 'failed'>('idle')
+  const text = helpCardText({ recipe, checkedSteps })
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopied('copied')
+    } catch {
+      setCopied('failed')
+    }
+  }
+
+  return (
+    <div className="mt-6 rounded-card border border-border p-5">
+      <h3 className="font-semibold">그래도 안 되면 — 선생님께 보여 줄 카드</h3>
+      <p className="mt-2 text-caption text-muted">
+        아래 내용을 복사해 빈칸만 채워 보여 주면, 무엇부터 봐야 하는지 곧바로 알 수 있습니다.
+      </p>
+      <pre className="mt-3 overflow-x-auto rounded-card bg-muted-background p-4 text-caption">{text}</pre>
+      <Button className="mt-3" variant="outline" onClick={() => void copy()}>
+        {copied === 'copied' ? '복사됨' : copied === 'failed' ? '복사 실패' : '카드 복사'}
+      </Button>
+      <span className="sr-only" aria-live="polite">{copied === 'copied' ? '도움 요청 카드가 복사되었습니다.' : ''}</span>
+      {copied === 'failed' && (
+        <p className="mt-2 text-caption">이 브라우저에서는 복사할 수 없습니다. 위 내용을 직접 옮겨 적으세요.</p>
+      )}
+    </div>
   )
 }
 
@@ -413,6 +614,8 @@ function PartsGroup({ title, lines, note }: { title: string; lines: PartLine[]; 
               ? <Link className="text-accent hover:underline" to={`/sensors/${line.sensorId}`}>{line.name}</Link>
               : line.name}
             {' '}<span className="text-muted">{line.count}개</span>
+            {/* 저항은 값이 인쇄되어 있지 않아 이름만으로는 서랍에서 고를 수 없습니다. */}
+            {line.ohms !== undefined && <ResistorBands ohms={line.ohms} />}
             {line.note && <span className="mt-1 block text-caption text-muted">{line.note}</span>}
           </li>
         ))}

@@ -211,3 +211,64 @@ describe('Phase 3 student flow', () => {
     expect(await screen.findByRole('heading', { name: '이 레시피는 현재 볼 수 없어요' })).toBeInTheDocument()
   })
 })
+
+/**
+ * 아두이노도 배선도 코딩도 처음인 학생이 **화면 밖에서** 멈추던 자리들입니다.
+ * 부품을 손에 들었을 때, 전원을 넣기 직전, 첫 숫자를 봤을 때가 그 자리입니다.
+ */
+describe('처음인 학생이 멈추던 자리', () => {
+  /**
+   * 체크 상자는 "꽂았는가"만 묻습니다. VCC와 GND를 바꿔 꽂은 학생도 모든 칸에
+   * 표시를 하고 넘어가므로, 전원을 넣기 전에 한 번 더 묻는 자리가 필요합니다.
+   */
+  it('asks what to re-check before the USB goes in, drawn from the wiring itself', () => {
+    renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
+
+    const check = screen.getByRole('region', { name: /USB를 꽂기 전에/ })
+    // 점검 문항의 끝점은 이 레시피의 실제 배선에서 온 것입니다.
+    expect(check).toHaveTextContent('MPU6050.VCC')
+    expect(check).toHaveTextContent('MPU6050.GND')
+    expect(check).toHaveTextContent(/탄 냄새/)
+  })
+
+  /**
+   * 값이 나오기만 하면 측정이 되고 있다고 믿기 쉽습니다. 고장났을 때만 나오는
+   * 값을 여기에서 걸러 내지 못하면 한 시간을 헛측정합니다.
+   */
+  it('says what a healthy first reading looks like, and which values mean broken wiring', () => {
+    renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
+
+    const reading = screen.getByRole('region', { name: '처음 나온 값이 정상인지 확인하기' })
+    expect(reading).toHaveTextContent(/평평한 책상에 두면/)
+    expect(reading).toHaveTextContent('여섯 값이 모두 0입니다')
+    // 센서와 상관없이 겪는 증상도 같은 표에 함께 둡니다.
+    expect(reading).toHaveTextContent('알아볼 수 없는 기호만 나옵니다')
+  })
+
+  it('explains the sketch before showing it', () => {
+    renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
+
+    const summary = screen.getByRole('heading', { name: '이 코드가 하는 일' }).closest('div')!
+    expect(summary).toHaveTextContent('115200 baud')
+    expect(summary).toHaveTextContent(/loop\(\)/)
+  })
+
+  /** 한 칸 밀려 꽂았을 때 스스로 되짚으려면 어떤 구멍이 이어져 있는지를 알아야 합니다. */
+  it('folds the breadboard primer away but keeps it above the wiring steps', () => {
+    renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
+
+    const primer = screen.getByText(/브레드보드가 처음이라면/)
+    expect(primer.closest('details')).not.toHaveAttribute('open')
+    expect(screen.getByRole('img', { name: /브레드보드 연결 그림/ })).toBeInTheDocument()
+  })
+
+  it('fills the help card with what the screen already knows', () => {
+    renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
+
+    const card = screen.getByRole('heading', { name: /선생님께 보여 줄 카드/ }).closest('div')!
+    expect(card).toHaveTextContent(`${pendulumRecipe.wiring.length}단계 중 0단계까지 확인함`)
+    expect(card).toHaveTextContent('115200 baud')
+    // 학생이 채울 자리를 지어내지 않습니다.
+    expect(card).toHaveTextContent('무엇이 안 되나요:')
+  })
+})

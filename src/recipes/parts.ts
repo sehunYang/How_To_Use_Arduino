@@ -143,6 +143,19 @@ export interface PartLine {
   note?: string
   /** 재고에 등록된 센서라면 그 id. 있으면 센서 설명 화면으로 이어 줍니다. */
   sensorId?: string
+  /** 저항이라면 그 값(Ω). 색띠 그림을 그리는 데 씁니다. */
+  ohms?: number
+}
+
+/**
+ * 이 토큰이 저항이면 값을 Ω으로 돌려줍니다. `CDS_RESISTOR`는 이름에 값이 숨어
+ * 있어(10 kΩ) 토큰만으로는 셈할 수 없으므로 따로 적어 둡니다.
+ */
+export function resistorOhms(component: string): number | undefined {
+  const base = baseToken(component)
+  if (base === 'CDS_RESISTOR') return 10_000
+  const resistor = /^RESISTOR_(\d+)$/.exec(base)
+  return resistor ? Number(resistor[1]) : undefined
 }
 
 /** 브레드보드와 아두이노 사이 두 끝이 각각 암 소켓인지 보고 점퍼선 종류를 고릅니다. */
@@ -195,6 +208,7 @@ export function partsFor(recipe: Pick<Recipe, 'wiring'>): PartsList {
     count: tokens.size,
     note: PART_NOTES[base],
     sensorId: SENSOR_ID_BY_TOKEN[base],
+    ohms: resistorOhms(base),
   }))
 
   return {
