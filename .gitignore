@@ -24,8 +24,10 @@ firestore-debug.log
 ui-debug.log
 storage-debug.log
 
-# Ralph session-scoped runtime state (progress logs, prd.json working copy)
-.omc/state/
+# Ralph session-scoped runtime state (progress logs, prd.json working copy).
+# 도구가 작업 디렉터리를 따라 `src/data/.omc/`처럼 아무 데나 만들기도 하므로
+# 뿌리에 붙은 것만이 아니라 어느 깊이에서든 무시합니다.
+**/.omc/state/
 
 # Project-local toolchain: the arduino-cli binary, the arduino:avr core,
 # installed libraries and staged .ino sketch folders (see
