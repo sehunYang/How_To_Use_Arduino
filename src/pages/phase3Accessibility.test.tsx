@@ -59,6 +59,15 @@ describe('Phase 3 WCAG AA automated checks', () => {
           { timeout: LAZY_ROUTE_WAIT },
         )
 
+        /*
+          빈 화면에는 위반이 없습니다. 라우터가 아무것도 못 찾아 아무것도 그리지
+          않으면 이 검사는 조용히 통과하고, 그 뒤로는 무엇을 검사하는지 알 수
+          없게 됩니다. 실제로 배포 워크플로가 job 전체에 VITE_BASE_PATH를 걸어
+          두어 이 검사가 몇 주 동안 빈 문서를 통과시켰습니다. 그러니 검사 전에
+          화면이 그려졌는지부터 확인합니다.
+        */
+        expect(container.querySelector('main'), `${route}에서 화면이 그려지지 않았습니다`).toBeInTheDocument()
+
         const result = await axe.run(container, {
           runOnly: {
             type: 'tag',

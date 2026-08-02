@@ -27,17 +27,6 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      # Single source of truth for emitted asset URLs and the client router.
-      # shy.ai.kr exposes this project beneath the repository subpath.
-      VITE_BASE_PATH: /How_To_Use_Arduino/
-      # Vite only exposes variables prefixed with VITE_ to browser code.
-      # The repository secrets use the shared FIREBASE_* names consumed by
-      # the verification workflows, so map them explicitly for the SPA build.
-      VITE_FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
-      VITE_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
-      VITE_FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
-      VITE_FIREBASE_APPCHECK_SITE_KEY: ${{ secrets.FIREBASE_APPCHECK_SITE_KEY }}
     steps:
       - uses: actions/checkout@v4
 
@@ -64,7 +53,25 @@ jobs:
         # regression must fail this build, not be discovered later.
         run: npm run test:rules
 
+      # These belong to the build alone. Setting them on the whole job also
+      # handed them to `npm test`, where Vitest exposes any VITE_-prefixed
+      # variable through `import.meta.env`. The router then took
+      # /How_To_Use_Arduino as its basename while the tests navigated to /,
+      # so React Router matched nothing and rendered an empty document: the
+      # WCAG sweep passed on a blank page for weeks, and the one assertion
+      # that demands an element be present (the skip link) failed instead.
       - run: npm run build
+        env:
+          # Single source of truth for emitted asset URLs and the client router.
+          # shy.ai.kr exposes this project beneath the repository subpath.
+          VITE_BASE_PATH: /How_To_Use_Arduino/
+          # Vite only exposes variables prefixed with VITE_ to browser code.
+          # The repository secrets use the shared FIREBASE_* names consumed by
+          # the verification workflows, so map them explicitly for the SPA build.
+          VITE_FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          VITE_FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          VITE_FIREBASE_APPCHECK_SITE_KEY: ${{ secrets.FIREBASE_APPCHECK_SITE_KEY }}
 
       - name: SPA deep-link fallback for GitHub Pages
         # GitHub Pages returns a real HTTP 404 status for any request path
