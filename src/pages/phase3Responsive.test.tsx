@@ -40,6 +40,8 @@ describe('Phase 3 responsive layout contracts', () => {
 
   it('keeps both recipe columns shrinkable and the wiring controls inside the viewport', () => {
     Element.prototype.scrollIntoView = () => undefined
+    // jsdom은 스크롤을 구현하지 않아 호출마다 경고를 냅니다. 실제 실패를 가립니다.
+    window.scrollBy = vi.fn()
     const { container } = render(
       <MemoryRouter initialEntries={['/recipes/pendulum']}>
         <Routes>

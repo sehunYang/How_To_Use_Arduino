@@ -29,7 +29,31 @@ afterEach(() => {
 })
 
 describe('WiringIllustration zoom and pan', () => {
-  it('zooms with the mouse wheel and caps the vector diagram at 500%', () => {
+  it('zooms with ctrl and the mouse wheel, capping the vector diagram at 500%', () => {
+    render(<WiringIllustration recipe={pendulumRecipe} activeStep={0} />)
+    const viewport = screen.getByTestId('wiring-viewport')
+
+    const wheel = new WheelEvent('wheel', {
+      deltaY: -2000,
+      clientX: 400,
+      clientY: 300,
+      ctrlKey: true,
+      bubbles: true,
+      cancelable: true,
+    })
+    expect(fireEvent(viewport, wheel)).toBe(false)
+    expect(wheel.defaultPrevented).toBe(true)
+    expect(screen.getByRole('button', { name: '배선도 원래 크기' })).toHaveTextContent('500%')
+    expect(screen.getByTestId('wiring-canvas')).toHaveStyle({
+      transform: 'translate(0px, 0px) scale(5)',
+    })
+  })
+
+  /**
+   * 배선도는 화면 위에 붙어 화면의 절반 넘게 덮습니다. 맨 휠까지 가로채면 학생이 그림 위에
+   * 마우스를 둔 채 굴려도 페이지가 움직이지 않아, 화면 대부분이 스크롤이 죽은 자리가 됩니다.
+   */
+  it('lets a plain wheel scroll the page instead of zooming', () => {
     render(<WiringIllustration recipe={pendulumRecipe} activeStep={0} />)
     const viewport = screen.getByTestId('wiring-viewport')
 
@@ -40,12 +64,47 @@ describe('WiringIllustration zoom and pan', () => {
       bubbles: true,
       cancelable: true,
     })
-    expect(fireEvent(viewport, wheel)).toBe(false)
-    expect(wheel.defaultPrevented).toBe(true)
-    expect(screen.getByRole('button', { name: '배선도 원래 크기' })).toHaveTextContent('500%')
-    expect(screen.getByTestId('wiring-canvas')).toHaveStyle({
-      transform: 'translate(0px, 0px) scale(5)',
-    })
+    fireEvent(viewport, wheel)
+
+    expect(wheel.defaultPrevented).toBe(false)
+    expect(screen.getByRole('button', { name: '배선도 원래 크기' })).toHaveTextContent('100%')
+  })
+
+  /**
+   * 확대는 단추로 되지만 옮기기는 끌기뿐이었습니다. 키보드만 쓰는 학생은 500%까지 키운 뒤
+   * 가운데밖에 볼 수 없어 확대가 사실상 쓸모없었습니다.
+   */
+  it('zooms and pans from the keyboard alone', () => {
+    render(<WiringIllustration recipe={pendulumRecipe} activeStep={0} />)
+    const viewport = screen.getByTestId('wiring-viewport')
+    expect(viewport).toHaveAttribute('tabindex', '0')
+
+    fireEvent.keyDown(viewport, { key: '+' })
+    expect(screen.getByRole('button', { name: '배선도 원래 크기' })).toHaveTextContent('150%')
+
+    fireEvent.keyDown(viewport, { key: 'ArrowRight' })
+    expect(screen.getByTestId('wiring-canvas').getAttribute('style')).toContain('translate(-24px, 0px)')
+
+    fireEvent.keyDown(viewport, { key: '0' })
+    expect(screen.getByTestId('wiring-canvas')).toHaveStyle({ transform: 'translate(0px, 0px) scale(1)' })
+  })
+
+  /** 100%일 때 화살표까지 가로채면 그림 위에서 페이지를 넘길 수 없는 덫이 됩니다. */
+  it('leaves the arrow keys to the page while the diagram is not enlarged', () => {
+    render(<WiringIllustration recipe={pendulumRecipe} activeStep={0} />)
+    const viewport = screen.getByTestId('wiring-viewport')
+
+    const arrow = new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true })
+    fireEvent(viewport, arrow)
+
+    expect(arrow.defaultPrevented).toBe(false)
+  })
+
+  it('describes the current step for screen readers', () => {
+    render(<WiringIllustration recipe={pendulumRecipe} activeStep={1} />)
+    const step = pendulumRecipe.wiring[1]
+
+    expect(screen.getByText(new RegExp(`${step.from}.*${step.to}.*${step.color}`))).toBeInTheDocument()
   })
 
   it('keeps the instructions and controls anchored inside the viewport', () => {
@@ -60,7 +119,7 @@ describe('WiringIllustration zoom and pan', () => {
     render(<WiringIllustration recipe={pendulumRecipe} activeStep={0} />)
     const viewport = screen.getByTestId('wiring-viewport')
 
-    fireEvent.wheel(viewport, { deltaY: -500, clientX: 400, clientY: 300 })
+    fireEvent.wheel(viewport, { deltaY: -500, clientX: 400, clientY: 300, ctrlKey: true })
     fireEvent.pointerDown(viewport, { pointerId: 1, clientX: 100, clientY: 100 })
     fireEvent.pointerMove(viewport, { pointerId: 1, clientX: 160, clientY: 140 })
     fireEvent.pointerUp(viewport, { pointerId: 1, clientX: 160, clientY: 140 })

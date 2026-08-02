@@ -29,6 +29,12 @@ function emitStudentEvent(event: Parameters<typeof sendAnonymousEvent>[0]) {
   void sendAnonymousEvent(event).catch(() => undefined)
 }
 
+function scrollWindowBy(top: number) {
+  if (Math.abs(top) < 1) return
+  const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
+  window.scrollBy({ top, behavior: reduce ? 'auto' : 'smooth' })
+}
+
 function jumperWireLabel(from: string, to: string): string {
   const endpoints = [from, to].map((endpoint) => endpoint.split('.')[0].toUpperCase())
   const femaleSocketCount = endpoints.filter(
@@ -103,6 +109,8 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
   const machine = useWiringSteps(recipe?.wiring ?? [], stored?.checked)
   const setActiveStep = machine.setActiveStep
   const stepRefs = useRef<Array<HTMLLIElement | null>>([])
+  /** 화면 위에 붙어 있는 배선도. 현재 단계를 이 아래로 내려 보내는 데 씁니다. */
+  const stickyRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (previewRequested) return
@@ -161,9 +169,35 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
     if (recipe?.status === 'published') emitStudentEvent({ recipeId: recipe.id, event: 'start' })
   }, [recipe])
 
+  /**
+   * 현재 단계를 배선도 **아래**로 데려옵니다.
+   *
+   * `scrollIntoView({ block: 'nearest' })`는 화면 위에 붙어 있는 것을 모릅니다.
+   * 배선도가 화면 위쪽에 붙어 화면의 절반 넘게 덮고 있으므로, 브라우저가 "이미 보인다"고
+   * 판단한 자리가 사실은 배선도 뒤였습니다. 다음 단계를 눌러도 이어야 할 두 핀과 점퍼선
+   * 색이 적힌 문장이 그림에 가려 보이지 않았습니다. 그래서 배선도의 실제 아래쪽 좌표를
+   * 재서, 단계 카드가 그보다 위에 있으면 그만큼 내려 줍니다.
+   */
   useEffect(() => {
     if (machine.activeStep === null) return
-    stepRefs.current[machine.activeStep]?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    const node = stepRefs.current[machine.activeStep]
+    if (!node) return
+
+    const gap = 12
+    const sticky = stickyRef.current
+    const stickyBox = sticky?.getBoundingClientRect()
+    // 배선도는 아직 글 흐름 안에 있을 수도, 이미 화면 위에 붙어 있을 수도 있습니다.
+    // 옮기고 나면 붙어 있을 자리를 기준으로 재야, 옮긴 뒤에 다시 가려지지 않습니다.
+    const pinnedTop = sticky ? Number.parseFloat(getComputedStyle(sticky).top) || 0 : 0
+    const coveredUntil = stickyBox ? Math.min(stickyBox.bottom, pinnedTop + stickyBox.height) : 0
+    const box = node.getBoundingClientRect()
+
+    if (box.top < coveredUntil + gap) {
+      scrollWindowBy(box.top - coveredUntil - gap)
+    } else if (box.bottom > window.innerHeight) {
+      // 단계 카드가 남은 자리보다 길면 아래쪽을 맞추려다 위쪽 문장을 가립니다. 위쪽을 살립니다.
+      scrollWindowBy(Math.min(box.top - coveredUntil - gap, box.bottom - window.innerHeight + gap))
+    }
   }, [machine.activeStep])
 
   if (previewRequested && !previewChecked) {
@@ -200,7 +234,7 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
         <h2 id="wiring-title" className="text-2xl font-semibold">1. 배선하기</h2>
         <p className="mt-2 text-muted">먼저 완성 모습을 확인한 뒤 한 단계씩 체크하세요.</p>
         <div data-testid="wiring-layout" className="mt-5 min-w-0 space-y-6">
-          <div className="sticky top-16 z-20 w-full bg-background pb-2 lg:top-20"><WiringIllustration recipe={recipe} activeStep={active} /></div>
+          <div ref={stickyRef} className="sticky top-16 z-20 w-full bg-background pb-2 lg:top-20"><WiringIllustration recipe={recipe} activeStep={active} /></div>
           <ol data-testid="wiring-steps" className="min-w-0 space-y-3">
             {recipe.wiring.map((step, index) => (
               <li

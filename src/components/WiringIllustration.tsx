@@ -102,7 +102,16 @@ export function WiringIllustration({
     if (pointers.current.size < 2) pinch.current = null
   }
 
+  /**
+   * 그냥 굴린 휠은 페이지를 넘기게 두고, Ctrl(⌘)을 누른 채 굴렸을 때만 확대합니다.
+   *
+   * 배선도는 화면 위쪽에 붙어 있고 화면의 절반 넘게 차지합니다. 휠을 모두 가로채면
+   * 학생이 화면 한가운데 마우스를 둔 채 아래로 굴려도 페이지가 꿈쩍하지 않고, 이미
+   * 100%인 배선도는 더 줄지도 않아 아무 일도 일어나지 않습니다. 트랙패드 손가락 확대는
+   * 브라우저가 ctrlKey를 켜서 보내므로 이 조건에 그대로 들어옵니다.
+   */
   wheelZoom.current = (event) => {
+    if (!event.ctrlKey && !event.metaKey) return
     event.preventDefault()
     event.stopPropagation()
     zoomAt(viewRef.current.scale * Math.exp(-event.deltaY * 0.002), event.clientX, event.clientY)
@@ -116,13 +125,56 @@ export function WiringIllustration({
     return () => element.removeEventListener('wheel', handleWheel)
   }, [])
 
+  /**
+   * 화면 낭독기에는 그림 대신 이 문장이 읽힙니다. 지금 이어야 할 두 핀과 점퍼선 색을
+   * 담아, 그림을 볼 수 없어도 이번 단계에 무엇을 해야 하는지 알 수 있게 합니다.
+   */
+  const panHintId = `wiring-pan-hint-${recipe.id}`
+  const step = recipe.wiring[activeStep]
+  const stepDescription = step
+    ? ` 지금은 ${activeStep + 1}단계로, ${step.from}과(와) ${step.to}을(를) ${step.color} 점퍼선으로 잇습니다.`
+    : ''
+
   return (
-    <figure className="relative overflow-hidden rounded-card border border-border bg-muted-background">
+    /*
+     * 배선도가 화면 높이의 절반을 넘지 않게 묶습니다. 화면 위에 붙어 있어서, 가로 폭만
+     * 따라가면 넓은 화면일수록 세로로도 커져 단계 문장이 설 자리가 없어집니다.
+     * 높이를 직접 자르면 그림이 가운데만 남고 양옆에 빈 띠가 생기므로, 비율은 그대로 두고
+     * 가로 폭을 묶어 상자째 줄입니다.
+     */
+    <figure className="relative mx-auto max-w-[calc(55svh*2/3)] overflow-hidden rounded-card border border-border bg-muted-background lg:max-w-[calc(55svh*16/9)]">
+      <p id={panHintId} className="sr-only">
+        {recipe.title} 배선도.{stepDescription} Ctrl(⌘)을 누른 채 휠을 굴리거나 두 손가락으로 최대 500%까지 확대할 수
+        있습니다. 키보드로는 더하기·빼기로 확대와 축소, 0으로 원래 크기, 확대한 뒤에는 화살표로 이동합니다.
+      </p>
       <div
         ref={viewport}
         data-testid="wiring-viewport"
+        tabIndex={0}
+        aria-describedby={panHintId}
         className={`relative aspect-[2/3] touch-none select-none lg:aspect-[16/9] ${view.scale > 1 ? 'cursor-grab active:cursor-grabbing' : ''}`}
-        aria-label={`${recipe.title} 완성 배선도. 마우스 휠 또는 두 손가락으로 최대 500%까지 확대하고, 확대 후 드래그해 이동할 수 있습니다.`}
+        /*
+         * 확대는 단추로 할 수 있지만 옮기기는 끌기뿐이었습니다. 키보드만 쓰는 학생은
+         * 500%까지 키운 뒤 가운데밖에 볼 수 없어, 확대 자체가 쓸모없어집니다.
+         */
+        onKeyDown={(event) => {
+          const step = event.shiftKey ? 80 : 24
+          const moves: Record<string, [number, number]> = {
+            ArrowLeft: [step, 0],
+            ArrowRight: [-step, 0],
+            ArrowUp: [0, step],
+            ArrowDown: [0, -step],
+          }
+          const move = moves[event.key]
+          if (move && viewRef.current.scale > 1) {
+            event.preventDefault()
+            commitView({ ...viewRef.current, x: viewRef.current.x + move[0], y: viewRef.current.y + move[1] })
+            return
+          }
+          if (event.key === '+' || event.key === '=') { event.preventDefault(); zoomAt(viewRef.current.scale + 0.5) }
+          if (event.key === '-' || event.key === '_') { event.preventDefault(); zoomAt(viewRef.current.scale - 0.5) }
+          if (event.key === '0') { event.preventDefault(); commitView({ scale: 1, x: 0, y: 0 }) }
+        }}
         onDoubleClick={(event) => viewRef.current.scale > 1
           ? commitView({ scale: 1, x: 0, y: 0 })
           : zoomAt(2, event.clientX, event.clientY)}
@@ -157,7 +209,7 @@ export function WiringIllustration({
           onPointerDown={(event) => event.stopPropagation()}
         >
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-micro leading-tight">휠·핀치로 최대 500% 확대 · 확대 후 드래그하여 이동</span>
+            <span className="text-micro leading-tight">Ctrl(⌘)+휠·핀치로 최대 500% 확대 · 드래그 또는 화살표로 이동</span>
             <span className="flex gap-1">
               <Button size="sm" variant="ghost" aria-label="배선도 축소" onClick={() => zoomAt(viewRef.current.scale - 0.5)}>−</Button>
               <Button size="sm" variant="ghost" aria-label="배선도 원래 크기" onClick={() => commitView({ scale: 1, x: 0, y: 0 })}>{Math.round(view.scale * 100)}%</Button>
