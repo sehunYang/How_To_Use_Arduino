@@ -22,6 +22,7 @@ const synonyms: SynonymMap = {
   에너지: ['힘', '동력'],
   거리: ['간격'],
   온도: ['열', '따뜻'],
+  빛: ['조도', '밝기'],
 }
 
 describe('buildIndexEntry / buildIndex', () => {
@@ -63,6 +64,7 @@ describe('search — dictionary + fuzzy pipeline', () => {
   // guarantees are exercised against a realistic-sized corpus.
   const index: SearchIndexEntry[] = [
     buildIndexEntry(pendulumRecipe)!,
+    stub({ id: 'damping', title: '진자의 감쇠와 에너지 손실률', coreKeywords: ['단진자', '감쇠', '진폭'] }),
     stub({ id: 'free-fall', title: '자유낙하 가속도 g 구하기', coreKeywords: ['자유낙하', '가속도', '거리'] }),
     stub({ id: 'fan-control', title: '온습도에 따른 자동 환풍기 제어', coreKeywords: ['온도', '습도', '환풍기'] }),
     stub({ id: 'light-follow', title: '빛을 따라가는 자동차', coreKeywords: ['빛', '자동차', '조도'] }),
@@ -80,6 +82,27 @@ describe('search — dictionary + fuzzy pipeline', () => {
   it('a synonym-only query (no exact core keyword) still surfaces the recipe via dictionary scoring', () => {
     const results = search('시계추가 힘을 잃지 않는지 궁금해요', index, synonyms)
     expect(results.map((r) => r.entry.id)).toContain('pendulum')
+  })
+
+  it('a query more general than the keyword ("진자" vs "단진자") matches via dictionary, not fuzzy', () => {
+    const results = search('진자', index, synonyms)
+    const damping = results.find((r) => r.entry.id === 'damping')
+    expect(damping).toBeDefined()
+    expect(damping!.via).toBe('dictionary')
+    expect(damping!.matchedKeywords).toContain('단진자')
+  })
+
+  it('a particle-suffixed sentence ("진자의 …") still reaches recipes keyed 단진자 in the top 3', () => {
+    const results = search('진자의 움직임을 측정하고 싶어요', index, synonyms)
+    const top3Ids = results.slice(0, 3).map((r) => r.entry.id)
+    expect(top3Ids).toContain('damping')
+  })
+
+  it('synonym groups are symmetric: a sibling variant ("밝기") reaches a recipe keyed by another variant ("조도")', () => {
+    const results = search('교실이 얼마나 밝기가 다른지 재고 싶어요', index, synonyms)
+    const lightFollow = results.find((r) => r.entry.id === 'light-follow')
+    expect(lightFollow).toBeDefined()
+    expect(lightFollow!.via).toBe('dictionary')
   })
 
   it('a nonsense query still returns at least 3 results via the fuzzy fallback', () => {

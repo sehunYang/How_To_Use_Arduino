@@ -1,6 +1,6 @@
 import Fuse from 'fuse.js'
 import type { SearchIndexEntry } from '@/schema'
-import { scoreAll, type SynonymMap } from './score'
+import { queryStems, scoreAll, type SynonymMap } from './score'
 
 export interface SearchResult {
   entry: SearchIndexEntry
@@ -17,7 +17,13 @@ export interface SearchOptions {
   minResults?: number
 }
 
-const DEFAULT_THRESHOLD = 3
+/**
+ * 2, not 3: one solid signal — a partial match ("진자" ⊂ "단진자") or a
+ * synonym hit — is enough to call a recipe genuinely relevant. Requiring a
+ * full core-keyword hit (3) demoted every partial-only match to the fuzzy
+ * fallback, where the UI presents it as "비슷한 탐구" instead of an answer.
+ */
+const DEFAULT_THRESHOLD = 2
 const DEFAULT_MIN_RESULTS = 3
 
 /**
@@ -57,16 +63,31 @@ export function search(
     ignoreLocation: true,
     includeScore: true,
   })
-  for (const hit of fuse.search(query)) {
-    if (seen.has(hit.item.id)) continue
+  // Fuzzy-search the whole query AND each stem: Fuse's bitap matcher gives
+  // up on sentence-length patterns, so "진자 길이에 따라 …" only finds
+  // anything when its individual words are searched too. Per entry, the
+  // best (lowest) Fuse score across all probes wins.
+  const bestFuzzy = new Map<string, { entry: SearchIndexEntry; score: number }>()
+  for (const probe of [query, ...queryStems(query)]) {
+    for (const hit of fuse.search(probe)) {
+      const fuseScore = hit.score ?? 1
+      const known = bestFuzzy.get(hit.item.id)
+      if (!known || fuseScore < known.score) {
+        bestFuzzy.set(hit.item.id, { entry: hit.item, score: fuseScore })
+      }
+    }
+  }
+  const fuzzyHits = [...bestFuzzy.values()].sort((a, b) => a.score - b.score)
+  for (const hit of fuzzyHits) {
+    if (seen.has(hit.entry.id)) continue
     results.push({
-      entry: hit.item,
+      entry: hit.entry,
       matchedKeywords: [],
       via: 'fuzzy',
-      relevanceScore: Math.max(0, (1 - (hit.score ?? 1)) * DEFAULT_THRESHOLD),
+      relevanceScore: Math.max(0, (1 - hit.score) * DEFAULT_THRESHOLD),
       sensorEligible: true,
     })
-    seen.add(hit.item.id)
+    seen.add(hit.entry.id)
     if (results.length >= minResults) return results
   }
 

@@ -18,27 +18,28 @@ export function SearchResultsPage() {
   const query = params.get('q')?.trim() ?? ''
   const index = buildIndex(studentRecipes)
   const results = search(query, index, synonyms)
-  const usedFuzzyFallback = results.some((result) => result.via === 'fuzzy')
-  useEffect(() => {
-    if (query && usedFuzzyFallback) {
-      void sendAnonymousEvent({
-        recipeId: 'search',
-        event: 'search_fail',
-        tokens: normalizeSearchTokens(query),
-      }).catch(() => undefined)
-    }
-  }, [query, usedFuzzyFallback])
-  const rankedSensors = rankSensors(results, sensorRationales)
-  const sensorCards = rankedSensors
-    .map(({ sensorId, whyText }) => ({ sensor: sensorById.get(sensorId), whyText }))
-    .filter((card): card is { sensor: NonNullable<typeof card.sensor>; whyText: string } => Boolean(card.sensor))
   /**
    * 딱 맞는 레시피가 하나도 없으면 검색은 비슷해 보이는 것들을 대신 내놓습니다.
    * 그 사실을 말해 주지 않으면, 학생은 화면에 뜬 레시피가 자기가 적은 탐구에 맞는 답이라고
    * 믿게 됩니다. 몇 개를 왜 보여 주는지 먼저 밝힙니다.
    */
   const exactCount = results.filter((result) => result.via !== 'fuzzy').length
-
+  // 사전 매칭이 전혀 없었을 때만 실패로 기록합니다. 결과 3개를 채우려고 붙인
+  // 퍼지 패딩까지 실패로 세면, 유의어 사전을 키울 근거 데이터가 오염됩니다.
+  const dictionaryMissed = exactCount === 0
+  useEffect(() => {
+    if (query && dictionaryMissed) {
+      void sendAnonymousEvent({
+        recipeId: 'search',
+        event: 'search_fail',
+        tokens: normalizeSearchTokens(query),
+      }).catch(() => undefined)
+    }
+  }, [query, dictionaryMissed])
+  const rankedSensors = rankSensors(results, sensorRationales)
+  const sensorCards = rankedSensors
+    .map(({ sensorId, whyText }) => ({ sensor: sensorById.get(sensorId), whyText }))
+    .filter((card): card is { sensor: NonNullable<typeof card.sensor>; whyText: string } => Boolean(card.sensor))
   return (
     <div className="mx-auto max-w-6xl">
       <Link to="/" className="text-caption text-accent hover:underline">← 다른 아이디어 검색</Link>
