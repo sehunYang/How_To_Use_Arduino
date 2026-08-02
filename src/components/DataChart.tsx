@@ -69,8 +69,18 @@ export interface ChartBox {
 export interface ChartPoint extends MeasurementPoint {
   /** 있으면 점 자리에 상자그림을 함께 그립니다. `y`는 상자 위에 얹는 평균입니다. */
   box?: ChartBox | null
+  /**
+   * 있으면 평균 위아래로 이만큼씩 오차막대를 그립니다(보통 표준편차).
+   * 보고서 그림에서 가장 많이 쓰는 표시라 상자그림과 따로 고를 수 있게 두었습니다.
+   */
+  errorBar?: number | null
   /** 점을 가리켰을 때 값과 함께 보여 줄 한 줄 설명 */
   note?: string
+}
+
+/** 상자그림이나 오차막대가 붙은 점은 평균을 작게 찍습니다. 표시가 점에 가리지 않게 하려고요. */
+function hasSpreadMark(point: ChartPoint): boolean {
+  return Boolean(point.box) || (point.errorBar !== null && point.errorBar !== undefined)
 }
 
 export interface ChartSeries {
@@ -164,10 +174,15 @@ export function DataChart({
 
     const allPoints = visibleSeries.flatMap((entry) => entry.points)
     const xExtent = extent([...allPoints, ...(contextPoints ?? [])].map((point) => point.x))
-    // 오차 막대 끝이 잘리지 않도록 세로 범위에 막대 길이를 함께 넣습니다.
+    // 수염이나 오차막대 끝이 잘리지 않도록 세로 범위에 그 끝까지 함께 넣습니다.
     const yExtent = extent([
-      // 수염 끝이 잘리지 않도록 세로 범위에 상자의 최솟값과 최댓값을 함께 넣습니다.
-      ...allPoints.flatMap((point) => (point.box ? [point.box.min, point.box.max] : [point.y])),
+      ...allPoints.flatMap((point) => {
+        if (point.box) return [point.box.min, point.box.max]
+        if (point.errorBar !== null && point.errorBar !== undefined) {
+          return [point.y - point.errorBar, point.y + point.errorBar]
+        }
+        return [point.y]
+      }),
       ...(contextPoints ?? []).map((point) => point.y),
     ])
     const xScale = createAxisScale(xExtent.min, xExtent.max)
@@ -397,18 +412,32 @@ export function DataChart({
 
         {projected.map((points, seriesIndex) => (
           <g key={visibleSeries[seriesIndex].key}>
-            {points.map((entry, pointIndex) =>
-              entry.point.box ? (
-                <BoxMark
+            {points.map((entry, pointIndex) => {
+              if (entry.point.box) {
+                return (
+                  <BoxMark
+                    key={pointIndex}
+                    box={entry.point.box}
+                    color={colors[seriesIndex]}
+                    cx={entry.cx}
+                    width={boxWidth}
+                    toScreenY={toScreenY}
+                  />
+                )
+              }
+              if (entry.point.errorBar === null || entry.point.errorBar === undefined) return null
+              return (
+                <ErrorBarMark
                   key={pointIndex}
-                  box={entry.point.box}
+                  center={entry.point.y}
+                  spread={entry.point.errorBar}
                   color={colors[seriesIndex]}
                   cx={entry.cx}
                   width={boxWidth}
                   toScreenY={toScreenY}
                 />
-              ) : null,
-            )}
+              )
+            })}
 
             {kind === 'line' && points.length > 1 && (
               <polyline
@@ -423,7 +452,7 @@ export function DataChart({
 
             {(kind === 'scatter' || (PLOT_RIGHT - PLOT_LEFT) / Math.max(1, points.length - 1) >= MIN_MARKER_SPACING) &&
               points.map((entry, pointIndex) =>
-                entry.point.box ? (
+                hasSpreadMark(entry.point) ? (
                   <circle
                     key={pointIndex}
                     cx={entry.cx}
@@ -497,6 +526,38 @@ function BoxMark({
         fillOpacity="0.12"
       />
       <line x1={cx - half} y1={toScreenY(box.median)} x2={cx + half} y2={toScreenY(box.median)} strokeWidth="2" />
+    </g>
+  )
+}
+
+/**
+ * 평균 위아래로 같은 길이만큼 뻗는 오차막대. 끝의 가로선은 상자그림의 수염과
+ * 같은 폭으로 그려서, 두 표시를 번갈아 봐도 크기 감각이 흔들리지 않게 합니다.
+ */
+function ErrorBarMark({
+  center,
+  spread,
+  color,
+  cx,
+  width,
+  toScreenY,
+}: {
+  center: number
+  spread: number
+  color: string
+  cx: number
+  width: number
+  toScreenY: (value: number) => number
+}) {
+  const capHalf = (width / 2) * WHISKER_CAP_RATIO
+  const top = toScreenY(center + spread)
+  const bottom = toScreenY(center - spread)
+
+  return (
+    <g stroke={color} strokeWidth="1.5" fill="none">
+      <line x1={cx} y1={top} x2={cx} y2={bottom} />
+      <line x1={cx - capHalf} y1={top} x2={cx + capHalf} y2={top} />
+      <line x1={cx - capHalf} y1={bottom} x2={cx + capHalf} y2={bottom} />
     </g>
   )
 }

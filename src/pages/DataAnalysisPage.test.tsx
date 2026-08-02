@@ -173,6 +173,25 @@ describe('DataAnalysisPage', () => {
       expect(within(summary).getAllByRole('row', { name: /^2회차/ })).toHaveLength(3)
     })
 
+    /**
+     * 탐구 가이드 여러 편이 "오차막대로 표시하라"고 시킵니다. 그동안 이 화면은
+     * 상자그림만 그릴 수 있어서, 시킨 일을 할 수 없는 상태였습니다.
+     */
+    it('draws mean ± standard deviation error bars when the report asks for them', async () => {
+      const user = userEvent.setup()
+      render(<DataAnalysisPage />)
+      await paste(user, RUN_1)
+      await paste(user, RUN_2)
+
+      await user.click(screen.getByRole('radio', { name: /오차막대/ }))
+
+      expect(screen.getByRole('img')).toHaveAccessibleName(/측정 순번마다 평균과 오차막대로 그렸습니다/)
+      expect(screen.getByText(/오차막대는 평균 위아래로 표준편차 한 배씩입니다/)).toBeInTheDocument()
+      expect(
+        screen.getByText(/측정 순번 3개 중 3개에서 두 회차 이상 측정되어 오차막대를 그릴 수 있습니다/),
+      ).toBeInTheDocument()
+    })
+
     it('draws one series per run when asked to compare them', async () => {
       const user = userEvent.setup()
       render(<DataAnalysisPage />)

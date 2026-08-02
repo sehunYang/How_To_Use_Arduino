@@ -67,6 +67,7 @@ const SUMMARY_COLUMNS = [
 ] as const
 
 type TrialView = 'box' | 'perTrial' | 'merged'
+type SummaryMark = 'box' | 'errorBar'
 
 /** 회차마다 사람이 적어 넣는 조건 값을 함께 들고 다니는 회차. */
 interface PageTrial extends Trial {
@@ -99,6 +100,12 @@ export function DataAnalysisPage() {
   const [yNames, setYNames] = useState<string[]>([])
   const [chartKind, setChartKind] = useState<ChartKind>('scatter')
   const [trialView, setTrialView] = useState<TrialView>('box')
+  /**
+   * 모아 볼 때 퍼진 정도를 무엇으로 그릴지. 상자그림은 값이 어떻게 놓였는지를
+   * 그대로 보여 주고, 오차막대는 보고서 그림에서 쓰는 평균±표준편차 표시입니다.
+   * 탐구 가이드가 "오차막대로 표시하라"고 시키는 레시피가 있어 둘 다 둡니다.
+   */
+  const [summaryMark, setSummaryMark] = useState<SummaryMark>('box')
   const [showTrialPoints, setShowTrialPoints] = useState(true)
   const [showTrendLine, setShowTrendLine] = useState(true)
   const [chartError, setChartError] = useState<string | null>(null)
@@ -279,7 +286,7 @@ export function DataAnalysisPage() {
       const points: ChartPoint[] = aggregate.points.map((point) => ({
         x: point.x,
         y: point.y,
-        box: point.count >= 2
+        box: summaryMark === 'box' && point.count >= 2
           ? {
               min: point.min,
               quartile1: point.quartile1,
@@ -288,7 +295,13 @@ export function DataAnalysisPage() {
               max: point.max,
             }
           : null,
-        note: `${point.count}회 측정 · 중앙값 ${formatMeasurement(point.median)} · 범위 ${formatMeasurement(point.min)}~${formatMeasurement(point.max)}`,
+        // 회차가 하나뿐인 순번은 퍼진 정도를 정할 수 없어 막대를 그리지 않습니다.
+        errorBar: summaryMark === 'errorBar' ? point.standardDeviation : null,
+        note: summaryMark === 'errorBar'
+          ? `${point.count}회 측정 · 평균 ${formatMeasurement(point.y)}${
+              point.standardDeviation === null ? '' : ` · 표준편차 ${formatMeasurement(point.standardDeviation)}`
+            }`
+          : `${point.count}회 측정 · 중앙값 ${formatMeasurement(point.median)} · 범위 ${formatMeasurement(point.min)}~${formatMeasurement(point.max)}`,
       }))
       return points.length > 0 ? [{ key: 'box', label: `${trials.length}회 요약`, points }] : []
     }
@@ -311,7 +324,7 @@ export function DataAnalysisPage() {
         points: pairValues(xColumn.values, column.values),
       }))
       .filter((entry) => entry.points.length > 0)
-  }, [xColumn, yColumns, usesGrouping, groups, groupPoints, activeGroupName, usesBoxView, usesMergedView, aggregate, hasRepeats, builtTrials, trials.length, trialPoints])
+  }, [xColumn, yColumns, usesGrouping, groups, groupPoints, activeGroupName, usesBoxView, summaryMark, usesMergedView, aggregate, hasRepeats, builtTrials, trials.length, trialPoints])
 
   const contextPoints = useMemo<MeasurementPoint[] | undefined>(
     () => (usesBoxView && showTrialPoints ? trialPoints.flat() : undefined),
@@ -601,18 +614,23 @@ export function DataAnalysisPage() {
   const seriesLabels = chartSeries.map((entry) => entry.label).join(', ')
   const pointCount = chartSeries.reduce((total, entry) => total + entry.points.length, 0)
   const yAxisLabel = singleVariableOnly ? (yColumns[0]?.name ?? '') : seriesLabels
-  const boxNote = usesBoxView
-    ? ' 상자는 제1사분위수부터 제3사분위수까지이고, 가운데 굵은 선은 중앙값, 점은 평균, 수염은 최솟값과 최댓값입니다.'
-    : ''
+  const usesErrorBars = usesBoxView && summaryMark === 'errorBar'
+  /** 그림 설명에서 표시를 부르는 이름. 캡션과 낭독 설명이 서로 어긋나지 않게 한곳에서 정합니다. */
+  const summaryMarkName = usesErrorBars ? '오차막대' : '상자'
+  const boxNote = !usesBoxView
+    ? ''
+    : usesErrorBars
+      ? ' 점은 회차별 값의 평균이고, 오차막대는 평균 위아래로 표준편차 한 배씩입니다.'
+      : ' 상자는 제1사분위수부터 제3사분위수까지이고, 가운데 굵은 선은 중앙값, 점은 평균, 수염은 최솟값과 최댓값입니다.'
   const chartCaption = xColumn
-    ? `그림 1. ${xColumn.name}에 따른 ${yAxisLabel} (${usesGrouping ? `${activeGroupName}별 ${groups.length}계열, ` : hasRepeats ? `${trials.length}회 반복, ` : ''}${usesBoxView ? '상자' : '점'} ${pointCount.toLocaleString('ko-KR')}개).${boxNote}`
+    ? `그림 1. ${xColumn.name}에 따른 ${yAxisLabel} (${usesGrouping ? `${activeGroupName}별 ${groups.length}계열, ` : hasRepeats ? `${trials.length}회 반복, ` : ''}${usesBoxView ? summaryMarkName : '점'} ${pointCount.toLocaleString('ko-KR')}개).${boxNote}`
     : ''
   const chartDescription = xColumn
     ? `가로축은 ${xColumn.name}, 세로축은 ${yAxisLabel}인 ${chartKind === 'scatter' ? '산점도' : '꺾은선 그래프'}입니다. ${
         usesBoxView
-          ? `${trials.length}개 회차의 값을 측정 순번마다 상자그림으로 그렸습니다.`
+          ? `${trials.length}개 회차의 값을 측정 순번마다 ${usesErrorBars ? '평균과 오차막대로' : '상자그림으로'} 그렸습니다.`
           : `계열은 ${seriesLabels}입니다.`
-      } ${usesBoxView ? '상자는' : '점은'} 모두 ${pointCount.toLocaleString('ko-KR')}개입니다.`
+      } ${usesBoxView ? `${summaryMarkName}는` : '점은'} 모두 ${pointCount.toLocaleString('ko-KR')}개입니다.`
     : ''
 
   // 이미 회차를 합쳐 보고 있다면 회차 사이가 벌어졌다는 경고는 알려 줄 것이 없습니다.
@@ -1227,7 +1245,39 @@ export function DataAnalysisPage() {
                     </fieldset>
 
                     {effectiveTrialView === 'box' && (
-                      <div className="mt-4 border-t border-border pt-4">
+                      <div className="mt-4 space-y-4 border-t border-border pt-4">
+                        <fieldset>
+                          <legend className="text-body font-semibold">퍼진 정도를 그리는 방법</legend>
+                          <div className="mt-2 space-y-2">
+                            {([
+                              {
+                                value: 'box',
+                                label: '상자그림',
+                                hint: '값이 실제로 어떻게 놓였는지 그대로 보여 줍니다',
+                              },
+                              {
+                                value: 'errorBar',
+                                label: '오차막대 (평균 ± 표준편차)',
+                                hint: '탐구 보고서 그림에서 가장 많이 쓰는 표시입니다',
+                              },
+                            ] as const).map((option) => (
+                              <label key={option.value} className="flex items-start gap-2 text-body">
+                                <input
+                                  type="radio"
+                                  name="summary-mark"
+                                  value={option.value}
+                                  checked={summaryMark === option.value}
+                                  onChange={() => setSummaryMark(option.value)}
+                                  className="mt-1 size-4 accent-accent"
+                                />
+                                <span>
+                                  {option.label}
+                                  <span className="block text-caption text-muted">{option.hint}</span>
+                                </span>
+                              </label>
+                            ))}
+                          </div>
+                        </fieldset>
                         <label className="flex items-center gap-2 text-body">
                           <input
                             type="checkbox"
@@ -1243,8 +1293,8 @@ export function DataAnalysisPage() {
                     {aggregate && effectiveTrialView === 'box' && (
                       <p className="mt-4 text-caption text-muted">
                         측정 순번 {aggregate.points.length.toLocaleString('ko-KR')}개 중{' '}
-                        {aggregate.repeatedCount.toLocaleString('ko-KR')}개에서 두 회차 이상 측정되어 상자를 그릴 수
-                        있습니다.
+                        {aggregate.repeatedCount.toLocaleString('ko-KR')}개에서 두 회차 이상 측정되어{' '}
+                        {summaryMark === 'errorBar' ? '오차막대를' : '상자를'} 그릴 수 있습니다.
                       </p>
                     )}
 
