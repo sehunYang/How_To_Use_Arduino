@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import '@testing-library/jest-dom/vitest'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import type { ReactNode } from 'react'
@@ -111,6 +111,46 @@ describe('Phase 3 student flow', () => {
     expect(libraries.closest('details')).not.toHaveAttribute('open')
     // 속도는 접지 않습니다. 틀리면 깨진 기호만 나오고 단서가 없습니다.
     expect(screen.getByText(/시리얼 모니터 속도 115200 baud/)).toBeInTheDocument()
+  })
+
+  /**
+   * 예전 가이드의 상자는 `□` 글자였습니다. 눌러도 아무 일이 없어 학생에게는
+   * 고장으로 보였습니다. 진짜로 눌리고, 다시 열어도 남아 있어야 합니다.
+   */
+  /**
+   * 이 화면에서는 접근성 이름으로 찾지 않고 `userEvent`도 쓰지 않습니다. KaTeX
+   * 스타일시트가 실린 뒤 jsdom의 `getComputedStyle`이 터지는데, 접근성 이름 계산과
+   * user-event의 pointer-events 검사가 모두 그것을 지나갑니다. user-event는 그때
+   * 클릭을 조용히 흘려 버려, 상자는 눌린 것처럼 보이지만 핸들러는 돌지 않습니다.
+   * 글자로 찾고 `fireEvent`로 눌러 그 함정을 피합니다.
+   */
+  function guideStep(text: RegExp) {
+    return screen.getByText(text).closest('li')!.querySelector('input[type="checkbox"]')!
+  }
+
+  it('lets the student tick a guide step and remembers it', async () => {
+    renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
+
+    const step = guideStep(/책상 모서리에 스탠드를 고정하고/)
+    expect(step).not.toBeChecked()
+    fireEvent.click(step)
+    expect(step).toBeChecked()
+
+    expect(window.localStorage.getItem('arduino-checklist:v1:guide:pendulum'))
+      .toContain('책상 모서리에 스탠드를 고정하고')
+
+    cleanup()
+    renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
+    expect(guideStep(/책상 모서리에 스탠드를 고정하고/)).toBeChecked()
+  })
+
+  it('numbers the guide steps so none looks skipped', () => {
+    renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
+
+    // 순서 있는 목록이라 번호가 붙고, 각 항목이 체크 상자를 하나씩 가집니다.
+    const list = screen.getByText(/책상 모서리에 스탠드를 고정하고/).closest('ol')
+    expect(list).toBeInTheDocument()
+    expect(list?.querySelectorAll('input[type="checkbox"]').length).toBeGreaterThanOrEqual(5)
   })
 
   it('sends the student from a part in the list to that sensor page', () => {

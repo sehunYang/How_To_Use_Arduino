@@ -387,7 +387,7 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
 
         <div className="mt-3 overflow-hidden rounded-card border border-border"><CodeBlock code={recipe.sketch} tunables={recipe.tunables} /></div>
       </section>
-      <section className="prose mt-12 max-w-3xl" aria-labelledby="guide-title"><h2 id="guide-title" className="text-2xl font-semibold">4. 탐구 가이드</h2><SafeMarkdown source={recipe.body} /></section>
+      <section className="prose mt-12 max-w-3xl" aria-labelledby="guide-title"><h2 id="guide-title" className="text-2xl font-semibold">4. 탐구 가이드</h2><SafeMarkdown source={recipe.body} checklistScope={`guide:${recipe.id}`} /></section>
       <section className="mt-12 max-w-3xl" aria-labelledby="record-title">
         <h2 id="record-title" className="text-2xl font-semibold">5. 측정값 저장하고 분석하기</h2>
         <p className="mt-3">시리얼 모니터에 쌓인 글을 <strong>열 이름이 적힌 첫 줄부터 끝까지</strong> 끌어서 복사한 뒤, 데이터 화면에 붙여 넣으세요. CSV 저장, 요약 통계, 그래프까지 같은 자리에서 이어집니다.</p>

@@ -6,6 +6,7 @@ import { concepts } from '@/data/inquiry/concepts'
 import { findCsvHeader } from '@/data/inquiry/columns'
 import { formatArduinoCode } from '@/lib/formatArduinoCode'
 import { inquiryPlans } from '@/data/inquiry/plans'
+import { isStatement } from '@/data/inquiryGuide'
 
 const canaryRecipes = [pendulumRecipe, multiTsl2591Recipe, ina219CurrentRecipe]
 const allRecipes = [...canaryRecipes, ...phase5Recipes, ...phase6Recipes]
@@ -94,6 +95,40 @@ describe('inquiry plan coverage', () => {
     }
   })
 
+  /**
+   * 탐구가 서툰 학생은 "장치를 설치합니다" 같은 문장 앞에서 멈춥니다. 조립
+   * 단계는 눈에 보이는 물건을 이름으로 부르고 한 줄에 한 동작만 담아야 합니다.
+   */
+  it('gives every recipe concrete, one-action setup steps', () => {
+    for (const [id, plan] of Object.entries(inquiryPlans)) {
+      expect(plan.setup.length, id).toBeGreaterThanOrEqual(4)
+      for (const step of plan.setup) {
+        expect(step, `${id}: ${step}`).toMatch(/(다|요)[.!?]$/)
+        expect(step.length, `${id}: ${step}`).toBeGreaterThan(12)
+        const sentences = step.split(/(?<=[다요][.!?])\s+/)
+        // 첫 문장이 체크 상자를 받는 동작입니다. 그것이 사실 문장이면 학생은
+        // 무엇을 해야 하는지 알 수 없습니다. 뒤따르는 문장은 이유이므로 괜찮습니다.
+        expect(isStatement(sentences[0]), `${id}: ${sentences[0]}`).toBe(false)
+        // 한 줄에 동작을 여럿 몰아넣으면 따라 하다 한 가지를 빠뜨립니다.
+        expect(sentences.length, `${id}: ${step}`).toBeLessThanOrEqual(2)
+      }
+    }
+  })
+
+  /** 돌려쓴 빈말은 어느 레시피에서도 그대로 쓸 수 있어 티가 나지 않습니다. */
+  it('does not reuse the same setup sentence across unrelated recipes', () => {
+    const seen = new Map<string, string[]>()
+    for (const [id, plan] of Object.entries(inquiryPlans)) {
+      for (const step of plan.setup) {
+        // 어느 레시피에서나 똑같은 마무리 동작은 되풀이돼도 됩니다.
+        if (/USB 케이블을 연결하고|2번 배선하기를 끝까지 마친 뒤/.test(step)) continue
+        seen.set(step, [...(seen.get(step) ?? []), id])
+      }
+    }
+    const shared = [...seen].filter(([, ids]) => ids.length > 3)
+    expect(shared.map(([step, ids]) => `${step} → ${ids.join(', ')}`)).toEqual([])
+  })
+
   it('references only concepts that exist in the dictionary', () => {
     for (const [id, plan] of Object.entries(inquiryPlans)) {
       for (const conceptId of plan.concepts) {
@@ -136,7 +171,7 @@ describe('rendered guide structure', () => {
   it('plans the run before it tells the student to start measuring', () => {
     for (const entry of allRecipes) {
       const titles = numberedHeadings(entry.body).map((heading) => heading.title)
-      const procedure = titles.indexOf('측정 순서')
+      const procedure = titles.indexOf('탐구 순서')
       if (procedure === -1) continue
       expect(titles.indexOf('실험 실행 계획'), entry.id).toBeLessThan(procedure)
     }
@@ -150,23 +185,25 @@ describe('rendered guide structure', () => {
   // `m` 없이 씁니다. `$`가 줄 끝을 뜻하면 제목 바로 아래 빈 줄에서 멈춰
   // 본문을 하나도 담지 못합니다.
   const procedureBody = (body: string) =>
-    /## \d+\. 측정 순서\n\n([\s\S]*?)(?=\n## |\n:::|$)/.exec(body)?.[1]
+    /## \d+\. 탐구 순서\n\n([\s\S]*?)(?=\n## |\n:::|$)/.exec(body)?.[1]
 
   it('checkboxes only the sentences that tell the student to do something', () => {
     for (const entry of allRecipes) {
       const section = procedureBody(entry.body)
       if (!section) continue
-      const boxed = [...section.matchAll(/^\d+\. □ (.+)$/gm)].map((match) => match[1])
+      const boxed = [...section.matchAll(/^\d+\. \[ \] (.+)$/gm)].map((match) => match[1])
       expect(boxed.length, entry.id).toBeGreaterThan(0)
       for (const step of boxed) {
-        expect(step, `${entry.id}: ${step}`).not.toMatch(/(입니다|있습니다|없습니다)[.!?]$/)
+        // 판정은 운영 코드와 같은 함수로 합니다. 검사가 따로 규칙을 들고 있으면
+        // `붙입니다`처럼 어간이 `-이다`인 동사를 서로 다르게 읽습니다.
+        expect(isStatement(step), `${entry.id}: ${step}`).toBe(false)
       }
     }
   })
 
   it('demotes an explanation to a sub-note under the step it belongs to', () => {
     const p1 = procedureBody(recipe('p1-pendulum-period').body)!
-    expect(p1).toMatch(/^\d+\. □ .*기록하세요\.$/m)
+    expect(p1).toMatch(/^\d+\. \[ \] .*기록하세요\.$/m)
     expect(p1).toContain('   - 봉우리는 추가 최하점을 지날 때마다(반주기마다) 생기므로 봉우리 수의 절반이 주기 수입니다.')
 
     const p4 = procedureBody(recipe('p4-friction-energy-loss').body)!
@@ -176,8 +213,9 @@ describe('rendered guide structure', () => {
   /** `…합니다.`로 지시하는 레시피가 통째로 딸림 줄로 밀려나면 안 됩니다. */
   it('keeps the -합니다 style recipes as numbered steps', () => {
     const plantGrowth = procedureBody(recipe('plant-growth').body)!
-    expect([...plantGrowth.matchAll(/^\d+\. □ /gm)]).toHaveLength(2)
-    expect(plantGrowth).not.toMatch(/^\s+- /m)
+    // 조립 6단계 + 레시피가 쓴 측정 방법 2단계가 한 줄기 번호로 이어집니다.
+    expect([...plantGrowth.matchAll(/^\d+\. \[ \] /gm)].length).toBeGreaterThanOrEqual(8)
+    expect(plantGrowth).toMatch(/^1\. \[ \] 화분을/m)
   })
 
   it('lists the controlled variables one per line instead of packing them into a cell', () => {

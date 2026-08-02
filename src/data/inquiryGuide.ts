@@ -141,12 +141,15 @@ function toSteps(text: string): string[] {
 }
 
 /**
- * 실제로 손을 움직이는 절만 각 줄 앞에 `□`를 답니다. 읽고 넘어가는 절과
- * 하나씩 해 나가는 절이 똑같이 생기면, 학생은 어디까지 했는지 표시할 곳이
- * 없어 같은 줄을 다시 읽습니다.
+ * 손을 움직이는 절은 번호 있는 **체크 목록**으로 냅니다.
+ *
+ * 예전에는 `□`를 글자로 찍었는데, 눌러도 아무 일이 없어 고장 난 것처럼
+ * 보였습니다. GFM 과제 목록 문법(`1. [ ]`)으로 쓰면 화면 쪽에서 진짜 상자로
+ * 바꿔 그리고, 체크한 자리가 브라우저에 남습니다(`SafeMarkdown`의
+ * `checklistScope` 참고). 번호는 순서 있는 목록이라 그대로 붙습니다.
  */
 function checklist(steps: string[], startAt = 1): string {
-  return steps.map((step, index) => `${index + startAt}. □ ${step}`).join('\n')
+  return steps.map((step, index) => `${index + startAt}. [ ] ${step}`).join('\n')
 }
 
 // ── 새 가이드 절 만들기 ───────────────────────────────────────────────────
@@ -254,7 +257,7 @@ function variableSection(plan: InquiryPlan): Section {
   // 측정 내내 하나씩 확인해야 하는 목록이라, 칸 안의 줄글이 아니라 표 밖의
   // 체크 목록으로 내보냅니다.
   const controls = plan.variables.controls
-    .map((item) => `- □ ${item}`)
+    .map((item) => `- [ ] ${item}`)
     .join('\n')
   return {
     title: '변인 설계',
@@ -298,8 +301,18 @@ const STATEMENT_ENDINGS = [
   '나오지 않습니다',
 ]
 
-function isStatement(sentence: string): boolean {
-  return STATEMENT_ENDINGS.some((ending) => new RegExp(`${ending}[.!?]$`).test(sentence))
+/**
+ * `붙입니다`, `섞입니다`처럼 어간에 `-이다`가 붙는 **동사**는 글자만 보면
+ * `입니다`로 끝납니다. 이것을 사실 문장으로 읽으면 "센서를 추에 붙입니다"라는
+ * 진짜 지시가 딸림 줄로 밀려납니다. 그 어간들을 앞에서 걸러 냅니다.
+ */
+const VERB_STEMS_BEFORE_IPNIDA = ['붙', '섞', '기울', '높', '줄', '늘', '쌓', '보', '쓰', '놓', '먹', '모', '녹']
+
+export function isStatement(sentence: string): boolean {
+  return STATEMENT_ENDINGS.some((ending) => {
+    const guard = ending === '입니다' ? `(?<!${VERB_STEMS_BEFORE_IPNIDA.join('|')})` : ''
+    return new RegExp(`${guard}${ending}[.!?]$`).test(sentence)
+  })
 }
 
 /**
@@ -308,8 +321,19 @@ function isStatement(sentence: string): boolean {
  * 없는 문장에도 체크 상자가 붙어, 학생은 무엇을 해야 끝나는지 알 수 없습니다.
  * 설명은 번호를 받지 않고 바로 앞 단계의 딸림 줄이 됩니다.
  */
-function toProcedure(sentences: string[]): string {
-  const steps: Array<{ action: string; notes: string[] }> = []
+function toProcedure(setup: string[], sentences: string[]): string {
+  // 장치를 놓고 조립하는 단계(`setup`)를 먼저, 레시피가 쓴 측정 방법을 이어
+  // 한 줄기 번호로 냅니다. 목록이 둘로 나뉘어 각각 1번부터 다시 시작하면
+  // 학생은 지금이 몇 번째인지 셀 수 없습니다.
+  //
+  // 조립 단계는 "무엇을 한다"에 "왜 그렇게 한다"가 붙어 있는 경우가 많습니다.
+  // 첫 문장만 체크 상자를 받고 나머지는 딸림 줄로 내립니다. 이유까지 체크할
+  // 일로 만들면 무엇을 해야 끝나는지 흐려지고, 이유를 지우면 학생은 왜 그렇게
+  // 놓아야 하는지 모른 채 따라 하게 됩니다.
+  const steps: Array<{ action: string; notes: string[] }> = setup.map((entry) => {
+    const [action, ...notes] = entry.split(/(?<=[다요][.!?])\s+/)
+    return { action, notes }
+  })
   const lead: string[] = []
   for (const sentence of sentences) {
     if (!isStatement(sentence)) steps.push({ action: sentence, notes: [] })
@@ -318,15 +342,19 @@ function toProcedure(sentences: string[]): string {
   }
   if (!steps.length) return checklist(sentences)
   const body = steps
-    .map((step, index) => [`${index + 1}. □ ${step.action}`, ...step.notes.map((note) => `   - ${note}`)].join('\n'))
+    .map((step, index) => [
+      `${index + 1}. [ ] ${step.action}`,
+      // 딸림 줄은 할 일이 아니라 설명이므로 상자를 주지 않습니다.
+      ...step.notes.map((note) => `   - ${note}`),
+    ].join('\n'))
     .join('\n')
   return lead.length ? `${lead.join(' ')}\n\n${body}` : body
 }
 
-function procedureSection(authored: AuthoredBody): Section {
-  const steps = toSteps(authored.sections.get('측정 방법') ?? '')
-  if (!steps.length) return null
-  return { title: '측정 순서', body: toProcedure(steps) }
+function procedureSection(plan: InquiryPlan, authored: AuthoredBody): Section {
+  const measurement = toSteps(authored.sections.get('측정 방법') ?? '')
+  if (!plan.setup.length && !measurement.length) return null
+  return { title: '탐구 순서', body: toProcedure(plan.setup, measurement) }
 }
 
 function columnSection(recipe: Recipe): Section {
@@ -393,51 +421,51 @@ function eventWorkbook(recipe: Recipe) {
   const repetitions = recipe.difficulty === '초급' ? 10 : 15
   return `이 탐구는 조건을 단계별로 바꾸는 실험이 아니라 **사건이 발생한 시점과 센서 응답**을 기록하는 실험입니다.
 
-| 항목 | 권장값 | 실제 사용값 | 확인 |
-|:---|---:|---:|:---:|
-| 예비 관찰 시간 | 60초 |  | □ |
-| 사건 반복 횟수 | ${repetitions}회 |  | □ |
-| 사건 사이 최소 간격 | 3초 |  | □ |
-| 기록할 시간 정보 | 발생 시각·응답 시각 |  | □ |
+| 항목 | 권장값 |
+|:---|---:|
+| 예비 관찰 시간 | 60초 |
+| 사건 반복 횟수 | ${repetitions}회 |
+| 사건 사이 최소 간격 | 3초 |
+| 기록할 시간 정보 | 발생 시각·응답 시각 |
 
-1. □ 60초간 예비 관찰하여 사건이 없을 때의 신호 범위와 오검출 여부를 확인합니다.
-2. □ 사건을 ${repetitions}회 독립적으로 일으키고 각 발생 시각과 센서가 검출한 시각을 빠짐없이 저장합니다.
-3. □ 한 사건의 신호가 끝난 뒤 다음 사건을 일으켜 서로 겹치지 않게 합니다.
-4. □ 저장한 CSV에서 누락률, 오검출률, 응답 지연과 반복 간 차이를 계산합니다.`
+1. [ ] 60초간 예비 관찰하여 사건이 없을 때의 신호 범위와 오검출 여부를 확인합니다.
+2. [ ] 사건을 ${repetitions}회 독립적으로 일으키고 각 발생 시각과 센서가 검출한 시각을 빠짐없이 저장합니다.
+3. [ ] 한 사건의 신호가 끝난 뒤 다음 사건을 일으켜 서로 겹치지 않게 합니다.
+4. [ ] 저장한 CSV에서 누락률, 오검출률, 응답 지연과 반복 간 차이를 계산합니다.`
 }
 
 function timeSeriesWorkbook(recipe: Recipe, intervalSeconds: number) {
   const durationMinutes = recipe.sensors.some((sensor) => sensor === 'ds18b20' || sensor === 'bme280') ? 30 : 10
   return `이 탐구는 **끊김 없는 연속 기록**에서 시간에 따른 변화를 찾는 실험입니다.
 
-| 항목 | 권장값 | 실제 사용값 | 확인 |
-|:---|---:|---:|:---:|
-| 예비 관찰 시간 | 60초 |  | □ |
-| 연속 기록 시간 | ${durationMinutes}분 이상 |  | □ |
-| 기록 간격 | ${intervalSeconds}초 |  | □ |
-| 함께 기록할 환경 정보 | 시작·종료 시각과 관찰 메모 |  | □ |
+| 항목 | 권장값 |
+|:---|---:|
+| 예비 관찰 시간 | 60초 |
+| 연속 기록 시간 | ${durationMinutes}분 이상 |
+| 기록 간격 | ${intervalSeconds}초 |
+| 함께 기록할 환경 정보 | 시작·종료 시각과 관찰 메모 |
 
-1. □ 센서 시각과 실제 시작 시각을 기록하고 60초간 예비 관찰하여 단선과 측정 범위 초과를 확인합니다.
-2. □ ${intervalSeconds}초 간격으로 ${durationMinutes}분 이상 중단 없이 원시 CSV를 저장합니다.
-3. □ 장치를 만지거나 주변 환경이 달라진 시각은 측정을 다시 배열하지 말고 관찰 메모로 남깁니다.
-4. □ 저장한 CSV에서 누락 구간을 확인한 뒤 이동평균, 변화량 또는 시간 추세를 계산합니다.`
+1. [ ] 센서 시각과 실제 시작 시각을 기록하고 60초간 예비 관찰하여 단선과 측정 범위 초과를 확인합니다.
+2. [ ] ${intervalSeconds}초 간격으로 ${durationMinutes}분 이상 중단 없이 원시 CSV를 저장합니다.
+3. [ ] 장치를 만지거나 주변 환경이 달라진 시각은 측정을 다시 배열하지 말고 관찰 메모로 남깁니다.
+4. [ ] 저장한 CSV에서 누락 구간을 확인한 뒤 이동평균, 변화량 또는 시간 추세를 계산합니다.`
 }
 
 function transientWorkbook(recipe: Recipe) {
   const repetitions = recipe.difficulty === '초급' ? 5 : 8
   return `이 탐구는 정상 상태의 조건표를 채우는 실험이 아니라 **한 번의 운동이나 과도 변화 전체 파형**을 기록하는 실험입니다.
 
-| 항목 | 권장값 | 실제 사용값 | 확인 |
-|:---|---:|---:|:---:|
-| 사건 전 기준 기록 | 2초 이상 |  | □ |
-| 사건 전체 기록 | 시작 전부터 종료 후까지 |  | □ |
-| 독립 시행 횟수 | ${repetitions}회 |  | □ |
-| 시간 정보 | 모든 행에 발생 시각 기록 |  | □ |
+| 항목 | 권장값 |
+|:---|---:|
+| 사건 전 기준 기록 | 2초 이상 |
+| 사건 전체 기록 | 시작 전부터 종료 후까지 |
+| 독립 시행 횟수 | ${repetitions}회 |
+| 시간 정보 | 모든 행에 발생 시각 기록 |
 
-1. □ 장치를 정지 상태로 두고 2초 이상 기준 신호를 기록한 뒤 한 번의 운동 또는 변화를 시작합니다.
-2. □ 변화가 완전히 끝난 뒤까지 동일한 간격으로 원시 CSV를 연속 저장합니다.
-3. □ 장치를 같은 시작 상태로 되돌린 뒤 총 ${repetitions}회의 독립 시행을 기록합니다.
-4. □ 주기, 봉우리, 적분값, 시간상수 또는 에너지는 스케치에서 미리 확정하지 말고 저장한 CSV를 후처리하여 구합니다.`
+1. [ ] 장치를 정지 상태로 두고 2초 이상 기준 신호를 기록한 뒤 한 번의 운동 또는 변화를 시작합니다.
+2. [ ] 변화가 완전히 끝난 뒤까지 동일한 간격으로 원시 CSV를 연속 저장합니다.
+3. [ ] 장치를 같은 시작 상태로 되돌린 뒤 총 ${repetitions}회의 독립 시행을 기록합니다.
+4. [ ] 주기, 봉우리, 적분값, 시간상수 또는 에너지는 스케치에서 미리 확정하지 말고 저장한 CSV를 후처리하여 구합니다.`
 }
 
 function comparisonWorkbook(recipe: Recipe) {
@@ -451,20 +479,20 @@ function comparisonWorkbook(recipe: Recipe) {
 - 표본 수와 측정 간격은 **모든 조건에서 같게** 유지합니다.
 - 안정화 시간 자체가 분석 대상이면 기다리지 말고 조건을 바꾼 순간부터 계속 기록합니다.
 
-| 항목 | 권장값 | 실제 사용값 | 확인 |
-|:---|---:|---:|:---:|
-| 독립 변인 조건 수 | ${levels}단계 |  | □ |
-| 조건 간 반복 | ${repeats}회 |  | □ |
-| 조건별 표본 수 | ${samples}개 |  | □ |
-| 표본 간격 | ${intervalSeconds}초 |  | □ |
-| 조건 변경 후 안정화 | ${settlingSeconds}초 |  | □ |
-| 예상 순수 측정 시간 | 약 ${durationMinutes}분 |  | □ |
+| 항목 | 권장값 |
+|:---|---:|
+| 독립 변인 조건 수 | ${levels}단계 |
+| 조건 간 반복 | ${repeats}회 |
+| 조건별 표본 수 | ${samples}개 |
+| 표본 간격 | ${intervalSeconds}초 |
+| 조건 변경 후 안정화 | ${settlingSeconds}초 |
+| 예상 순수 측정 시간 | 약 ${durationMinutes}분 |
 
-1. □ 전원을 넣고 센서값을 **60초간 예비 관찰**하여 영점, 측정 범위를 넘어 최댓값에 머무는 현상, 단선 여부를 확인합니다.
-2. □ 독립 변인의 최솟값과 최댓값을 먼저 안전하게 확인한 뒤, 그 사이를 ${levels}단계로 등분합니다.
-3. □ 각 조건에서 ${settlingSeconds}초 기다린 후 ${intervalSeconds}초 간격으로 ${samples}개를 저장합니다.
-4. □ 조건 순서를 **낮음 → 높음**으로 1회, **높음 → 낮음**으로 1회 실시하고 나머지 1회는 무작위 순서로 측정합니다.
-5. □ 총 **${totalRows}개 조건 묶음**이 빠짐없이 측정되었는지 조건 번호와 반복 번호를 확인합니다.`
+1. [ ] 전원을 넣고 센서값을 **60초간 예비 관찰**하여 영점, 측정 범위를 넘어 최댓값에 머무는 현상, 단선 여부를 확인합니다.
+2. [ ] 독립 변인의 최솟값과 최댓값을 먼저 안전하게 확인한 뒤, 그 사이를 ${levels}단계로 등분합니다.
+3. [ ] 각 조건에서 ${settlingSeconds}초 기다린 후 ${intervalSeconds}초 간격으로 ${samples}개를 저장합니다.
+4. [ ] 조건 순서를 **낮음 → 높음**으로 1회, **높음 → 낮음**으로 1회 실시하고 나머지 1회는 무작위 순서로 측정합니다.
+5. [ ] 총 **${totalRows}개 조건 묶음**이 빠짐없이 측정되었는지 조건 번호와 반복 번호를 확인합니다.`
 }
 
 function executionSection(recipe: Recipe, kind: ExperimentPlan, intervalSeconds: number): Section {
@@ -510,7 +538,7 @@ function buildGuide(recipe: Recipe, plan: InquiryPlan | undefined): Recipe {
         // 몇 번 반복할지 정한 다음에 손을 대야 합니다. 순서가 반대면 학생은
         // 측정을 다 끝낸 뒤에야 시행 횟수가 모자랐다는 것을 알게 됩니다.
         executionSection(recipe, kind, intervalSeconds),
-        procedureSection(authored),
+        procedureSection(plan, authored),
         columnSection(recipe),
         analysisSection(plan, authored),
         checkpointSection(plan),
@@ -519,7 +547,8 @@ function buildGuide(recipe: Recipe, plan: InquiryPlan | undefined): Recipe {
     : [
         safetySection(authored),
         executionSection(recipe, kind, intervalSeconds),
-        procedureSection(authored),
+        // 설계가 없는 레시피는 조립 단계도 없으므로 측정 방법만 냅니다.
+        procedureSection({ setup: [] } as unknown as InquiryPlan, authored),
         columnSection(recipe),
       ]
 
