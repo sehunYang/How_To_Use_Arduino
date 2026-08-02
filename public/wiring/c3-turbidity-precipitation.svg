@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="800" viewBox="0 0 1100 800">
+<rect width="100%" height="100%" fill="#f3f6fa"/>
+<text x="30" y="585" font-family="sans-serif" font-size="14" fill="#172033">용해·침전 과정을 탁도로 추적하기 · 배선 단계 카드</text>
+<g>
+  <rect x="30" y="30" width="165" height="78" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
+  <text x="40" y="55" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">1. TSL2591.VIN → UNO.5V</text>
+  <text x="40" y="77" font-family="sans-serif" font-size="11" fill="#455064">TSL2591 조도 센서의 VIN 단자를 아</text>
+</g>
+<g>
+  <rect x="220" y="30" width="165" height="78" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
+  <text x="230" y="55" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">2. TSL2591.GND → UNO.GND</text>
+  <text x="230" y="77" font-family="sans-serif" font-size="11" fill="#455064">TSL2591 조도 센서의 GND 단자를 아</text>
+</g>
+<g>
+  <rect x="410" y="30" width="165" height="78" rx="8" fill="#ffffff" stroke="green" stroke-width="4"/>
+  <text x="420" y="55" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">3. TSL2591.SDA → UNO.A4</text>
+  <text x="420" y="77" font-family="sans-serif" font-size="11" fill="#455064">TSL2591 조도 센서의 SDA 단자를 아</text>
+</g>
+<g>
+  <rect x="600" y="30" width="165" height="78" rx="8" fill="#ffffff" stroke="yellow" stroke-width="4"/>
+  <text x="610" y="55" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">4. TSL2591.SCL → UNO.A5</text>
+  <text x="610" y="77" font-family="sans-serif" font-size="11" fill="#455064">TSL2591 조도 센서의 SCL 단자를 아</text>
+</g>
+<g>
+  <rect x="790" y="30" width="165" height="78" rx="8" fill="#ffffff" stroke="orange" stroke-width="4"/>
+  <text x="800" y="55" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">5. RESISTOR_220.1 → UNO.D9</text>
+  <text x="800" y="77" font-family="sans-serif" font-size="11" fill="#455064">220 Ω 저항의 한쪽 다리를 D9에 연결하</text>
+</g>
+<g>
+  <rect x="30" y="135" width="165" height="78" rx="8" fill="#ffffff" stroke="orange" stroke-width="4"/>
+  <text x="40" y="160" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">6. LED.ANODE → RESISTOR_220.2</text>
+  <text x="40" y="182" font-family="sans-serif" font-size="11" fill="#455064">LED의 긴 다리(양극)를 220 Ω 저항의</text>
+</g>
+<g>
+  <rect x="220" y="135" width="165" height="78" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
+  <text x="230" y="160" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">7. LED.CATHODE → UNO.GND</text>
+  <text x="230" y="182" font-family="sans-serif" font-size="11" fill="#455064">LED의 짧은 다리(음극)를 GND에 연결하</text>
+</g>
+</svg>

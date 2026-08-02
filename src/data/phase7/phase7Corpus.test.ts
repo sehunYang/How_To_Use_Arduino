@@ -13,16 +13,60 @@ const inventory = { sensors, actuators }
 /** A 묶음이 다루기로 한 출력 장치. 하나라도 빠지면 그 부품은 다시 예제 없는 부품이 됩니다. */
 const coveredActuators = ['led', 'buzzer', 'servo-sg90', 'relay-module', 'dc-motor-driver', 'lcd1602-i2c']
 
+/** 묶음별 레시피 id. 라벨(A1…)은 C++ 검사 자리의 이름과 그대로 짝을 이룹니다. */
+const bundles = {
+  A: [
+    'a1-led-brightness',
+    'a2-buzzer-tone',
+    'a3-servo-angle',
+    'a4-relay-switch',
+    'a5-dc-motor-drive',
+    'a6-lcd-display',
+  ],
+  B: [
+    'b1-yeast-fermentation',
+    'b2-leaf-transpiration',
+    'b3-photosynthesis-pressure',
+    'b4-reaction-time',
+    'b5-step-counter',
+    'b6-skin-temperature-recovery',
+    'b7-woodlouse-phototaxis',
+    'b8-seed-germination-gdd',
+  ],
+  C: [
+    'c1-wet-dry-humidity',
+    'c2-freezing-point-depression',
+    'c3-turbidity-precipitation',
+    'c4-neutralization-endpoint',
+    'c5-surface-albedo',
+    'c6-soil-water-heat-capacity',
+    'c7-photobleaching',
+    'c8-ventilation-recovery',
+  ],
+  D: [
+    'd1-motor-speed-control',
+    'd2-digital-level',
+    'd3-line-follower',
+    'd4-parking-barrier',
+    'd5-auto-curtain',
+    'd6-temperature-alarm',
+    'd7-vibration-alarm',
+    'd8-elevator-floor',
+  ],
+  E: [
+    'e1-terminal-velocity',
+    'e2-pendulum-damping',
+    'e3-moment-of-inertia',
+  ],
+}
+
+const expectedIds = Object.values(bundles).flat()
+const expectedLabels = Object.entries(bundles)
+  .flatMap(([bundle, ids]) => ids.map((_, index) => `${bundle}${index + 1}`))
+
 describe('Phase 7 출력 장치 예제', () => {
-  it('여섯 개의 예제를 순서대로 담는다', () => {
-    expect(phase7Recipes.map((recipe) => recipe.id)).toEqual([
-      'a1-led-brightness',
-      'a2-buzzer-tone',
-      'a3-servo-angle',
-      'a4-relay-switch',
-      'a5-dc-motor-drive',
-      'a6-lcd-display',
-    ])
+  it('묶음 순서대로 모든 레시피를 담는다', () => {
+    expect(phase7Recipes.map((recipe) => recipe.id)).toEqual(expectedIds)
   })
 
   /**
@@ -83,7 +127,7 @@ describe('Phase 7 출력 장치 예제', () => {
 
   it('레시피마다 이름 붙은 C++ 검사 자리를 가진다', () => {
     const source = readFileSync('logic/phase7.test.cpp', 'utf8')
-    for (const label of ['A1', 'A2', 'A3', 'A4', 'A5', 'A6']) {
+    for (const label of expectedLabels) {
       expect(source, label).toMatch(new RegExp(`TEST_CASE\\("${label} `))
     }
   })
