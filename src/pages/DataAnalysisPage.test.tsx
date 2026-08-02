@@ -229,4 +229,249 @@ describe('DataAnalysisPage', () => {
       expect(screen.getByRole('button', { name: '2회차로 추가하기' })).toBeInTheDocument()
     })
   })
+  /**
+   * 기본 화면은 붙여넣고 바로 그래프를 보는 자리입니다. 손이 더 가는 기능을 먼저
+   * 펼쳐 두면, 그것 없이 끝나는 대부분의 탐구에까지 화면이 어려워 보입니다.
+   */
+  describe('분석 방식', { timeout: 30_000 }, () => {
+    it('keeps the heavier tools out of sight until they are asked for', async () => {
+      const user = userEvent.setup()
+      render(<DataAnalysisPage />)
+      await paste(user, RUN_1)
+
+      expect(screen.queryByRole('region', { name: /구간과 열 다듬기/ })).not.toBeInTheDocument()
+      expect(screen.queryByLabelText('식')).not.toBeInTheDocument()
+      // 붙여넣기만으로 끝나는 화면이라 요약과 그래프는 그대로 있습니다.
+      expect(screen.getByRole('region', { name: '2. 측정값 요약' })).toBeInTheDocument()
+      expect(screen.getByRole('img')).toBeInTheDocument()
+
+      await user.click(screen.getByRole('radio', { name: /고급/ }))
+
+      expect(screen.getByRole('region', { name: '3. 구간과 열 다듬기' })).toBeInTheDocument()
+      expect(screen.getByLabelText('식')).toBeInTheDocument()
+    })
+
+    /** 자료가 고급 기능을 부르고 있을 때만 그 사실을 한 줄로 알려 줍니다. */
+    it('offers to open the advanced tools when the pasted data needs them', async () => {
+      const user = userEvent.setup()
+      render(<DataAnalysisPage />)
+      await paste(user, 'time_ms,mode{enter}0,켬{enter}1000,끔{enter}2000,켬')
+
+      expect(screen.getByText(/숫자로 읽을 수 있는 열이 하나뿐/)).toBeInTheDocument()
+
+      await user.click(screen.getByRole('button', { name: '고급 기능 켜기' }))
+
+      expect(screen.getByRole('region', { name: '3. 구간과 열 다듬기' })).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: '고급 기능 켜기' })).not.toBeInTheDocument()
+    })
+
+    it('says nothing extra when the data is already enough to draw', async () => {
+      const user = userEvent.setup()
+      render(<DataAnalysisPage />)
+      await paste(user, RUN_1)
+
+      expect(screen.queryByRole('button', { name: '고급 기능 켜기' })).not.toBeInTheDocument()
+    })
+  })
+
+  /**
+   * 레시피가 요구하는 그래프는 대부분 시리얼에 없는 값을 가로축으로 씁니다. 실의 길이나
+   * 편광판 각도는 사람이 재어 적고, 온도 차의 로그는 측정값에서 계산해야 나옵니다.
+   */
+  describe('열 더하기', { timeout: 30_000 }, () => {
+    it('adds a condition value per run and fits one line through the runs', async () => {
+      const user = userEvent.setup()
+      render(<DataAnalysisPage />)
+      await paste(user, RUN_1)
+      await paste(user, RUN_2)
+      await user.click(screen.getByRole('radio', { name: /고급/ }))
+
+      await user.type(screen.getByLabelText('새 열 이름', { selector: '#manual-column-name' }), '실_길이_m')
+      await user.click(screen.getAllByRole('button', { name: '열 만들기' })[0])
+      await user.type(screen.getByLabelText('1회차의 실_길이_m'), '0.2')
+      await user.type(screen.getByLabelText('2회차의 실_길이_m'), '0.4')
+
+      await user.selectOptions(screen.getByLabelText('가로축(x) 변인'), '실_길이_m')
+      await user.selectOptions(screen.getByLabelText('세로축(y) 변인'), 'temperature_c')
+      await user.click(screen.getByRole('radio', { name: /회차를 합쳐 한 계열로 보기/ }))
+
+      expect(screen.getByRole('img')).toHaveAccessibleName(/가로축은 실_길이_m, 세로축은 temperature_c/)
+      const relation = screen.getByRole('region', { name: '5. 두 변인의 관계' })
+      expect(within(relation).getByText('y = 10x + 20')).toBeInTheDocument()
+    })
+
+    it('calculates a column from the measurements and offers it as an axis', async () => {
+      const user = userEvent.setup()
+      render(<DataAnalysisPage />)
+      await paste(user, RUN_1)
+      await user.click(screen.getByRole('radio', { name: /고급/ }))
+
+      await user.type(screen.getByLabelText('새 열 이름', { selector: '#calculated-column-name' }), 'ln_temp')
+      await user.type(screen.getByLabelText('식'), 'ln(temperature_c)')
+      await user.click(screen.getAllByRole('button', { name: '열 만들기' })[1])
+
+      const summary = screen.getByRole('region', { name: '2. 측정값 요약' })
+      const row = within(summary).getByRole('row', { name: /^ln_temp/ })
+      // ln(20), ln(22), ln(24)의 평균
+      expect(within(row).getAllByRole('cell')[1]).toHaveTextContent('3.08828')
+      expect(within(screen.getByLabelText('가로축(x) 변인')).getByRole('option', { name: 'ln_temp' })).toBeInTheDocument()
+    })
+
+    it('says why an expression could not be read instead of adding an empty column', async () => {
+      const user = userEvent.setup()
+      render(<DataAnalysisPage />)
+      await paste(user, RUN_1)
+      await user.click(screen.getByRole('radio', { name: /고급/ }))
+
+      await user.type(screen.getByLabelText('새 열 이름', { selector: '#calculated-column-name' }), '엉뚱')
+      await user.type(screen.getByLabelText('식'), 'ln(없는열)')
+      await user.click(screen.getAllByRole('button', { name: '열 만들기' })[1])
+
+      expect(screen.getByRole('alert')).toHaveTextContent('읽을 수 없습니다')
+      const summary = screen.getByRole('region', { name: '2. 측정값 요약' })
+      expect(within(summary).queryByRole('row', { name: /^엉뚱/ })).not.toBeInTheDocument()
+    })
+
+    /** 속도는 이웃한 두 행의 차이라서, 그 행 하나만 봐서는 만들 수 없습니다. */
+    it('makes a rate from the neighbouring rows', async () => {
+      const user = userEvent.setup()
+      render(<DataAnalysisPage />)
+      await paste(user, 'time_ms,distance_m{enter}0,0.10{enter}100,0.20{enter}200,0.30')
+      await user.click(screen.getByRole('radio', { name: /고급/ }))
+
+      await user.type(screen.getByLabelText('새 열 이름', { selector: '#calculated-column-name' }), '속도_mps')
+      await user.type(screen.getByLabelText('식'), 'diff(distance_m)/diff(time_ms)*1000')
+      await user.click(screen.getAllByRole('button', { name: '열 만들기' })[1])
+
+      const summary = screen.getByRole('region', { name: '2. 측정값 요약' })
+      const row = within(summary).getByRole('row', { name: /^속도_mps/ })
+      // 첫 행은 앞이 없어 빈 칸이고, 남은 두 행은 모두 1 m/s입니다.
+      expect(within(row).getAllByRole('cell')[0]).toHaveTextContent('2')
+      expect(within(row).getAllByRole('cell')[1]).toHaveTextContent('1')
+    })
+  })
+
+  /**
+   * 기록 전체가 아니라 한 토막만 보는 탐구가 많습니다. 구간을 고를 수 없으면 낙하 전
+   * 정지 구간까지 직선에 함께 끼어 기울기가 절반으로 줄어듭니다.
+   */
+  describe('구간 자르기', { timeout: 30_000 }, () => {
+    it('keeps only the rows inside the range and says how many were left out', async () => {
+      const user = userEvent.setup()
+      render(<DataAnalysisPage />)
+      await paste(user, RUN_1)
+      await user.click(screen.getByRole('radio', { name: /고급/ }))
+
+      await user.selectOptions(screen.getByLabelText('기준 열'), 'time_ms')
+      await user.type(screen.getByLabelText('이 값부터'), '1000')
+
+      expect(screen.getByText(/2개 행이 남았고 1개 행을 뺐습니다/)).toBeInTheDocument()
+      expect(screen.getByRole('img')).toHaveAccessibleName(/점은 모두 2개입니다/)
+    })
+
+    /** 자르기가 계산보다 먼저라서, 자른 뒤에 시간을 0부터 다시 셀 수 있습니다. */
+    it('crops before it calculates so the clock can start again at zero', async () => {
+      const user = userEvent.setup()
+      render(<DataAnalysisPage />)
+      await paste(user, RUN_1)
+      await user.click(screen.getByRole('radio', { name: /고급/ }))
+
+      await user.selectOptions(screen.getByLabelText('기준 열'), 'time_ms')
+      await user.type(screen.getByLabelText('이 값부터'), '1000')
+      await user.type(screen.getByLabelText('새 열 이름', { selector: '#calculated-column-name' }), '경과_ms')
+      await user.type(screen.getByLabelText('식'), 'time_ms - first(time_ms)')
+      await user.click(screen.getAllByRole('button', { name: '열 만들기' })[1])
+
+      const summary = screen.getByRole('region', { name: '2. 측정값 요약' })
+      const row = within(summary).getByRole('row', { name: /^경과_ms/ })
+      expect(within(row).getAllByRole('cell')[3]).toHaveTextContent('0')
+      expect(within(row).getAllByRole('cell')[7]).toHaveTextContent('1,000')
+    })
+  })
+
+  /**
+   * 센서를 여러 개 단 레시피는 한 행씩 번갈아 출력하므로, 나누지 않으면 이웃한 점이
+   * 서로 다른 센서가 되어 톱니만 남습니다.
+   */
+  describe('계열 나누기', { timeout: 30_000 }, () => {
+    const CHANNELS = 'time_ms,channel,light_raw{enter}0,0,8200{enter}120,1,2400{enter}500,0,8180'
+      + '{enter}620,1,2380{enter}1000,0,8210{enter}1120,1,2420'
+
+    it('draws one series per sensor instead of one zigzag', async () => {
+      const user = userEvent.setup()
+      render(<DataAnalysisPage />)
+      await paste(user, CHANNELS)
+
+      await user.click(screen.getByRole('checkbox', { name: /light_raw/ }))
+      await user.click(screen.getByRole('checkbox', { name: /channel/ }))
+      await user.selectOptions(screen.getByLabelText('계열 나누기 기준'), 'channel')
+
+      expect(screen.getByRole('img')).toHaveAccessibleName(/계열은 channel 0, channel 1입니다/)
+      const relation = screen.getByRole('region', { name: '4. 두 변인의 관계' })
+      expect(within(relation).getByRole('row', { name: /^0/ })).toBeInTheDocument()
+      expect(within(relation).getByRole('row', { name: /^1/ })).toBeInTheDocument()
+    })
+
+    it('does not offer a column whose value changes on every row', async () => {
+      const user = userEvent.setup()
+      render(<DataAnalysisPage />)
+      await paste(user, CHANNELS)
+
+      const options = within(screen.getByLabelText('계열 나누기 기준')).getAllByRole('option')
+      expect(options.map((option) => option.textContent)).toEqual(['나누지 않기', 'channel (2가지)'])
+    })
+
+    /** 같은 시각 두 지점의 차이는 값이 세로로 번갈아 쌓여 있는 한 만들 수 없습니다. */
+    it('lays the sensors out in columns so one can be subtracted from the other', async () => {
+      const user = userEvent.setup()
+      render(<DataAnalysisPage />)
+      await paste(user, CHANNELS)
+      await user.selectOptions(screen.getByLabelText('계열 나누기 기준'), 'channel')
+      await user.click(screen.getByRole('radio', { name: /고급/ }))
+      await user.click(screen.getByRole('checkbox', { name: /channel 값마다 열을 따로 만들기/ }))
+
+      await user.type(screen.getByLabelText('새 열 이름', { selector: '#calculated-column-name' }), '밝기차')
+      await user.type(screen.getByLabelText('식'), 'light_raw_0 - light_raw_1')
+      await user.click(screen.getAllByRole('button', { name: '열 만들기' })[1])
+
+      const summary = screen.getByRole('region', { name: '2. 측정값 요약' })
+      const row = within(summary).getByRole('row', { name: /^밝기차/ })
+      // (8200−2400), (8180−2380), (8210−2420)의 평균
+      expect(within(row).getAllByRole('cell')[1]).toHaveTextContent('5,796.67')
+    })
+  })
+
+  /**
+   * 교실 격자의 조도 분포처럼 어디가 밝고 어두운지를 보는 탐구는 꺾은선이 아니라
+   * 놓인 자리 그대로의 표로 읽어야 합니다.
+   */
+  describe('격자로 보기', { timeout: 30_000 }, () => {
+    const FIELD = 'time_ms,ch0,ch1,ch2{enter}0,900,500,200{enter}500,910,490,210{enter}1000,890,510,190'
+
+    it('lays the averages out in a grid once the advanced tools are on', async () => {
+      const user = userEvent.setup()
+      render(<DataAnalysisPage />)
+      await paste(user, FIELD)
+
+      expect(screen.queryByRole('region', { name: /격자로 보기/ })).not.toBeInTheDocument()
+
+      await user.click(screen.getByRole('radio', { name: /고급/ }))
+
+      const grid = screen.getByRole('region', { name: '6. 격자로 보기' })
+      const cells = within(grid).getAllByRole('cell')
+      expect(cells).toHaveLength(3)
+      expect(cells[0]).toHaveTextContent('ch0')
+      expect(cells[0]).toHaveTextContent('900')
+      expect(cells[2]).toHaveTextContent('200')
+    })
+
+    it('does not show a grid when there is nothing to lay out', async () => {
+      const user = userEvent.setup()
+      render(<DataAnalysisPage />)
+      await paste(user, RUN_1)
+      await user.click(screen.getByRole('radio', { name: /고급/ }))
+
+      expect(screen.queryByRole('region', { name: /격자로 보기/ })).not.toBeInTheDocument()
+    })
+  })
 })

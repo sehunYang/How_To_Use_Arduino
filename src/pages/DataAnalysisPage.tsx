@@ -8,6 +8,7 @@ import {
   type ChartPoint,
   type ChartSeries,
 } from '@/components/DataChart'
+import { GridSummary, type GridCell } from '@/components/GridSummary'
 import {
   MAX_SERIES,
   MAX_TRIAL_SERIES,
@@ -26,6 +27,15 @@ import {
   type NumericColumn,
   type RelationSummary,
 } from '@/lib/dataStats'
+import {
+  FUNCTION_HELP,
+  buildColumns,
+  compileExpression,
+  validateColumnName,
+  type CalculatedColumn,
+} from '@/lib/derivedColumns'
+import { collectGroupColumns, pivotByColumn, splitRowsByColumn } from '@/lib/seriesGrouping'
+import { EMPTY_RANGE, cropRows, hasRange, type RowRange } from '@/lib/rowRange'
 import { buildCsv, convertSerialTextToCsv, downloadSerialCsv, type SerialCsvResult } from '@/lib/serialCsv'
 import {
   MAX_TRUSTWORTHY_SPREAD_RATIO,
@@ -41,6 +51,8 @@ const example = `time_ms,temperature_c,humidity_pct
 
 const PREVIEW_ROW_LIMIT = 20
 const TRIAL_COLUMN_NAME = '회차'
+/** 격자 표는 칸이 이만큼은 있어야 분포로 읽힙니다. */
+const MIN_GRID_CELLS = 3
 
 const SUMMARY_COLUMNS = [
   { key: 'count', label: '개수(n)' },
@@ -54,7 +66,12 @@ const SUMMARY_COLUMNS = [
   { key: 'range', label: '범위' },
 ] as const
 
-type TrialView = 'box' | 'perTrial'
+type TrialView = 'box' | 'perTrial' | 'merged'
+
+/** 회차마다 사람이 적어 넣는 조건 값을 함께 들고 다니는 회차. */
+interface PageTrial extends Trial {
+  manualValues: Record<string, string>
+}
 
 /** 회귀직선을 `y = 2.5x − 3.1` 형태의 한 줄로 적습니다. */
 function formatRegressionEquation(relation: RelationSummary) {
@@ -75,7 +92,7 @@ function describeCorrelation(correlation: number) {
 
 export function DataAnalysisPage() {
   const [input, setInput] = useState('')
-  const [trials, setTrials] = useState<Trial[]>([])
+  const [trials, setTrials] = useState<PageTrial[]>([])
   const [lastResult, setLastResult] = useState<SerialCsvResult | null>(null)
   const [mismatchError, setMismatchError] = useState<string | null>(null)
   const [xName, setXName] = useState<string | null>(null)
@@ -86,18 +103,77 @@ export function DataAnalysisPage() {
   const [showTrendLine, setShowTrendLine] = useState(true)
   const [chartError, setChartError] = useState<string | null>(null)
   /**
+   * 기본은 붙여넣고 바로 그래프를 보는 화면입니다. 구간 자르기·열 더하기처럼 손이
+   * 더 가는 기능은 고급으로 바꿀 때만 나타납니다. 대부분의 탐구는 붙여넣기만으로
+   * 끝나는데, 그 사람들에게까지 식 입력란을 먼저 보여 주면 화면이 어려워 보입니다.
+   */
+  const [level, setLevel] = useState<'basic' | 'advanced'>('basic')
+  const [range, setRange] = useState<RowRange>(EMPTY_RANGE)
+  /** 회차마다 값을 적어 넣는 열의 이름. 값 자체는 회차가 들고 있습니다. */
+  const [manualNames, setManualNames] = useState<string[]>([])
+  const [calculatedColumns, setCalculatedColumns] = useState<CalculatedColumn[]>([])
+  const [groupName, setGroupName] = useState<string>('')
+  const [spreadToColumns, setSpreadToColumns] = useState(false)
+  const [gridMeasure, setGridMeasure] = useState<string>('')
+  const [gridWidth, setGridWidth] = useState(4)
+  const [draftManualName, setDraftManualName] = useState('')
+  const [draftCalculatedName, setDraftCalculatedName] = useState('')
+  const [draftExpression, setDraftExpression] = useState('')
+  const [manualNameError, setManualNameError] = useState<string | null>(null)
+  const [calculatedError, setCalculatedError] = useState<string | null>(null)
+  /**
    * 붙여넣은 회차는 이 화면 안에만 있고 어디에도 저장되지 않습니다. 잘못 지우면 실험을
    * 여러 번 되풀이해 모은 값이 사라지므로, 지우기 전 상태를 한 벌 들고 있다가 되돌릴 수
    * 있게 합니다. 지우기 전에 한 번 더 묻는 대신 이렇게 한 이유는, 지우기는 자주 하는 일이라
    * 매번 확인을 받으면 성가시고 결국 읽지 않고 누르게 되기 때문입니다.
    */
-  const [undoable, setUndoable] = useState<{ input: string; trials: Trial[]; xName: string | null; yNames: string[] } | null>(null)
+  const [undoable, setUndoable] = useState<{
+    input: string
+    trials: PageTrial[]
+    xName: string | null
+    yNames: string[]
+    manualNames: string[]
+    calculatedColumns: CalculatedColumn[]
+  } | null>(null)
   const chartRef = useRef<SVGSVGElement>(null)
 
+  const advanced = level === 'advanced'
   const hasRepeats = trials.length >= 2
-  const header = useMemo(() => trials[0]?.header ?? [], [trials])
-  const combinedRows = useMemo(() => trials.flatMap((trial) => trial.rows), [trials])
+
+  // ── 붙여넣은 표를 다듬는 차례: 구간 자르기 → 계열 펼치기 → 열 더하기 ──
+  const croppedTrials = useMemo(
+    () => trials.map((trial) => ({ ...trial, rows: cropRows(trial.header, trial.rows, range) })),
+    [trials, range],
+  )
+  const rawHeader = useMemo(() => croppedTrials[0]?.header ?? [], [croppedTrials])
+  const rawRows = useMemo(() => croppedTrials.flatMap((trial) => trial.rows), [croppedTrials])
+  const croppedAway = trials.reduce((total, trial) => total + trial.rows.length, 0) - rawRows.length
+
+  const groupCandidates = useMemo(() => collectGroupColumns(rawHeader, rawRows), [rawHeader, rawRows])
+  const activeGroupName = groupCandidates.some((candidate) => candidate.name === groupName) ? groupName : ''
+  const pivotActive = advanced && spreadToColumns && activeGroupName !== ''
+
+  /**
+   * 다듬기를 마친 표. 이 아래의 요약·그래프·저장은 모두 이 표만 보므로, 더한 열도
+   * 시리얼에서 온 열과 똑같이 다뤄집니다.
+   */
+  const builtTrials = useMemo(
+    () =>
+      croppedTrials.map((trial) => {
+        const base = pivotActive
+          ? pivotByColumn(trial.header, trial.rows, activeGroupName)
+          : { header: trial.header, rows: trial.rows }
+        const manual = manualNames.map((name) => ({ name, value: trial.manualValues[name] ?? '' }))
+        const built = buildColumns(base.header, base.rows, manual, calculatedColumns)
+        return { ...trial, header: built.header, rows: built.rows, errors: built.errors }
+      }),
+    [croppedTrials, pivotActive, activeGroupName, manualNames, calculatedColumns],
+  )
+
+  const header = useMemo(() => builtTrials[0]?.header ?? [], [builtTrials])
+  const combinedRows = useMemo(() => builtTrials.flatMap((trial) => trial.rows), [builtTrials])
   const totalRowCount = combinedRows.length
+  const expressionErrors = builtTrials[0]?.errors ?? {}
 
   const numericColumns = useMemo(
     () => collectNumericColumns(header, combinedRows),
@@ -111,7 +187,7 @@ export function DataAnalysisPage() {
         column,
         overall: summarizeColumn(column.values.filter((value): value is number => value !== null)),
         perTrial: hasRepeats
-          ? trials.map((trial) => ({
+          ? builtTrials.map((trial) => ({
               label: trial.label,
               summary: summarizeColumn(
                 readNamedColumn(trial.header, trial.rows, column.name).filter(
@@ -121,10 +197,11 @@ export function DataAnalysisPage() {
             }))
           : [],
       })),
-    [numericColumns, trials, hasRepeats],
+    [numericColumns, builtTrials, hasRepeats],
   )
 
-  const xColumn = numericColumns.find((column) => column.name === xName) ?? null
+  // 고른 열이 사라져도(계산 열을 지웠을 때) 그래프가 조용히 없어지지 않게 첫 열로 되돌립니다.
+  const xColumn = numericColumns.find((column) => column.name === xName) ?? numericColumns[0] ?? null
   const yColumns = useMemo(
     () =>
       yNames
@@ -133,21 +210,40 @@ export function DataAnalysisPage() {
     [yNames, numericColumns],
   )
 
+  const groups = useMemo(
+    () => (activeGroupName && !pivotActive ? splitRowsByColumn(header, combinedRows, activeGroupName) : []),
+    [activeGroupName, pivotActive, header, combinedRows],
+  )
+  const usesGrouping = groups.length >= 2 && Boolean(xColumn) && yColumns.length === 1
+  /** 계열을 나눌 때도, 회차를 견줄 때도 세로축 변인은 하나만 그립니다. */
+  const singleVariableOnly = hasRepeats || usesGrouping
+
   /** 회차마다 가로축·세로축 값을 이름으로 찾아 짝지은 점 목록 */
   const trialPoints = useMemo(() => {
     if (!xColumn || yColumns.length !== 1) return []
     const yColumn = yColumns[0]
-    return trials.map((trial) =>
+    return builtTrials.map((trial) =>
       pairValues(
         readNamedColumn(trial.header, trial.rows, xColumn.name),
         readNamedColumn(trial.header, trial.rows, yColumn.name),
       ),
     )
-  }, [trials, xColumn, yColumns])
+  }, [builtTrials, xColumn, yColumns])
+
+  const groupPoints = useMemo(() => {
+    if (!usesGrouping || !xColumn) return []
+    const yColumn = yColumns[0]
+    return groups.map((group) =>
+      pairValues(
+        readNamedColumn(header, group.rows, xColumn.name),
+        readNamedColumn(header, group.rows, yColumn.name),
+      ),
+    )
+  }, [usesGrouping, groups, header, xColumn, yColumns])
 
   const aggregate = useMemo(
-    () => (hasRepeats && trialPoints.length > 0 ? aggregateByOrder(trialPoints) : null),
-    [hasRepeats, trialPoints],
+    () => (!usesGrouping && hasRepeats && trialPoints.length > 0 ? aggregateByOrder(trialPoints) : null),
+    [usesGrouping, hasRepeats, trialPoints],
   )
 
   /**
@@ -156,11 +252,28 @@ export function DataAnalysisPage() {
    * 보여 주게 됩니다.
    */
   const tooManyTrialsForPerTrialView = trials.length > MAX_TRIAL_SERIES
-  const effectiveTrialView: TrialView = tooManyTrialsForPerTrialView ? 'box' : trialView
-  const usesBoxView = hasRepeats && effectiveTrialView === 'box'
+  const effectiveTrialView: TrialView =
+    tooManyTrialsForPerTrialView && trialView === 'perTrial' ? 'box' : trialView
+  const usesBoxView = !usesGrouping && hasRepeats && effectiveTrialView === 'box'
+  /**
+   * 회차 하나가 조건 하나인 실험은 회차를 갈라 놓으면 조건을 관통하는 직선을 얻을 수
+   * 없습니다. 실 길이별 주기처럼 회차마다 점 하나씩을 얻는 탐구가 여기에 해당하므로,
+   * 회차를 모두 합쳐 한 계열로 보는 방식을 함께 둡니다.
+   */
+  const usesMergedView = !usesGrouping && hasRepeats && effectiveTrialView === 'merged'
 
   const chartSeries = useMemo<ChartSeries[]>(() => {
     if (!xColumn) return []
+
+    if (usesGrouping) {
+      return groups
+        .map((group, index) => ({
+          key: group.value,
+          label: `${activeGroupName} ${group.value}`,
+          points: groupPoints[index] ?? [],
+        }))
+        .filter((entry) => entry.points.length > 0)
+    }
 
     if (usesBoxView && aggregate) {
       const points: ChartPoint[] = aggregate.points.map((point) => ({
@@ -180,8 +293,13 @@ export function DataAnalysisPage() {
       return points.length > 0 ? [{ key: 'box', label: `${trials.length}회 요약`, points }] : []
     }
 
+    if (usesMergedView) {
+      const points = trialPoints.flat()
+      return points.length > 0 ? [{ key: 'merged', label: `${trials.length}회차 전체`, points }] : []
+    }
+
     if (hasRepeats) {
-      return trials
+      return builtTrials
         .map((trial, index) => ({ key: String(trial.id), label: trial.label, points: trialPoints[index] ?? [] }))
         .filter((entry) => entry.points.length > 0)
     }
@@ -193,7 +311,7 @@ export function DataAnalysisPage() {
         points: pairValues(xColumn.values, column.values),
       }))
       .filter((entry) => entry.points.length > 0)
-  }, [xColumn, yColumns, usesBoxView, aggregate, hasRepeats, trials, trialPoints])
+  }, [xColumn, yColumns, usesGrouping, groups, groupPoints, activeGroupName, usesBoxView, usesMergedView, aggregate, hasRepeats, builtTrials, trials.length, trialPoints])
 
   const contextPoints = useMemo<MeasurementPoint[] | undefined>(
     () => (usesBoxView && showTrialPoints ? trialPoints.flat() : undefined),
@@ -206,23 +324,42 @@ export function DataAnalysisPage() {
     [chartSeries],
   )
 
-  const perTrialRelations = useMemo(
-    () =>
-      hasRepeats
-        ? trials.map((trial, index) => ({
-            label: trial.label,
-            relation: summarizeRelation(trialPoints[index] ?? []),
-          }))
-        : [],
-    [hasRepeats, trials, trialPoints],
-  )
+  /**
+   * 계열마다 따로 맞춘 직선. 회차를 견줄 때는 실험이 되풀이되는지 보는 표가 되고,
+   * 열 값으로 나눌 때는 조건별 기울기(저항, 재료, 채널)를 견주는 표가 됩니다.
+   */
+  const comparison = useMemo(() => {
+    if (usesGrouping) {
+      return {
+        label: activeGroupName,
+        heading: `${activeGroupName} 값별 기울기 비교`,
+        description: `${activeGroupName} 값마다 따로 맞춘 직선입니다. 조건마다 기울기가 어떻게 달라지는지 견주세요.`,
+        entries: groups.map((group, index) => ({
+          label: group.value,
+          relation: summarizeRelation(groupPoints[index] ?? []),
+        })),
+      }
+    }
+    if (hasRepeats) {
+      return {
+        label: TRIAL_COLUMN_NAME,
+        heading: '회차별 기울기 비교',
+        description: '회차마다 따로 맞춘 직선입니다. 기울기가 회차마다 크게 달라지면 실험 조건이 회차 사이에 바뀌었을 수 있습니다.',
+        entries: builtTrials.map((trial, index) => ({
+          label: trial.label,
+          relation: summarizeRelation(trialPoints[index] ?? []),
+        })),
+      }
+    }
+    return null
+  }, [usesGrouping, activeGroupName, groups, groupPoints, hasRepeats, builtTrials, trialPoints])
 
   const slopeSpread = useMemo(() => {
-    const slopes = perTrialRelations
+    const slopes = (comparison?.entries ?? [])
       .map((entry) => entry.relation?.slope)
       .filter((slope): slope is number => slope !== undefined)
     return slopes.length >= 2 ? summarizeColumn(slopes) : null
-  }, [perTrialRelations])
+  }, [comparison])
 
   const trendLine = useMemo(() => {
     if (!showTrendLine || !relation) return null
@@ -233,6 +370,48 @@ export function DataAnalysisPage() {
         : `${formatRegressionEquation(relation)}, R² = ${formatMeasurement(determination)}`
     return { slope: relation.slope, intercept: relation.intercept, annotation }
   }, [showTrendLine, relation])
+
+  /**
+   * 격자 표에 놓을 칸. 계열을 나누는 열이 있으면 그 값마다 한 칸, 없으면 측정값 열마다
+   * 한 칸입니다. 앞은 교실 격자 조도, 뒤는 8지점 광량 같은 자료를 위한 것입니다.
+   */
+  const gridCells = useMemo<GridCell[]>(() => {
+    if (usesGrouping) {
+      const measure = numericColumns.find((column) => column.name === gridMeasure)
+        ?? numericColumns.find((column) => column.name !== xColumn?.name && column.name !== activeGroupName)
+      if (!measure) return []
+      return groups.map((group) => ({
+        label: `${activeGroupName} ${group.value}`,
+        value: summarizeColumn(
+          readNamedColumn(header, group.rows, measure.name).filter((value): value is number => value !== null),
+        )?.mean ?? null,
+      }))
+    }
+    return numericColumns
+      .filter((column) => column.name !== xColumn?.name)
+      .map((column) => ({
+        label: column.name,
+        value: summarizeColumn(column.values.filter((value): value is number => value !== null))?.mean ?? null,
+      }))
+  }, [usesGrouping, groups, activeGroupName, gridMeasure, numericColumns, xColumn, header])
+
+  const showGrid = advanced && gridCells.length >= MIN_GRID_CELLS
+  const showRelation = Boolean((relation || comparison) && xColumn && yColumns[0])
+
+  /**
+   * 절 번호는 실제로 화면에 있는 절만 세어 붙입니다. 고급 기능을 켜지 않으면 "구간과 열
+   * 다듬기" 절이 없는데, 번호를 고정해 두면 3번 다음에 5번이 오는 목차가 됩니다.
+   */
+  const sectionKeys = [
+    'paste',
+    ...(trials.length > 0 ? ['summary'] : []),
+    ...(trials.length > 0 && advanced ? ['columns'] : []),
+    ...(trials.length > 0 ? ['chart'] : []),
+    ...(showRelation ? ['relation'] : []),
+    ...(showGrid ? ['grid'] : []),
+    ...(trials.length > 0 ? ['table'] : []),
+  ]
+  const sectionNumber = (key: string) => sectionKeys.indexOf(key) + 1
 
   function addTrial() {
     const parsed = convertSerialTextToCsv(input)
@@ -250,13 +429,14 @@ export function DataAnalysisPage() {
       }
     }
 
-    const nextTrials = [
+    const nextTrials: PageTrial[] = [
       ...trials,
       {
         id: (trials.at(-1)?.id ?? 0) + 1,
         label: trialLabel(trials.length + 1),
         header: parsed.header,
         rows: parsed.rows,
+        manualValues: {},
       },
     ]
     setTrials(nextTrials)
@@ -284,7 +464,9 @@ export function DataAnalysisPage() {
   }
 
   function reset() {
-    if (input || trials.length > 0) setUndoable({ input, trials, xName, yNames })
+    if (input || trials.length > 0) {
+      setUndoable({ input, trials, xName, yNames, manualNames, calculatedColumns })
+    }
     setInput('')
     setTrials([])
     setLastResult(null)
@@ -292,6 +474,11 @@ export function DataAnalysisPage() {
     setXName(null)
     setYNames([])
     setChartError(null)
+    setManualNames([])
+    setCalculatedColumns([])
+    setGroupName('')
+    setRange(EMPTY_RANGE)
+    setSpreadToColumns(false)
   }
 
   function undoReset() {
@@ -300,6 +487,8 @@ export function DataAnalysisPage() {
     setTrials(undoable.trials)
     setXName(undoable.xName)
     setYNames(undoable.yNames)
+    setManualNames(undoable.manualNames)
+    setCalculatedColumns(undoable.calculatedColumns)
     setUndoable(null)
   }
 
@@ -325,6 +514,66 @@ export function DataAnalysisPage() {
     )
   }
 
+  function addManualColumn() {
+    const name = draftManualName.trim()
+    const error = validateColumnName(name, header)
+    if (error) {
+      setManualNameError(error)
+      return
+    }
+    setManualNames((names) => [...names, name])
+    setDraftManualName('')
+    setManualNameError(null)
+  }
+
+  function removeManualColumn(name: string) {
+    setManualNames((names) => names.filter((value) => value !== name))
+    setTrials((current) =>
+      current.map((trial) => ({
+        ...trial,
+        manualValues: Object.fromEntries(
+          Object.entries(trial.manualValues).filter(([key]) => key !== name),
+        ),
+      })),
+    )
+  }
+
+  function setManualValue(trialId: number, name: string, value: string) {
+    setTrials((current) =>
+      current.map((trial) =>
+        trial.id === trialId ? { ...trial, manualValues: { ...trial.manualValues, [name]: value } } : trial,
+      ),
+    )
+  }
+
+  function addCalculatedColumn() {
+    const name = draftCalculatedName.trim()
+    const nameError = validateColumnName(name, header)
+    if (nameError) {
+      setCalculatedError(nameError)
+      return
+    }
+    const compiled = compileExpression(draftExpression, header)
+    if (!compiled.ok) {
+      setCalculatedError(compiled.error)
+      return
+    }
+    setCalculatedColumns((columns) => [...columns, { name, expression: draftExpression.trim() }])
+    setDraftCalculatedName('')
+    setDraftExpression('')
+    setCalculatedError(null)
+  }
+
+  function removeCalculatedColumn(name: string) {
+    setCalculatedColumns((columns) => columns.filter((column) => column.name !== name))
+  }
+
+  function changeGroupColumn(nextName: string) {
+    setGroupName(nextName)
+    // 계열을 나누면 변인을 하나만 그리므로 선택을 미리 하나로 줄입니다.
+    if (nextName) setYNames((names) => names.slice(0, 1))
+  }
+
   const saveChartPng = useCallback(async () => {
     const svg = chartRef.current
     if (!svg) return
@@ -337,13 +586,13 @@ export function DataAnalysisPage() {
   }, [])
 
   function saveCsv() {
-    if (trials.length === 0) return
-    if (trials.length === 1) {
-      downloadSerialCsv(buildCsv(trials[0].header, trials[0].rows))
+    if (builtTrials.length === 0) return
+    if (builtTrials.length === 1) {
+      downloadSerialCsv(buildCsv(builtTrials[0].header, builtTrials[0].rows))
       return
     }
     // 회차를 구분할 수 없는 CSV는 반복 실험 기록으로 쓸 수 없으므로 회차 열을 앞에 붙입니다.
-    const rows = trials.flatMap((trial) =>
+    const rows = builtTrials.flatMap((trial) =>
       trial.rows.map((row) => [trial.label, ...header.map((name) => row[trial.header.indexOf(name)] ?? '')]),
     )
     downloadSerialCsv(buildCsv([TRIAL_COLUMN_NAME, ...header], rows))
@@ -351,12 +600,12 @@ export function DataAnalysisPage() {
 
   const seriesLabels = chartSeries.map((entry) => entry.label).join(', ')
   const pointCount = chartSeries.reduce((total, entry) => total + entry.points.length, 0)
-  const yAxisLabel = hasRepeats ? (yColumns[0]?.name ?? '') : seriesLabels
+  const yAxisLabel = singleVariableOnly ? (yColumns[0]?.name ?? '') : seriesLabels
   const boxNote = usesBoxView
     ? ' 상자는 제1사분위수부터 제3사분위수까지이고, 가운데 굵은 선은 중앙값, 점은 평균, 수염은 최솟값과 최댓값입니다.'
     : ''
   const chartCaption = xColumn
-    ? `그림 1. ${xColumn.name}에 따른 ${yAxisLabel} (${hasRepeats ? `${trials.length}회 반복, ` : ''}${usesBoxView ? '상자' : '점'} ${pointCount.toLocaleString('ko-KR')}개).${boxNote}`
+    ? `그림 1. ${xColumn.name}에 따른 ${yAxisLabel} (${usesGrouping ? `${activeGroupName}별 ${groups.length}계열, ` : hasRepeats ? `${trials.length}회 반복, ` : ''}${usesBoxView ? '상자' : '점'} ${pointCount.toLocaleString('ko-KR')}개).${boxNote}`
     : ''
   const chartDescription = xColumn
     ? `가로축은 ${xColumn.name}, 세로축은 ${yAxisLabel}인 ${chartKind === 'scatter' ? '산점도' : '꺾은선 그래프'}입니다. ${
@@ -366,20 +615,32 @@ export function DataAnalysisPage() {
       } ${usesBoxView ? '상자는' : '점은'} 모두 ${pointCount.toLocaleString('ko-KR')}개입니다.`
     : ''
 
-  const spreadWarning = aggregate && aggregate.worstSpreadRatio > MAX_TRUSTWORTHY_SPREAD_RATIO
+  // 이미 회차를 합쳐 보고 있다면 회차 사이가 벌어졌다는 경고는 알려 줄 것이 없습니다.
+  const spreadWarning = !usesMergedView && aggregate && aggregate.worstSpreadRatio > MAX_TRUSTWORTHY_SPREAD_RATIO
+
+  /**
+   * 기본 화면에서도, 자료가 고급 기능을 부르고 있을 때는 그 사실만 한 줄로 알려 줍니다.
+   * 기능을 미리 펼쳐 두는 대신 필요한 순간에만 문을 열어 주는 것입니다.
+   */
+  const suggestion = !advanced && trials.length > 0
+    ? numericColumns.length < 2
+      ? '숫자로 읽을 수 있는 열이 하나뿐이라 그래프를 그릴 수 없습니다. 실의 길이나 각도처럼 직접 잰 값을 열로 더하면 가로축이 생깁니다.'
+      : spreadWarning
+        ? '회차마다 가로축 값이 크게 다릅니다. 회차마다 다른 조건을 쟀다면, 그 조건 값을 열로 더해 가로축에 놓을 수 있습니다.'
+        : null
+    : null
 
   return (
     <div className="mx-auto max-w-5xl py-8 md:py-12">
       <p className="text-caption font-semibold uppercase tracking-widest text-accent">시리얼 데이터 분석</p>
       <h1 className="mt-3 text-3xl font-semibold md:text-4xl">데이터 변환·분석</h1>
       <p className="mt-4 max-w-3xl text-body text-muted">
-        Arduino IDE 시리얼 모니터에서 전체 내용을 복사해 붙여넣으세요. 실험을 여러 번 했다면 회차마다 붙여넣어 더할 수
-        있고, 회차 사이에 값이 얼마나 흩어졌는지까지 그래프에 함께 그립니다. 결과는 CSV 파일과 논문 형식 PNG 그림으로
-        저장할 수 있습니다.
+        Arduino IDE 시리얼 모니터에서 전체 내용을 복사해 붙여넣으면 요약 통계와 그래프가 바로 나옵니다. 결과는 CSV 파일과
+        논문 형식 PNG 그림으로 저장할 수 있습니다.
       </p>
 
       <section aria-labelledby="paste-step" className="mt-8">
-        <h2 id="paste-step" className="text-heading font-semibold">1. 측정값 붙여넣기</h2>
+        <h2 id="paste-step" className="text-heading font-semibold">{sectionNumber('paste')}. 측정값 붙여넣기</h2>
 
         <div className="mt-4 rounded-card border border-border bg-muted-background p-5">
           <h3 className="text-body font-semibold">붙여넣기 형식</h3>
@@ -389,6 +650,30 @@ export function DataAnalysisPage() {
             합니다.
           </p>
         </div>
+
+        {/*
+          같은 자료라도 붙여넣는 방법에 따라 결과가 달라집니다. 다만 처음 오는 사람에게
+          먼저 읽힐 내용은 아니므로 접어 둡니다.
+        */}
+        <details className="mt-4 rounded-card border border-border bg-muted-background p-5">
+          <summary className="cursor-pointer text-body font-semibold">조건을 바꿔 가며 여러 번 쟀다면</summary>
+          <ul className="mt-3 space-y-3 text-caption text-muted">
+            <li>
+              <span className="font-semibold text-foreground">조건마다 기울기를 따로 구할 때는 회차로 나눠 넣으세요.</span>{' '}
+              저항 세 개의 V-I 직선처럼 조건마다 별개의 직선이 나오는 실험입니다. <b>회차별 기울기 비교</b> 표에 조건별
+              기울기가 함께 실립니다.
+            </li>
+            <li>
+              <span className="font-semibold text-foreground">조건 전체가 직선 하나를 이룰 때는 회차를 합쳐 보세요.</span>{' '}
+              전지의 단자전압-전류처럼 조건 하나가 그래프의 점 하나가 되는 실험입니다. 회차로 넣은 뒤 그래프 절에서
+              “회차를 합쳐 한 계열로 보기”를 고르면 됩니다.
+            </li>
+            <li>
+              <span className="font-semibold text-foreground">같은 조건을 되풀이했다면 회차로 나눠 넣으세요.</span>{' '}
+              같은 순번의 값을 모아 상자그림으로 그려 값이 얼마나 되풀이되는지 보여 줍니다.
+            </li>
+          </ul>
+        </details>
 
         <div className="mt-6">
           <label htmlFor="serial-data" className="text-body font-semibold">시리얼 모니터 내용</label>
@@ -445,9 +730,14 @@ export function DataAnalysisPage() {
               {trials.length}개 회차, {header.length}개 열, 모두 {totalRowCount.toLocaleString('ko-KR')}개 데이터 행을
               읽었습니다.
             </p>
-            <p className="mt-1 text-caption">그중 숫자로 읽을 수 있는 측정값 열은 {numericColumns.length}개입니다.</p>
+            <p className="mt-1 text-caption">
+              그중 숫자로 읽을 수 있는 측정값 열은 {numericColumns.length}개입니다.
+              {croppedAway > 0 && ` 구간을 잘라 ${croppedAway.toLocaleString('ko-KR')}개 행을 뺐습니다.`}
+            </p>
+            {/* 행 수는 실제로 분석에 쓰인 수를 보여 줍니다. 구간을 자른 뒤에도 원래
+                행 수가 남아 있으면 위의 합계와 어긋나 보입니다. */}
             <ul className="mt-3 flex flex-wrap gap-2">
-              {trials.map((trial) => (
+              {builtTrials.map((trial) => (
                 <li
                   key={trial.id}
                   className="flex items-center gap-2 rounded-card border border-success px-3 py-1 text-caption"
@@ -466,7 +756,9 @@ export function DataAnalysisPage() {
             </ul>
             <div className="mt-3">
               <Button variant="outline" onClick={saveCsv}>CSV 파일로 저장</Button>
-              {hasRepeats && <span className="ml-3 text-caption">회차를 구분하는 열이 맨 앞에 함께 저장됩니다.</span>}
+              <span className="ml-3 text-caption">
+                {hasRepeats ? '회차를 구분하는 열이 맨 앞에 함께 저장됩니다. ' : ''}더한 열도 함께 저장됩니다.
+              </span>
             </div>
           </div>
         )}
@@ -488,8 +780,42 @@ export function DataAnalysisPage() {
 
       {trials.length > 0 && (
         <>
+          <div className="mt-10 rounded-card border border-border bg-muted-background p-4">
+            <fieldset>
+              <legend className="text-body font-semibold">분석 방식</legend>
+              <div className="mt-2 flex flex-wrap gap-6">
+                {([
+                  { value: 'basic', label: '기본', hint: '붙여넣은 값을 그대로 요약하고 그립니다.' },
+                  { value: 'advanced', label: '고급', hint: '구간 자르기, 열 더하기, 격자 표까지 씁니다.' },
+                ] as const).map((option) => (
+                  <label key={option.value} className="flex items-start gap-2 text-body">
+                    <input
+                      type="radio"
+                      name="analysis-level"
+                      value={option.value}
+                      checked={level === option.value}
+                      onChange={() => setLevel(option.value)}
+                      className="mt-1 size-4 accent-accent"
+                    />
+                    <span>
+                      {option.label}
+                      <span className="block text-caption text-muted">{option.hint}</span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          </div>
+
+          {suggestion && (
+            <div className="mt-4 flex flex-wrap items-center gap-3 rounded-card border border-warning bg-warning-background p-4 text-warning">
+              <p className="grow text-caption">{suggestion}</p>
+              <Button size="sm" onClick={() => setLevel('advanced')}>고급 기능 켜기</Button>
+            </div>
+          )}
+
           <section aria-labelledby="summary-step" className="mt-12">
-            <h2 id="summary-step" className="text-heading font-semibold">2. 측정값 요약</h2>
+            <h2 id="summary-step" className="text-heading font-semibold">{sectionNumber('summary')}. 측정값 요약</h2>
             <p className="mt-2 text-body text-muted">
               각 측정값 열이 어떤 범위에 얼마나 퍼져 있는지 보여 줍니다. 표준편차는 반복 측정한 값들이 평균에서 흩어진
               정도이며, 결과를 얼마나 믿을 수 있는지 보여 줍니다. 사분위수는 값을 크기순으로 늘어놓았을 때의 25%·50%·75%
@@ -547,8 +873,249 @@ export function DataAnalysisPage() {
             )}
           </section>
 
+          {advanced && (
+            <section aria-labelledby="columns-step" className="mt-12">
+              <h2 id="columns-step" className="text-heading font-semibold">{sectionNumber('columns')}. 구간과 열 다듬기</h2>
+              <p className="mt-2 max-w-3xl text-body text-muted">
+                레시피가 요구하는 그래프의 축이 붙여넣은 표에 없을 때 씁니다. 볼 구간을 먼저 자르고, 사람이 재어 적는 값과
+                계산해서 나오는 값을 열로 더합니다. 더한 열은 요약표·그래프·CSV에 모두 함께 실립니다.
+              </p>
+
+              <div className="mt-6 rounded-card border border-border p-5">
+                <h3 className="text-body font-semibold">구간 자르기</h3>
+                <p className="mt-2 text-caption text-muted">
+                  기록 전체가 아니라 한 토막만 볼 때 씁니다. 낙하하는 동안, 가속하는 동안, 가열하는 동안처럼요. 자르기는
+                  계산보다 먼저 이루어지므로, 자른 뒤에 <code>time_ms - first(time_ms)</code>로 시간을 0부터 다시 셀 수
+                  있습니다.
+                </p>
+                <div className="mt-4 grid gap-4 sm:grid-cols-3">
+                  <div>
+                    <label htmlFor="range-column" className="text-caption font-medium">기준 열</label>
+                    <select
+                      id="range-column"
+                      value={range.column}
+                      onChange={(event) => setRange((current) => ({ ...current, column: event.target.value }))}
+                      className="mt-1 w-full rounded-card border border-border bg-background p-2 text-body focus:border-accent"
+                    >
+                      <option value="">자르지 않기</option>
+                      {rawHeader.map((name) => (
+                        <option key={name} value={name}>{name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="range-min" className="text-caption font-medium">이 값부터</label>
+                    <input
+                      id="range-min"
+                      value={range.min}
+                      onChange={(event) => setRange((current) => ({ ...current, min: event.target.value }))}
+                      disabled={!range.column}
+                      placeholder="비우면 처음부터"
+                      className="mt-1 w-full rounded-card border border-border bg-background p-2 text-body tabular-nums focus:border-accent"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="range-max" className="text-caption font-medium">이 값까지</label>
+                    <input
+                      id="range-max"
+                      value={range.max}
+                      onChange={(event) => setRange((current) => ({ ...current, max: event.target.value }))}
+                      disabled={!range.column}
+                      placeholder="비우면 끝까지"
+                      className="mt-1 w-full rounded-card border border-border bg-background p-2 text-body tabular-nums focus:border-accent"
+                    />
+                  </div>
+                </div>
+                {hasRange(range) && (
+                  <p role="status" className="mt-3 text-caption text-muted">
+                    {rawRows.length.toLocaleString('ko-KR')}개 행이 남았고 {croppedAway.toLocaleString('ko-KR')}개 행을
+                    뺐습니다.
+                  </p>
+                )}
+              </div>
+
+              <div className="mt-6 grid gap-6 lg:grid-cols-2">
+                <div className="rounded-card border border-border p-5">
+                  <h3 className="text-body font-semibold">조건 값 열 — 회차마다 값 하나</h3>
+                  <p className="mt-2 text-caption text-muted">
+                    회차 하나가 조건 하나일 때 씁니다. 열을 만들고 회차마다 잰 값을 적으면, 그 값이 회차의 모든 행에 들어가
+                    가로축으로 쓸 수 있게 됩니다.
+                  </p>
+
+                  <div className="mt-4 flex flex-wrap items-end gap-3">
+                    <div className="grow">
+                      <label htmlFor="manual-column-name" className="text-caption font-medium">새 열 이름</label>
+                      <input
+                        id="manual-column-name"
+                        value={draftManualName}
+                        onChange={(event) => {
+                          setDraftManualName(event.target.value)
+                          setManualNameError(null)
+                        }}
+                        placeholder="예: 실_길이_m"
+                        className="mt-1 w-full rounded-card border border-border bg-background p-2 text-body focus:border-accent"
+                      />
+                    </div>
+                    <Button onClick={addManualColumn} disabled={!draftManualName.trim()}>열 만들기</Button>
+                  </div>
+                  {manualNameError && (
+                    <p role="alert" className="mt-2 text-caption text-danger">{manualNameError}</p>
+                  )}
+
+                  {manualNames.length > 0 && (
+                    <div className="mt-4 overflow-x-auto">
+                      <table className="w-full border-collapse text-caption">
+                        <caption className="sr-only">회차별 조건 값</caption>
+                        <thead>
+                          <tr className="border-b border-border text-left">
+                            <th scope="col" className="py-2 pr-4 font-semibold">회차</th>
+                            {manualNames.map((name) => (
+                              <th key={name} scope="col" className="py-2 pr-4 font-semibold whitespace-nowrap">
+                                {name}
+                                <button
+                                  onClick={() => removeManualColumn(name)}
+                                  className="ml-2 rounded-card px-1 font-semibold text-muted hover:text-danger"
+                                  aria-label={`${name} 열 빼기`}
+                                >
+                                  ×
+                                </button>
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {trials.map((trial) => (
+                            <tr key={trial.id} className="border-b border-border">
+                              <th scope="row" className="py-2 pr-4 text-left font-medium whitespace-nowrap">{trial.label}</th>
+                              {manualNames.map((name) => (
+                                <td key={name} className="py-2 pr-4">
+                                  <input
+                                    value={trial.manualValues[name] ?? ''}
+                                    onChange={(event) => setManualValue(trial.id, name, event.target.value)}
+                                    aria-label={`${trial.label}의 ${name}`}
+                                    className="w-28 rounded-card border border-border bg-background p-1 text-caption tabular-nums focus:border-accent"
+                                  />
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+
+                <div className="rounded-card border border-border p-5">
+                  <h3 className="text-body font-semibold">계산 열 — 다른 열로 만드는 값</h3>
+                  <p className="mt-2 text-caption text-muted">
+                    열 이름과 숫자를 <code>+ - * /</code>와 괄호, 거듭제곱 <code>^</code>으로 엮어 적습니다. 삼각함수는
+                    라디안이 아니라 <b>도(°)</b>로 계산합니다. 앞서 만든 계산 열을 다음 식에서 다시 쓸 수 있습니다.
+                  </p>
+                  <p className="mt-2 text-caption text-muted">
+                    예: <code>ln(excess_temperature_c)</code> · <code>cos(각도_deg)^2</code> ·{' '}
+                    <code>hall_raw - mean(hall_raw)</code> · <code>diff(distance_m)/diff(time_ms)*1000</code>
+                  </p>
+
+                  <div className="mt-4 space-y-3">
+                    <div>
+                      <label htmlFor="calculated-column-name" className="text-caption font-medium">새 열 이름</label>
+                      <input
+                        id="calculated-column-name"
+                        value={draftCalculatedName}
+                        onChange={(event) => {
+                          setDraftCalculatedName(event.target.value)
+                          setCalculatedError(null)
+                        }}
+                        placeholder="예: ln_온도차"
+                        className="mt-1 w-full rounded-card border border-border bg-background p-2 text-body focus:border-accent"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="calculated-column-expression" className="text-caption font-medium">식</label>
+                      <input
+                        id="calculated-column-expression"
+                        value={draftExpression}
+                        onChange={(event) => {
+                          setDraftExpression(event.target.value)
+                          setCalculatedError(null)
+                        }}
+                        placeholder="예: ln(excess_temperature_c)"
+                        spellCheck={false}
+                        className="mt-1 w-full rounded-card border border-border bg-background p-2 font-mono text-caption focus:border-accent"
+                      />
+                    </div>
+                    <Button onClick={addCalculatedColumn} disabled={!draftCalculatedName.trim() || !draftExpression.trim()}>
+                      열 만들기
+                    </Button>
+                  </div>
+                  {calculatedError && (
+                    <p role="alert" className="mt-2 text-caption text-danger">{calculatedError}</p>
+                  )}
+
+                  <div className="mt-4">
+                    <p className="text-caption font-medium">쓸 수 있는 열 이름</p>
+                    <p className="mt-1 break-words font-mono text-caption text-muted">{header.join(', ')}</p>
+                  </div>
+
+                  <details className="mt-3">
+                    <summary className="cursor-pointer text-caption font-medium">쓸 수 있는 함수</summary>
+                    <ul className="mt-2 space-y-1 text-caption text-muted">
+                      {FUNCTION_HELP.map((entry) => (
+                        <li key={entry.name}><code>{entry.usage}</code> — {entry.meaning}</li>
+                      ))}
+                    </ul>
+                  </details>
+
+                  {calculatedColumns.length > 0 && (
+                    <ul className="mt-4 space-y-2">
+                      {calculatedColumns.map((column) => (
+                        <li key={column.name} className="flex items-start gap-2 rounded-card border border-border p-2 text-caption">
+                          <span className="grow">
+                            <b>{column.name}</b> = <code>{column.expression}</code>
+                            {expressionErrors[column.name] && (
+                              <span role="alert" className="mt-1 block text-danger">{expressionErrors[column.name]}</span>
+                            )}
+                          </span>
+                          <button
+                            onClick={() => removeCalculatedColumn(column.name)}
+                            className="rounded-card px-1 font-semibold text-muted hover:text-danger"
+                            aria-label={`${column.name} 열 빼기`}
+                          >
+                            ×
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </div>
+
+              {activeGroupName && (
+                <div className="mt-6 rounded-card border border-border p-5">
+                  <h3 className="text-body font-semibold">계열을 열로 펼치기</h3>
+                  <label className="mt-2 flex items-start gap-2 text-body">
+                    <input
+                      type="checkbox"
+                      checked={spreadToColumns}
+                      onChange={(event) => setSpreadToColumns(event.target.checked)}
+                      className="mt-1 size-4 accent-accent"
+                    />
+                    <span>
+                      {activeGroupName} 값마다 열을 따로 만들기
+                      <span className="block text-caption text-muted">
+                        같은 순번끼리 나란히 놓아 <code>측정값_{groupCandidates.find((candidate) => candidate.name === activeGroupName)?.values[0] ?? '0'}</code>{' '}
+                        같은 열을 만듭니다. 같은 시각 두 지점의 온도 차처럼 계열끼리 빼야 나오는 값을 계산 열로 구할 수
+                        있습니다. 펼치는 동안에는 계열 나누기를 쓰지 않습니다.
+                      </span>
+                    </span>
+                  </label>
+                </div>
+              )}
+            </section>
+          )}
+
           <section aria-labelledby="chart-step" className="mt-12">
-            <h2 id="chart-step" className="text-heading font-semibold">3. 그래프 그리기</h2>
+            <h2 id="chart-step" className="text-heading font-semibold">{sectionNumber('chart')}. 그래프 그리기</h2>
             <p className="mt-2 text-body text-muted">
               가로축과 세로축에 놓을 변인을 고르세요. 그래프는 흰 바탕·검은 축의 논문 그림 형식으로 그려지며, 화면 테마와
               상관없이 항상 같은 모습으로 저장됩니다.
@@ -556,7 +1123,8 @@ export function DataAnalysisPage() {
 
             {numericColumns.length < 2 ? (
               <p className="mt-4 rounded-card border border-border bg-muted-background p-4 text-body text-muted">
-                그래프를 그리려면 숫자 열이 두 개 이상 필요합니다. 시간과 측정값을 함께 출력하도록 스케치를 고쳐 보세요.
+                그래프를 그리려면 숫자 열이 두 개 이상 필요합니다. 시간과 측정값을 함께 출력하도록 스케치를 고치거나, 고급
+                분석에서 조건 값 열을 더해 보세요.
               </p>
             ) : (
               <>
@@ -565,7 +1133,7 @@ export function DataAnalysisPage() {
                     <label htmlFor="x-axis-column" className="text-body font-semibold">가로축(x) 변인</label>
                     <select
                       id="x-axis-column"
-                      value={xName ?? ''}
+                      value={xColumn?.name ?? ''}
                       onChange={(event) => changeXColumn(event.target.value)}
                       className="mt-2 w-full rounded-card border border-border bg-background p-2 text-body focus:border-accent"
                     >
@@ -575,21 +1143,22 @@ export function DataAnalysisPage() {
                     </select>
                   </div>
 
-                  {hasRepeats ? (
+                  {singleVariableOnly ? (
                     <div>
                       <label htmlFor="y-axis-column" className="text-body font-semibold">세로축(y) 변인</label>
                       <p className="mt-1 text-caption text-muted">
-                        회차를 비교할 때는 변인 하나만 그립니다. 회차와 변인을 함께 겹치면 선이 너무 많아 어느 것이
-                        무엇인지 읽을 수 없습니다.
+                        {usesGrouping
+                          ? '계열을 나눌 때는 변인 하나만 그립니다. 계열과 변인을 함께 겹치면 선이 너무 많아 어느 것이 무엇인지 읽을 수 없습니다.'
+                          : '회차를 비교할 때는 변인 하나만 그립니다. 회차와 변인을 함께 겹치면 선이 너무 많아 어느 것이 무엇인지 읽을 수 없습니다.'}
                       </p>
                       <select
                         id="y-axis-column"
-                        value={yNames[0] ?? ''}
+                        value={yColumns[0]?.name ?? ''}
                         onChange={(event) => setYNames([event.target.value])}
                         className="mt-2 w-full rounded-card border border-border bg-background p-2 text-body focus:border-accent"
                       >
                         {numericColumns
-                          .filter((column) => column.name !== xName)
+                          .filter((column) => column.name !== xColumn?.name)
                           .map((column) => (
                             <option key={column.name} value={column.name}>{column.name}</option>
                           ))}
@@ -604,7 +1173,7 @@ export function DataAnalysisPage() {
                       </p>
                       <div className="mt-2 space-y-2">
                         {numericColumns
-                          .filter((column) => column.name !== xName)
+                          .filter((column) => column.name !== xColumn?.name)
                           .map((column) => {
                             const selectedAt = yNames.indexOf(column.name)
                             return (
@@ -635,7 +1204,45 @@ export function DataAnalysisPage() {
                   )}
                 </div>
 
-                {hasRepeats && (
+                {/*
+                  센서를 여러 개 단 레시피는 한 행씩 번갈아 출력하므로, 나누지 않으면
+                  이웃한 점이 서로 다른 센서가 되어 톱니만 남습니다. 그런 자료가
+                  들어왔을 때만 이 선택이 나타납니다.
+                */}
+                {groupCandidates.length > 0 && !pivotActive && (
+                  <div className="mt-6 rounded-card border border-border p-4">
+                    <label htmlFor="group-column" className="text-body font-semibold">계열 나누기 기준</label>
+                    <p className="mt-1 text-caption text-muted">
+                      한 열의 값마다 계열을 하나씩 그립니다. 센서를 번갈아 기록하는 <code>channel</code>·<code>index</code>·
+                      <code>position</code> 열이나 조건 이름을 담은 <code>condition_id</code> 열을 고르세요. 나누기를 쓰면
+                      회차는 모두 합쳐 그립니다.
+                    </p>
+                    <select
+                      id="group-column"
+                      value={activeGroupName}
+                      onChange={(event) => changeGroupColumn(event.target.value)}
+                      className="mt-2 w-full rounded-card border border-border bg-background p-2 text-body focus:border-accent md:w-80"
+                    >
+                      <option value="">나누지 않기</option>
+                      {groupCandidates.map((candidate) => (
+                        <option key={candidate.name} value={candidate.name}>
+                          {candidate.name} ({candidate.values.length}가지)
+                        </option>
+                      ))}
+                    </select>
+                    {activeGroupName && groups.length > MAX_SERIES && (
+                      <p role="alert" className="mt-2 rounded-card border border-warning bg-warning-background p-3 text-caption text-warning">
+                        {activeGroupName} 값이 {groups.length}가지라 색으로 구분할 수 있는 {MAX_SERIES}가지까지만 그립니다.
+                        그리지 못한 값: {groups.slice(MAX_SERIES).map((group) => group.value).join(', ')}
+                      </p>
+                    )}
+                    {activeGroupName && yColumns.length !== 1 && (
+                      <p className="mt-2 text-caption text-muted">세로축 변인을 하나 고르면 계열이 나뉩니다.</p>
+                    )}
+                  </div>
+                )}
+
+                {hasRepeats && !usesGrouping && (
                   <div className="mt-6 rounded-card border border-border p-4">
                     <fieldset>
                       <legend className="text-body font-semibold">회차 보기 방식</legend>
@@ -652,7 +1259,8 @@ export function DataAnalysisPage() {
                           <span>
                             상자그림으로 모아 보기
                             <span className="block text-caption text-muted">
-                              같은 순번의 측정값을 모아 사분위수 상자와 최솟값·최댓값 수염으로 그립니다.
+                              같은 순번의 측정값을 모아 사분위수 상자와 최솟값·최댓값 수염으로 그립니다. 같은 조건을
+                              되풀이해 잰 회차에 씁니다.
                             </span>
                           </span>
                         </label>
@@ -671,7 +1279,24 @@ export function DataAnalysisPage() {
                             <span className="block text-caption text-muted">
                               {tooManyTrialsForPerTrialView
                                 ? `회차가 ${MAX_TRIAL_SERIES}개를 넘으면 색으로 구분할 수 없어 상자그림 보기만 쓸 수 있습니다.`
-                                : '회차마다 다른 색과 점 모양으로 그려 실험이 되풀이되는지 봅니다.'}
+                                : '회차마다 다른 색과 점 모양으로 그립니다. 회차마다 조건을 바꿔 잰 경우에는 이 보기를 쓰세요.'}
+                            </span>
+                          </span>
+                        </label>
+                        <label className="flex items-start gap-2 text-body">
+                          <input
+                            type="radio"
+                            name="trial-view"
+                            value="merged"
+                            checked={effectiveTrialView === 'merged'}
+                            onChange={() => setTrialView('merged')}
+                            className="mt-1 size-4 accent-accent"
+                          />
+                          <span>
+                            회차를 합쳐 한 계열로 보기
+                            <span className="block text-caption text-muted">
+                              모든 회차의 점을 한 계열로 그리고 직선 하나를 맞춥니다. 회차 하나가 조건 하나여서 조건들이
+                              함께 직선을 이루는 실험(실 길이별 주기, 부하별 단자전압)에 씁니다.
                             </span>
                           </span>
                         </label>
@@ -708,7 +1333,9 @@ export function DataAnalysisPage() {
                     {spreadWarning && (
                       <p role="alert" className="mt-2 rounded-card border border-warning bg-warning-background p-3 text-caption text-warning">
                         회차마다 가로축 값이 크게 다릅니다. 같은 순번끼리 모으는 방식이므로, 회차별로 다른 조건을
-                        측정했다면 상자그림은 뜻을 잃습니다. 회차별로 나누어 보기로 먼저 확인하세요.
+                        측정했다면 상자그림은 뜻을 잃습니다. 조건마다 기울기를 따로 구하려면 <b>회차별로 나누어 보기</b>로
+                        바꿔 아래 회차별 기울기 표를 읽고, 조건들이 함께 직선 하나를 이루는 실험이라면{' '}
+                        <b>회차를 합쳐 한 계열로 보기</b>를 고르세요.
                       </p>
                     )}
                   </div>
@@ -751,9 +1378,11 @@ export function DataAnalysisPage() {
                     </label>
                     {!relation && (
                       <p className="mt-1 text-caption text-muted">
-                        {hasRepeats
-                          ? '상자그림 보기에서 회귀직선을 그릴 수 있습니다.'
-                          : '세로축 변인을 하나만 고르면 회귀직선을 그릴 수 있습니다.'}
+                        {usesGrouping
+                          ? '계열마다의 직선은 아래 기울기 비교 표에 있습니다.'
+                          : hasRepeats
+                            ? '상자그림 보기나 합쳐 보기에서 회귀직선을 그릴 수 있습니다.'
+                            : '세로축 변인을 하나만 고르면 회귀직선을 그릴 수 있습니다.'}
                       </p>
                     )}
                   </div>
@@ -773,7 +1402,7 @@ export function DataAnalysisPage() {
                           yLabel={yAxisLabel}
                           kind={chartKind}
                           trendLine={trendLine}
-                          palette={hasRepeats && effectiveTrialView === 'perTrial' ? 'trial' : 'variable'}
+                          palette={hasRepeats && !usesGrouping && effectiveTrialView === 'perTrial' ? 'trial' : 'variable'}
                           contextPoints={contextPoints}
                           description={chartDescription}
                           chartRef={chartRef}
@@ -802,9 +1431,9 @@ export function DataAnalysisPage() {
             )}
           </section>
 
-          {(relation || perTrialRelations.length > 0) && xColumn && yColumns[0] && (
+          {showRelation && xColumn && yColumns[0] && (
             <section aria-labelledby="relation-step" className="mt-12">
-              <h2 id="relation-step" className="text-heading font-semibold">4. 두 변인의 관계</h2>
+              <h2 id="relation-step" className="text-heading font-semibold">{sectionNumber('relation')}. 두 변인의 관계</h2>
               <p className="mt-2 text-body text-muted">
                 가로축 {xColumn.name}, 세로축 {yColumns[0].name}의 관계를 최소제곱법으로 직선에 맞춘 결과입니다.
               </p>
@@ -842,19 +1471,16 @@ export function DataAnalysisPage() {
                 </>
               )}
 
-              {perTrialRelations.length > 0 && (
+              {comparison && (
                 <div className="mt-8">
-                  <h3 className="text-body font-semibold">회차별 기울기 비교</h3>
-                  <p className="mt-1 text-body text-muted">
-                    회차마다 따로 맞춘 직선입니다. 기울기가 회차마다 크게 달라지면 실험 조건이 회차 사이에 바뀌었을 수
-                    있습니다.
-                  </p>
+                  <h3 className="text-body font-semibold">{comparison.heading}</h3>
+                  <p className="mt-1 text-body text-muted">{comparison.description}</p>
                   <div className="mt-3 overflow-x-auto">
                     <table className="w-full border-collapse text-caption">
-                      <caption className="sr-only">회차별 회귀직선 비교</caption>
+                      <caption className="sr-only">계열별 회귀직선 비교</caption>
                       <thead>
                         <tr className="border-b border-border text-left">
-                          <th scope="col" className="py-2 pr-4 font-semibold">회차</th>
+                          <th scope="col" className="py-2 pr-4 font-semibold">{comparison.label}</th>
                           <th scope="col" className="py-2 pr-4 text-right font-semibold">개수(n)</th>
                           <th scope="col" className="py-2 pr-4 text-right font-semibold">기울기</th>
                           <th scope="col" className="py-2 pr-4 text-right font-semibold">절편</th>
@@ -863,7 +1489,7 @@ export function DataAnalysisPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {perTrialRelations.map((entry) => (
+                        {comparison.entries.map((entry) => (
                           <tr key={entry.label} className="border-b border-border">
                             <th scope="row" className="py-2 pr-4 text-left font-medium whitespace-nowrap">{entry.label}</th>
                             {entry.relation === null ? (
@@ -888,7 +1514,7 @@ export function DataAnalysisPage() {
                   </div>
                   {slopeSpread && (
                     <p className="mt-3 text-body text-muted">
-                      회차별 기울기의 평균은 {formatMeasurement(slopeSpread.mean)}이고, 표준편차는{' '}
+                      {comparison.label}별 기울기의 평균은 {formatMeasurement(slopeSpread.mean)}이고, 표준편차는{' '}
                       {slopeSpread.standardDeviation === null ? '—' : formatMeasurement(slopeSpread.standardDeviation)}
                       입니다. 표준편차가 평균에 비해 작을수록 실험이 잘 되풀이된 것입니다.
                     </p>
@@ -898,8 +1524,54 @@ export function DataAnalysisPage() {
             </section>
           )}
 
+          {showGrid && (
+            <section aria-labelledby="grid-step" className="mt-12">
+              <h2 id="grid-step" className="text-heading font-semibold">{sectionNumber('grid')}. 격자로 보기</h2>
+              <p className="mt-2 max-w-3xl text-body text-muted">
+                센서를 놓은 자리 그대로 평균값을 늘어놓습니다. 교실 격자의 조도 분포처럼 어디가 밝고 어디가 어두운지를
+                보는 탐구는 꺾은선보다 이 표가 읽기 쉽습니다. 색은 거들 뿐이고 값은 언제나 숫자로 함께 적힙니다.
+              </p>
+
+              <div className="mt-4 flex flex-wrap items-end gap-4">
+                {usesGrouping && (
+                  <div>
+                    <label htmlFor="grid-measure" className="text-caption font-medium">보여 줄 측정값</label>
+                    <select
+                      id="grid-measure"
+                      value={gridMeasure}
+                      onChange={(event) => setGridMeasure(event.target.value)}
+                      className="mt-1 w-56 rounded-card border border-border bg-background p-2 text-body focus:border-accent"
+                    >
+                      {numericColumns
+                        .filter((column) => column.name !== xColumn?.name && column.name !== activeGroupName)
+                        .map((column) => (
+                          <option key={column.name} value={column.name}>{column.name}</option>
+                        ))}
+                    </select>
+                  </div>
+                )}
+                <div>
+                  <label htmlFor="grid-width" className="text-caption font-medium">한 줄에 놓을 칸 수</label>
+                  <input
+                    id="grid-width"
+                    type="number"
+                    min={1}
+                    max={8}
+                    value={gridWidth}
+                    onChange={(event) => setGridWidth(Math.min(8, Math.max(1, Number(event.target.value) || 1)))}
+                    className="mt-1 w-24 rounded-card border border-border bg-background p-2 text-body tabular-nums focus:border-accent"
+                  />
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <GridSummary cells={gridCells} columns={gridWidth} caption="측정 위치별 평균값 격자" />
+              </div>
+            </section>
+          )}
+
           <section aria-labelledby="table-step" className="mt-12">
-            <h2 id="table-step" className="text-heading font-semibold">5. 데이터 확인</h2>
+            <h2 id="table-step" className="text-heading font-semibold">{sectionNumber('table')}. 데이터 확인</h2>
             <p className="mt-2 text-body text-muted">
               그래프의 점 하나하나에 해당하는 값입니다. 전체 {totalRowCount.toLocaleString('ko-KR')}개 행 중 처음{' '}
               {Math.min(PREVIEW_ROW_LIMIT, totalRowCount)}개를 보여 줍니다. 나머지는 CSV 파일에서 확인하세요.
@@ -917,7 +1589,7 @@ export function DataAnalysisPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {trials
+                  {builtTrials
                     .flatMap((trial) => trial.rows.map((row) => ({ trial, row })))
                     .slice(0, PREVIEW_ROW_LIMIT)
                     .map((entry, rowIndex) => (
