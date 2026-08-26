@@ -93,8 +93,109 @@ jobs:
         with:
           path: dist
 
-  deploy:
+  # Ships firestore.rules / storage.rules to the live project. Until this job
+  # existed, nothing did: `test:rules` above proves a ruleset against the local
+  # emulator, which says nothing about what the real project is enforcing. The
+  # gap was not theoretical -- a stats read the emulator suite never asserted
+  # shipped as isAdmin()-only, and Daily Verification died on permission-denied
+  # for 27 consecutive nights before the fix was deployed by hand.
+  deploy-rules:
     needs: build
+    runs-on: ubuntu-latest
+    env:
+      # A job-level `if:` cannot read the secrets context, so the presence
+      # check is hoisted into an env var the steps below can branch on.
+      HAS_DEPLOY_CREDENTIALS: ${{ secrets.FIREBASE_SERVICE_ACCOUNT != '' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The gate below diffs against the base of the push, which is not
+          # reachable at the default fetch depth of 1.
+          fetch-depth: 0
+
+      - name: Decide which rulesets this push actually touched
+        id: changed
+        # Every deploy mints a new ruleset version and a project caps out at
+        # 2500 of them, so firing on every unrelated push to main would spend
+        # the quota re-uploading identical content. Gating per file also means
+        # the first storage.rules deploy lands on a push that edits
+        # storage.rules, rather than as a side effect of some other change.
+        run: |
+          base='${{ github.event.before }}'
+          list="$RUNNER_TEMP/changed-paths.txt"
+          if [ '${{ github.event_name }}' = 'push' ] && [ -n "$base" ] && git cat-file -e "$base^{commit}" 2>/dev/null; then
+            git diff --name-only "$base" '${{ github.sha }}' > "$list"
+          else
+            # Manual dispatch, or a base commit absent from this clone (first
+            # push on a branch, force-push). With nothing to diff against,
+            # assume both rulesets need to go out rather than skip them.
+            printf 'firestore.rules\nstorage.rules\n' > "$list"
+          fi
+
+          targets=''
+          # firebase.json decides which file feeds which target, so a change
+          # there can redirect a deploy without either .rules file moving.
+          if grep -qxE 'firestore\.rules|firebase\.json' "$list"; then
+            targets='firestore:rules'
+          fi
+          if grep -qxE 'storage\.rules|firebase\.json' "$list"; then
+            targets="${targets:+$targets,}storage"
+          fi
+
+          echo "targets=$targets" >> "$GITHUB_OUTPUT"
+          if [ -n "$targets" ]; then
+            echo "Rule sources changed -- will deploy: $targets"
+          else
+            echo 'No rule sources changed in this push; nothing to deploy.'
+          fi
+
+      - name: Refuse to leave changed rules undeployed
+        # The failure this job exists to prevent is a rule change that is green
+        # in CI and absent from production. Skipping quietly when the
+        # credential is missing would rebuild exactly that gap, so a rules
+        # change with no way to ship it is a hard stop.
+        if: steps.changed.outputs.targets != '' && env.HAS_DEPLOY_CREDENTIALS != 'true'
+        run: |
+          echo "::error::${{ steps.changed.outputs.targets }} changed in this push, but the FIREBASE_SERVICE_ACCOUNT secret is not set, so the new rules cannot reach the live project. Add that secret (a service account key holding the Firebase Rules Admin role), or deploy by hand: npx firebase deploy --only ${{ steps.changed.outputs.targets }} -P <project-id>"
+          exit 1
+
+      - uses: actions/setup-node@v4
+        if: steps.changed.outputs.targets != '' && env.HAS_DEPLOY_CREDENTIALS == 'true'
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install the pinned firebase-tools
+        # The lockfile's CLI rather than a floating firebase-tools@latest: the
+        # tool that ships the rules should be the one `test:rules` just
+        # validated them with.
+        if: steps.changed.outputs.targets != '' && env.HAS_DEPLOY_CREDENTIALS == 'true'
+        run: npm ci
+
+      - name: Deploy rules to the live project
+        # -P is not optional. .firebaserc's default project is
+        # how-to-use-arduino-test, which the emulator suite depends on, so a
+        # deploy without an explicit project quietly lands on the test project
+        # while production keeps the old rules.
+        if: steps.changed.outputs.targets != '' && env.HAS_DEPLOY_CREDENTIALS == 'true'
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          TARGETS: ${{ steps.changed.outputs.targets }}
+        run: |
+          creds="$RUNNER_TEMP/firebase-service-account.json"
+          # Written with a restrictive umask and removed on the way out; the
+          # runner is ephemeral but the key outlives the job.
+          (umask 077 && printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$creds")
+          trap 'rm -f "$creds"' EXIT
+          GOOGLE_APPLICATION_CREDENTIALS="$creds" \
+            npx firebase deploy --only "$TARGETS" -P "$FIREBASE_PROJECT_ID" --non-interactive
+
+  deploy:
+    # Rules go out before the SPA does. The client is what has to satisfy them,
+    # so shipping new client code against the old ruleset is the ordering that
+    # breaks; the reverse merely opens a permission a little early.
+    needs: [build, deploy-rules]
     runs-on: ubuntu-latest
     environment:
       name: github-pages
