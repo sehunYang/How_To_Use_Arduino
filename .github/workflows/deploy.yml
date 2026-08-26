@@ -11,6 +11,15 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      redeploy_rules:
+        description: >-
+          Re-ship a ruleset even though this run has no diff to read.
+          Leave at "none" to redeploy the site alone; the push trigger
+          already ships rules whenever their source changes.
+        type: choice
+        default: none
+        options: [none, firestore, storage, both]
 
 # Least-privilege token, scoped up only for the Pages deployment job.
 permissions:
@@ -113,40 +122,51 @@ jobs:
           # reachable at the default fetch depth of 1.
           fetch-depth: 0
 
-      - name: Decide which rulesets this push actually touched
+      - name: Decide which rulesets this run should ship
         id: changed
-        # Every deploy mints a new ruleset version and a project caps out at
-        # 2500 of them, so firing on every unrelated push to main would spend
-        # the quota re-uploading identical content. Gating per file also means
-        # the first storage.rules deploy lands on a push that edits
-        # storage.rules, rather than as a side effect of some other change.
+        # Every deploy mints a ruleset version against a per-project cap of
+        # 2500, so this does not fire on pushes that leave the rules alone.
+        # Gating per file also keeps storage.rules from going out as a side
+        # effect of an unrelated change -- it ships when someone edits it, or
+        # when a human asks for it by name above.
+        env:
+          MANUAL: ${{ inputs.redeploy_rules }}
         run: |
-          base='${{ github.event.before }}'
-          list="$RUNNER_TEMP/changed-paths.txt"
-          if [ '${{ github.event_name }}' = 'push' ] && [ -n "$base" ] && git cat-file -e "$base^{commit}" 2>/dev/null; then
-            git diff --name-only "$base" '${{ github.sha }}' > "$list"
+          if [ '${{ github.event_name }}' = 'workflow_dispatch' ]; then
+            case "$MANUAL" in
+              firestore) targets='firestore:rules' ;;
+              storage)   targets='storage' ;;
+              both)      targets='firestore:rules,storage' ;;
+              *)         targets='' ;;
+            esac
           else
-            # Manual dispatch, or a base commit absent from this clone (first
-            # push on a branch, force-push). With nothing to diff against,
-            # assume both rulesets need to go out rather than skip them.
-            printf 'firestore.rules\nstorage.rules\n' > "$list"
-          fi
+            base='${{ github.event.before }}'
+            list="$RUNNER_TEMP/changed-paths.txt"
+            if [ -n "$base" ] && git cat-file -e "$base^{commit}" 2>/dev/null; then
+              git diff --name-only "$base" '${{ github.sha }}' > "$list"
+            else
+              # A base commit absent from this clone (first push on a branch,
+              # force-push). With no diff to read, converge the live project on
+              # what the repository declares rather than skip the deploy.
+              printf 'firestore.rules\nstorage.rules\n' > "$list"
+            fi
 
-          targets=''
-          # firebase.json decides which file feeds which target, so a change
-          # there can redirect a deploy without either .rules file moving.
-          if grep -qxE 'firestore\.rules|firebase\.json' "$list"; then
-            targets='firestore:rules'
-          fi
-          if grep -qxE 'storage\.rules|firebase\.json' "$list"; then
-            targets="${targets:+$targets,}storage"
+            targets=''
+            # firebase.json decides which file feeds which target, so a change
+            # there can redirect a deploy without either .rules file moving.
+            if grep -qxE 'firestore\.rules|firebase\.json' "$list"; then
+              targets='firestore:rules'
+            fi
+            if grep -qxE 'storage\.rules|firebase\.json' "$list"; then
+              targets="${targets:+$targets,}storage"
+            fi
           fi
 
           echo "targets=$targets" >> "$GITHUB_OUTPUT"
           if [ -n "$targets" ]; then
-            echo "Rule sources changed -- will deploy: $targets"
+            echo "Will deploy: $targets"
           else
-            echo 'No rule sources changed in this push; nothing to deploy.'
+            echo 'No ruleset to deploy in this run.'
           fi
 
       - name: Refuse to leave changed rules undeployed
