@@ -101,13 +101,16 @@ service cloud.firestore {
       allow write: if isCI();
     }
 
+    // CI reads its own aggregates back: aggregate-stats.ts is incremental, so
+    // each page adds onto the counters already stored here. Opening read to the
+    // identity that already owns write is not a widening of the blast radius.
     match /stats/{recipeId} {
-      allow read: if isAdmin();
+      allow read: if isAdmin() || isCI();
       allow write: if isCI();
     }
 
     match /searchStats/{doc} {
-      allow read: if isAdmin();
+      allow read: if isAdmin() || isCI();
       allow write: if isCI();
     }
 

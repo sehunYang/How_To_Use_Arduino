@@ -157,6 +157,39 @@ describe('Firestore rules (PL2)', () => {
     )
   })
 
+  it('CI can read back the stats it writes, and anonymous clients still cannot', async () => {
+    // aggregate-stats.ts adds each page onto the stored counters, so the cron
+    // identity has to read stats/searchStats before it writes them. Without
+    // this assertion the read side of those rules had no coverage at all and
+    // Daily Verification failed for 27 days on permission-denied.
+    await testEnv.withSecurityRulesDisabled(async (ctx) => {
+      await ctx
+        .firestore()
+        .collection('stats')
+        .doc('recipe-1')
+        .set({ started: 1, completed: 0, dropAtStep: {}, processedThrough: null })
+      await ctx
+        .firestore()
+        .doc('searchStats/summary')
+        .set({ failures: {}, processedThrough: null })
+    })
+
+    const ci = testEnv.authenticatedContext('ci-1', { ci: true })
+    await assertSucceeds(ci.firestore().collection('stats').doc('recipe-1').get())
+    await assertSucceeds(ci.firestore().doc('searchStats/summary').get())
+
+    const admin = testEnv.authenticatedContext('admin-1', { admin: true })
+    await assertSucceeds(admin.firestore().collection('stats').doc('recipe-1').get())
+    await assertSucceeds(admin.firestore().doc('searchStats/summary').get())
+
+    const student = testEnv.authenticatedContext('student-1')
+    const unauth = testEnv.unauthenticatedContext()
+    await assertFails(student.firestore().collection('stats').doc('recipe-1').get())
+    await assertFails(student.firestore().doc('searchStats/summary').get())
+    await assertFails(unauth.firestore().collection('stats').doc('recipe-1').get())
+    await assertFails(unauth.firestore().doc('searchStats/summary').get())
+  })
+
   it('incremental aggregation state and cursor are private to the CI identity', async () => {
     const student = testEnv.authenticatedContext('student-1')
     const admin = testEnv.authenticatedContext('admin-1', { admin: true })

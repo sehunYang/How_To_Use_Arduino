@@ -180,13 +180,15 @@ match /recipes/{id}          { allow read: if resource.data.status == 'published
 match /sensors/{id}          { allow read: if true;  allow write: if isAdmin(); }
 match /meta/{doc}            { allow read: if true;  allow write: if isAdmin(); }
 match /simStatus/{recipeId}  { allow read: if true;  allow write: if isCI(); }
-match /stats/{recipeId}      { allow read: if isAdmin(); allow write: if isCI(); }
+match /stats/{recipeId}      { allow read: if isAdmin() || isCI(); allow write: if isCI(); }
+match /searchStats/{doc}     { allow read: if isAdmin() || isCI(); allow write: if isCI(); }
 match /verifyRequests/{id}   { allow create: if isAdmin();
                                allow read, delete: if isCI(); }          // ← E3 큐
 match /events/{id}           { allow create: if validEventPayload();
                                allow read: if isAdmin() || isCI();       // ← E1 크론 집계
                                allow update, delete: if false; }
 ```
+- ⚠️ **`stats`·`searchStats`는 CI에게 read도 열어준다.** `aggregate-stats.ts`가 기존 카운터에 더하는 증분 집계라 쓰기 전에 반드시 읽어야 한다. read가 `isAdmin()`뿐이면 Daily Verification이 `permission-denied`로 죽는다(2026-07-31 → 08-26, 27일 연속 재현)
 - ⚠️ **`isAdmin()`은 `uid == ADMIN_UID` 비교가 아니라 커스텀 클레임 방식**이다(명세서 서술과 다름 — 개정 요청 3의 6번). `admin`·`ci` 두 클레임 모두 **로컬에서 Admin SDK로 1회 발급**한다
 - ⚠️ **`events`에 Firestore TTL 정책(90일) 적용.** 집계 후 원본은 잔존 가치가 없고, TTL이 저장 증가와 크론 읽기량을 동시에 캡한다
 ```
