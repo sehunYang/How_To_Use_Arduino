@@ -98,8 +98,7 @@ function checkI2cAddressConflict(recipe: Recipe, inventory: Inventory, mode: Val
   for (const step of recipe.wiring) {
     const dotIndex = step.from.indexOf('.')
     const rawToken = dotIndex === -1 ? step.from : step.from.slice(0, dotIndex)
-    const baseToken = rawToken.toLowerCase().replace(/_?\d+$/, '')
-    const sensor = inventory.sensors.find((s) => s.id.toLowerCase() === baseToken)
+    const sensor = partForToken(inventory.sensors, rawToken)
     if (!sensor) continue
     const set = tokensBySensorId.get(sensor.id) ?? new Set<string>()
     set.add(rawToken.toLowerCase())
@@ -136,6 +135,68 @@ function checkNonexistentPin(recipe: Recipe, mode: ValidationMode): Issue[] {
     const pin = boardPinFromTo(step.to)
     if (pin && !UNO_PINS.has(pin)) {
       issues.push(issue('nonexistent-pin', mode, `${step.to}은(는) Uno R3에 존재하지 않는 핀입니다.`))
+    }
+  }
+  return issues
+}
+
+/**
+ * Resolves a wiring token to the inventory part it names.
+ *
+ * The exact id is tried first, because most part ids end in digits
+ * themselves ("bme280", "mpu6050", "ds18b20"). Only then is a trailing
+ * instance number stripped, and only the underscored form: "DS18B20_2" is
+ * the second DS18B20, while a bare trailing number is part of the name.
+ */
+function partForToken<T extends { id: string }>(parts: readonly T[], rawToken: string): T | undefined {
+  const token = rawToken.toLowerCase()
+  return (
+    parts.find((candidate) => candidate.id.toLowerCase() === token)
+    ?? parts.find((candidate) => candidate.id.toLowerCase() === token.replace(/_\d+$/, ''))
+  )
+}
+
+/**
+ * Check #12: a wiring endpoint naming an inventory part must name a pin that
+ * part actually declares.
+ *
+ * This is the pin-level counterpart of check #4, which only compares
+ * `recipe.sensors[]` / `recipe.actuators[]` ids. A step can name a real part
+ * and still invent a pin on it, and nothing downstream forgives that: the
+ * diagram generator resolves every endpoint through the part's pin map and
+ * throws when the name is absent, which takes the whole recipe screen down
+ * with it. Five Phase 7 recipes shipped that way, asking a BME280 for a VIN
+ * pin the inventory calls VCC, because a sibling sensor on the same helper
+ * line does have VIN.
+ *
+ * Endpoints that do not resolve to an inventory part are skipped rather than
+ * flagged. The board (`UNO.*`), the breadboard (`BB.*`), and the resistors,
+ * batteries and bench supplies that carry no pin contract all reach here, and
+ * an unknown part id is check #4's finding to report, not this one's.
+ */
+function checkUndeclaredPartPin(recipe: Recipe, inventory: Inventory, mode: ValidationMode): Issue[] {
+  const parts = [...inventory.sensors, ...inventory.actuators]
+  const seen = new Set<string>()
+  const issues: Issue[] = []
+
+  for (const step of recipe.wiring) {
+    for (const endpoint of [step.from, step.to]) {
+      const dotIndex = endpoint.indexOf('.')
+      if (dotIndex === -1) continue
+      const rawToken = endpoint.slice(0, dotIndex)
+      const pin = endpoint.slice(dotIndex + 1)
+      const part = partForToken(parts, rawToken)
+      if (!part) continue
+      if (part.pins.some((declared) => declared.name.toLowerCase() === pin.toLowerCase())) continue
+      if (seen.has(endpoint)) continue
+      seen.add(endpoint)
+      issues.push(
+        issue(
+          'undeclared-part-pin',
+          mode,
+          `${endpoint}의 "${pin}"은(는) ${part.name}에 없는 단자입니다. 이 부품이 가진 단자는 ${part.pins.map((declared) => declared.name).join(', ')}입니다.`,
+        ),
+      )
     }
   }
   return issues
@@ -386,7 +447,7 @@ function checkGuidanceRequiredForPublish(recipe: Recipe, mode: ValidationMode): 
 }
 
 /**
- * L1 static validator (plan 1.3): the 11 per-recipe checks. Corpus-level
+ * L1 static validator (plan 1.3): the per-recipe checks. Corpus-level
  * invariants (subject distribution / sensor coverage / rationale coverage)
  * are not run here; see src/validation/corpusCheck.ts and its module
  * comment for the N2 rationale.
@@ -402,6 +463,7 @@ export function validateRecipe(recipe: Recipe, inventory: Inventory, mode: Valid
     ...checkI2cAddressConflict(recipe, inventory, mode),
     ...checkNonexistentPin(recipe, mode),
     ...checkUnownedComponent(recipe, inventory, mode),
+    ...checkUndeclaredPartPin(recipe, inventory, mode),
     ...checkWiringRequiredForPublish(recipe, mode),
     ...checkDuplicateFocusRect(recipe, mode),
     ...checkManifestWiringCrossCheck(recipe, mode),

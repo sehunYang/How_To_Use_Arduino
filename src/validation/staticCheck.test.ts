@@ -226,6 +226,96 @@ describe('validateRecipe: check #4 unowned-component', () => {
   })
 })
 
+describe('validateRecipe: check #12 undeclared-part-pin', () => {
+  // The shipped defect: a BME280 asked for the VIN pin that its neighbour
+  // TSL2591 has and it does not. Five recipes reached students this way and
+  // every one of them threw while drawing the diagram.
+  const bme280VinRecipe: Recipe = {
+    ...cleanRecipe,
+    id: 'undeclared-part-pin-fixture',
+    sensors: ['bme280'],
+    actuators: [],
+    wiring: [
+      { from: 'BME280.VIN', to: 'UNO.5V', color: 'red', focus: { x: 0, y: 0, w: 10, h: 10 }, text: 'BME280 전원을 5V에 연결하세요' },
+      { from: 'BME280.SDA', to: 'UNO.A4', color: 'blue', focus: { x: 20, y: 0, w: 10, h: 10 }, text: 'SDA를 A4에 연결하세요' },
+    ],
+    sketch: '// @pin SDA=A4\n// @baud 9600\nvoid setup() {}\nvoid loop() {}',
+  }
+
+  it('flags as error in publish mode', () => {
+    const issues = validateRecipe(bme280VinRecipe, inventory, 'publish')
+    expect(issues).toHaveLength(1)
+    expect(issues[0].code).toBe('undeclared-part-pin')
+    expect(issues[0].severity).toBe('error')
+  })
+
+  it('names the pin and lists the ones the part does have', () => {
+    const [first] = validateRecipe(bme280VinRecipe, inventory, 'publish')
+    expect(first.message).toContain('BME280.VIN')
+    expect(first.message).toContain('VCC')
+  })
+
+  it('flags as warning in draft mode', () => {
+    const issues = validateRecipe(bme280VinRecipe, inventory, 'draft')
+    expect(issues).toHaveLength(1)
+    expect(issues[0].severity).toBe('warning')
+  })
+
+  it('accepts VIN on a part that really has it', () => {
+    const tsl2591Recipe: Recipe = {
+      ...bme280VinRecipe,
+      sensors: ['tsl2591'],
+      wiring: [
+        { from: 'TSL2591.VIN', to: 'UNO.5V', color: 'red', focus: { x: 0, y: 0, w: 10, h: 10 }, text: 'TSL2591 전원을 5V에 연결하세요' },
+        { from: 'TSL2591.SDA', to: 'UNO.A4', color: 'blue', focus: { x: 20, y: 0, w: 10, h: 10 }, text: 'SDA를 A4에 연결하세요' },
+      ],
+    }
+    expect(validateRecipe(tsl2591Recipe, inventory, 'publish')).toEqual([])
+  })
+
+  it('reads through a numbered token, so DS18B20_2 is still a DS18B20', () => {
+    const numberedRecipe: Recipe = {
+      ...bme280VinRecipe,
+      sensors: ['ds18b20'],
+      wiring: [
+        { from: 'DS18B20_2.SIGNAL', to: 'UNO.D4', color: 'green', focus: { x: 0, y: 0, w: 10, h: 10 }, text: '두 번째 프로브 신호선을 D4에 연결하세요' },
+      ],
+      sketch: '// @pin SIGNAL=D4\n// @baud 9600\nvoid setup() {}\nvoid loop() {}',
+    }
+    const issues = validateRecipe(numberedRecipe, inventory, 'publish')
+    expect(issues.map((entry) => entry.code)).toContain('undeclared-part-pin')
+    expect(issues.find((entry) => entry.code === 'undeclared-part-pin')?.message).toContain('DATA')
+  })
+
+  it('stays quiet about endpoints that are not inventory parts', () => {
+    // The board, the breadboard, resistors and bench supplies all reach this
+    // check and none of them carries a pin contract to compare against.
+    const nonPartRecipe: Recipe = {
+      ...bme280VinRecipe,
+      sensors: ['ds18b20'],
+      wiring: [
+        { from: 'DS18B20.DATA', to: 'UNO.D4', color: 'green', focus: { x: 0, y: 0, w: 10, h: 10 }, text: '신호선을 D4에 연결하세요' },
+        { from: 'DS18B20.DATA', to: 'RESISTOR_4700.1', color: 'green', focus: { x: 20, y: 0, w: 10, h: 10 }, text: '저항 한쪽 다리를 같은 열에 꽂으세요' },
+        { from: 'RESISTOR_4700.2', to: 'BB.tp.5', color: 'red', focus: { x: 40, y: 0, w: 10, h: 10 }, text: '저항의 남은 다리를 전원 레일에 꽂으세요' },
+      ],
+      sketch: '// @pin DATA=D4\n// @baud 9600\nvoid setup() {}\nvoid loop() {}',
+    }
+    expect(validateRecipe(nonPartRecipe, inventory, 'publish')).toEqual([])
+  })
+
+  it('reports one endpoint once, however many steps repeat it', () => {
+    const repeatedRecipe: Recipe = {
+      ...bme280VinRecipe,
+      wiring: [
+        { from: 'BME280.VIN', to: 'UNO.5V', color: 'red', focus: { x: 0, y: 0, w: 10, h: 10 }, text: '전원을 5V에 연결하세요' },
+        { from: 'BME280.VIN', to: 'BB.tp.3', color: 'red', focus: { x: 20, y: 0, w: 10, h: 10 }, text: '같은 단자를 전원 레일에도 꽂으세요' },
+      ],
+      sketch: '// @baud 9600\nvoid setup() {}\nvoid loop() {}',
+    }
+    expect(validateRecipe(repeatedRecipe, inventory, 'publish')).toHaveLength(1)
+  })
+})
+
 describe('validateRecipe: check #5 wiring-empty (publish-mode only)', () => {
   it('flags as error in publish mode', () => {
     const issues = validateRecipe(wiringEmptyRecipe, inventory, 'publish')
