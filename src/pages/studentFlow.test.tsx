@@ -160,12 +160,16 @@ describe('Phase 3 student flow', () => {
       .toHaveAttribute('href', '/sensors/mpu6050')
   })
 
+  // Ticking every box on the page one at a time takes ~3s of the 5s default,
+  // so this test failed whenever the full suite loaded the machine. The wait
+  // is the point of the test (the handoff only appears after the last box),
+  // so the timeout goes up rather than the interaction being faked.
   it('shows the completion handoff after the final wiring step', async () => {
     renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
     for (const checkbox of screen.getAllByRole('checkbox')) await userEvent.click(checkbox)
     expect(screen.getByText(/배선 완료 → 이제 코드를 실행할 차례/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '페이지 주소 복사' })).toBeInTheDocument()
-  })
+  }, 30_000)
 
   it('renders a friendly withdrawn-recipe state without leaking an error', () => {
     renderAt('/recipes/withdrawn-recipe', <RecipeDetailPage />, '/recipes/:id')
