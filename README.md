@@ -4,8 +4,6 @@
 측정하고 싶은 것을 문장으로 적으면 센서 추천 → 대표 예제 → 프로젝트 배선·코드로 이어지고, 측정을 마친 뒤에는
 시리얼 모니터 내용을 붙여넣어 CSV 저장, 요약 통계, 논문 형식 그래프까지 같은 자리에서 처리합니다.
 
-학생 화면은 네 갈래입니다.
-
 | 화면 | 하는 일 |
 |---|---|
 | 아이디어 찾기 (`/`) | 탐구 문장으로 센서와 레시피 검색 |
@@ -20,16 +18,16 @@
 `src/recipes/beginnerFlow.test.ts`가 잡아냅니다.
 
 같은 자리에서 만드는 것이 더 있습니다. 아두이노도 배선도 코딩도 처음인 학생이 **화면 밖에서** 멈추던 자리들이라,
-모두 레시피 데이터에서 끌어내 모든 레시피가 빠짐없이 받도록 했습니다. 검사는 `src/recipes/beginnerHelp.test.ts`입니다.
+레시피 데이터에서 끌어내 모든 레시피가 받도록 했습니다. 검사는 `src/recipes/beginnerHelp.test.ts`입니다.
 
 | 무엇 | 어디서 만드나 | 왜 |
 |---|---|---|
-| 저항 색띠 그림 | [`resistorBands.ts`](src/recipes/resistorBands.ts) — 저항값에서 계산 | `4.7 kΩ 저항`이라고 적어 줘도 저항에는 값이 인쇄되어 있지 않아 서랍에서 고를 수 없습니다 |
+| 저항 색띠 그림 | [`resistorBands.ts`](src/recipes/resistorBands.ts)에서 저항값으로 계산 | `4.7 kΩ 저항`이라고 적어 줘도 저항에는 값이 인쇄되어 있지 않아 서랍에서 고를 수 없습니다 |
 | 브레드보드 연결 안내 | [`firstRun.ts`](src/recipes/firstRun.ts) + [`BreadboardMap.tsx`](src/components/BreadboardMap.tsx) | 한 칸 밀려 꽂아도 화면은 그대로 넘어갑니다. 되짚으려면 어떤 구멍이 이어져 있는지를 알아야 합니다 |
-| 전원 넣기 전 최종 점검 (체크 목록) | [`powerCheck.ts`](src/recipes/powerCheck.ts) — 배선 끝점에서 | 배선 단계의 체크 상자는 "꽂았는가"만 묻고 "맞게 꽂았는가"는 묻지 않습니다 |
-| 처음 나온 값 점검표 | [`firstReading.ts`](src/recipes/firstReading.ts) — 센서별 | `-127.00`처럼 고장났을 때만 나오는 값을 정상으로 알고 한 시간을 헛측정합니다 |
-| 코드가 하는 일 요약 | [`sketchSummary.ts`](src/recipes/sketchSummary.ts) — 스케치에서 | 코딩이 처음이면 스케치는 복사할 덩어리일 뿐이라 노란 줄을 바꿔도 무엇이 달라지는지 모릅니다 |
-| 용어 뜻 | [`glossary.ts`](src/recipes/glossary.ts) — 이 레시피에 나온 말만 | `VCC`·`SDA`를 뜻도 모른 채 모양만 맞춰 꽂으면 값이 이상할 때 의심할 곳을 고를 수 없습니다 |
+| 전원 넣기 전 최종 점검 (체크 목록) | [`powerCheck.ts`](src/recipes/powerCheck.ts)에서 배선 끝점으로 | 배선 단계의 체크 상자는 "꽂았는가"만 묻고 "맞게 꽂았는가"는 묻지 않습니다 |
+| 처음 나온 값 점검표 | [`firstReading.ts`](src/recipes/firstReading.ts)에서 센서별로 | `-127.00`처럼 고장났을 때만 나오는 값을 정상으로 알고 한 시간을 헛측정합니다 |
+| 코드가 하는 일 요약 | [`sketchSummary.ts`](src/recipes/sketchSummary.ts)에서 스케치를 읽어 | 코딩이 처음이면 스케치는 복사할 덩어리일 뿐이라 노란 줄을 바꿔도 무엇이 달라지는지 모릅니다 |
+| 용어 뜻 | [`glossary.ts`](src/recipes/glossary.ts)에서 이 레시피에 나온 말만 | `VCC`·`SDA`를 뜻도 모른 채 모양만 맞춰 꽂으면 값이 이상할 때 의심할 곳을 고를 수 없습니다 |
 | 도움 요청 카드 | [`classroom.ts`](src/recipes/classroom.ts) | "안 돼요"라는 말만으로는 선생님도 처음부터 다시 짚어야 합니다 |
 
 - 요구사항 명세: [`.omc/specs/deep-interview-how-to-use-arduino.md`](.omc/specs/deep-interview-how-to-use-arduino.md) (모호도 4.9%, 인수 조건 44건)
@@ -42,7 +40,7 @@ Vite + React + TypeScript, Tailwind CSS v4 + shadcn/ui, React Router, Firebase (
 ## 로고와 파비콘
 
 원본은 [`assets/logo.png`](assets/logo.png)(2380×2473, 배경 투명)입니다. `assets/`는 배포되지 않는 원본
-보관용이고, 실제로 서비스되는 아이콘은 `public/`에 있는 아래 세 개입니다.
+보관용이고, 서비스되는 아이콘은 `public/`에 있는 아래 세 개입니다.
 
 | 파일 | 크기 | 비고 |
 |---|---|---|
@@ -68,7 +66,7 @@ npm run test:rules         # Firestore/Storage 보안 규칙 테스트 (로컬 �
 ## L5 로직 테스트 하네스
 
 스케치의 순수 계산 로직은 `logic/*.h` 헤더로 뽑아내 실제 보드 없이 PC에서 검증합니다.
-US-207부터는 커스텀 칩 레지스터 모델(`chips/*.c`)도 같은 하네스로 함께 돌아갑니다.
+US-207부터는 커스텀 칩 레지스터 모델(`chips/*.c`)도 같은 하네스로 돌아갑니다.
 
 ```bash
 npm run setup:zig          # 호스트 C++ 컴파일러 준비 (최초 1회, 자동 실행됨)
@@ -80,7 +78,7 @@ npm run verify:logic       # logic/*.test.cpp + chips/*.test.cpp 컴파일 + 실
 (npm 패키지 `@ziglang/cli`는 postinstall이 `tar xJ`로 고정돼 있어 `.zip`으로 배포되는 Windows에서 동작하지 않습니다.)
 
 테스트 프레임워크는 [doctest](https://github.com/doctest/doctest) 단일 헤더(MIT)를 `logic/vendor/doctest.h`에 벤더링해 씁니다.
-카나리 회귀와 Phase 5 레시피 34종의 계산·통과 로직을 함께 검증합니다.
+카나리 회귀와 Phase 5 레시피 34종의 계산·통과 로직을 검증합니다.
 
 ## Phase 5 콘텐츠 검증
 
@@ -104,8 +102,8 @@ npm run verify:logic
 
 ## Firebase 프로젝트 준비
 
-실제 Firebase 프로젝트 생성·과금 전환 등 사람이 직접 해야 하는 단계는 [`docs/firebase-setup.md`](docs/firebase-setup.md)를 따르세요.
+실제 Firebase 프로젝트 생성·과금 전환 등 사람이 해야 하는 단계는 [`docs/firebase-setup.md`](docs/firebase-setup.md)를 따르세요.
 
 ## Wokwi 시뮬레이션 준비
 
-L3(Wokwi 실제 시뮬레이션 실행)와 `PL5`(월간 CI 분 실측)에 필요한 Wokwi 계정·CLI 토큰·커스텀 칩 패키징 등 사람이 직접 해야 하는 단계는 [`docs/wokwi-setup.md`](docs/wokwi-setup.md)를 따르세요.
+L3(Wokwi 실제 시뮬레이션 실행)와 `PL5`(월간 CI 분 실측)에 필요한 Wokwi 계정·CLI 토큰·커스텀 칩 패키징 등 사람이 해야 하는 단계는 [`docs/wokwi-setup.md`](docs/wokwi-setup.md)를 따르세요.

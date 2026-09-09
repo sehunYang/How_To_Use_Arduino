@@ -17,14 +17,14 @@ const PARTIAL_WEIGHT = 2
 const SYNONYM_WEIGHT = 2
 
 /**
- * Terms shorter than this never participate in substring matching — a single
+ * Terms shorter than this never participate in substring matching: a single
  * Hangul syllable ("추", "열") appears inside far too many unrelated words.
  */
 const MIN_TERM_LENGTH = 2
 
 /**
  * Trailing particles stripped from query tokens, longest first so "으로"
- * wins over "로". Verb endings ("-하고", "-어요") are deliberately absent:
+ * wins over "로". Verb endings ("-하고", "-어요") are absent on purpose:
  * stripping them would turn every "측정하고 싶어요" into a match for any
  * keyword containing "측정".
  */
@@ -80,8 +80,8 @@ function variantsForKeyword(keyword: string, synonyms: SynonymMap): string[] {
 }
 
 /**
- * Substring inclusion (not tokenization) deliberately sidesteps Korean
- * particle/conjugation matching problems — "진자가"/"진자를"/"진자는" all
+ * Substring inclusion (not tokenization) sidesteps Korean
+ * particle/conjugation matching problems: "진자가"/"진자를"/"진자는" all
  * contain the core term "진자" as a substring (spec Round 16 decision).
  *
  * Matching runs in both directions: `query ⊇ keyword` for queries longer

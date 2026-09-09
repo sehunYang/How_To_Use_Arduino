@@ -68,7 +68,7 @@ const TEXT_TERMS: Array<GlossaryEntry & { pattern: RegExp }> = [
 
 /** 레시피와 상관없이 학생이 반드시 만나는 말. */
 const ALWAYS_TERMS: GlossaryEntry[] = [
-  { term: '스케치', meaning: '아두이노에 넣는 프로그램. 이 화면의 코드가 바로 스케치입니다.' },
+  { term: '스케치', meaning: '아두이노에 넣는 프로그램. 이 화면의 코드가 스케치입니다.' },
   { term: '업로드', meaning: '스케치를 보드로 옮겨 넣는 일. 왼쪽 위 화살표 단추가 이 일을 합니다.' },
   { term: '시리얼 모니터', meaning: '보드가 보내온 글을 보여 주는 창. 측정값이 여기에 쌓입니다.' },
   { term: 'baud', meaning: '보드와 컴퓨터가 글을 주고받는 속도. 양쪽이 같아야 글자가 깨지지 않습니다.' },

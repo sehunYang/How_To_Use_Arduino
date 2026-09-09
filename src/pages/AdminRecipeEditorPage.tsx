@@ -40,7 +40,7 @@ type Errors = Partial<Record<keyof AdminRecipeDraft, string>> & { wiringSteps?: 
 
 function validate(recipe: AdminRecipeDraft): Errors {
   const errors: Errors = {}
-  if (!recipe.id.trim()) errors.id = '고정해서 사용할 레시피 ID를 입력하세요.'
+  if (!recipe.id.trim()) errors.id = '레시피 ID를 입력하세요.'
   if (!/^[a-z0-9-]+$/.test(recipe.id)) errors.id = '영문 소문자, 숫자, 하이픈만 사용할 수 있습니다.'
   if (!recipe.title.trim()) errors.title = '제목을 입력하세요.'
   if (!recipe.subject) errors.subject = '교과 영역을 선택하세요.'
@@ -250,7 +250,7 @@ export function AdminRecipeEditorPage({ services }: { services: AdminServices })
 
       <Panel title="공개 전 사람 검토">
         <p className="text-body text-muted">
-          현재 배선·코드 버전을 직접 확인한 뒤 각 항목을 완료하세요. 내용을 수정하면 확인 상태가 자동으로 만료됩니다.
+          현재 배선·코드 버전을 확인한 뒤 각 항목을 완료하세요. 내용을 수정하면 확인 상태가 자동으로 만료됩니다.
         </p>
         <div className="mt-4 flex flex-wrap gap-3">
           <Button

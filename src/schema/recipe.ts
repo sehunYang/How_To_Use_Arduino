@@ -19,7 +19,7 @@ export const WiringStepSchema = z.object({
 export type WiringStep = z.infer<typeof WiringStepSchema>
 
 /**
- * `anchor` (a `// @tunable name` marker string), never a line number —
+ * `anchor` (a `// @tunable name` marker string), never a line number:
  * inserting a comment above a raw line number would silently desync the
  * highlighted line from the actual tunable (plan N11 / spec A3.3).
  */
@@ -108,7 +108,7 @@ export const RecipeSchema = z.object({
    * Pixel dimensions of the image at `imageUrl` (the natural size the
    * drag-to-select focus editor in Phase 4.3 will read/write against).
    * Required so L1 can actually check `WiringStep.focus` rectangles are
-   * within image bounds (plan check #6's other half — previously deferred
+   * within image bounds (plan check #6's other half, previously deferred
    * because this field didn't exist).
    */
   imageWidth: z.number().int().positive(),

@@ -3,9 +3,9 @@
  * CI gate for A1.1 / PL8 (holdout set). Run with:
  *   npm run verify:holdout -- --min 73
  * Reads test-data/search-sentences.json's `split: "holdout"` entries only,
- * and — critically — NEVER feeds a failure here back into tuning (scoring
- * weights, the synonym dictionary, or the sentences themselves). Intended
- * to run once, right before release, per the plan's anti-overfitting design.
+ * and never feeds a failure here back into tuning (scoring weights, the
+ * synonym dictionary, or the sentences themselves). Intended to run once,
+ * right before release, per the plan's anti-overfitting design.
  */
 import { readFileSync } from 'node:fs'
 import { runMatchReport, type SentenceCase } from '../src/search/verifyMatching'
@@ -29,8 +29,8 @@ const holdout = allCases.filter((c) => c.split === 'holdout')
 const studentSourced = holdout.filter((c) => c.source === 'student').length
 if (studentSourced === 0) {
   console.warn(
-    '⚠️  홀드아웃 15개 전부 source:"author"입니다. PL8은 최소 15개(전체 기준)를 실제 학생 문장으로 요구합니다. ' +
-      'test-data/README.md의 TODO를 참고해 출시 전 반드시 교체하세요.',
+    '주의: 홀드아웃 15개 전부 source:"author"입니다. PL8은 최소 15개(전체 기준)를 실제 학생 문장으로 요구합니다. ' +
+      'test-data/README.md의 "출시 전 할 일"을 따라 출시 전에 교체하세요.',
   )
 }
 

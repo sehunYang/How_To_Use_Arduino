@@ -41,12 +41,12 @@ export interface ReadableLayout {
    * What this layout is for, which decides whether its coordinates must be
    * anchored to real Wokwi geometry.
    *
-   * 'recipe'  — a circuit a student builds from and a photo is taken of.
-   *             Every route must land on the pin Wokwi actually draws.
-   * 'fixture' — reserved for synthetic validator unit tests whose coordinates
-   *             are deliberately invented. Production layouts must use
-   *             'recipe'; this value must never be used as a geometry escape
-   *             hatch for a real Wokwi project.
+   * 'recipe':  a circuit a student builds from and a photo is taken of.
+   *            Every route must land on the pin Wokwi actually draws.
+   * 'fixture': reserved for synthetic validator unit tests whose coordinates
+   *            are invented. Production layouts must use 'recipe'; this
+   *            value must never be used as a geometry escape hatch for a
+   *            real Wokwi project.
    *
    * Defaults to 'recipe': a new layout is held to the strict standard unless
    * it explicitly opts out.
@@ -56,7 +56,7 @@ export interface ReadableLayout {
   minimumClearance: number
   /**
    * How close another wire may pass to a connected pin before it hides it, in
-   * px. Deliberately NOT `minimumClearance`: that one keeps two parallel runs
+   * px. Not `minimumClearance`: that one keeps two parallel runs
    * tellable apart, while this one is about a pin staying visible, and it must
    * be smaller than the tightest header pitch or wiring a 9.5px Uno header
    * becomes impossible by construction. Defaults to DEFAULT_PIN_OBSCURE_RADIUS.
@@ -66,7 +66,7 @@ export interface ReadableLayout {
   wires: ReadableWire[]
 }
 
-/** Roughly half a rendered wire's stroke plus margin — enough to tell "lies across the pin" from "lands beside it". */
+/** Roughly half a rendered wire's stroke plus margin, enough to tell "lies across the pin" from "lands beside it". */
 export const DEFAULT_PIN_OBSCURE_RADIUS = 4
 
 export type LayoutIssueCode =
@@ -180,8 +180,8 @@ export function validateReadableLayout(layout: ReadableLayout): LayoutIssue[] {
     }
 
     if (!anchorToRealGeometry) {
-      // Synthetic validator fixture: geometry anchoring is intentionally out
-      // of scope. Production layouts are always recipe-grade.
+      // Synthetic validator fixture: geometry anchoring is out of scope.
+      // Production layouts are always recipe-grade.
     } else if (geometryFor(part.type)) {
       // Pin coordinates are transcribed for the unrotated element, so a rotated
       // part would silently validate against positions Wokwi does not use.
@@ -240,7 +240,7 @@ export function validateReadableLayout(layout: ReadableLayout): LayoutIssue[] {
           issues.push(
             issue(
               'pin-position-mismatch',
-              `"${wire.id}" ${side} point (${routePoint.x}, ${routePoint.y}) is not where Wokwi draws "${endpoint}" — that pin is at (${actual.x}, ${actual.y}).`,
+              `"${wire.id}" ${side} point (${routePoint.x}, ${routePoint.y}) is not where Wokwi draws "${endpoint}"; that pin is at (${actual.x}, ${actual.y}).`,
               [wire.id],
             ),
           )
@@ -429,7 +429,7 @@ export function validateReadableLayout(layout: ReadableLayout): LayoutIssue[] {
           : Math.abs(endpoint.point.x - segment.a.x)
         if (distance >= obscureRadius) continue
 
-        // A pin is hidden when the wire LIES ACROSS it, not when the wire
+        // A pin is hidden when the wire lies across it, not when the wire
         // stops at a neighbour. So the pin must project strictly inside the
         // segment: at a segment end, the wire is terminating, not passing.
         const along = segment.horizontal ? endpoint.point.x : endpoint.point.y
@@ -458,7 +458,7 @@ export function validateReadableLayout(layout: ReadableLayout): LayoutIssue[] {
       if (!bounds) continue
 
       // A wire is allowed to leave its own pin through its own part's
-      // footprint — header pins sit inboard of the edge, so every attached
+      // footprint: header pins sit inboard of the edge, so every attached
       // wire necessarily starts inside the body.
       const isOwnAttachment =
         (segment.index === 0 && attachments.get(`${segment.wire.id}:from`)?.id === part.id) ||
@@ -489,8 +489,8 @@ export function validateReadableLayout(layout: ReadableLayout): LayoutIssue[] {
 /**
  * Real pin coordinates carry decimals (a 9.5px header pitch, a pin 5.78px down
  * from the edge), so route points accumulate binary-float noise: a delta that
- * should read -55.78 comes out -55.77999999999997. Round to 0.01px — two
- * orders of magnitude finer than anything visible — so the generated diagram
+ * should read -55.78 comes out -55.77999999999997. Round to 0.01px (two
+ * orders of magnitude finer than anything visible) so the generated diagram
  * stays diffable and `verify:wokwi-diagram` does not churn.
  */
 const roundPx = (value: number): number => Math.round(value * 100) / 100

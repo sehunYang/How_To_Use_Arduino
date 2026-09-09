@@ -56,7 +56,7 @@ export function SensorDetailPage() {
       </div>
 
       <section className="mt-10" aria-labelledby="sensor-specs">
-        <h2 id="sensor-specs" className="text-heading font-semibold">구체적인 스펙</h2>
+        <h2 id="sensor-specs" className="text-heading font-semibold">스펙</h2>
         <div className="mt-4 overflow-hidden rounded-card border border-border">
           <table className="w-full text-left">
             <tbody>

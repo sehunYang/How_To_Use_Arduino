@@ -172,12 +172,12 @@ describe('layout ↔ recipe gate', () => {
     expect(issues.some((issue) => issue.message.includes('tsl2591:SDA'))).toBe(true)
   })
 
-  it('catches a wire moved to the wrong breadboard row — geometry alone cannot', () => {
+  it('catches a wire moved to the wrong breadboard row; geometry alone cannot', () => {
     const rightRow = layoutOf([
       w('uno-sda', 'SDA', 'uno:A4', 'bb:5t.a'),
       w('mpu-sda', 'SDA', 'mpu6050:SDA', 'bb:5t.b'),
     ])
-    // Same wire count, same parts, still perfectly orthogonal — only the hole changed.
+    // Same wire count, same parts, still perfectly orthogonal; only the hole changed.
     const wrongRow = layoutOf([
       w('uno-sda', 'SDA', 'uno:A4', 'bb:5t.a'),
       w('mpu-sda', 'SDA', 'mpu6050:SDA', 'bb:6t.b'),

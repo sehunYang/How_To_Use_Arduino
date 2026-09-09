@@ -10,8 +10,8 @@ export type StaticIssue = z.infer<typeof StaticIssueSchema>
 
 /**
  * CI-owned verification ledger entry (plan "핵심 아키텍처: 검증 원장").
- * Lives in its own top-level `simStatus/{recipeId}` collection — never a
- * field on `recipes` — so only the CI identity can write it and the
+ * Lives in its own top-level `simStatus/{recipeId}` collection (never a
+ * field on `recipes`) so only the CI identity can write it and the
  * client-side SimBadge can gate on `verifyHash` matching (plan N4).
  */
 export const SimStatusSchema = z.object({

@@ -1359,7 +1359,7 @@ for (const sim of sims) {
   // 1회차만 붙여넣었을 때
   const first = convertSerialTextToCsv(buildSerialText(sim, header, 0))
   if (!first.ok) {
-    reports.push({ id: sim.id, title: recipe.title, header, verdict: '❌ 파싱 실패', detail: [first.error] })
+    reports.push({ id: sim.id, title: recipe.title, header, verdict: '[실패] 파싱 실패', detail: [first.error] })
     continue
   }
   detail.push(`1회차 ${first.dataRowCount}행 · 제외 ${first.excludedRows.length}행`)
@@ -1383,13 +1383,13 @@ for (const sim of sims) {
       const stepMean = values.slice(1).reduce((total, value, index) => total + Math.abs(value - values[index]), 0) / (values.length - 1)
       const spread = Math.max(...values) - Math.min(...values)
       detail.push(
-        `⚠ ${groupColumn} 열로 ${groups.size}개 센서를 한 행씩 번갈아 출력합니다. ${measured.name}을(를) 시간축에 그리면 이웃한 점끼리 평균 ${stepMean.toFixed(1)}씩 튀어(전체 범위 ${spread.toFixed(1)}) 한 계열 안에서 센서가 섞입니다. 탭에는 열 값으로 계열을 나누는 기능이 없습니다.`,
+        `주의: ${groupColumn} 열로 ${groups.size}개 센서를 한 행씩 번갈아 출력합니다. ${measured.name}을(를) 시간축에 그리면 이웃한 점끼리 평균 ${stepMean.toFixed(1)}씩 튀어(전체 범위 ${spread.toFixed(1)}) 한 계열 안에서 센서가 섞입니다. 탭에는 열 값으로 계열을 나누는 기능이 없습니다.`,
       )
     }
   }
-  if (numeric.length < 2) detail.push('⚠ 숫자 열이 2개 미만이라 그래프를 그릴 수 없습니다.')
+  if (numeric.length < 2) detail.push('주의: 숫자 열이 2개 미만이라 그래프를 그릴 수 없습니다.')
   if (numeric.length - 1 > MAX_SERIES) {
-    detail.push(`⚠ 세로축 후보 ${numeric.length - 1}개 중 한 번에 ${MAX_SERIES}개까지만 그릴 수 있습니다.`)
+    detail.push(`주의: 세로축 후보 ${numeric.length - 1}개 중 한 번에 ${MAX_SERIES}개까지만 그릴 수 있습니다.`)
   }
 
   // 조건을 회차로 나눠 넣었을 때
@@ -1428,7 +1428,7 @@ for (const sim of sims) {
     if (joined.ok) {
       detail.push(`조건 ${sim.conditions.length}개를 이어 붙이면 ${joined.dataRowCount}행 · 반복 헤더 ${joined.excludedRows.length}행 제외`)
     } else {
-      detail.push(`⚠ 조건을 이어 붙이면 파싱 실패: ${joined.error}`)
+      detail.push(`주의: 조건을 이어 붙이면 파싱 실패: ${joined.error}`)
     }
   }
 
@@ -1457,13 +1457,13 @@ for (const sim of sims) {
         `원하는 축 ${xColumn} → ${yBase}: 점 ${points.length}개, 기울기 ${relation ? relation.slope.toPrecision(4) : '—'}, R² ${relation?.determination?.toFixed(4) ?? '—'}`,
       )
     }
-    verdict = interleaved ? '△ 그려지지만 센서가 한 계열에 섞임' : '✅ 탭에서 바로 그려짐'
+    verdict = interleaved ? '[부분] 그려지지만 센서가 한 계열에 섞임' : '[통과] 탭에서 바로 그려짐'
   } else if (interleaved) {
-    verdict = '△ 그려지지만 센서가 한 계열에 섞임'
+    verdict = '[부분] 그려지지만 센서가 한 계열에 섞임'
   } else if (sim.desired.x.startsWith('note:') || sim.desired.y.startsWith('note:')) {
-    verdict = '❌ 축이 CSV에 없음(사람이 따로 적는 값)'
+    verdict = '[실패] 축이 CSV에 없음(사람이 따로 적는 값)'
   } else {
-    verdict = '❌ 축을 계산해야 함(탭에 계산 기능 없음)'
+    verdict = '[실패] 축을 계산해야 함(탭에 계산 기능 없음)'
   }
 
   detail.push(`원하는 그래프: x=${sim.desired.x} / y=${sim.desired.y}`)
@@ -1489,7 +1489,7 @@ for (const sim of sims) {
 
   const resolution = RESOLUTIONS[sim.id]
   if (!resolution) {
-    afterReports.push({ id: sim.id, verdict: '❌ 해결 계획 없음', detail: [] })
+    afterReports.push({ id: sim.id, verdict: '[실패] 해결 계획 없음', detail: [] })
     continue
   }
 
@@ -1521,7 +1521,7 @@ for (const sim of sims) {
   if (failedExpressions.length > 0) {
     afterReports.push({
       id: sim.id,
-      verdict: '❌ 식을 읽지 못함',
+      verdict: '[실패] 식을 읽지 못함',
       detail: failedExpressions.map(([name, error]) => `${name}: ${error}`),
     })
     continue
@@ -1536,7 +1536,7 @@ for (const sim of sims) {
   if (!numeric.includes(resolution.x) || !numeric.includes(resolution.y)) {
     afterReports.push({
       id: sim.id,
-      verdict: '❌ 축을 숫자 열로 만들지 못함',
+      verdict: '[실패] 축을 숫자 열로 만들지 못함',
       detail: [...detail, `x=${resolution.x}(${numeric.includes(resolution.x)}) y=${resolution.y}(${numeric.includes(resolution.y)})`],
     })
     continue
@@ -1572,7 +1572,7 @@ for (const sim of sims) {
 
   const series = seriesOf().filter((entry) => entry.points.length > 0)
   if (series.length === 0) {
-    afterReports.push({ id: sim.id, verdict: '❌ 점이 하나도 찍히지 않음', detail })
+    afterReports.push({ id: sim.id, verdict: '[실패] 점이 하나도 찍히지 않음', detail })
     continue
   }
 
@@ -1586,13 +1586,13 @@ for (const sim of sims) {
     )
   }
 
-  let verdict = resolution.remaining ? '✅ 그려짐(남은 한계 있음)' : '✅ 그려짐'
+  let verdict = resolution.remaining ? '[통과] 그려짐(남은 한계 있음)' : '[통과] 그려짐'
   if (resolution.expectSlope !== undefined) {
     const relation = summarizeRelation(series[0].points)
     const slope = relation?.slope ?? Number.NaN
     const error = Math.abs((slope - resolution.expectSlope) / resolution.expectSlope)
     detail.push(`  기대 기울기 ${resolution.expectSlope.toPrecision(4)} → 얻은 값 ${slope.toPrecision(4)} (차이 ${(error * 100).toFixed(1)}%)`)
-    if (!(error < 0.1)) verdict = '❌ 기울기가 이론값과 다름'
+    if (!(error < 0.1)) verdict = '[실패] 기울기가 이론값과 다름'
   }
   if (resolution.remaining) detail.push(`  남은 한계: ${resolution.remaining}`)
 

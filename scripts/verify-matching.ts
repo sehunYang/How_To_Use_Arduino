@@ -3,7 +3,7 @@
  * CI gate for A1.1 / PL8 (tuning set). Run with:
  *   npm run verify:matching -- --min 83
  * Reads test-data/search-sentences.json's `split: "tuning"` entries only.
- * See test-data/README.md for the outstanding TODO on real student sentences.
+ * See test-data/README.md for the pending work on real student sentences.
  */
 import { readFileSync } from 'node:fs'
 import { runMatchReport, type SentenceCase } from '../src/search/verifyMatching'

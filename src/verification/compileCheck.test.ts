@@ -8,7 +8,7 @@ import {
   ERROR_THRESHOLD,
 } from './compileCheck'
 
-// These tests shell out to the real arduino-cli and run a real avr-gcc build —
+// These tests shell out to the real arduino-cli and run a real avr-gcc build:
 // nothing here is mocked, which is the whole point of the L2 gate. A cold
 // build path costs a few seconds, so every compiling test gets a raised
 // timeout.
@@ -56,7 +56,7 @@ describe('severityFor', () => {
   })
 })
 
-describe('compileSketch — canary recipes', () => {
+describe('compileSketch: canary recipes', () => {
   it(
     'compiles the pendulum canary (Wire + MPU6050) with room to spare',
     async () => {
@@ -88,7 +88,7 @@ describe('compileSketch — canary recipes', () => {
   )
 })
 
-describe('compileSketch — memory thresholds', () => {
+describe('compileSketch: memory thresholds', () => {
   it(
     'flags a sketch that pushes SRAM past 80% as a warning',
     async () => {
@@ -117,7 +117,7 @@ describe('compileSketch — memory thresholds', () => {
   )
 })
 
-describe('compileSketch — build failures', () => {
+describe('compileSketch: build failures', () => {
   it(
     'reports a sketch that does not compile as an error',
     async () => {

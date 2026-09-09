@@ -3,12 +3,12 @@
  * Verifies the GitHub Pages SPA deep-link fallback mechanism (US-003 / PL1).
  *
  * GitHub Pages serves a real HTTP 404 status for any path that isn't a
- * literal file, but uses 404.html as the *body* of that response — which is
+ * literal file, but uses 404.html as the *body* of that response, which is
  * exactly what makes the SPA fallback trick work: the browser gets the app
  * shell even though the status line says "Not Found". This script proves
  * that end-to-end by actually starting a static file server that mimics
  * that specific behavior, requesting a deep path, and inspecting both the
- * status code and the body — not just comparing files on disk.
+ * status code and the body, not just comparing files on disk.
  *
  * Run after `npm run build` + the 404.html copy step, e.g.:
  *   npm run build && cp dist/index.html dist/404.html && npm run verify:spa-fallback
@@ -34,9 +34,9 @@ let indexContent = null
 let notFoundContent = null
 
 if (!existsSync(indexPath)) {
-  failures.push(`missing ${indexPath} — run \`npm run build\` first`)
+  failures.push(`missing ${indexPath}; run \`npm run build\` first`)
 } else if (!existsSync(notFoundPath)) {
-  failures.push(`missing ${notFoundPath} — the 404.html copy step did not run`)
+  failures.push(`missing ${notFoundPath}; the 404.html copy step did not run`)
 } else {
   indexContent = readFileSync(indexPath)
   notFoundContent = readFileSync(notFoundPath)
@@ -57,10 +57,10 @@ if (!existsSync(workflowPath)) {
 }
 
 // --- Real serve test: a minimal static server that reproduces GitHub
-// Pages' actual unmatched-path behavior (serve 404.html, WITH a 404 status
-// code — this is the detail a byte-compare alone can never prove). Then
+// Pages' actual unmatched-path behavior (serve 404.html, with a 404 status
+// code: this is the detail a byte-compare alone can never prove). Then
 // request a deep path and check both the status and that the body is
-// genuinely the SPA shell (contains the bundled script tag), not an empty
+// the SPA shell (contains the bundled script tag), not an empty
 // or generic error page. ---
 
 function serveLikeGitHubPages(req, res) {
@@ -74,7 +74,7 @@ function serveLikeGitHubPages(req, res) {
   }
 
   // Root path and any unmatched path both fall through to 404.html, with a
-  // real 404 status — this is the exact mechanism GitHub Pages uses.
+  // real 404 status: this is the exact mechanism GitHub Pages uses.
   res.writeHead(404, { 'Content-Type': 'text/html' })
   res.end(notFoundContent ?? '')
 }
@@ -97,7 +97,7 @@ async function runServeTest() {
     const hasScriptTag = /<script[^>]+src="[^"]*\/assets\/[^"]+\.js"/.test(body)
     if (!hasScriptTag) {
       failures.push(
-        'response body for /some/deep/path does not contain the bundled app script tag — ' +
+        'response body for /some/deep/path does not contain the bundled app script tag; ' +
           'the browser would not actually load the SPA from this response',
       )
     }

@@ -9,7 +9,7 @@ function applicationGuideExcerpt(applicationGuide: string): string {
 }
 
 /**
- * Excludes drafts (plan N7) — a draft appearing in the index would be a
+ * Excludes drafts (plan N7): a draft appearing in the index would be a
  * search result that 404s when opened, since read access is gated on
  * `status === 'published'` (or admin/CI). This is the single function both
  * the authoring UI and the CI consistency checker call, so the two can

@@ -3,7 +3,7 @@ import { createPhase6Recipe, hallPulseDriver, type Phase6RecipeDefinition } from
 /** Shared wording for recipes whose tunable is a DS18B20 count, not an interval. */
 const sensorCountTunable = {
   name: '센서 개수',
-  hint: '실제로 1-Wire 버스에 연결해 확인한 DS18B20 개수와 같게 설정하세요.',
+  hint: '1-Wire 버스에 연결해 확인한 DS18B20 개수와 같게 설정하세요.',
 }
 
 const mechanics: Phase6RecipeDefinition[] = [
@@ -52,7 +52,7 @@ const mechanics: Phase6RecipeDefinition[] = [
 // @baud 115200
 const byte MPU_ADDRESSES[2]={0x68,0x69};
 // @tunable samplingIntervalMs
-unsigned long samplingIntervalMs=5; // 200 Hz — 수십 ms 충돌에 표본 10개 이상을 남깁니다.
+unsigned long samplingIntervalMs=5; // 200 Hz: 수십 ms 충돌에 표본 10개 이상을 남깁니다.
 void mpuWrite(byte a,byte r,byte v){Wire.beginTransmission(a);Wire.write(r);Wire.write(v);Wire.endTransmission();}
 int16_t mpuRead16(byte a,byte r){
   Wire.beginTransmission(a);Wire.write(r);Wire.endTransmission(false);Wire.requestFrom(a,(byte)2);
@@ -63,8 +63,8 @@ void setup(){
   Serial.begin(115200);Wire.begin();Wire.setClock(400000);
   for(byte i=0;i<2;i++){
     mpuWrite(MPU_ADDRESSES[i],0x6B,0);
-    mpuWrite(MPU_ADDRESSES[i],0x1A,0x01); // 대역폭 184 Hz — 짧은 충돌 봉우리를 뭉개지 않습니다.
-    mpuWrite(MPU_ADDRESSES[i],0x1C,0x18); // ±16 g — 충돌 봉우리는 ±2 g 기본 범위를 넘습니다.
+    mpuWrite(MPU_ADDRESSES[i],0x1A,0x01); // 대역폭 184 Hz: 짧은 충돌 봉우리를 뭉개지 않습니다.
+    mpuWrite(MPU_ADDRESSES[i],0x1C,0x18); // ±16 g: 충돌 봉우리는 ±2 g 기본 범위를 넘습니다.
   }
   Serial.println("time_ms,mpu0_ax_g,mpu1_ax_g");
 }
@@ -218,7 +218,7 @@ const thermal: Phase6RecipeDefinition[] = [
     keywords: ['이상기체', '온도', '압력', '게이뤼삭법칙'],
     law: '부피와 기체량이 일정한 저압 범위에서 절대압력은 절대온도에 비례합니다.',
     apparatus: 'BME280, 압력 해제 가능한 교육용 밀폐 용기, 온수·냉수 욕조, Arduino UNO, 브레드보드',
-    method: '용기 정격을 넘지 않는 작은 온도 범위에서 충분히 열평형을 기다린 뒤 온도와 절대압력을 기록합니다.',
+    method: '용기 정격을 넘지 않는 작은 온도 범위에서 열평형을 기다린 뒤 온도와 절대압력을 기록합니다.',
     graph: 'P-T(K) 그래프에 가장 잘 맞는 직선을 그리고 절편과 측정값-예측값의 차이로 누설·부피 변화·센서 자기발열을 평가합니다.',
     safety: '유리병이나 완전 밀폐 용기를 가열하지 말고 압력 해제 장치가 있는 교육용 용기만 사용하세요.',
   },
@@ -241,10 +241,10 @@ const electricity: Phase6RecipeDefinition[] = [
     law: '옴성 저항에서는 전압과 전류가 $V=IR$의 선형 관계를 따릅니다. UNO의 analogWrite()는 진짜 아날로그 전압이 아니라 PWM이므로, RC 저역통과 필터로 평활한 뒤 실제 전압을 INA219로 측정합니다.',
     apparatus: 'INA219, 100 Ω RC 필터 저항, 470 µF 전해 커패시터, 1 kΩ·2.2 kΩ·4.7 kΩ 측정 저항, 수-암(MF) 점퍼선, Arduino UNO, 브레드보드',
     method: '먼저 1 kΩ 저항을 연결하고 코드의 conditionId를 R1K로 맞춥니다. D9 PWM 듀티를 단계적으로 올리고 RC 출력이 안정될 때까지 기다린 뒤 INA219가 측정한 저항 양단의 실제 전압과 전류를 기록합니다. 전원을 끈 뒤 측정 저항을 2.2 kΩ, 4.7 kΩ으로 바꿀 때마다 conditionId도 각각 R2K2, R4K7로 바꾸어 반복합니다.',
-    graph: 'PWM 듀티가 아니라 INA219가 측정한 실제 V-I 데이터를 그립니다. 각 직선의 V/I 또는 기울기에서 저항을 구해 표시값과 비교합니다. INA219의 전류 분해능은 약 0.1 mA이므로 4.7 kΩ 조건(약 0.1~1 mA)은 눈금 1~10칸에 불과합니다. 이 조건은 같은 듀티에서 여러 번 재어 평균을 쓰고, 불확도를 반드시 함께 표시하세요.',
+    graph: 'PWM 듀티가 아니라 INA219가 측정한 실제 V-I 데이터를 그립니다. 각 직선의 V/I 또는 기울기에서 저항을 구해 표시값과 비교합니다. INA219의 전류 분해능은 약 0.1 mA이므로 4.7 kΩ 조건(약 0.1~1 mA)은 눈금 1~10칸에 불과합니다. 이 조건은 같은 듀티에서 여러 번 재어 평균을 쓰고, 불확도를 함께 표시하세요.',
     tunable: {
       name: '듀티 변경 후 안정화 시간 (ms)',
-      hint: 'RC 필터의 시정수는 약 47 ms입니다. 출력이 완전히 안정되도록 그 5배 이상으로 두세요.',
+      hint: 'RC 필터의 시정수는 약 47 ms입니다. 출력이 안정되도록 그 5배 이상으로 두세요.',
     },
     safety: '커패시터의 +극은 평활 노드, -극은 GND에 연결하세요. UNO D9의 과전류를 막기 위해 측정 저항은 1 kΩ 이상만 사용하고, 100 Ω·220 Ω 저항을 직접 연결하지 마세요.',
     connections: [
@@ -459,7 +459,7 @@ void loop(){float capacitorV=analogRead(CAPACITOR_VOLTAGE_PIN)*(5.0f/1023.0f),cu
     id: 'ph22-battery-internal-resistance', title: '건전지 내부저항 추정', difficulty: '중급', minutes: 55, sensors: ['ina219'],
     keywords: ['내부저항', '기전력', '단자전압', '건전지'],
     law: '전지의 단자전압은 $V=E-Ir$로 근사되므로 연결한 저항을 바꿔 전류를 달리했을 때의 전압강하에서 내부저항 $r$을 구할 수 있습니다.',
-    apparatus: 'INA219, 새 9 V 사각 건전지(006P)와 홀더, 100 Ω·220 Ω·470 Ω 정격저항(1 W 이상), Arduino UNO, 브레드보드 — 1.5 V 건전지는 내부저항에 의한 전압 강하(수 mV)가 센서 분해능(4 mV)보다 작아 측정할 수 없습니다',
+    apparatus: 'INA219, 새 9 V 사각 건전지(006P)와 홀더, 100 Ω·220 Ω·470 Ω 정격저항(1 W 이상), Arduino UNO, 브레드보드. 1.5 V 건전지는 내부저항에 의한 전압 강하(수 mV)가 센서 분해능(4 mV)보다 작아 측정할 수 없습니다',
     method: '먼저 저항을 떼고 INA219 VIN+와 VIN-를 모두 건전지 +에 연결해 conditionId=OPEN으로 개방전압을 기록합니다. 전원을 분리한 뒤 그림처럼 저항을 연결하고 470 Ω, 220 Ω, 100 Ω 순서로 교체하며 conditionId를 각각 R470, R220, R100으로 맞춥니다. 각 저항은 5초 이내로 측정하고 조건 사이에 건전지를 쉬게 하세요.',
     graph: 'V-I 그래프의 음의 기울기에서 내부저항, 절편에서 기전력을 구합니다.',
     safety: '건전지를 단락하지 말고 저항 정격과 최대 측정전류를 넘지 마세요.',

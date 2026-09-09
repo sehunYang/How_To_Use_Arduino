@@ -24,8 +24,8 @@ const UNO_PINS = new Set([
 
 /**
  * Pins that are legitimately shared by multiple wiring steps by nature
- * (the hardware I2C bus pins, and power/ground rails every component needs)
- * — excluded from the check #1 duplicate-pin conflict detection.
+ * (the hardware I2C bus pins, and power/ground rails every component needs),
+ * excluded from the check #1 duplicate-pin conflict detection.
  */
 const SHARED_PINS = new Set(['A4', 'A5', '5V', '3.3V', 'GND', 'VIN'])
 
@@ -78,7 +78,7 @@ function checkPinDuplication(recipe: Recipe, mode: ValidationMode): Issue[] {
  * Check #2: I2C address conflict, generalized from the declarative
  * `addressing` field (plan N3) rather than hardcoded per-sensor logic.
  *
- * Heuristic (inherently approximate — the schema has no "quantity per
+ * Heuristic (inherently approximate: the schema has no "quantity per
  * sensor" field): the sensor token of a `wiring[].from` entry is the
  * substring before the first `.` (e.g. `"TSL2591_1.SDA"` -> `"TSL2591_1"`).
  * We strip a trailing `_<digits>` or bare `<digits>` instance suffix (e.g.
@@ -86,11 +86,11 @@ function checkPinDuplication(recipe: Recipe, mode: ValidationMode): Issue[] {
  * result case-insensitively against inventory sensor ids.
  *
  * The conflict condition is `instances > sensor.addressing.maxOnBus`, read
- * directly off the schema (F2) rather than proxied by `mode === 'fixed'` —
+ * directly off the schema (F2) rather than proxied by `mode === 'fixed'`:
  * a 'strapped' sensor wired 5 times with only 4 strap-pin addresses is
  * exactly as much a conflict as a 'fixed' sensor wired twice. The escape
  * hatch is any inventory sensor with `muxChannels > 0` present in
- * `recipe.sensors[]` (F3) — data-driven, so adding a second kind of
+ * `recipe.sensors[]` (F3), data-driven so adding a second kind of
  * multiplexer to the inventory never requires editing this function.
  */
 function checkI2cAddressConflict(recipe: Recipe, inventory: Inventory, mode: ValidationMode): Issue[] {
@@ -161,7 +161,7 @@ function checkUnownedComponent(recipe: Recipe, inventory: Inventory, mode: Valid
 
 /**
  * Check #5: publish-mode only. A draft is, by definition, allowed to have
- * an empty/incomplete wiring[] — enforcing this in draft mode would make it
+ * an empty/incomplete wiring[]: enforcing this in draft mode would make it
  * impossible to save a draft at all (plan N1). Per-field non-emptiness
  * (from/to/color/text) is already guaranteed by WiringStepSchema's
  * `.min(1)` constraints, so the only meaningful runtime check left is
@@ -176,7 +176,7 @@ function checkWiringRequiredForPublish(recipe: Recipe, mode: ValidationMode): Is
 }
 
 /**
- * Check #6: duplicate focus rectangles (copy-paste mistake) AND
+ * Check #6: duplicate focus rectangles (copy-paste mistake) and
  * out-of-bounds focus rectangles. The bounds half was deferred in the
  * original implementation for lack of an image-dimensions field; F4 added
  * `Recipe.imageWidth`/`imageHeight`, so both halves run here now.
@@ -216,22 +216,22 @@ function checkDuplicateFocusRect(recipe: Recipe, mode: ValidationMode): Issue[] 
 /**
  * Check #7: manifest block (`// @pin` comments) <-> wiring[] cross-check,
  * in both directions. This only validates manifest-comment <-> wiring-data
- * consistency, NOT manifest <-> actual code literals (e.g. `#define TRIG 7`)
- * — parsing arbitrary C++ is explicitly out of scope here (plan N11); that
- * class of drift is L3's job (compensating control via simulated serial
- * assertions), documented as a design limitation in the plan (row 7-note).
+ * consistency, not manifest <-> actual code literals (e.g. `#define TRIG 7`):
+ * parsing arbitrary C++ is out of scope here (plan N11); that class of
+ * drift is L3's job (compensating control via simulated serial assertions),
+ * documented as a design limitation in the plan (row 7-note).
  */
 /**
- * Power/ground rails are never meaningful code literals — no sketch ever
- * does `pinMode(5V, ...)` — so requiring a `@pin` manifest entry for them
+ * Power/ground rails are never meaningful code literals (no sketch ever
+ * does `pinMode(5V, ...)`), so requiring a `@pin` manifest entry for them
  * would fire this check on nearly every real recipe (every wired component
  * needs power) without ever catching a genuine mismatch. Excluded from the
  * wiring-implies-manifest direction (a power pin with no manifest entry is
- * fine). The reverse is NOT fine: a `@pin` entry naming a power rail is
+ * fine). The reverse is not fine: a `@pin` entry naming a power rail is
  * always an authoring mistake regardless of what's wired, since it can
- * never correspond to a real code literal — that direction flags it
+ * never correspond to a real code literal, so that direction flags it
  * unconditionally (F1; a prior version of this comment claimed this
- * direction already caught it, which was false — verified by probe).
+ * direction already caught it, which was false, verified by probe).
  */
 const POWER_PINS = new Set(['5V', '3.3V', 'GND', 'VIN'])
 
@@ -284,13 +284,13 @@ function checkManifestWiringCrossCheck(recipe: Recipe, mode: ValidationMode): Is
 }
 
 /**
- * Check #8: if total current draw (actuators AND sensors — F6: a sensor's
+ * Check #8: if total current draw (actuators and sensors: F6, a sensor's
  * own draw is real load on the same 5V rail and was previously omitted,
  * which meant e.g. servo(250)+relay(70)+PIR(65)+HC-SR04(15)=400mA actual
  * never fired because only the 320mA actuator-only subtotal was checked)
  * reaches 400mA, an external-power wiring step must be present.
  * Keyword-detected via Korean substrings ("외부 전원" / "배터리" / "별도 전원")
- * in any wiring step's `text` field — documented here since it's a keyword
+ * in any wiring step's `text` field; documented here since it's a keyword
  * heuristic, not a structured field.
  */
 function checkExternalPowerRequired(recipe: Recipe, inventory: Inventory, mode: ValidationMode): Issue[] {
@@ -324,7 +324,7 @@ function checkExternalPowerRequired(recipe: Recipe, inventory: Inventory, mode: 
 
 /**
  * Check #9: every TunableParam.anchor must resolve to exactly one line via
- * resolveTunableAnchor() (spec A3.3) — 0 or >1 matches, or no following
+ * resolveTunableAnchor() (spec A3.3): 0 or >1 matches, or no following
  * code line, is an authoring mistake the student-facing highlight would
  * otherwise silently mis-point.
  */
@@ -347,7 +347,7 @@ function checkTunableAnchorResolution(recipe: Recipe, mode: ValidationMode): Iss
 
 /**
  * Check #10: the manifest's `@baud` value must equal `recipe.baudRate`
- * (both must exist and agree) — a mismatch means the code and the recipe's
+ * (both must exist and agree): a mismatch means the code and the recipe's
  * declared baud rate have drifted, which reads as garbage in the student's
  * Serial Monitor even though everything else compiles and simulates fine.
  */
@@ -386,15 +386,15 @@ function checkGuidanceRequiredForPublish(recipe: Recipe, mode: ValidationMode): 
 }
 
 /**
- * L1 static validator (plan 1.3) — the 11 per-recipe checks. Corpus-level
+ * L1 static validator (plan 1.3): the 11 per-recipe checks. Corpus-level
  * invariants (subject distribution / sensor coverage / rationale coverage)
- * are deliberately NOT run here — see src/validation/corpusCheck.ts and its
- * module comment for the N2 rationale.
+ * are not run here; see src/validation/corpusCheck.ts and its module
+ * comment for the N2 rationale.
  *
  * In 'draft' mode all checks return 'warning' severity and this function
  * never throws or blocks saving. In 'publish' mode the same violations are
  * returned as 'error'. Checks #5 (empty wiring[]) and #11 (missing guidance
- * text) only run in publish mode — a draft is allowed to be incomplete.
+ * text) only run in publish mode: a draft is allowed to be incomplete.
  */
 export function validateRecipe(recipe: Recipe, inventory: Inventory, mode: ValidationMode): Issue[] {
   return [

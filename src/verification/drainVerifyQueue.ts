@@ -40,7 +40,7 @@ export async function drainVerifyQueue(
       const compileResult = await compileSketch(sketchPath)
       compilePass = compileResult.compilePass
     } catch {
-      // A missing arduino-cli toolchain must never block the queue drain —
+      // A missing arduino-cli toolchain must never block the queue drain;
       // it degrades to "not reverified this layer" (same spirit as
       // simPass: null), not a crash or a false failure. The issue below is
       // what keeps that optimistic default from reading as a green light:
@@ -55,7 +55,7 @@ export async function drainVerifyQueue(
     }
 
     // US-206 built the L5 logic harness as a dev-time script, not a
-    // per-recipe programmatic API — real per-recipe invocation is Phase 5
+    // per-recipe programmatic API; real per-recipe invocation is Phase 5
     // work once logic modules exist for every recipe.
     const logicPass = true
 

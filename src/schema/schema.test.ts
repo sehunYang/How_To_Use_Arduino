@@ -148,7 +148,7 @@ describe('TunableParamSchema (anchor, not line number)', () => {
   })
 })
 
-describe('Sensor.addressing discriminated union — all 4 real modes', () => {
+describe('Sensor.addressing discriminated union: all 4 real modes', () => {
   it('accepts fixed mode (TSL2591-style: single fixed address)', () => {
     const r = AddressingSchema.safeParse({ mode: 'fixed', addresses: ['0x29'], maxOnBus: 1 })
     expect(r.success).toBe(true)
@@ -264,7 +264,7 @@ describe('AnonEventSchema (G2: no identifying fields exist to strip)', () => {
       AnonEventSchema.safeParse({
         anonId: 'a7f3',
         recipeId: 'pendulum',
-        event: 'name_typed', // not in the allowed enum — schema has no field for identifying text
+        event: 'name_typed', // not in the allowed enum; schema has no field for identifying text
         at: '2026-01-01T00:00:00.000Z',
       }).success,
     ).toBe(false)

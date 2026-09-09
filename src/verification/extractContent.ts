@@ -9,7 +9,7 @@ export interface ExtractedContent {
 
 /**
  * Pure content-extraction step of the 검증 원장 pipeline (US-202). No
- * filesystem I/O here — that is the CI script's job (scripts/extract-content.ts)
+ * filesystem I/O here; that is the CI script's job (scripts/extract-content.ts)
  * so this stays unit-testable without a real disk or emulator.
  */
 export function extractContent(recipe: Recipe, sensors: Sensor[]): ExtractedContent {

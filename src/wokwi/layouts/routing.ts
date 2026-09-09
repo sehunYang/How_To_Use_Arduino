@@ -20,7 +20,7 @@ function routedWire(
 
 /**
  * Declares one routed wire from a start pin and a run of orthogonal deltas.
- * Shared by every layout so route authoring stays uniform — each layout only
+ * Shared by every layout so route authoring stays uniform; each layout only
  * supplies coordinates, never its own path arithmetic.
  */
 export const wire = (

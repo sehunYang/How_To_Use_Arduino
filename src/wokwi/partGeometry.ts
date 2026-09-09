@@ -4,9 +4,9 @@ import type { Point, ReadablePart } from './readableLayout'
  * Ground truth for where Wokwi actually draws each part's pins.
  *
  * Without this table every coordinate in a ReadableLayout is an unchecked
- * assertion. Wokwi renders a wire starting from the REAL pin position and then
+ * assertion. Wokwi renders a wire starting from the real pin position and then
  * applies the relative h/v commands, so if the layout's model of a pin sits
- * somewhere else, the whole route is drawn translated by that error — and the
+ * somewhere else, the whole route is drawn translated by that error, and the
  * geometric rules, which reason entirely in model space, cannot see it. That
  * is how a layout with four wires converging on the Uno's power header passed
  * every rule while rendering as an unreadable bundle: the model claimed a 20px
@@ -17,7 +17,7 @@ import type { Point, ReadablePart } from './readableLayout'
  * part's own top-left as placed by `left`/`top`). Element sizes are the SVG's
  * mm dimensions converted at 96dpi.
  *
- * Parts absent from this table are NOT silently trusted — validation reports
+ * Parts absent from this table are not silently trusted: validation reports
  * `unknown-part-geometry`, so "we could not check this" never reads as
  * "we checked this and it was fine".
  */
@@ -263,7 +263,7 @@ export const PART_GEOMETRY: Record<string, PartGeometry> = {
   },
 
   // 21.6mm x 16.2mm. Single 9.6px-pitch header along the top edge, ordered
-  // INT/AD0/XCL/XDA/SDA/SCL/GND/VCC left to right — note VCC is RIGHTMOST,
+  // INT/AD0/XCL/XDA/SDA/SCL/GND/VCC left to right. Note VCC is rightmost,
   // the mirror of how a GY-521 silkscreen is often sketched from memory.
   'wokwi-mpu6050': {
     width: 81.64,

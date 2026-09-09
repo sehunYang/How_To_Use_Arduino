@@ -14,14 +14,14 @@ import { wire } from './routing'
  * INA219/TSL2591 rig lives in chipConformanceLayout.ts precisely because it is
  * not part of a pendulum experiment.
  *
- * Routing shape — the Uno exposes 5V/GND.2 to the LEFT of A4/A5, while the
+ * Routing shape: the Uno exposes 5V/GND.2 to the left of A4/A5, while the
  * MPU6050 header runs SDA/SCL/GND/VCC left to right, putting its power pins to
  * the RIGHT of its signal pins. The two orderings are reversed, which forces
  * five crossings no matter how the wires are drawn (the power pair crosses
  * both signal wires, and the power wires cross each other). All five are
  * declared mutually rather than hidden. Each wire drops from its sensor pin
  * into a corridor of its own, crosses in open space between the boards, and
- * rises to its header pin — so the only sub-clearance gaps left are the header
+ * rises to its header pin, so the only sub-clearance gaps left are the header
  * pitches themselves, which no layout can widen.
  */
 export const pendulumLayout: ReadableLayout = {

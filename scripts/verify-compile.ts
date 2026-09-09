@@ -43,7 +43,7 @@ async function main(): Promise<void> {
   }
 
   if (failed) {
-    console.error('\nverify:compile FAILED — at least one sketch has severity "error".')
+    console.error('\nverify:compile FAILED: at least one sketch has severity "error".')
     process.exit(1)
   }
   console.log('\nverify:compile passed.')

@@ -3,7 +3,7 @@
  * CI script for US-202 (검증 원장 2.1): pulls every recipe visible to the CI
  * identity from the local Firestore emulator, runs it through the pure
  * extractContent() pipeline, and writes sketches/{id}.ino + diagram/{id}.json
- * to disk. Uses the Admin SDK against FIRESTORE_EMULATOR_HOST — the Admin
+ * to disk. Uses the Admin SDK against FIRESTORE_EMULATOR_HOST: the Admin
  * SDK bypasses firestore.rules entirely (by design, see docs/firebase-setup.md
  * section 4.3), which is what lets this script see draft recipes too; it is
  * never given production credentials.

@@ -28,11 +28,11 @@ export interface SensorReading {
 
 const READINGS: Record<string, SensorReading> = {
   ds18b20: {
-    normal: '교실에서 15~30 °C 사이의 값이 소수점까지 조금씩 흔들리며 나옵니다.',
+    normal: '교실에서 15~30 °C 사이의 값이 소수점까지 흔들리며 나옵니다.',
     signals: [
       {
         sign: '-127.00이 나옵니다',
-        meaning: '센서를 아예 찾지 못한 것입니다. DATA 선이 빠졌거나, DATA와 VCC 사이의 4.7 kΩ 저항이 없습니다.',
+        meaning: '센서를 찾지 못한 것입니다. DATA 선이 빠졌거나, DATA와 VCC 사이의 4.7 kΩ 저항이 없습니다.',
       },
       {
         sign: '85.00이 계속 나옵니다',
@@ -66,11 +66,11 @@ const READINGS: Record<string, SensorReading> = {
     signals: [
       {
         sign: '여섯 값이 모두 0입니다',
-        meaning: '센서를 찾지 못했습니다. VCC·GND와 A4·A5를 다시 확인하세요.',
+        meaning: '센서를 찾지 못했습니다. VCC·GND와 A4·A5를 확인하세요.',
       },
       {
         sign: '-1이나 32767 같은 값에 붙어 움직이지 않습니다',
-        meaning: 'I2C 통신이 끊겼을 때 나오는 값입니다. 센서를 움직여도 숫자가 그대로면 배선 문제입니다.',
+        meaning: 'I2C 통신이 끊겼을 때 나오는 값입니다. A4·A5 배선을 확인하세요.',
       },
     ],
   },
@@ -92,7 +92,7 @@ const READINGS: Record<string, SensorReading> = {
     signals: [
       {
         sign: '0에서 움직이지 않습니다',
-        meaning: '센서를 찾지 못했습니다. 주소가 0x29로 고정된 센서라 두 개를 그냥 붙이면 이렇게 됩니다.',
+        meaning: '센서를 찾지 못했습니다. 주소가 0x29로 고정된 센서라 두 개를 붙이면 이렇게 됩니다.',
       },
       {
         sign: '손으로 가려도 값이 그대로입니다',
@@ -101,7 +101,7 @@ const READINGS: Record<string, SensorReading> = {
     ],
   },
   cds: {
-    normal: '0~1023 사이의 값이 나오고, 손으로 가리면 수백 단위로 눈에 띄게 바뀝니다.',
+    normal: '0~1023 사이의 값이 나오고, 손으로 가리면 수백 단위로 바뀝니다.',
     signals: [
       {
         sign: '0이나 1023에 붙어 손으로 가려도 바뀌지 않습니다',
@@ -148,7 +148,7 @@ const READINGS: Record<string, SensorReading> = {
       },
       {
         sign: '자석을 대도 값이 바뀌지 않습니다',
-        meaning: '자석의 극 방향이 반대일 수 있습니다. 자석을 뒤집어 다시 대 보세요.',
+        meaning: '자석의 극 방향이 반대일 수 있습니다. 자석을 뒤집어 대 보세요.',
       },
     ],
   },
@@ -157,7 +157,7 @@ const READINGS: Record<string, SensorReading> = {
     signals: [
       {
         sign: '어느 채널을 골라도 같은 값이 나옵니다',
-        meaning: '채널이 실제로 바뀌지 않았습니다. 센서가 SD0/SC0처럼 채널 쪽 핀에 꽂혔는지 확인하세요.',
+        meaning: '채널이 바뀌지 않았습니다. 센서가 SD0/SC0처럼 채널 쪽 핀에 꽂혔는지 확인하세요.',
       },
     ],
   },
@@ -175,7 +175,7 @@ const COMMON_SIGNALS: ReadingSignal[] = [
   },
   {
     sign: '열 이름 줄만 나오고 값이 따라 나오지 않습니다',
-    meaning: '센서를 준비하는 단계에서 멈춘 것입니다. 전원과 통신 선(A4·A5 또는 데이터 핀)을 다시 확인하세요.',
+    meaning: '센서를 준비하는 단계에서 멈춘 것입니다. 전원과 통신 선(A4·A5 또는 데이터 핀)을 확인하세요.',
   },
 ]
 

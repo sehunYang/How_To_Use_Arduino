@@ -2,7 +2,7 @@ import type { SynonymMap } from '@/search'
 
 /**
  * Stub global synonym dictionary (plan `meta/synonyms`). This is a local,
- * hand-authored placeholder standing in for the real Firestore document —
+ * hand-authored placeholder standing in for the real Firestore document:
  * it exists so search/matching logic and its tests have something concrete
  * to run against before Phase 5 authors real content and Phase 4 builds the
  * authoring UI that would normally grow this map from actual student

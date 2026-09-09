@@ -98,7 +98,7 @@ export class RouteErrorBoundary extends Component<RouteErrorBoundaryProps, Route
         <h1 className="text-3xl font-semibold">화면을 불러오지 못했어요</h1>
         <p className="mt-4 text-body text-muted">
           {this.state.stale
-            ? '안내서가 방금 새로 올라가서 이 화면의 파일 이름이 바뀌었어요. 새로 고치면 이어서 볼 수 있습니다.'
+            ? '안내서가 방금 새로 올라가서 이 화면의 파일 이름이 바뀌었어요.'
             : '화면을 그리는 중에 문제가 생겼어요. 새로 고쳐도 같은 화면이 나오면 다른 메뉴로 이동해 보세요.'}
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
@@ -114,7 +114,7 @@ export class RouteErrorBoundary extends Component<RouteErrorBoundaryProps, Route
         </div>
         {this.state.detail && (
           <details className="mt-8 text-left">
-            <summary className="cursor-pointer text-caption text-muted">자세한 내용 (문제를 알릴 때 이 내용을 함께 알려 주세요)</summary>
+            <summary className="cursor-pointer text-caption text-muted">자세한 내용 (문제를 알릴 때 함께 알려 주세요)</summary>
             <pre className="mt-2 overflow-x-auto whitespace-pre-wrap rounded-card border border-border bg-muted-background p-3 text-caption"><code>{this.state.detail}</code></pre>
           </details>
         )}

@@ -652,7 +652,7 @@ export function DataAnalysisPage() {
     <div className="mx-auto max-w-5xl py-8 md:py-12">
       <h1 className="text-3xl font-semibold md:text-4xl">데이터 변환·분석</h1>
       <p className="mt-3 max-w-3xl text-body text-muted">
-        시리얼 모니터 내용을 붙여넣으면 요약 통계와 그래프가 바로 나옵니다.
+        시리얼 모니터 내용을 붙여넣으면 요약 통계와 그래프가 나옵니다.
       </p>
 
       <section aria-labelledby="paste-step" className="mt-8">
@@ -1021,7 +1021,7 @@ export function DataAnalysisPage() {
                     <summary className="cursor-pointer text-caption font-medium">쓸 수 있는 함수</summary>
                     <ul className="mt-2 space-y-1 text-caption text-muted">
                       {FUNCTION_HELP.map((entry) => (
-                        <li key={entry.name}><code>{entry.usage}</code> — {entry.meaning}</li>
+                        <li key={entry.name}><code>{entry.usage}</code>: {entry.meaning}</li>
                       ))}
                     </ul>
                   </details>
@@ -1253,7 +1253,7 @@ export function DataAnalysisPage() {
                               {
                                 value: 'box',
                                 label: '상자그림',
-                                hint: '값이 실제로 어떻게 놓였는지 그대로 보여 줍니다',
+                                hint: '값이 어떻게 놓였는지 그대로 보여 줍니다',
                               },
                               {
                                 value: 'errorBar',
@@ -1285,7 +1285,7 @@ export function DataAnalysisPage() {
                             onChange={(event) => setShowTrialPoints(event.target.checked)}
                             className="size-4 accent-accent"
                           />
-                          <span>회차별 측정값도 옅게 함께 표시</span>
+                          <span>회차별 측정값도 옅게 표시</span>
                         </label>
                       </div>
                     )}

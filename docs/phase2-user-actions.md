@@ -41,8 +41,6 @@ secret을 등록합니다.
 이 토큰은 App Check가 적용된 Firebase 서비스를 GitHub Actions에서 호출할 때만
 사용하며, 저장소나 로그에 기록하지 않습니다.
 
-기존 `WOKWI_CLI_TOKEN`도 그대로 존재하는지 확인합니다.
-
 - [x] `WOKWI_CLI_TOKEN` 존재 확인
 
 ## 4. Phase 2 원격 검증
@@ -115,8 +113,8 @@ omx ralplan preflight --json
 {"ok":false,"reason":"unsupported_documented_leader_proof"}
 ```
 
-이 결과는 설치 파일 손상보다 **현재 App 세션이 유효한 attached-tmux OMX 리더
-세션을 증명하지 못하는 상태**를 가리킵니다.
+이 결과는 설치 파일 손상보다, 현재 App 세션이 유효한 attached-tmux OMX 리더
+세션을 증명하지 못하는 상태를 가리킵니다.
 
 ## 권장 순서
 

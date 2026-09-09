@@ -50,7 +50,7 @@ describe('전원 넣기 전 점검', () => {
     for (const recipe of allRecipes) {
       const endpoints = new Set(recipe.wiring.flatMap((step) => [step.from, step.to]))
       const listed = powerChecks(recipe)
-        .flatMap((check) => check.question.split('—')[1]?.split(',') ?? [])
+        .flatMap((check) => check.question.split(': ')[1]?.split(',') ?? [])
         .map((entry) => entry.trim())
         .filter(Boolean)
 

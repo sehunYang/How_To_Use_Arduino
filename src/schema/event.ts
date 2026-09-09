@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 /**
  * Anonymous-only telemetry (spec G2). No name/student-id/email field exists
- * anywhere in this schema by construction — there is nothing to strip.
+ * anywhere in this schema by construction, so there is nothing to strip.
  */
 export const AnonEventSchema = z.object({
   anonId: z.string().min(1).max(64),

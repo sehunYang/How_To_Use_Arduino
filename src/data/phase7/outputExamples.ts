@@ -261,7 +261,7 @@ const relayConnections: Connection[] = [
 
 const motorConnections: Connection[] = [
   { from: 'DRIVER.IN1', to: 'UNO.D2', color: 'orange', text: '모터 드라이버의 IN1을 D2에 연결하세요.' },
-  { from: 'DRIVER.IN2', to: 'UNO.D4', color: 'orange', text: '모터 드라이버의 IN2를 D4에 연결하세요. 방향 입력은 두 개가 모두 있어야 합니다.' },
+  { from: 'DRIVER.IN2', to: 'UNO.D4', color: 'orange', text: '모터 드라이버의 IN2를 D4에 연결하세요. 방향 입력은 두 개가 있어야 합니다.' },
   { from: 'DRIVER.ENA', to: 'UNO.D5', color: 'yellow', text: '속도를 정하는 ENA를 D5에 연결하세요.' },
   { from: 'BATTERY.+', to: 'DRIVER.VM', color: 'red', text: '모터 정격에 맞는 별도 전원의 + 단자를 드라이버 VM에 연결하세요.' },
   { from: 'BATTERY.-', to: 'DRIVER.GND', color: 'black', text: '별도 전원의 - 단자를 드라이버 GND에 연결하세요.' },
@@ -364,7 +364,7 @@ export const phase7OutputExamples: Recipe[] = [
     sketch: relaySketch,
     tunable: { anchor: 'onSeconds', name: '켜 두는 시간 (초)', hint: '접점을 아끼려면 1초보다 짧게 두지 마세요.' },
     overview: '아두이노의 작은 신호로 릴레이의 접점을 붙였다 떼어, 아두이노와 전기적으로 분리된 별도 전원의 팬을 켜고 끕니다.',
-    procedure: '팬을 연결하기 전에 릴레이만 연결해 딸깍 소리와 표시등으로 접점이 움직이는지 먼저 확인하세요. 그다음 팬을 접점 쪽에 연결하세요.',
+    procedure: '팬을 연결하기 전에 릴레이만 연결해 딸깍 소리와 표시등으로 접점이 움직이는지 확인하세요. 그다음 팬을 접점 쪽에 연결하세요.',
     science: '릴레이는 전자석으로 금속 접점을 당겨 붙이는 스위치입니다. 아두이노 쪽 회로와 접점 쪽 회로가 서로 떨어져 있어, 아두이노가 감당할 수 없는 전류의 장치도 켤 수 있습니다. COM은 공통 단자, NO는 평소 떨어져 있다가 켜지면 붙는 단자입니다.',
     safety: '접점 쪽에는 교실용 저전압 장치만 연결하세요. 가정용 콘센트 전원은 절대 연결하지 마세요.',
     applicationGuide: '켜고 끄는 간격을 바꿔 가며 접점이 붙는 소리와 팬이 실제로 돌기 시작하는 시점 사이의 지연을 재어 보세요.',

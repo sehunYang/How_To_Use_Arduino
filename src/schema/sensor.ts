@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 /**
  * Addressing is declarative (plan 1.2 / N3), not code, so the L1 I2C
- * conflict check and the diagram.json generator both stay generic — a new
+ * conflict check and the diagram.json generator both stay generic: a new
  * sensor never requires a code change (A6.1).
  */
 export const AddressingFixedSchema = z.object({
@@ -55,7 +55,7 @@ export const WokwiDescriptorSchema = z.object({
   /**
    * Wokwi part attributes this component always carries (for example a fixed
    * divider resistor's `value`). Parts whose value differs per recipe state it
-   * in the wiring token instead — see `partAttrs` in src/wokwi/buildDiagram.ts.
+   * in the wiring token instead: see `partAttrs` in src/wokwi/buildDiagram.ts.
    */
   attrs: z.record(z.string(), z.string()).optional(),
 })
@@ -70,9 +70,9 @@ export const SensorSchema = z.object({
   currentDrawMa: z.number().nonnegative(),
   wokwi: WokwiDescriptorSchema,
   /**
-   * Number of downstream I2C channels this part provides for OTHER sensors
+   * Number of downstream I2C channels this part provides for other sensors
    * (0 for every ordinary sensor; e.g. 8 for TCA9548A). Declarative so the
-   * L1 address-conflict check stays data-driven — flagging a specific part
+   * L1 address-conflict check stays data-driven: flagging a specific part
    * id in code would break A6.1 for the next multiplexer added (plan N3/F3).
    */
   muxChannels: z.number().int().nonnegative().default(0),

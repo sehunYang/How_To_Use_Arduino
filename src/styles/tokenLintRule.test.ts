@@ -7,7 +7,7 @@ import rule from '../../eslint-rules/no-hardcoded-design-values.js'
 
 // This test lints the fixture directly via ESLint's Linter API rather than
 // the `eslint .` CLI, so eslint.config.js's `ignores` (which excludes the
-// fixture from the real lint run) has no bearing on it — see US-002.
+// fixture from the real lint run) has no bearing on it; see US-002.
 const fixturePath = fileURLToPath(
   new URL('./__fixtures__/design-token-violations.fixture.tsx', import.meta.url),
 )

@@ -5,7 +5,7 @@ import type { ReadableLayout } from './readableLayout'
 /**
  * Electrical netlist resolution for readable Wokwi layouts.
  *
- * `validateReadableLayout()` proves a layout is *photographable* — orthogonal,
+ * `validateReadableLayout()` proves a layout is *photographable*: orthogonal,
  * non-overlapping, traceable by eye. It says nothing about whether the layout
  * is the circuit the recipe actually describes: it never reads `wire.net` and
  * has no model of breadboard conductivity, so a wire plugged into the wrong
@@ -15,8 +15,8 @@ import type { ReadableLayout } from './readableLayout'
  * geometry-free part of the layout (which hole each wire end occupies), then
  * checking that derivation against two independent declarations:
  *
- *   1. `wire.net` — the author's stated intent, previously never verified.
- *   2. `recipe.wiring[]` — the connections a student is told to make.
+ *   1. `wire.net`: the author's stated intent, previously never verified.
+ *   2. `recipe.wiring[]`: the connections a student is told to make.
  *
  * (2) is the one that matters most: it makes "the circuit CI simulated" and
  * "the circuit the student builds" the same object by construction, which is
@@ -34,7 +34,7 @@ const BREADBOARD_TYPES = new Set([
  *
  * Power rails (`tp.7`, `bn.12`, …) are one conductor per rail for the whole
  * board. Terminal strips (`15t.b`) are one conductor per column-half, so
- * `15t.a`…`15t.e` are the same node — that is exactly what makes a breadboard
+ * `15t.a`…`15t.e` are the same node: that is exactly what makes a breadboard
  * a bus, and why a layout may route through one without adding connections
  * the recipe never declared.
  */
@@ -109,7 +109,7 @@ const formatNet = (pins: string[]): string => `{${pins.join(', ')}}`
  * `wire.net` labels against that resolution.
  *
  * Nets carrying no component pin (pure breadboard-to-breadboard routing) are
- * dropped — they are an artefact of how the bus was laid out, not a
+ * dropped: they are an artefact of how the bus was laid out, not a
  * connection the recipe could ever declare.
  */
 export function layoutNetlist(layout: ReadableLayout): {
@@ -252,7 +252,7 @@ export function recipeNetlist(recipe: Recipe, sensors: Sensor[]): string[][] {
 
 /**
  * The gate: the conductors a layout physically creates must be exactly the
- * conductors the recipe tells a student to create — no extra sensor quietly
+ * conductors the recipe tells a student to create: no extra sensor quietly
  * wired into the simulated bus, no declared connection missing from the rig.
  */
 export function compareNetlists(layoutNets: ResolvedNet[], recipeNets: string[][]): NetlistIssue[] {

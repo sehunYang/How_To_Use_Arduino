@@ -59,7 +59,7 @@ describe('buildIndexEntry / buildIndex', () => {
   })
 })
 
-describe('search — dictionary + fuzzy pipeline', () => {
+describe('search: dictionary + fuzzy pipeline', () => {
   // 5-entry index: the real published canary + 4 stubs, so minResults=3
   // guarantees are exercised against a realistic-sized corpus.
   const index: SearchIndexEntry[] = [

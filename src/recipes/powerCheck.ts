@@ -57,7 +57,7 @@ const POLARITY_NOTES: Record<string, string> = {
   LED: '긴 다리가 +, 짧은 다리가 −입니다. 거꾸로 꽂으면 불이 켜지지 않습니다.',
   CAPACITOR: '옆면에 흰 띠와 −가 인쇄된 쪽이 −입니다. 전해 커패시터를 거꾸로 꽂으면 부풀거나 터질 수 있습니다.',
   BATTERY: '+와 −를 바꿔 꽂으면 보드가 상할 수 있습니다. 표시를 확인하세요.',
-  PANEL: '+와 − 단자를 확인하고 연결하세요. 바꿔 꽂으면 전류가 0으로만 측정됩니다.',
+  PANEL: '+와 −를 바꿔 꽂으면 전류가 0으로만 측정됩니다.',
   DS18B20: '방수 프로브는 선 색과 실제 핀이 다를 수 있습니다. 판매처의 핀 표를 확인하세요.',
 }
 
@@ -74,14 +74,14 @@ export function powerChecks(recipe: Pick<Recipe, 'wiring'>): PowerCheck[] {
 
   if (powered.length > 0) {
     checks.push({
-      question: `전원을 받는 ${powered.length}곳이 모두 빨간 선으로 이어졌는지 짚어 보세요 — ${powered.join(', ')}`,
+      question: `전원을 받는 ${powered.length}곳이 모두 빨간 선으로 이어졌는지 짚어 보세요: ${powered.join(', ')}`,
       detail: 'VCC 자리에 GND 선이 들어가 있으면 센서가 뜨거워집니다. 손끝으로 선을 따라가며 하나씩 확인하세요.',
     })
   }
 
   if (grounded.length > 0) {
     checks.push({
-      question: `GND로 가야 하는 ${grounded.length}곳이 하나도 빠지지 않았는지 확인하세요 — ${grounded.join(', ')}`,
+      question: `GND로 가야 하는 ${grounded.length}곳이 하나도 빠지지 않았는지 확인하세요: ${grounded.join(', ')}`,
       detail: 'GND가 한 곳이라도 빠지면 값이 나오다 말거나 아무 자극 없이 크게 흔들립니다. 가장 자주 빠뜨리는 선입니다.',
     })
   }
@@ -101,7 +101,7 @@ export function powerChecks(recipe: Pick<Recipe, 'wiring'>): PowerCheck[] {
   if (usesThreeVolt) {
     checks.push({
       question: '3.3V에 꽂아야 하는 모듈을 5V에 꽂지 않았는지 확인하세요',
-      detail: '3.3V 전용 모듈을 5V에 꽂으면 한 번에 손상됩니다. 기판에 인쇄된 전압 표기를 먼저 읽으세요.',
+      detail: '3.3V 전용 모듈을 5V에 꽂으면 한 번에 손상됩니다. 기판에 인쇄된 전압 표기를 읽으세요.',
     })
   }
 

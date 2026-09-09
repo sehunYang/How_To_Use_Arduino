@@ -26,9 +26,9 @@ export function DiscoveryPage() {
   return (
     <div className="mx-auto max-w-4xl py-8 md:py-16">
       <p className="text-caption font-semibold uppercase tracking-widest text-accent">탐구 주제에서 결과 분석까지</p>
-      <h1 className="mt-3 max-w-3xl text-4xl font-semibold leading-tight md:text-6xl">무엇을 측정하고 싶은지 편하게 적어보세요.</h1>
+      <h1 className="mt-3 max-w-3xl text-4xl font-semibold leading-tight md:text-6xl">무엇을 측정하고 싶은지 적어보세요.</h1>
       <p className="mt-5 max-w-2xl text-body text-muted">
-        센서 이름을 몰라도 됩니다. 하고 싶은 탐구를 적으면 필요한 센서와 레시피를 찾아 드립니다.
+        센서 이름을 몰라도 됩니다. 적어 주면 필요한 센서와 레시피를 찾아 드립니다.
       </p>
       <form
         className="mt-8 rounded-card border border-border bg-muted-background p-3"

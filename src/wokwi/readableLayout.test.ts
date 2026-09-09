@@ -196,7 +196,7 @@ describe('strict readable Wokwi layout', () => {
 
   it('validates and compiles the production pendulum layout, anchored to real part geometry', () => {
     // 'recipe' purpose means every route point is checked against the pin
-    // position Wokwi actually renders — bounds are derived, not declared.
+    // position Wokwi actually renders: bounds are derived, not declared.
     expect(pendulumLayout.purpose).toBe('recipe')
     expect(validateReadableLayout(pendulumLayout)).toEqual([])
 
@@ -284,7 +284,7 @@ describe('strict readable Wokwi layout', () => {
 
     it('lets a wire leave its own pin through its own board, but not cross another part', () => {
       // 5V sits 10px inboard of the Uno's bottom edge, so every attached wire
-      // necessarily starts inside the body — that must not read as a violation.
+      // necessarily starts inside the body: that must not read as a violation.
       expect(
         codes(
           grounded([
@@ -332,7 +332,7 @@ describe('strict readable Wokwi layout', () => {
     })
 
     it('accepts a wire landing on the neighbouring pin 9.5px away', () => {
-      // Header pitch is 9.5px — below minimumClearance. Treating that as a
+      // Header pitch is 9.5px, below minimumClearance. Treating that as a
       // violation would make the Uno's power header unwireable by construction.
       const issues = codes(
         layoutOf([

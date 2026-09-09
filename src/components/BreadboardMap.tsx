@@ -41,7 +41,7 @@ export function BreadboardMap() {
     <svg
       viewBox="0 0 300 186"
       role="img"
-      aria-label="브레드보드 연결 그림. 가장자리 두 줄은 가로로 길게 이어지고, 가운데 구멍들은 세로 다섯 개씩 묶여 이어지며, 가운데 홈에서 위아래가 끊깁니다."
+      aria-label="브레드보드 연결 그림. 가장자리 두 줄은 가로로 이어지고, 가운데 구멍들은 세로 다섯 개씩 묶여 이어지며, 가운데 홈에서 위아래가 끊깁니다."
       className="mt-3 h-auto w-full max-w-md"
     >
       <rect x="6" y="6" width="288" height="174" rx="6" fill={BOARD_COLOR} stroke={BOARD_EDGE} />
@@ -64,7 +64,7 @@ export function BreadboardMap() {
         strokeDasharray="4 3"
       />
       <text x="150" y="44" textAnchor="middle" fontSize="9" fill={POSITIVE}>
-        전원 줄 — 이 줄은 가로로 끝까지 이어져 있습니다
+        전원 줄: 가로로 끝까지 이어져 있습니다
       </text>
 
       {/* 위쪽 다섯 줄 */}
@@ -92,13 +92,13 @@ export function BreadboardMap() {
         strokeWidth="1"
       />
       <text x={columnX(HIGHLIGHT_COLUMN) + 30} y={UPPER_ROWS[2] + 3} fontSize="9" fill={HIGHLIGHT}>
-        세로 다섯 구멍이 한 묶음 — 서로 이어져 있습니다
+        세로 다섯 구멍이 한 묶음으로 이어져 있습니다
       </text>
 
       {/* 가운데 홈 */}
       <rect x="10" y={GAP_Y - 6} width="280" height="12" fill={BOARD_EDGE} fillOpacity="0.5" />
       <text x="150" y={GAP_Y + 3} textAnchor="middle" fontSize="9" fill={INK}>
-        가운데 홈 — 위아래는 이어져 있지 않습니다
+        가운데 홈: 위아래는 이어져 있지 않습니다
       </text>
 
       {/* 아래쪽 다섯 줄 */}

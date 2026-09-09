@@ -85,8 +85,8 @@ void onData(){interruptUs=micros();sampleReady=true;}
 void setup(){
   Serial.begin(115200);Wire.begin();Wire.setClock(400000);
   writeReg(0x6B,0);
-  writeReg(0x1A,0x01); // 대역폭 184 Hz — 필터를 켜 내부 출력이 1 kHz가 되면서도 짧은 충돌 봉우리를 뭉개지 않습니다.
-  writeReg(0x1C,0x18); // ±16 g — 충돌 봉우리는 ±2 g 기본 범위를 훌쩍 넘습니다.
+  writeReg(0x1A,0x01); // 대역폭 184 Hz: 필터를 켜 내부 출력이 1 kHz가 되면서도 짧은 충돌 봉우리를 뭉개지 않습니다.
+  writeReg(0x1C,0x18); // ±16 g: 충돌 봉우리는 ±2 g 기본 범위를 훌쩍 넘습니다.
   writeReg(0x19,sampleRateDivider);
   writeReg(0x37,0x10); // 값을 읽기만 해도 INT가 풀리도록 설정합니다.
   writeReg(0x38,1); // 표본이 준비될 때마다 INT로 알립니다.

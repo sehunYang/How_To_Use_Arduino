@@ -7,7 +7,7 @@
  *
  * Deliberately NOT a Recipe: it carries no `@pin` manifest, no tunables and no
  * teaching content, because no student is ever shown it. Keeping it out of
- * src/data/canary is the point of the split — a recipe's diagram must contain
+ * src/data/canary is the point of the split: a recipe's diagram must contain
  * exactly the circuit its `wiring[]` describes (enforced by netlist.ts), and
  * bolting a lux meter and a current sensor onto a pendulum experiment to
  * exercise these chips would have made that guarantee unattainable.
@@ -119,7 +119,7 @@ export const chipConformanceFixture = {
   baudRate: 9600,
   /**
    * Self-contained Wokwi project directory. wokwi-cli resolves every path in
-   * wokwi.toml — firmware, elf, chip binaries — relative to the project root,
+   * wokwi.toml (firmware, elf, chip binaries) relative to the project root,
    * so the build step copies those artefacts in here rather than pointing at
    * `../../.tools` and `../../chips`. Escaping the project root would work
    * only if wokwi-cli tolerates `..` in uploaded paths, which is not something

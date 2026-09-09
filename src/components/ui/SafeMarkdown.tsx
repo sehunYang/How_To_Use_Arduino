@@ -118,8 +118,8 @@ function Markdown({ source, checklist }: { source: string; checklist?: Checklist
 
 /**
  * `checklistScope`를 주면 이 본문의 `- [ ]` 항목이 실제로 눌리고, 브라우저에
- * 남아 다음에 열어도 그대로입니다. 주지 않으면 예전처럼 읽기 전용입니다 —
- * 관리자 미리보기처럼 진행도를 남길 자리가 없는 곳에서 그렇습니다.
+ * 남아 다음에 열어도 그대로입니다. 주지 않으면 예전처럼 읽기 전용입니다.
+ * 관리자 미리보기처럼 진행도를 남길 자리가 없는 곳이 그렇습니다.
  */
 export function SafeMarkdown({ source, checklistScope }: { source: string; checklistScope?: string }) {
   const [state, setState] = useState<ChecklistState>({})

@@ -105,7 +105,7 @@ const PART_NOTES: Record<string, string> = {
   LED_SUPPLY: '아두이노와 - 극(GND)을 반드시 공통으로 묶습니다.',
   LAMP_SUPPLY: '아두이노와 - 극(GND)을 반드시 공통으로 묶습니다.',
   BATTERY: '- 극을 아두이노 GND와 공통으로 묶어야 측정값이 의미를 가집니다.',
-  BME280: '3.3V 전용 모듈은 5V에 꽂으면 손상됩니다. 기판의 전압 표기를 먼저 확인하세요.',
+  BME280: '3.3V 전용 모듈은 5V에 꽂으면 손상됩니다. 기판의 전압 표기를 확인하세요.',
   DS18B20: '방수 프로브는 선 색과 실제 핀이 다를 수 있어 판매처 표를 확인해야 합니다.',
   RELAY: '접점 쪽(COM·NO)에는 아두이노가 아니라 별도 전원을 연결합니다.',
 }
@@ -214,7 +214,7 @@ export function partsFor(recipe: Pick<Recipe, 'wiring'>): PartsList {
   return {
     always: [
       { name: '아두이노 우노 R3 보드', count: 1 },
-      { name: 'USB 케이블 (A–B형)', count: 1, note: '보드를 컴퓨터에 연결하고 전원도 함께 공급합니다.' },
+      { name: 'USB 케이블 (A–B형)', count: 1, note: '보드를 컴퓨터에 연결하고 전원도 공급합니다.' },
       { name: '브레드보드', count: 1, note: '센서와 저항을 꽂아 고정하고 전원을 나눠 주는 판입니다.' },
     ],
     specific,

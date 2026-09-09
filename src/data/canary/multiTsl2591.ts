@@ -51,7 +51,7 @@ void loop() {
 `
 
 /**
- * S9-equivalent sensor example: demonstrates WHY a multiplexer is needed —
+ * S9-equivalent sensor example: demonstrates why a multiplexer is needed:
  * TSL2591 has a fixed I2C address (0x29), so two of them cannot share one
  * bus without TCA9548A. This is the draft-status canary (plan errata: 3→4
  * gate needs both a draft and a published fixture exercised).
@@ -111,7 +111,7 @@ INA219는 A0/A1 점퍼로 주소를 바꿀 수 있지만, TSL2591은 그럴 수 
   applicationGuide: '채널 수를 늘려 3개 이상의 조도센서를 동시에 읽어 교실 여러 지점의 밝기를 비교할 수 있습니다.',
   troubleshooting: [
     { symptom: '두 센서가 같은 값만 나옴', cause: '채널 전환(openChannel/closeChannel)이 제대로 되지 않았을 수 있습니다', fix: '한 채널을 닫고 다음 채널을 여는 순서를 확인하세요' },
-    { symptom: '센서가 아예 응답하지 않음', cause: '채널 선택 장치의 채널 핀(SD0/SC0 등)과 센서 배선이 뒤바뀌었을 수 있습니다', fix: 'SDA는 SDx, SCL은 SCx에 연결되어 있는지 다시 확인하세요' },
+    { symptom: '센서가 아예 응답하지 않음', cause: '채널 선택 장치의 채널 핀(SD0/SC0 등)과 센서 배선이 뒤바뀌었을 수 있습니다', fix: 'SDA는 SDx, SCL은 SCx에 연결되어 있는지 확인하세요' },
   ],
   status: 'published',
   reviewedOnDevice: null,

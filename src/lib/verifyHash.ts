@@ -1,13 +1,13 @@
 /**
  * Deterministic, synchronous, portable (browser + Node) change-detection
- * hash — intentionally NOT cryptographic. It exists so the client-side
- * SimBadge (Phase 3) can compute `hash(recipe)` and compare it against
- * `simStatus.verifyHash` without an async Web Crypto round-trip, and so CI
- * computes the identical value when writing that field (plan N4).
+ * hash, not cryptographic. It exists so the client-side SimBadge (Phase 3)
+ * can compute `hash(recipe)` and compare it against `simStatus.verifyHash`
+ * without an async Web Crypto round-trip, and so CI computes the identical
+ * value when writing that field (plan N4).
  *
- * Covers sketch + wiring + layout + tunables + baudRate + inventoryVersion —
- * deliberately wider than just the sketch, so either a wiring-only edit or
- * a changed sensor definition invalidates the hash.
+ * Covers sketch + wiring + layout + tunables + baudRate + inventoryVersion:
+ * wider than just the sketch, so either a wiring-only edit or a changed
+ * sensor definition invalidates the hash.
  */
 
 function stableStringify(value: unknown): string {

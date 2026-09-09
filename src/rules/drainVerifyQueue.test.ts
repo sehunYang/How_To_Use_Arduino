@@ -21,7 +21,7 @@ const PROJECT_ID = 'how-to-use-arduino-test'
 const inventory = { sensors, actuators }
 
 // drainVerifyQueue() shells out to the real arduino-cli for L2, which costs a
-// few seconds — the same reason compileCheck.test.ts raises its timeout. Left
+// few seconds, the same reason compileCheck.test.ts raises its timeout. Left
 // at vitest's 5s default this test sits ~1s from the limit and flakes whenever
 // the machine is loaded.
 const COMPILE_TIMEOUT = 120_000

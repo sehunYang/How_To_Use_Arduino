@@ -39,7 +39,7 @@ describe('runMatchReport', () => {
     const tuning = allCases.filter((c) => c.split === 'tuning')
     const report = runMatchReport(tuning, index, synonyms)
     expect(report.total).toBe(30)
-    // Not asserting a hard threshold here — that's what the `verify:matching`
+    // Not asserting a hard threshold here; that's what the `verify:matching`
     // CLI gate is for. This test only proves the reporting mechanism works
     // and surfaces the current rate for visibility.
     expect(report.rate).toBeGreaterThan(0)

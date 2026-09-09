@@ -74,7 +74,7 @@ void setup() {
   it('resolution is stable when unrelated comment lines are inserted above the marker', () => {
     const before = resolveTunableAnchor(multiTunableSketch, 'threshold')
 
-    // Insert 3 more unrelated comment lines above the `threshold` marker —
+    // Insert 3 more unrelated comment lines above the `threshold` marker:
     // a raw line-number anchor would now point at the wrong line; the
     // marker-based anchor must still resolve to the same *relative* target
     // (its own next code line), proving it survives edits above it.

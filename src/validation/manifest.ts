@@ -1,7 +1,7 @@
 /**
  * Sketch manifest convention (plan N11): `// @pin`, `// @baud`, `// @tunable`
- * comment lines are the ONLY thing L1 parses out of a sketch. We deliberately
- * do not attempt to parse arbitrary C++ (#define, pinMode, etc.) — that class
+ * comment lines are the only thing L1 parses out of a sketch. We do not
+ * attempt to parse arbitrary C++ (#define, pinMode, etc.): that class
  * of parser produces exactly the silent false-negatives/positives the
  * manifest exists to avoid. `CodeBlock` (Phase 3) strips these lines from
  * both the rendered view and the clipboard payload so students never see
@@ -54,12 +54,12 @@ export function parseManifest(source: string): ParsedManifest {
 /**
  * Resolves a `TunableParam.anchor` name to the 1-indexed line number of the
  * next code line following its `// @tunable <anchor>` marker. This is
- * recomputed fresh from the current sketch text every time — never cached —
+ * recomputed fresh from the current sketch text every time (never cached),
  * so inserting/reordering comments above it can never desync the anchor from
  * the line it actually highlights (the exact bug raw line numbers had).
  *
  * Returns null (invalid) when the marker appears zero times, more than
- * once, or has no following code line before EOF — all three are L1
+ * once, or has no following code line before EOF: all three are L1
  * violations (plan check #11 / PL4).
  */
 export function resolveTunableAnchor(source: string, anchor: string): number | null {

@@ -2,7 +2,7 @@
 
 ## 판정
 
-Phase 2에서는 커뮤니티 BME280 칩을 **채택하지 않습니다**.
+Phase 2에서는 커뮤니티 BME280 칩을 채택하지 않습니다.
 
 검토 대상은
 [`bonnyr/wokwi-bme280-custom-chip` v0.0.25](https://github.com/bonnyr/wokwi-bme280-custom-chip/releases/tag/v0.0.25)이며,
@@ -19,6 +19,6 @@ Phase 2에서는 커뮤니티 BME280 칩을 **채택하지 않습니다**.
   [Bosch 데이터시트](https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bme280-ds002.pdf)와
   차이가 큽니다.
 
-따라서 `bme280.wokwi.simSupported`는 `false`로 유지합니다. 향후 공식 Wokwi 부품이나
+`bme280.wokwi.simSupported`는 `false`로 유지합니다. 향후 공식 Wokwi 부품이나
 감사 가능한 I2C 커스텀 칩이 생기면 이 결정을 재검토합니다. 해당 커뮤니티 칩은
 정확성 검증이 아닌 일회성 SPI 프로토콜 데모에만 조건부로 사용할 수 있습니다.

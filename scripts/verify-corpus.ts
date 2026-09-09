@@ -26,7 +26,7 @@ for (const recipe of phase5Recipes) {
     continue
   }
   for (const issue of validateRecipe(recipe, inventory, 'publish')) {
-    failures.push(`${recipe.id}: ${issue.code} — ${issue.message}`)
+    failures.push(`${recipe.id} / ${issue.code}: ${issue.message}`)
   }
 
   if (!release) continue
@@ -40,7 +40,7 @@ const corpusInput = release
   ? phase5Recipes
   : phase5Recipes.map((recipe) => ({ ...recipe, status: 'published' as const }))
 for (const issue of validateCorpus(corpusInput, inventory, targetDistribution, phase5Rationales)) {
-  failures.push(`${issue.code} — ${issue.message}`)
+  failures.push(`${issue.code}: ${issue.message}`)
 }
 
 if (failures.length > 0) {

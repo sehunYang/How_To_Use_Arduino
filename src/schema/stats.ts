@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 /**
- * Cron-derived rollup (plan N9) — never written by the client. Keeps the
+ * Cron-derived rollup (plan N9), never written by the client. Keeps the
  * teacher dashboard's read cost to ~1 doc/recipe instead of scanning the
  * entire `events` collection, and removes the unauthenticated-write path a
  * client-side increment design would otherwise leave open.

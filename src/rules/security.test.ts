@@ -9,7 +9,7 @@ import {
 
 // Rule unit tests for US-009 / PL2 (8 scenarios) + the isAdmin()/isCI()
 // auth-null guard (9th scenario). Runs only against the local Firebase
-// emulator suite — see `test:rules` in package.json, which boots the
+// emulator suite; see `test:rules` in package.json, which boots the
 // emulator via `firebase emulators:exec` before invoking vitest. No network
 // calls to a real Firebase project are made or possible (rules-unit-testing
 // refuses to talk to production).
@@ -266,7 +266,7 @@ describe('Firestore rules (PL2)', () => {
     // which dereferences request.auth.token. Without the `request.auth != null`
     // guard this throws an internal rules-evaluation error instead of cleanly
     // resolving to a permission-denied rejection. assertFails() only accepts
-    // "permission denied" — an internal error would make this test itself fail.
+    // "permission denied"; an internal error would make this test itself fail.
     await assertFails(
       unauth.firestore().collection('recipes').doc('draft-2').get(),
     )

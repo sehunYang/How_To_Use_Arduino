@@ -13,15 +13,15 @@ export interface SearchResult {
 export interface SearchOptions {
   /** Dictionary score at/above which a match is "confident" enough to skip fuzzy fallback. */
   threshold?: number
-  /** Minimum results guaranteed for any non-empty index (spec A1.2 — never an empty screen). */
+  /** Minimum results guaranteed for any non-empty index (spec A1.2: never an empty screen). */
   minResults?: number
 }
 
 /**
- * 2, not 3: one solid signal — a partial match ("진자" ⊂ "단진자") or a
- * synonym hit — is enough to call a recipe genuinely relevant. Requiring a
- * full core-keyword hit (3) demoted every partial-only match to the fuzzy
- * fallback, where the UI presents it as "비슷한 탐구" instead of an answer.
+ * 2, not 3: one solid signal (a partial match ("진자" ⊂ "단진자") or a
+ * synonym hit) is enough to call a recipe relevant. Requiring a full
+ * core-keyword hit (3) demoted every partial-only match to the fuzzy fallback,
+ * where the UI presents it as "비슷한 탐구" instead of an answer.
  */
 const DEFAULT_THRESHOLD = 2
 const DEFAULT_MIN_RESULTS = 3
@@ -63,7 +63,7 @@ export function search(
     ignoreLocation: true,
     includeScore: true,
   })
-  // Fuzzy-search the whole query AND each stem: Fuse's bitap matcher gives
+  // Fuzzy-search the whole query and each stem: Fuse's bitap matcher gives
   // up on sentence-length patterns, so "진자 길이에 따라 …" only finds
   // anything when its individual words are searched too. Per entry, the
   // best (lowest) Fuse score across all probes wins.

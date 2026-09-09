@@ -123,7 +123,7 @@ export function relayFan(pin: string): Connection[] {
 export function motorChannel(in1: string, in2: string, ena: string, channel = 'A'): Connection[] {
   return [
     { from: `DRIVER.IN${channel === 'A' ? '1' : '3'}`, to: `UNO.${in1}`, color: 'orange', text: `모터 드라이버 ${channel}채널의 첫 방향 입력을 ${in1}에 연결하세요.` },
-    { from: `DRIVER.IN${channel === 'A' ? '2' : '4'}`, to: `UNO.${in2}`, color: 'orange', text: `${channel}채널의 두 번째 방향 입력을 ${in2}에 연결하세요. 방향 입력은 둘이 모두 있어야 합니다.` },
+    { from: `DRIVER.IN${channel === 'A' ? '2' : '4'}`, to: `UNO.${in2}`, color: 'orange', text: `${channel}채널의 두 번째 방향 입력을 ${in2}에 연결하세요. 방향 입력은 둘 다 있어야 합니다.` },
     { from: `DRIVER.EN${channel}`, to: `UNO.${ena}`, color: 'yellow', text: `속도를 정하는 EN${channel}를 ${ena}에 연결하세요.` },
   ]
 }

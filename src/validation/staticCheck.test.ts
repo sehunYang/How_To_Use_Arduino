@@ -6,7 +6,7 @@ import { validateRecipe } from './staticCheck'
 
 const inventory = { sensors, actuators }
 
-/** A minimal, fully clean recipe — zero violations of any of the 11 checks. */
+/** A minimal, fully clean recipe: zero violations of any of the 11 checks. */
 const cleanRecipe: Recipe = {
   id: 'test-recipe',
   type: 'project',
@@ -152,7 +152,7 @@ const missingGuidanceRecipe: Recipe = {
   troubleshooting: [],
 }
 
-describe('validateRecipe — clean fixture', () => {
+describe('validateRecipe: clean fixture', () => {
   it('returns an empty array in publish mode', () => {
     expect(validateRecipe(cleanRecipe, inventory, 'publish')).toEqual([])
   })
@@ -162,7 +162,7 @@ describe('validateRecipe — clean fixture', () => {
   })
 })
 
-describe('validateRecipe — check #1 pin-duplicate', () => {
+describe('validateRecipe: check #1 pin-duplicate', () => {
   it('flags as error in publish mode', () => {
     const issues = validateRecipe(pinDuplicateRecipe, inventory, 'publish')
     expect(issues).toHaveLength(1)
@@ -178,7 +178,7 @@ describe('validateRecipe — check #1 pin-duplicate', () => {
   })
 })
 
-describe('validateRecipe — check #2 i2c-address-conflict', () => {
+describe('validateRecipe: check #2 i2c-address-conflict', () => {
   it('flags as error in publish mode', () => {
     const issues = validateRecipe(i2cAddressConflictRecipe, inventory, 'publish')
     expect(issues).toHaveLength(1)
@@ -194,7 +194,7 @@ describe('validateRecipe — check #2 i2c-address-conflict', () => {
   })
 })
 
-describe('validateRecipe — check #3 nonexistent-pin', () => {
+describe('validateRecipe: check #3 nonexistent-pin', () => {
   it('flags as error in publish mode', () => {
     const issues = validateRecipe(nonexistentPinRecipe, inventory, 'publish')
     expect(issues).toHaveLength(1)
@@ -210,7 +210,7 @@ describe('validateRecipe — check #3 nonexistent-pin', () => {
   })
 })
 
-describe('validateRecipe — check #4 unowned-component', () => {
+describe('validateRecipe: check #4 unowned-component', () => {
   it('flags as error in publish mode', () => {
     const issues = validateRecipe(unownedComponentRecipe, inventory, 'publish')
     expect(issues).toHaveLength(1)
@@ -226,7 +226,7 @@ describe('validateRecipe — check #4 unowned-component', () => {
   })
 })
 
-describe('validateRecipe — check #5 wiring-empty (publish-mode only)', () => {
+describe('validateRecipe: check #5 wiring-empty (publish-mode only)', () => {
   it('flags as error in publish mode', () => {
     const issues = validateRecipe(wiringEmptyRecipe, inventory, 'publish')
     expect(issues).toHaveLength(1)
@@ -234,13 +234,13 @@ describe('validateRecipe — check #5 wiring-empty (publish-mode only)', () => {
     expect(issues[0].severity).toBe('error')
   })
 
-  it('is silent in draft mode — a draft is allowed an empty/incomplete wiring[] by design', () => {
+  it('is silent in draft mode: a draft is allowed an empty/incomplete wiring[] by design', () => {
     const issues = validateRecipe(wiringEmptyRecipe, inventory, 'draft')
     expect(issues).toEqual([])
   })
 })
 
-describe('validateRecipe — check #6 duplicate-focus-rect', () => {
+describe('validateRecipe: check #6 duplicate-focus-rect', () => {
   it('flags as error in publish mode', () => {
     const issues = validateRecipe(duplicateFocusRectRecipe, inventory, 'publish')
     expect(issues).toHaveLength(1)
@@ -256,7 +256,7 @@ describe('validateRecipe — check #6 duplicate-focus-rect', () => {
   })
 })
 
-describe('validateRecipe — check #6 focus-out-of-bounds (F4)', () => {
+describe('validateRecipe: check #6 focus-out-of-bounds (F4)', () => {
   const outOfBoundsRecipe: Recipe = {
     ...cleanRecipe,
     id: 'focus-out-of-bounds-fixture',
@@ -310,7 +310,7 @@ describe('validateRecipe — check #6 focus-out-of-bounds (F4)', () => {
   })
 })
 
-describe('validateRecipe — check #7 manifest-wiring-mismatch', () => {
+describe('validateRecipe: check #7 manifest-wiring-mismatch', () => {
   it('flags as error in publish mode (both directions)', () => {
     const issues = validateRecipe(manifestWiringMismatchRecipe, inventory, 'publish')
     expect(issues.length).toBeGreaterThan(0)
@@ -326,7 +326,7 @@ describe('validateRecipe — check #7 manifest-wiring-mismatch', () => {
   })
 })
 
-describe('validateRecipe — check #8 external-power-missing', () => {
+describe('validateRecipe: check #8 external-power-missing', () => {
   it('flags as error in publish mode', () => {
     const issues = validateRecipe(externalPowerMissingRecipe, inventory, 'publish')
     expect(issues).toHaveLength(1)
@@ -342,7 +342,7 @@ describe('validateRecipe — check #8 external-power-missing', () => {
   })
 })
 
-describe('validateRecipe — check #9 tunable-anchor-unresolved', () => {
+describe('validateRecipe: check #9 tunable-anchor-unresolved', () => {
   it('flags as error in publish mode', () => {
     const issues = validateRecipe(tunableAnchorUnresolvedRecipe, inventory, 'publish')
     expect(issues).toHaveLength(1)
@@ -358,7 +358,7 @@ describe('validateRecipe — check #9 tunable-anchor-unresolved', () => {
   })
 })
 
-describe('validateRecipe — check #10 baud-mismatch', () => {
+describe('validateRecipe: check #10 baud-mismatch', () => {
   it('flags as error in publish mode', () => {
     const issues = validateRecipe(baudMismatchRecipe, inventory, 'publish')
     expect(issues).toHaveLength(1)
@@ -374,7 +374,7 @@ describe('validateRecipe — check #10 baud-mismatch', () => {
   })
 })
 
-describe('validateRecipe — check #11 missing-guidance (publish-mode only)', () => {
+describe('validateRecipe: check #11 missing-guidance (publish-mode only)', () => {
   it('flags as error in publish mode (both applicationGuide and troubleshooting)', () => {
     const issues = validateRecipe(missingGuidanceRecipe, inventory, 'publish')
     expect(issues).toHaveLength(2)
@@ -382,7 +382,7 @@ describe('validateRecipe — check #11 missing-guidance (publish-mode only)', ()
     expect(issues.every((i) => i.severity === 'error')).toBe(true)
   })
 
-  it('is silent in draft mode — a draft is allowed to lack guidance text by design', () => {
+  it('is silent in draft mode: a draft is allowed to lack guidance text by design', () => {
     const issues = validateRecipe(missingGuidanceRecipe, inventory, 'draft')
     expect(issues).toEqual([])
   })
@@ -392,7 +392,7 @@ describe('validateRecipe — check #11 missing-guidance (publish-mode only)', ()
 // Added because the existing per-check fixtures above happened not to exercise
 // any of these four bugs, so a passing suite gave false confidence.
 
-describe('F1 — a @pin manifest entry naming a power rail is always flagged', () => {
+describe('F1: a @pin manifest entry naming a power rail is always flagged', () => {
   const powerPinManifestRecipe: Recipe = {
     ...cleanRecipe,
     id: 'f1-power-pin-manifest-fixture',
@@ -402,7 +402,7 @@ describe('F1 — a @pin manifest entry naming a power rail is always flagged', (
       { from: 'LED.ANODE', to: 'UNO.D9', color: 'red', focus: { x: 0, y: 0, w: 10, h: 10 }, text: 'LED를 D9에 연결하세요' },
     ],
     // @pin PWR=5V is the bug: manifest pins must name functionally-significant
-    // code pins only, never a power rail — this used to pass silently.
+    // code pins only, never a power rail: this used to pass silently.
     sketch: '// @pin OUT=D9\n// @pin PWR=5V\n// @baud 9600\nvoid setup() {}\nvoid loop() {}',
   }
 
@@ -412,7 +412,7 @@ describe('F1 — a @pin manifest entry naming a power rail is always flagged', (
   })
 })
 
-describe('F2 — I2C conflict is generalized to addressing.maxOnBus, not just mode==="fixed"', () => {
+describe('F2: I2C conflict is generalized to addressing.maxOnBus, not just mode==="fixed"', () => {
   it('flags a strapped sensor (INA219, maxOnBus 4) wired a 5th time with no mux present', () => {
     const overWiredStrapped: Recipe = {
       ...cleanRecipe,
@@ -432,7 +432,7 @@ describe('F2 — I2C conflict is generalized to addressing.maxOnBus, not just mo
     expect(issues.some((i) => i.code === 'i2c-address-conflict')).toBe(true)
   })
 
-  it('does NOT flag the same strapped sensor wired only up to its maxOnBus (4)', () => {
+  it('does not flag the same strapped sensor wired only up to its maxOnBus (4)', () => {
     const withinBudget: Recipe = {
       ...cleanRecipe,
       id: 'f2-strapped-within-budget-fixture',
@@ -452,7 +452,7 @@ describe('F2 — I2C conflict is generalized to addressing.maxOnBus, not just mo
   })
 })
 
-describe('F3 — the multiplexer escape hatch is data-driven (Sensor.muxChannels), not a hardcoded id', () => {
+describe('F3: the multiplexer escape hatch is data-driven (Sensor.muxChannels), not a hardcoded id', () => {
   it('a non-"tca9548a" sensor with muxChannels > 0 also resolves an address conflict', () => {
     const genericMux = {
       id: 'generic-mux',
@@ -496,7 +496,7 @@ describe('F3 — the multiplexer escape hatch is data-driven (Sensor.muxChannels
   })
 })
 
-describe('F6 — external-power-required counts sensor draw, not just actuator draw', () => {
+describe('F6: external-power-required counts sensor draw, not just actuator draw', () => {
   it('fires when sensors alone (no actuators) cross 400mA total', () => {
     const heavySensor = {
       id: 'heavy-sensor',

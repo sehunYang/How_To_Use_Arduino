@@ -2,7 +2,7 @@
  * L2 compile gate (A3.2): compiles a sketch for the Uno with arduino-cli and
  * turns its reported memory usage into a severity the review UI can act on.
  *
- * Requires the project-local toolchain — run `npm run setup:arduino-cli` once.
+ * Requires the project-local toolchain: run `npm run setup:arduino-cli` once.
  */
 import { spawn } from 'node:child_process'
 import { mkdirSync, writeFileSync, rmSync } from 'node:fs'
@@ -29,7 +29,7 @@ export interface CompileResult {
 /**
  * arduino-cli reports every section with both its used and its maximum size,
  * so the Uno's limits (32256 B flash after the bootloader, 2048 B SRAM) never
- * have to be hardcoded here — they come from the board definition itself.
+ * have to be hardcoded here: they come from the board definition itself.
  * `text` is the flash section; `data` is the statically allocated SRAM.
  */
 interface SectionSize {
@@ -104,7 +104,7 @@ export async function compileSketch(sketchPath: string): Promise<CompileResult> 
 
   let run = await runArduinoCli(sketchDir)
   // A sketch that genuinely fails to build still prints a JSON body with
-  // `success: false`, so empty stdout never means "the code is wrong" — it
+  // `success: false`, so empty stdout never means "the code is wrong"; it
   // means the process never got far enough to report. Spawning many builds
   // back to back against a cold cache makes that happen transiently, and it
   // used to surface as an error indistinguishable from a real build failure.

@@ -40,7 +40,7 @@ describe('sensor learning flow', () => {
     renderRoute('/sensors/mpu6050')
     expect(screen.getByRole('heading', { name: 'MPU6050' })).toBeInTheDocument()
     expect(screen.getByText(/I2C 16비트 축별 값/)).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: '구체적인 스펙' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: '스펙' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: '추천 실험' })).toBeInTheDocument()
     expect(screen.queryByText('Wokwi 상태')).not.toBeInTheDocument()
     expect(screen.getByText('단진자의 주기 측정')).toBeInTheDocument()

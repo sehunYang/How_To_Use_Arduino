@@ -50,7 +50,7 @@ describe('inquiry workbook experiment plans', () => {
   })
 
   // ph06(용수철 진동)은 여기서 뺐습니다: 진동 파형을 기록하는 실험이라 조건표가
-  // 아니라 과도 기록 계획(transient)을 받아야 합니다 — 조건표를 주면 1초 간격
+  // 아니라 과도 기록 계획(transient)을 받아야 합니다. 조건표를 주면 1초 간격
   // 표집 지시가 0.9초 주기와 모순됩니다(레시피 검증에서 확인된 결함).
   it('keeps structured conditions and repeats for condition comparisons', () => {
     for (const id of ['ph02-newton-second-law', 'ph17-ohms-law', 'ph24-solenoid-current-field']) {
@@ -257,7 +257,7 @@ describe('rendered guide structure', () => {
 
   it('lists the controlled variables one per line instead of packing them into a cell', () => {
     for (const entry of allRecipes) {
-      expect(entry.body, entry.id).toContain('**통제 변인 — 끝까지 같게 유지할 것**')
+      expect(entry.body, entry.id).toContain('**통제 변인(끝까지 같게 유지할 것)**')
       expect(entry.body, entry.id).not.toMatch(/통제 변인[^\n]*\|\s*1\)/)
     }
   })
@@ -276,7 +276,7 @@ describe('rendered guide structure', () => {
       const steps = [...section.matchAll(/^\d+\. \[ \] (.+)$/gm)].map((match) => match[1])
       const designed = inquiryPlans[entry.id].analysis
       // 설계가 쓴 단계 뒤에 붙는 것이 레시피 원문에서 온 문장입니다. 설계 단계
-      // 끼리는 서로 닮아도 됩니다 — "점등 시간"과 "불필요한 점등 시간"처럼
+      // 끼리는 서로 닮아도 됩니다. "점등 시간"과 "불필요한 점등 시간"처럼
       // 말이 겹칠 뿐 실제로 다른 계산인 경우가 있습니다.
       for (const carried of steps.slice(designed.length)) {
         for (const step of designed) {

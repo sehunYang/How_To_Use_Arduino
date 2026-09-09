@@ -41,10 +41,10 @@ for (const item of cases) {
   const result = convertSerialTextToCsv(item.text)
   console.log(`\n==== ${item.name}`)
   if (!result.ok) {
-    console.log(`  ❌ ${result.error}`)
+    console.log(`  실패: ${result.error}`)
     continue
   }
   const numeric = collectNumericColumns(result.header, result.rows)
-  console.log(`  ✅ ${result.dataRowCount}행 · 제외 ${result.excludedRows.length}행 · 숫자 열 ${numeric.map((column) => `${column.name}(${column.numericCount})`).join(', ')}`)
+  console.log(`  통과: ${result.dataRowCount}행 · 제외 ${result.excludedRows.length}행 · 숫자 열 ${numeric.map((column) => `${column.name}(${column.numericCount})`).join(', ')}`)
   for (const row of result.excludedRows) console.log(`     제외 ${row.lineNumber}번째 줄: ${row.reason}`)
 }

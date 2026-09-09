@@ -57,7 +57,7 @@ function makeRecipe(overrides: Partial<Recipe>): Recipe {
   }
 }
 
-describe('validateCorpus — violations present', () => {
+describe('validateCorpus: violations present', () => {
   // r1: published sensor-example using sensor-a in 물리
   // r2: published project using sensor-b in 물리 (no sensor-example for sensor-b)
   // r3: DRAFT project using sensor-a in 화학·환경 (still "reachable" per 9c, but not counted for 9a's published-only distribution)
@@ -95,7 +95,7 @@ describe('validateCorpus — violations present', () => {
   })
 })
 
-describe('validateCorpus — fully satisfied corpus', () => {
+describe('validateCorpus: fully satisfied corpus', () => {
   const recipes: Recipe[] = [
     makeRecipe({ id: 'r1', type: 'sensor-example', subject: '물리', sensors: ['sensor-a'], status: 'published' }),
     makeRecipe({ id: 'r2', type: 'sensor-example', subject: '물리', sensors: ['sensor-b'], status: 'published' }),

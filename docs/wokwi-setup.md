@@ -64,9 +64,9 @@ npm run build:wokwi
 npm run build:wokwi:chips
 ```
 
-## 4. 자동화 시나리오 — 프로젝트 3개
+## 4. 자동화 시나리오: 프로젝트 3개
 
-레시피 회로와 칩 검증 리그는 **분리된 Wokwi 프로젝트**입니다. 레시피의 `diagram.json`은
+레시피 회로와 칩 검증 리그는 분리된 Wokwi 프로젝트입니다. 레시피의 `diagram.json`은
 `recipe.wiring[]`이 선언한 회로와 정확히 일치해야 하므로(`src/wokwi/netlist.ts` 게이트),
 레시피가 쓰지도 않는 조도계·전류계를 회로에 끼워 넣을 수 없기 때문입니다.
 
@@ -74,7 +74,7 @@ npm run build:wokwi:chips
 
 - [x] `wokwi/pendulum.test.yaml`
 - [x] MPU6050이 연결되어 `MPU6050_OK`를 출력하는지 확인합니다.
-- [x] 회로는 MPU6050 4선을 Uno에 직결 — 레시피 배선 스텝과 동일합니다.
+- [x] 회로는 MPU6050 4선을 Uno에 직결한 것으로, 레시피 배선 스텝과 동일합니다.
 
 ```powershell
 wokwi-cli . --scenario wokwi/pendulum.test.yaml --timeout 10000
@@ -91,7 +91,7 @@ wokwi-cli . --scenario wokwi/pendulum.test.yaml --timeout 10000
 
 이 프로젝트는 자기완결형입니다. `wokwi.toml`의 모든 경로가 프로젝트 루트 기준으로
 해석되므로 `npm run build:wokwi`가 펌웨어와 칩 WASM을 디렉터리 안으로 복사합니다.
-따라서 **`npm run build:wokwi:chips`를 `npm run build:wokwi`보다 먼저** 실행해야
+`npm run build:wokwi:chips`를 `npm run build:wokwi`보다 먼저 실행해야
 방금 빌드한 WASM이 리그에 반영됩니다.
 
 ```powershell
@@ -141,7 +141,7 @@ wokwi-cli wokwi/ina219-current --scenario scenario.test.yaml --timeout 10000
 
 계획 2.4는 "대표 시나리오 1건 실측 → 예산 산출"을 요구합니다. 아래는 가정이 아니라
 run `30281813853`의 `Starting simulation...`부터 `Scenario completed successfully`
-까지 로그 타임스탬프에서 읽은 **실측치**입니다.
+까지 로그 타임스탬프에서 읽은 실측치입니다.
 
 | 시나리오 | 실측 시뮬레이션 시간 |
 | --- | ---: |
@@ -153,9 +153,9 @@ run `30281813853`의 `Starting simulation...`부터 `Scenario completed successf
 | 항목 | 실측 기반 | 타임아웃 최악 |
 | --- | ---: | ---: |
 | 실행 1회 | 1.1초 | 30초 (10초 × 3 시나리오) |
-| 40분 목표 내 가능 실행 수 | **약 2,181회/월** | 80회/월 |
+| 40분 목표 내 가능 실행 수 | 약 2,181회/월 | 80회/월 |
 
-- [x] **시나리오당 벽시계 20초 상한**(계획 제약)을 만족합니다 — 타임아웃은 시나리오당 10초로
+- [x] 시나리오당 벽시계 20초 상한(계획 제약)을 만족합니다. 타임아웃은 시나리오당 10초로
       설정되어 있고 실측은 1초 미만입니다.
 - [x] 실측 기준 월 사용량이 40분 목표에 도달하려면 월 약 2,181회를 실행해야 하므로,
       현재 트리거(PR + 수동)로는 예산 초과가 사실상 불가능합니다.
@@ -172,7 +172,5 @@ run `30281813853`의 `Starting simulation...`부터 `Scenario completed successf
 - [x] INA219/TSL2591 커스텀 칩 패키징 완료
 - [x] 자동화 시나리오 3종 중 신규 INA219 레시피의 원격 실행 확인
 - [x] 실제 GitHub Actions에서 세 L3 모두 성공
-- [x] PL5 월간 사용량을 **실측 기반으로** 산출하고 40분 이하임을 확인
+- [x] PL5 월간 사용량을 실측 기반으로 산출하고 40분 이하임을 확인
 - [x] 레시피 회로가 `recipe.wiring[]`과 일치함을 넷리스트 게이트가 강제
-
-신규 INA219 레시피 시나리오의 첫 원격 성공과 실측 갱신을 완료했습니다.

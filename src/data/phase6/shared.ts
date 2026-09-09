@@ -29,7 +29,7 @@ export interface Phase6RecipeDefinition {
 
 /**
  * The two `Wire.read()` calls inside a single `(a << 8) | b` expression are
- * unsequenced in C++ — the compiler may run either side first, which silently
+ * unsequenced in C++: the compiler may run either side first, which silently
  * swaps the bytes of every 16-bit register read. Every I2C word read below is
  * therefore split into separate statements, whose order the language does
  * define. Same reason `oneWireDriver` reads its two bytes on separate lines.
@@ -139,7 +139,7 @@ function defaultConnections(definition: Phase6RecipeDefinition): Connection[] {
       if (base === 'MPU6050' && token.endsWith('_2')) {
         // AD0 is a 3.3V logic input wired straight to the MPU6050 die on the
         // GY-521 breakout (no level shifter), so the HIGH strap must come from
-        // the Uno's 3.3V pin — 5V exceeds the chip's absolute maximum rating.
+        // the Uno's 3.3V pin: 5V exceeds the chip's absolute maximum rating.
         connections.push({ from: `${token}.AD0`, to: 'UNO.3.3V', color: 'orange', text: `${token} AD0를 UNO 3.3V 핀에 연결해 I2C 주소를 0x69로 설정하세요. 5V 레일에 연결하면 센서가 손상될 수 있습니다.` })
       } else if (base === 'MPU6050' && (token === 'MPU6050_1' || token === 'MPU6050')) {
         // 단독 MPU6050도 AD0를 GND에 묶어 코드가 가정하는 0x68 주소를 보드
@@ -191,7 +191,7 @@ function defaultConnections(definition: Phase6RecipeDefinition): Connection[] {
   if (firstDs18b20) {
     connections.push(
       { from: `${firstDs18b20}.DATA`, to: 'RESISTOR_4700.1', color: 'green', text: `${firstDs18b20} DATA와 신호선을 기본 HIGH 상태로 유지하는 4.7 kΩ 저항 1번 단자를 같은 브레드보드 열에 연결하세요.` },
-      { from: 'RESISTOR_4700.2', to: 'UNO.5V', color: 'red', text: '신호선을 기본 HIGH 상태로 유지하는 4.7 kΩ 저항 2번 단자를 브레드보드 + 전원 레일에 연결하세요.' },
+      { from: 'RESISTOR_4700.2', to: 'UNO.5V', color: 'red', text: '4.7 kΩ 저항 2번 단자를 브레드보드 + 전원 레일에 연결하세요.' },
     )
   }
   return connections
@@ -392,10 +392,10 @@ export function createPhase6Recipe(definition: Phase6RecipeDefinition): Recipe {
   // supply its own wording rather than inherit the interval default.
   const tunable = definition.tunable ?? {
     name: '측정 간격 (ms)',
-    hint: '가장 빠른 변화가 최소 10개 이상의 표본으로 보이도록 조절하세요.',
+    hint: '가장 빠른 변화가 10개 이상의 표본으로 보이도록 조절하세요.',
   }
   // recipe.baudRate and the sketch's `@baud` are cross-checked by L1, so the
-  // rate is read from the sketch instead of being pinned to 9600 here — that
+  // rate is read from the sketch instead of being pinned to 9600 here: that
   // is what lets a high-rate recipe raise it without failing validation.
   const baudRate = Number(/\/\/ @baud\s+(\d+)/.exec(sketch)?.[1] ?? 9600)
   return {

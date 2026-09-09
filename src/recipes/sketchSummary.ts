@@ -48,12 +48,12 @@ function describeInterval(ms: number): string {
 
 export function sketchSummary(recipe: Pick<Recipe, 'sketch' | 'baudRate' | 'tunables'>): string[] {
   const lines = [
-    `**켜질 때 한 번** — \`setup()\` 안의 줄들이 실행됩니다. 시리얼 통신을 ${recipe.baudRate} baud로 열고 센서를 쓸 수 있게 준비합니다.`,
+    `**켜질 때 한 번**: \`setup()\` 안의 줄들이 실행됩니다. 시리얼 통신을 ${recipe.baudRate} baud로 열고 센서를 준비합니다.`,
   ]
 
   const interval = loopIntervalMs(recipe.sketch)
   lines.push(
-    `**그 뒤로 계속 되풀이** — \`loop()\` 안의 줄들이 전원을 뽑을 때까지 반복됩니다.${
+    `**그 뒤로 계속 되풀이**: \`loop()\` 안의 줄들이 전원을 뽑을 때까지 반복됩니다.${
       interval === null ? '' : ` 한 바퀴에 ${describeInterval(interval)} 값을 읽습니다.`
     }`,
   )
@@ -61,13 +61,13 @@ export function sketchSummary(recipe: Pick<Recipe, 'sketch' | 'baudRate' | 'tuna
   const header = findCsvHeader(recipe.sketch)
   if (header) {
     lines.push(
-      `**읽은 값은 한 줄씩 찍습니다** — 쉼표로 이어 \`${header}\` 차례로 나옵니다. 이 모양 그대로 데이터 화면에 붙여 넣으면 됩니다.`,
+      `**읽은 값은 한 줄씩 찍습니다.** 쉼표로 이어 \`${header}\` 차례로 나옵니다. 데이터 화면에 그대로 붙여 넣으면 됩니다.`,
     )
   }
 
   if (recipe.tunables.length > 0) {
     lines.push(
-      `**노란 줄 ${recipe.tunables.length}곳만 바꾸세요** — 탐구하면서 바꿔 볼 값이라 표시해 둔 자리입니다. 나머지 줄은 그대로 두는 편이 안전합니다.`,
+      `**노란 줄 ${recipe.tunables.length}곳만 바꾸세요.** 탐구하면서 바꿔 볼 값이라 표시해 둔 자리입니다. 나머지 줄은 그대로 두세요.`,
     )
   }
 

@@ -6,7 +6,7 @@
  * Downloads a pinned arduino-cli release into `.tools/arduino-cli`, then
  * installs the `arduino:avr` core and the libraries the canary sketches
  * include. Everything lands under `.tools/` (gitignored) rather than in a
- * system-wide location — see src/verification/arduinoCli.ts.
+ * system-wide location: see src/verification/arduinoCli.ts.
  *
  * The npm package `arduino-cli` was evaluated and rejected: it was last
  * published in 2021 (wrapping a 0.x CLI, far behind the 1.x JSON output this
@@ -99,7 +99,7 @@ async function downloadBinary(): Promise<void> {
 
 async function main(): Promise<void> {
   if (isArduinoCliInstalled()) {
-    console.log(`arduino-cli already present at ${arduinoCliBin} — skipping download.`)
+    console.log(`arduino-cli already present at ${arduinoCliBin}; skipping download.`)
   } else {
     await downloadBinary()
     if (!existsSync(arduinoCliBin)) {

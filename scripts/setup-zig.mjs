@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Fetches the L5 host C++ compiler into node_modules/.zig — no system-wide install.
+// Fetches the L5 host C++ compiler into node_modules/.zig: no system-wide install.
 //
 // Zig bundles clang as `zig c++`, so this single download gives the logic/ harness a
 // hermetic host compiler with no admin rights and nothing outside node_modules.

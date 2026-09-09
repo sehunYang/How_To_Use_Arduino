@@ -183,7 +183,7 @@ function conceptList(plan: InquiryPlan): string {
       const concept = conceptById(id)
       const symbol = concept.symbol ? ` ${concept.symbol}` : ''
       const unit = concept.unit ? ` (단위 ${concept.unit})` : ''
-      return `- **${concept.term}${symbol}${unit}** — ${concept.plain} ${concept.everyday}`
+      return `- **${concept.term}${symbol}${unit}**: ${concept.plain} ${concept.everyday}`
     })
     .join('\n')
 }
@@ -265,10 +265,10 @@ function variableSection(plan: InquiryPlan): Section {
     title: '변인 설계',
     body: `| 구분 | 이 탐구에서는 |
 |:---|:---|
-| 독립 변인 — 내가 단계적으로 바꾸는 것 | ${plan.variables.independent} |
-| 종속 변인 — 센서가 재는 것 | ${plan.variables.dependent} |
+| 독립 변인(내가 단계적으로 바꾸는 것) | ${plan.variables.independent} |
+| 종속 변인(센서가 재는 것) | ${plan.variables.dependent} |
 
-**통제 변인 — 끝까지 같게 유지할 것**
+**통제 변인(끝까지 같게 유지할 것)**
 
 ${controls}`,
   }
@@ -413,7 +413,7 @@ function analysisSection(plan: InquiryPlan, authored: AuthoredBody): Section {
   if (!steps.length) return null
   return {
     title: '데이터 처리와 그래프',
-    body: `저장한 CSV를 열어 순서대로 계산하세요. 원시값을 남겨 두었으므로 중간에 방법을 바꿔도 다시 측정하지 않아도 됩니다.
+    body: `저장한 CSV를 열어 순서대로 계산하세요. 원시값을 남겨 두었으므로 방법을 바꿔도 다시 측정하지 않아도 됩니다.
 
 ${checklist(steps)}`,
   }
@@ -437,9 +437,9 @@ ${rows}`,
 function extensionSection(plan: InquiryPlan): Section {
   return {
     title: '더 나아가기',
-    body: `1. **바로 해보기 —** ${plan.extensions.immediate}
-2. **조건 넓히기 —** ${plan.extensions.broaden}
-3. **다른 탐구로 —** ${plan.extensions.connect}`,
+    body: `1. **바로 해보기**: ${plan.extensions.immediate}
+2. **조건 넓히기**: ${plan.extensions.broaden}
+3. **다른 탐구로**: ${plan.extensions.connect}`,
   }
 }
 
@@ -498,7 +498,7 @@ function transientWorkbook(recipe: Recipe) {
 | 시간 정보 | 모든 행에 발생 시각 기록 |
 
 1. [ ] 장치를 정지 상태로 두고 2초 이상 기준 신호를 기록한 뒤 한 번의 운동 또는 변화를 시작합니다.
-2. [ ] 변화가 완전히 끝난 뒤까지 동일한 간격으로 원시 CSV를 연속 저장합니다.
+2. [ ] 변화가 끝난 뒤까지 동일한 간격으로 원시 CSV를 연속 저장합니다.
 3. [ ] 장치를 같은 시작 상태로 되돌린 뒤 총 ${repetitions}회의 독립 시행을 기록합니다.
 4. [ ] 주기, 봉우리, 적분값, 시간상수 또는 에너지는 스케치에서 미리 확정하지 말고 저장한 CSV를 후처리하여 구합니다.`
 }
@@ -537,7 +537,7 @@ function comparisonWorkbook(recipe: Recipe, plan: InquiryPlan | undefined) {
   ]
 
   const record = curve
-    ? `조건을 시작한 순간부터 ${intervalSeconds}초 간격으로 끊지 말고 저장하고, 값이 더 이상 변하지 않거나 정해 둔 관찰 시간이 끝나면 멈춥니다. 조건마다 걸린 시간이 서로 달라도 그대로 둡니다.`
+    ? `조건을 시작한 순간부터 ${intervalSeconds}초 간격으로 끊지 말고 저장하고, 값이 더 이상 변하지 않거나 정해 둔 관찰 시간이 끝나면 멈춥니다.`
     : `조건을 바꾼 뒤 ${settlingSeconds}초 기다려 값이 안정되면 ${intervalSeconds}초 간격으로 ${samples}개를 저장합니다.`
 
   // 규칙은 표에 실제로 있는 칸만 이야기해야 합니다. 표에 없는 "기다리는 시간"을

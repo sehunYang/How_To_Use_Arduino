@@ -268,7 +268,7 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <PartsGroup title="어떤 레시피든 필요한 것" lines={parts.always} />
           <PartsGroup title="이 레시피에서 쓰는 부품" lines={parts.specific} />
-          <PartsGroup title="점퍼선" lines={parts.wires} note="양쪽이 모두 뾰족한 것이 수-수(MM), 한쪽이 구멍인 것이 수-암(MF)입니다." />
+          <PartsGroup title="점퍼선" lines={parts.wires} note="양쪽이 뾰족한 것이 수-수(MM), 한쪽이 구멍인 것이 수-암(MF)입니다." />
         </div>
       </section>
 
@@ -284,7 +284,7 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
             어떤 구멍이 서로 이어져 있는지를 알아야 하므로 단계보다 먼저 둡니다. */}
         <details className="mt-4 max-w-3xl rounded-card border border-border p-4">
           <summary className="cursor-pointer font-semibold">
-            브레드보드가 처음이라면 — 어떤 구멍이 서로 이어져 있나
+            브레드보드가 처음이라면: 어떤 구멍이 서로 이어져 있나
           </summary>
           <BreadboardMap />
           <ul className="mt-3 space-y-3">
@@ -390,7 +390,7 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
         {/* 두 번째 레시피부터는 이미 아는 내용이라 늘 펼쳐 두면 코드가 화면 밖으로
             밀려납니다. 접어 두되 요약 줄만 읽고도 열지 말지 고를 수 있게 합니다. */}
         <details className="mt-4 max-w-3xl rounded-card border border-border p-4">
-          <summary className="cursor-pointer font-semibold">아두이노가 처음이라면 — IDE 설치부터 시리얼 모니터 열기까지</summary>
+          <summary className="cursor-pointer font-semibold">아두이노가 처음이라면: IDE 설치부터 시리얼 모니터 열기까지</summary>
           <ol className="mt-3 space-y-3">
             {steps.map((step, index) => (
               <li key={step.title} className="grid grid-cols-[1.75rem_minmax(0,1fr)]">
@@ -414,7 +414,7 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
         {libraries.install.length > 0 && (
           <details className="mt-4 max-w-3xl rounded-card border border-border p-4">
             <summary className="cursor-pointer font-semibold">
-              필요한 라이브러리 {libraries.install.length}개 — {libraries.install.map((library) => library.search).join(', ')}
+              필요한 라이브러리 {libraries.install.length}개: {libraries.install.map((library) => library.search).join(', ')}
             </summary>
             <ul className="mt-3 space-y-3">
               {libraries.install.map((library) => (
@@ -428,7 +428,7 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
             </ul>
             {libraries.builtin.length > 0 && (
               <p className="mt-3 text-caption text-muted">
-                아두이노 IDE에 이미 들어 있어 설치하지 않아도 되는 것: <code>{libraries.builtin.join(', ')}</code>
+                아두이노 IDE에 들어 있어 설치하지 않아도 되는 것: <code>{libraries.builtin.join(', ')}</code>
               </p>
             )}
           </details>
@@ -488,7 +488,7 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
       <section className="prose mt-12 max-w-3xl" aria-labelledby="guide-title"><h2 id="guide-title" className="text-2xl font-semibold">4. 탐구 가이드</h2><SafeMarkdown source={recipe.body} checklistScope={`guide:${recipe.id}`} /></section>
       <section className="mt-12 max-w-3xl" aria-labelledby="record-title">
         <h2 id="record-title" className="text-2xl font-semibold">5. 측정값 저장하고 분석하기</h2>
-        <p className="mt-3">시리얼 모니터에 쌓인 글을 <strong>열 이름이 적힌 첫 줄부터 끝까지</strong> 끌어서 복사한 뒤, 데이터 화면에 붙여 넣으세요. CSV 저장, 요약 통계, 그래프까지 같은 자리에서 이어집니다.</p>
+        <p className="mt-3">시리얼 모니터에 쌓인 글을 <strong>열 이름이 적힌 첫 줄부터 끝까지</strong> 끌어서 복사한 뒤, 데이터 화면에 붙여 넣으세요.</p>
         <Link className="mt-4 inline-block text-accent hover:underline" to="/data-analysis">데이터 변환·분석 화면 열기 →</Link>
       </section>
       <section className="mt-12 max-w-3xl" aria-labelledby="application-title"><h2 id="application-title" className="text-2xl font-semibold">응용해 보기</h2><div className="mt-3 text-muted"><SafeMarkdown source={recipe.applicationGuide} /></div></section>
@@ -534,7 +534,7 @@ function PowerCheckList({ checks, recipeId }: { checks: PowerCheck[]; recipeId: 
     >
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h3 id="power-check-title" className="font-semibold text-warning">
-          USB를 꽂기 전에 — 마지막 점검 {checks.length}가지
+          USB를 꽂기 전에 마지막으로 점검할 {checks.length}가지
         </h3>
         <span className="text-caption text-warning">{done}/{checks.length} 확인</span>
       </div>
@@ -582,9 +582,9 @@ function HelpCard({ recipe, checkedSteps }: { recipe: Recipe; checkedSteps: numb
 
   return (
     <div className="mt-6 rounded-card border border-border p-5">
-      <h3 className="font-semibold">그래도 안 되면 — 선생님께 보여 줄 카드</h3>
+      <h3 className="font-semibold">그래도 안 되면 선생님께 보여 줄 카드</h3>
       <p className="mt-2 text-caption text-muted">
-        아래 내용을 복사해 빈칸만 채워 보여 주면, 무엇부터 봐야 하는지 곧바로 알 수 있습니다.
+        아래 내용을 복사해 빈칸만 채워 보여 주세요.
       </p>
       <pre className="mt-3 overflow-x-auto rounded-card bg-muted-background p-4 text-caption">{text}</pre>
       <Button className="mt-3" variant="outline" onClick={() => void copy()}>

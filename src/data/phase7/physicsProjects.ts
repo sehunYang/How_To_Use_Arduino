@@ -3,7 +3,7 @@ import { mpu6050, ultrasonic } from './connections'
 import { contactTroubleshooting, createPhase7Recipe, i2cTroubleshooting } from './shared'
 
 /**
- * E 묶음 — 물리 3건.
+ * E 묶음: 물리 3건.
  *
  * 물리는 이미 49건으로 포화 상태였습니다. 그래서 여기서는 수를 늘리지 않고,
  * 기존 49건이 다루지 않은 세 가지만 넣습니다. **공기 저항이 지배하는 운동**,
@@ -148,7 +148,7 @@ export const phase7PhysicsProjects: Recipe[] = [
     connections: mpu6050(),
     sketch: dampingSketch,
     tunable: { anchor: 'samplingIntervalMs', name: '표본 간격 (ms)', hint: '한 주기에 표본이 50개는 들어가야 합니다. 20 ms에서 시작하세요.' },
-    overview: '가속도 센서를 매단 진자를 한 번 밀고 멈출 때까지 그대로 기록해, 흔들리는 폭이 줄어드는 모양과 그 속도를 구합니다.',
+    overview: '가속도 센서를 매단 진자를 한 번 밀고 멈출 때까지 기록해, 흔들리는 폭이 줄어드는 모양과 그 속도를 구합니다.',
     procedure: '추를 같은 각도에서 놓아 흔들고 진폭이 처음의 4분의 1이 될 때까지 기록을 멈추지 마세요. 추에 종이 날개를 붙인 조건과 붙이지 않은 조건에서 각각 5회씩 하세요.',
     science: '실제 진자는 공기 저항과 매단 곳의 마찰로 에너지를 잃어 진폭이 줄어듭니다. 잃는 에너지가 남아 있는 에너지에 비례하면 진폭은 시간에 대해 지수 모양으로 줄고, 로그를 취하면 직선이 됩니다. 진폭이 줄어도 주기는 거의 그대로인 것이 단진자의 특징이며, 이 탐구는 그 두 가지를 한 기록에서 함께 확인합니다.',
     safety: '흔들리는 추가 사람이나 물건에 닿지 않도록 둘레를 비우고, 센서 선이 추의 움직임에 끌려가지 않게 여유를 두세요.',

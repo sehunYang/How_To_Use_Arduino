@@ -19,7 +19,7 @@ export function firstRunSteps(hasLibraries: boolean): FirstRunStep[] {
   return [
     {
       title: '아두이노 IDE를 설치하고 엽니다',
-      detail: '코드를 보드에 넣어 주는 프로그램입니다. 학교 컴퓨터에 이미 깔려 있는 경우도 많으니 먼저 찾아보세요.',
+      detail: '코드를 보드에 넣어 주는 프로그램입니다. 학교 컴퓨터에 깔려 있는 경우도 많으니 찾아보세요.',
     },
     {
       title: 'USB 케이블로 보드를 컴퓨터에 연결합니다',

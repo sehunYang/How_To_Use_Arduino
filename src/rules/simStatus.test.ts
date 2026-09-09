@@ -11,7 +11,7 @@ import { writeSimStatus } from '@/verification/writeSimStatus'
 
 // Rule + writer-code unit tests for US-203. The `simStatus/{recipeId}` PL2
 // rule itself (allow read: if true; allow write: if isCI()) already exists
-// and is proven from the rule's own perspective in security.test.ts — this
+// and is proven from the rule's own perspective in security.test.ts; this
 // file proves the writer code path that exercises it, plus PL11 parallel
 // per-recipe-document write isolation.
 
@@ -123,7 +123,7 @@ describe('simStatus writer (US-203 / PL2 write path)', () => {
     expect(pendulumSnap.data()).toEqual(pendulumStatus)
     expect(multiSnap.data()).toEqual(multiTsl2591Status)
 
-    // Isolation means exactly two docs — neither write fanned out into extra
+    // Isolation means exactly two docs: neither write fanned out into extra
     // documents, nor did one collapse into the other's id.
     const allStatuses = await ci.firestore().collection('simStatus').get()
     expect(allStatuses.docs.map((d) => d.id).sort()).toEqual(['multi-tsl2591', 'pendulum'])

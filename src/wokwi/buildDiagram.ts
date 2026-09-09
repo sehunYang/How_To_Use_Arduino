@@ -49,7 +49,7 @@ function splitRef(ref: string): [string, string] {
  *
  * Without this the simulator rejects the endpoint as an invalid pin and drops
  * that wire, so the scenario runs against a circuit missing exactly the
- * connections the recipe is about — and still passes, because the smoke
+ * connections the recipe is about; it still passes, because the smoke
  * scenario only waits for the sketch's ready banner.
  */
 function unoWokwiPin(pin: string): string {
@@ -63,7 +63,7 @@ function unoWokwiPin(pin: string): string {
  * tokens for a second+ instance of the same sensor carry a trailing
  * `_<digits>` suffix (see multiTsl2591Recipe's `TSL2591_1`/`TSL2591_2`), so
  * an exact match is tried first and the suffix is only stripped as a
- * fallback — this avoids mis-stripping sensors whose own id genuinely ends
+ * fallback: this avoids mis-stripping sensors whose own id genuinely ends
  * in digits (e.g. "hc-sr04", "bme280"). Purely data-driven: adding a new
  * sensor to the inventory never requires a change here (A6.1/N3).
  */
@@ -269,12 +269,12 @@ interface ResolvableComponent {
  * Resolves the Wokwi attributes a part is emitted with.
  *
  * A `wokwi-resistor` with no `value` simulates as the part's own 1 kΩ default,
- * regardless of what the recipe told the student to install — so a 4.7 kΩ
+ * regardless of what the recipe told the student to install, so a 4.7 kΩ
  * pull-up and a 220 Ω current limiter would be the same component in the rig.
  *
  * A plain `RESISTOR_<n>` token already carries its resistance in ohms, so the
  * value is read straight off the token the author wrote. That reading is
- * deliberately restricted to this exact shape: `CDS_RESISTOR_1`/`CDS_RESISTOR_2`
+ * restricted to this exact shape: `CDS_RESISTOR_1`/`CDS_RESISTOR_2`
  * number the left and right dividers of a two-eye recipe, and taking "1" there
  * as one ohm would be worse than the default. Components whose value is fixed
  * regardless of recipe declare it once in the inventory (`wokwi.attrs`).
@@ -332,7 +332,7 @@ function resolvePin(
 /**
  * Resolves one `Component.Pin` wiring endpoint to the `{partId, pin}` pair it
  * denotes in Wokwi terms. Exported so the netlist checker (netlist.ts) derives
- * recipe connectivity through the exact same rule this generator uses —
+ * recipe connectivity through the exact same rule this generator uses;
  * duplicating it there would reintroduce, one layer down, the very drift the
  * netlist gate exists to prevent.
  */
@@ -365,7 +365,7 @@ export function resolveWiringRef(
   )
   if (!auxiliary) {
     // Emitting the connection anyway would produce a diagram whose endpoint
-    // references a part that was never added to parts[] — a dangling wire
+    // references a part that was never added to parts[]: a dangling wire
     // that no L1 check catches (those validate recipe.sensors[], not the
     // wiring tokens themselves).
     throw new Error(
@@ -378,7 +378,7 @@ export function resolveWiringRef(
 /**
  * Builds a Wokwi diagram.json-shaped object from a Recipe's wiring[] and the
  * owned Sensor inventory. Every part/pin decision flows from data already on
- * the Sensor record (`wokwi.part`, `wokwi.pinMap`) — there is no per-sensor
+ * the Sensor record (`wokwi.part`, `wokwi.pinMap`); there is no per-sensor
  * branching here, so registering a new sensor never requires editing this
  * file (A6.1/N3).
  *

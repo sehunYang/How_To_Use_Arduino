@@ -43,7 +43,7 @@ const LIBRARY_BY_HEADER: Record<string, Omit<SketchLibrary, 'header'>> = {
   'OneWire.h': { search: 'OneWire', note: 'Paul Stoffregen가 올린 것을 고르세요.' },
   'DallasTemperature.h': {
     search: 'DallasTemperature',
-    note: 'OneWire 라이브러리도 함께 있어야 동작합니다.',
+    note: 'OneWire 라이브러리도 있어야 동작합니다.',
   },
   'TCA9548A.h': { search: 'TCA9548A' },
   'LiquidCrystal_I2C.h': {
