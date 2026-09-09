@@ -15,7 +15,11 @@ import type { Connection } from './shared'
  *    부품은 준비물 목록에도 회로도에도 나오지 않습니다.
  */
 
-/** I2C 모듈 네 가닥. 전원 단자 이름만 모듈마다 다릅니다(BME280·TSL2591은 VIN). */
+/**
+ * I2C 모듈 네 가닥. 전원 단자 이름만 모듈마다 다릅니다(TSL2591은 VIN).
+ * 이름은 부품 목록(src/data/inventory-seed)의 핀 정의와 같아야 합니다. 다르면
+ * 배선도를 만들 때 핀을 찾지 못해 레시피 화면 전체가 열리지 않습니다.
+ */
 export function i2cModule(token: string, powerPin: string, label: string): Connection[] {
   return [
     { from: `${token}.${powerPin}`, to: 'UNO.5V', color: 'red', text: `${label}의 ${powerPin} 단자를 아두이노 5V에 연결하세요.` },
@@ -25,7 +29,7 @@ export function i2cModule(token: string, powerPin: string, label: string): Conne
   ]
 }
 
-export const bme280 = (token = 'BME280') => i2cModule(token, 'VIN', 'BME280 온습도·기압 센서')
+export const bme280 = (token = 'BME280') => i2cModule(token, 'VCC', 'BME280 온습도·기압 센서')
 export const tsl2591 = (token = 'TSL2591') => i2cModule(token, 'VIN', 'TSL2591 조도 센서')
 export const mpu6050 = (token = 'MPU6050') => i2cModule(token, 'VCC', 'MPU6050 가속도·자이로 센서')
 export const lcd1602 = () => i2cModule('LCD', 'VCC', 'LCD 뒤에 붙은 I2C 변환 보드')
