@@ -390,9 +390,13 @@ export function createPhase6Recipe(definition: Phase6RecipeDefinition): Recipe {
   // The label must describe whatever the marker actually points at, so a
   // definition that anchors something other than the sample interval has to
   // supply its own wording rather than inherit the interval default.
+  // 지금 값이 얼마인지를 함께 적습니다. 안내가 41개 레시피에서 글자까지 같으면
+  // 그 한 줄은 이 레시피에 대해 아무것도 알려 주지 않고, 얼마에서 시작해 어느
+  // 쪽으로 움직여야 하는지도 알 수 없습니다. 값은 스케치에서 그대로 읽습니다.
+  const currentValue = new RegExp(String.raw`\b${tunableAnchor}\s*=\s*(\d+)`).exec(sketch)?.[1]
   const tunable = definition.tunable ?? {
     name: '측정 간격 (ms)',
-    hint: '가장 빠른 변화가 10개 이상의 표본으로 보이도록 조절하세요.',
+    hint: `${currentValue ? `지금은 ${currentValue} ms마다 한 줄을 찍습니다. ` : ''}가장 빠른 변화가 10개 이상의 표본으로 보이도록 조절하세요.`,
   }
   // recipe.baudRate and the sketch's `@baud` are cross-checked by L1, so the
   // rate is read from the sketch instead of being pinned to 9600 here: that

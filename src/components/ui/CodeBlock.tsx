@@ -62,15 +62,32 @@ export function CodeBlock({ code, tunables = [] }: { code: string; tunables?: Tu
           })}
         </code>
       </pre>
-      {tunables.map((tunable) => (
-        <aside key={tunable.anchor} className="border-t border-border bg-warning-background p-4">
-          <strong className="text-warning">바꿔볼 값: {tunable.name}</strong>
-          <p className="mt-1 text-caption">
-            {Math.max(1, lines.findIndex((line) => line.tunableAnchor === tunable.anchor || line.text.includes(tunable.anchor)) + 1)}번 줄{' '}
-            <code>{tunable.anchor}</code> · {tunable.hint}
-          </p>
-        </aside>
-      ))}
+      {tunables.map((tunable) => {
+        const at = lines.findIndex((line) => line.tunableAnchor === tunable.anchor || line.text.includes(tunable.anchor))
+        // 되돌릴 값을 알면 코드를 통째로 다시 붙여 넣지 않아도 됩니다.
+        const original = /=\s*([^;]+);/.exec(lines[at]?.text ?? '')?.[1]?.trim()
+        return (
+          <aside key={tunable.anchor} className="border-t border-border bg-warning-background p-4">
+            <strong className="text-warning">바꿔볼 값: {tunable.name}</strong>
+            <p className="mt-1 text-caption">
+              {Math.max(1, at + 1)}번 줄 <code>{tunable.anchor}</code> · {tunable.hint}
+            </p>
+            {original && (
+              <p className="mt-1 text-caption text-muted">
+                원래 값은 <code>{original}</code>입니다. 되돌리려면 이 값을 다시 적으세요.
+              </p>
+            )}
+          </aside>
+        )
+      })}
+      {/* 값을 고쳤는데 아무 변화가 없으면 학생은 코드를 잘못 고친 줄 알고 되돌립니다.
+          바뀐 코드는 업로드해야 보드로 들어간다는 사실이 화면 어디에도 없었습니다.
+          되돌리는 길도 함께 적습니다. 원래 코드는 이 화면이 계속 들고 있습니다. */}
+      {tunables.length > 0 && (
+        <p className="border-t border-border p-4 text-caption text-muted">
+          값을 고친 뒤에는 <strong>업로드 단추를 다시 눌러야</strong> 보드가 달라집니다. 되돌리고 싶으면 위의 <strong>[코드 복사]</strong>를 다시 눌러 원래 코드를 붙여 넣으세요.
+        </p>
+      )}
       {/* 실패 안내는 눈에 보이는 문장 하나로 두고, 그 자체를 낭독하게 합니다. 화면용 문장과
           낭독용 문장을 따로 두면 같은 말을 두 번 읽습니다. */}
       {state === 'failed' && (

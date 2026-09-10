@@ -292,6 +292,14 @@ describe('처음인 학생이 멈추던 자리', () => {
     expect(screen.getByRole('img', { name: /브레드보드 연결 그림/ })).toBeInTheDocument()
   })
 
+  /** 값을 고친 뒤 업로드해야 한다는 사실이 없으면 학생은 코드를 잘못 고친 줄 압니다. */
+  it('says the changed value only reaches the board after another upload', () => {
+    renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
+
+    const note = screen.getByText(/업로드 단추를 다시 눌러야/).closest('p')!
+    expect(note).toHaveTextContent('다시 눌러 원래 코드를 붙여 넣으세요')
+  })
+
   it('fills the help card with what the screen already knows', () => {
     renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
 

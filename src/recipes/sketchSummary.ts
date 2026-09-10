@@ -67,7 +67,7 @@ export function sketchSummary(recipe: Pick<Recipe, 'sketch' | 'baudRate' | 'tuna
 
   if (recipe.tunables.length > 0) {
     lines.push(
-      `**노란 줄 ${recipe.tunables.length}곳만 바꾸세요.** 탐구하면서 바꿔 볼 값이라 표시해 둔 자리입니다. 나머지 줄은 그대로 두세요.`,
+      `**노란 줄 ${recipe.tunables.length}곳은 값만 바꿔도 안전한 자리입니다.** 탐구하면서 바꿔 볼 값이라 표시해 두었습니다. 다른 줄을 고쳐 보고 싶으면 먼저 [코드 복사]로 원래 코드를 따로 저장해 두세요.`,
     )
   }
 
