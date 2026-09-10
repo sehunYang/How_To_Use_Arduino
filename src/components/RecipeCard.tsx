@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { inquiryQuestion } from '@/data/inquiry/question'
 import type { Recipe, SearchIndexEntry } from '@/schema'
 
 type CardRecipe = Recipe | SearchIndexEntry
@@ -23,7 +24,17 @@ function timeColor(minutes: number) {
   return 'text-time-long'
 }
 
+/**
+ * 카드 한 장이 이 레시피를 무엇으로 알리는가.
+ *
+ * 이 탐구가 답하려는 질문이 있으면 그것을 씁니다. 질문은 111개가 모두 다르고
+ * 무엇을 하는 탐구인지 한 줄로 알려 줍니다. 예전에 쓰던 응용 안내는 Phase 6의
+ * 41개가 글자까지 같아, 갤러리에서 물리 레시피 41장이 똑같은 문단을 달고
+ * 늘어섰습니다. 질문이 없는 옛 색인은 예전처럼 응용 안내로 물러섭니다.
+ */
 function guideFor(recipe: CardRecipe) {
+  const question = 'applicationGuide' in recipe ? inquiryQuestion(recipe.body) : recipe.question
+  if (question) return question
   return 'applicationGuide' in recipe ? recipe.applicationGuide : recipe.applicationGuideExcerpt
 }
 

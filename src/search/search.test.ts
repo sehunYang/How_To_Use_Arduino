@@ -13,6 +13,7 @@ function stub(overrides: Partial<SearchIndexEntry> & Pick<SearchIndexEntry, 'id'
     actuators: [],
     imageUrl: 'wiring/stub.png',
     applicationGuideExcerpt: '이 레시피를 다른 탐구에 적용하는 방법입니다.',
+    question: '',
     ...overrides,
   }
 }

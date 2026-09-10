@@ -1,4 +1,5 @@
 import type { Recipe, SearchIndexEntry } from '@/schema'
+import { inquiryQuestion } from '@/data/inquiry/question'
 
 const APPLICATION_GUIDE_EXCERPT_LENGTH = 180
 
@@ -28,6 +29,7 @@ export function buildIndexEntry(recipe: Recipe): SearchIndexEntry | null {
     coreKeywords: recipe.coreKeywords,
     imageUrl: recipe.imageUrl,
     applicationGuideExcerpt: applicationGuideExcerpt(recipe.applicationGuide),
+    question: inquiryQuestion(recipe.body),
   }
 }
 

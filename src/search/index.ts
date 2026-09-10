@@ -58,7 +58,9 @@ export function search(
   if (results.length >= minResults) return results
 
   const fuse = new Fuse(index, {
-    keys: ['title', 'coreKeywords'],
+    // 탐구 질문도 함께 봅니다. 핵심 낱말만 보던 때에는 "역제곱"이나 "포화"처럼
+    // 질문에만 있는 말로 찾으면 아무것도 걸리지 않았습니다.
+    keys: ['title', 'coreKeywords', 'question'],
     threshold: 0.4,
     ignoreLocation: true,
     includeScore: true,

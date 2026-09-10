@@ -49,6 +49,7 @@ describe('mergePublishedRecipes', () => {
       coreKeywords: retained.coreKeywords,
       imageUrl: retained.imageUrl,
       applicationGuideExcerpt: retained.applicationGuide,
+      question: '',
     }]
 
     expect(applyPublishedIndex(publishedRecipes, [], index)).toEqual([retained])

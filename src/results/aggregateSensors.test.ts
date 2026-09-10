@@ -24,6 +24,7 @@ function entry(
     coreKeywords: [],
     imageUrl: `/wiring/${id}.png`,
     applicationGuideExcerpt: `${id} 응용 가이드`,
+    question: `${id}는 무엇을 재는가?`,
   }
 }
 

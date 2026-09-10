@@ -26,11 +26,15 @@ beforeEach(() => {
 afterEach(cleanup)
 
 describe('Phase 3 student flow', () => {
-  it('always shows three search results with application guidance and matched evidence', () => {
+  /**
+   * 카드가 알리는 한 줄은 이 탐구가 답하려는 질문입니다. 예전에 쓰던 응용 안내는
+   * Phase 6의 41개가 글자까지 같아 갤러리에서 레시피를 구별할 수 없었습니다.
+   */
+  it('always shows three search results with the inquiry question and matched evidence', () => {
     renderAt('/search?q=진자', <SearchResultsPage />, '/search')
     expect(screen.getAllByRole('link', { name: /레시피 보기/ })).toHaveLength(3)
     expect(screen.getByText(/#진자/)).toBeInTheDocument()
-    expect(screen.getByText(/진자의 길이를 바꿔가며/)).toBeInTheDocument()
+    expect(screen.getByText('진자가 한 번 왕복하는 시간은 무엇이 정할까?')).toBeInTheDocument()
     expect(screen.getAllByRole('link', { name: /센서 자세히 보기/ }).length).toBeGreaterThan(0)
     expect(screen.getAllByText('추천 이유').length).toBeGreaterThan(0)
   })
