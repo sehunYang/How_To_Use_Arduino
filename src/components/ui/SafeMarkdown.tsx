@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
@@ -95,12 +96,23 @@ function Markdown({ source, checklist }: { source: string; checklist?: Checklist
             </li>
           )
         },
-        a: ({ children, ...props }) => <a {...props} target="_blank" rel="noopener noreferrer">{children}</a>,
+        /**
+         * 저장소 안의 다른 레시피로 가는 링크는 라우터에게 맡깁니다. 맨 `<a>`로
+         * 두면 GitHub Pages의 프로젝트 경로(`/How_To_Use_Arduino/`)가 빠져 404가
+         * 나고, 화면 전체를 다시 내려받습니다. 바깥으로 나가는 주소만 새 탭입니다.
+         */
+        a: ({ children, href, ...props }) =>
+          typeof href === 'string' && href.startsWith('/recipes/')
+            ? <Link to={href} className="text-accent underline-offset-4 hover:underline">{children}</Link>
+            : <a {...props} href={href} target="_blank" rel="noopener noreferrer">{children}</a>,
         h2: ({ children, ...props }) => (
           <h2 {...props} className="mt-10 border-l-4 border-accent pl-4 text-2xl font-bold tracking-tight text-foreground">{children}</h2>
         ),
         h3: ({ children, ...props }) => (
           <h3 {...props} className="mt-8 text-xl font-bold text-foreground">{children}</h3>
+        ),
+        h4: ({ children, ...props }) => (
+          <h4 {...props} className="mt-6 text-lg font-semibold text-foreground">{children}</h4>
         ),
         table: ({ children, ...props }) => (
           <div className="my-5 overflow-x-auto rounded-card border border-border">

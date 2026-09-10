@@ -25,7 +25,7 @@ describe('complete Phase 5 corpus', () => {
       expect(recipe.reviewedOnDevice, recipe.id).toBeNull()
       expect(recipe.commentReviewed, recipe.id).toBeNull()
       expect(recipe.body, recipe.id).toContain('## 한눈에 보기')
-      expect(recipe.body, recipe.id).toContain('## 1. 과학 이론 쉽게 이해하기')
+      expect(recipe.body, recipe.id).toContain('### 4-1. 과학 이론 쉽게 이해하기')
       expect(recipe.body, recipe.id).toContain('실험 실행 계획')
       expect(recipe.body, recipe.id).not.toContain('## 측정 기록표')
       expect(recipe.body, recipe.id).not.toContain('## 계산과 그래프')

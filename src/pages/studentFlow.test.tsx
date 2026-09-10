@@ -292,12 +292,89 @@ describe('처음인 학생이 멈추던 자리', () => {
     expect(screen.getByRole('img', { name: /브레드보드 연결 그림/ })).toBeInTheDocument()
   })
 
+  /**
+   * 무엇을 왜 재는지가 부품·배선·코드보다 먼저 와야 합니다. 예전에는 이 표가
+   * 가이드 본문 첫머리에 있어 네 번째 절에 가서야 나왔고, 그때는 이미 부품을
+   * 챙기고 배선을 마친 뒤였습니다.
+   */
+  it('puts the inquiry question above the parts list, not four sections down', () => {
+    renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
+
+    const overview = screen.getByRole('heading', { name: '한눈에 보기' })
+    const parts = screen.getByRole('heading', { name: '1. 준비물 챙기기' })
+    expect(overview.compareDocumentPosition(parts) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(screen.getByText('이 탐구가 답하려는 질문')).toBeInTheDocument()
+  })
+
+  /** 배선을 마친 학생이 코드만 다시 보려면 스크롤 말고 길이 있어야 합니다. */
+  it('offers a way to jump between the sections', () => {
+    renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
+
+    const nav = screen.getByRole('navigation', { name: '이 레시피의 절' })
+    expect(within(nav).getByRole('link', { name: '3. 코드' })).toHaveAttribute('href', '#code-title')
+    expect(within(nav).getByRole('link', { name: '4. 탐구 가이드' })).toHaveAttribute('href', '#guide-title')
+  })
+
+  /**
+   * 배선의 `MPU6050.SDA → UNO.A4`와 코드의 A4가 같은 것을 가리킨다는 사실은
+   * 스케치의 `// @pin` 선언에 이미 있었지만 화면에 그리기 직전에 지워졌습니다.
+   * 핀을 옮기려는 학생은 어디를 함께 고쳐야 하는지 알 수 없었습니다.
+   */
+  it('shows which wiring step each pin in the sketch belongs to', () => {
+    renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
+
+    const map = screen.getByText(/배선과 코드가 이어지는 자리/).closest('details')!
+    expect(map).not.toHaveAttribute('open')
+    expect(map).toHaveTextContent('MPU6050.SDA')
+    expect(map).toHaveTextContent('배선과 코드를 함께')
+    expect(within(map).getByRole('link', { name: '3단계' })).toHaveAttribute('href', '#step-3')
+  })
+
   /** 값을 고친 뒤 업로드해야 한다는 사실이 없으면 학생은 코드를 잘못 고친 줄 압니다. */
   it('says the changed value only reaches the board after another upload', () => {
     renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
 
     const note = screen.getByText(/업로드 단추를 다시 눌러야/).closest('p')!
     expect(note).toHaveTextContent('다시 눌러 원래 코드를 붙여 넣으세요')
+  })
+
+  /**
+   * 같은 안전 문장을 배선 위와 가이드 안에서 두 번 보여 주던 것을 한 자리로
+   * 모았습니다. 읽어야 할 자리는 꽂기 전입니다.
+   */
+  it('shows the safety notice once, before the wiring starts', () => {
+    renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
+
+    expect(screen.getAllByText(/5V에 꽂으세요/)).toHaveLength(1)
+    expect(screen.queryByRole('heading', { name: /안전 점검/ })).toBeNull()
+  })
+
+  /** '응용해 보기'는 가이드의 '더 나아가기'와 같은 일을 했습니다. 사다리 쪽만 남깁니다. */
+  it('keeps one place for what to try next', () => {
+    renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
+
+    expect(screen.queryByRole('heading', { name: '응용해 보기' })).toBeNull()
+    expect(screen.getByText(/더 나아가기/)).toBeInTheDocument()
+  })
+
+  /**
+   * 스케치·업로드·시리얼 모니터·baud·라이브러리는 코드 절에서 처음 나오는 말인데
+   * 사전은 배선 절에만 있었습니다. 되돌아가지 않는 학생은 뜻을 모른 채 지나갑니다.
+   */
+  it('puts each term next to the section where it first appears', () => {
+    renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
+
+    const dictionaries = screen.getAllByText(/이 절에 나오는 말의 뜻/)
+    expect(dictionaries).toHaveLength(2)
+    const [wiring, code] = dictionaries.map((node) => node.closest('details')!)
+    expect(wiring).toHaveTextContent('SDA')
+    expect(wiring).not.toHaveTextContent('baud')
+    expect(code).toHaveTextContent('baud')
+    expect(code).toHaveTextContent('시리얼 모니터')
+
+    // 코드 절 사전은 코드 절 제목 뒤에 옵니다.
+    const codeTitle = screen.getByRole('heading', { name: '3. 코드 넣기' })
+    expect(codeTitle.compareDocumentPosition(code) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
 
   it('fills the help card with what the screen already knows', () => {

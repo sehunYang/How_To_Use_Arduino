@@ -7,7 +7,7 @@ import { concepts } from '@/data/inquiry/concepts'
 import { findCsvHeader } from '@/data/inquiry/columns'
 import { formatArduinoCode } from '@/lib/formatArduinoCode'
 import { inquiryPlans } from '@/data/inquiry/plans'
-import { RESTATEMENT_THRESHOLD, isStatement, similarity } from '@/data/inquiryGuide'
+import { RESTATEMENT_THRESHOLD, inquiryQuestion, isStatement, similarity, splitGuide } from '@/data/inquiryGuide'
 
 const canaryRecipes = [pendulumRecipe, multiTsl2591Recipe, ina219CurrentRecipe]
 const allRecipes = [...canaryRecipes, ...phase5Recipes, ...phase6Recipes, ...phase7Recipes]
@@ -18,9 +18,14 @@ function recipe(id: string) {
   return found!
 }
 
-/** 본문에서 `## N. 제목` 형태의 절 제목만 순서대로 뽑습니다. */
+/**
+ * 본문에서 `### 4-N. 제목` 형태의 절 제목만 순서대로 뽑습니다.
+ *
+ * 번호가 화면 절의 하위 번호(`4-`)이고 제목도 한 단계 낮은 이유는
+ * `inquiryGuide.ts`의 `GUIDE_SECTION_NUMBER` 설명에 적어 두었습니다.
+ */
 function numberedHeadings(body: string) {
-  return [...body.matchAll(/^## (\d+)\. (.+)$/gm)].map((match) => ({
+  return [...body.matchAll(/^### 4-(\d+)\. (.+)$/gm)].map((match) => ({
     index: Number(match[1]),
     title: match[2],
   }))
@@ -158,7 +163,7 @@ describe('inquiry plan coverage', () => {
     for (const [id, plan] of Object.entries(inquiryPlans)) {
       for (const step of plan.setup) {
         // 어느 레시피에서나 똑같은 마무리 동작은 되풀이돼도 됩니다.
-        if (/USB 케이블을 연결하고|2번 배선하기를 끝까지 마친 뒤/.test(step)) continue
+        if (/USB 케이블을 연결하고|배선하기\*\*를 끝까지 마친 뒤/.test(step)) continue
         seen.set(step, [...(seen.get(step) ?? []), id])
       }
     }
@@ -204,13 +209,19 @@ describe('rendered guide structure', () => {
     }
   })
 
-  /** 몇 번 반복할지 정한 다음에 손을 대야 합니다. 반대면 다 재고 나서 부족을 압니다. */
-  it('plans the run before it tells the student to start measuring', () => {
+  /**
+   * 장치를 놓는 일이 재는 일보다 먼저 나와야 합니다. 실행 계획이 앞에 있던
+   * 때에는 그 절의 첫 체크 상자가 "전원을 넣고 60초간 예비 관찰"인데 스탠드를
+   * 세우고 진자를 매다는 일은 그다음 절이라, 위에서부터 상자를 누르는 학생이
+   * 아직 장치가 없는 채로 60초를 기다렸습니다. 몇 번 반복할지 먼저 정하라는
+   * 뜻은 순서가 아니라 탐구 순서 절의 머리말이 지킵니다.
+   */
+  it('sets the apparatus up before it tells the student to start measuring', () => {
     for (const entry of allRecipes) {
       const titles = numberedHeadings(entry.body).map((heading) => heading.title)
       const procedure = titles.indexOf('탐구 순서')
       if (procedure === -1) continue
-      expect(titles.indexOf('실험 실행 계획'), entry.id).toBeLessThan(procedure)
+      expect(titles.indexOf('실험 실행 계획'), entry.id).toBeGreaterThan(procedure)
     }
   })
 
@@ -222,7 +233,7 @@ describe('rendered guide structure', () => {
   // `m` 없이 씁니다. `$`가 줄 끝을 뜻하면 제목 바로 아래 빈 줄에서 멈춰
   // 본문을 하나도 담지 못합니다.
   const procedureBody = (body: string) =>
-    /## \d+\. 탐구 순서\n\n([\s\S]*?)(?=\n## |\n:::|$)/.exec(body)?.[1]
+    /### 4-\d+\. 탐구 순서\n\n([\s\S]*?)(?=\n### |\n:::|$)/.exec(body)?.[1]
 
   it('checkboxes only the sentences that tell the student to do something', () => {
     for (const entry of allRecipes) {
@@ -250,9 +261,30 @@ describe('rendered guide structure', () => {
   /** `…합니다.`로 지시하는 레시피가 통째로 딸림 줄로 밀려나면 안 됩니다. */
   it('keeps the -합니다 style recipes as numbered steps', () => {
     const plantGrowth = procedureBody(recipe('plant-growth').body)!
-    // 조립 6단계 + 레시피가 쓴 측정 방법 2단계가 한 줄기 번호로 이어집니다.
-    expect([...plantGrowth.matchAll(/^\d+\. \[ \] /gm)].length).toBeGreaterThanOrEqual(8)
+    // 조립 단계에 이어 레시피가 쓴 측정 방법이 한 줄기 번호로 붙습니다.
     expect(plantGrowth).toMatch(/^1\. \[ \] 화분을/m)
+    expect(plantGrowth).toMatch(/^\d+\. \[ \] 매일 같은 시각에 생장 지표를/m)
+  })
+
+  /**
+   * 앞 단계를 더 짧게 되풀이하기만 하는 문장은 버리고, 되풀이처럼 보여도 새 지시가
+   * 붙은 문장은 남깁니다. 같은 말을 두 번 읽는 것보다 할 일을 못 보는 쪽이 나쁩니다.
+   */
+  it('drops a step that only restates an earlier one, but keeps one that adds an instruction', () => {
+    const plantGrowth = procedureBody(recipe('plant-growth').body)!
+    expect(plantGrowth).not.toContain('센서를 잎에 가려지지 않고 물이 닿지 않는 위치에 고정합니다.')
+
+    const p1 = procedureBody(recipe('p1-pendulum-period').body)!
+    expect(p1).toContain('진폭을 10° 이하로 맞추고')
+  })
+
+  /** 화면의 "3. 코드 넣기"가 이미 시킨 일을 탐구 순서가 다시 시키지 않습니다. */
+  it('never repeats the upload-and-open-the-monitor step the code section already gave', () => {
+    for (const entry of allRecipes) {
+      const section = procedureBody(entry.body)
+      if (!section) continue
+      expect(section, entry.id).not.toMatch(/^\d+\. \[ \] USB 케이블을 연결하고 시리얼 모니터를 \d+ baud로 엽니다\.$/m)
+    }
   })
 
   it('lists the controlled variables one per line instead of packing them into a cell', () => {
@@ -333,5 +365,76 @@ describe('rendered guide structure', () => {
       expect(entry.status, entry.id).toBe('published')
       expect(entry.sketch, entry.id).not.toBe(formatArduinoCode(entry.sketch))
     }
+  })
+})
+
+describe('화면이 나눠 그릴 수 있게 자른 가이드', () => {
+  /** 요약은 부품·배선·코드보다 먼저 읽어야 뜻이 있어 화면 맨 위로 올라갑니다. */
+  it('모든 레시피가 질문이 든 요약과 번호 붙은 절로 갈린다', () => {
+    for (const entry of allRecipes) {
+      const { overview, sections } = splitGuide(entry.body)
+      expect(overview, entry.id).toContain('이 탐구가 답하려는 질문')
+      expect(overview, entry.id).not.toContain('## 한눈에 보기')
+      expect(sections, entry.id).toMatch(/^### 4-1\. /)
+    }
+  })
+
+  /**
+   * 안전 안내는 배선을 시작하기 전에 화면이 이미 보여 줍니다. 본문에는 한 벌만
+   * 남겨 두어 `safetyNotice`가 계속 찾아 쓰게 하고, 가이드에서는 빼냅니다.
+   */
+  it('안전 안내를 본문에는 남기고 가이드에서는 뺀다', () => {
+    const withSafety = allRecipes.filter((entry) => entry.body.includes(':::callout warn'))
+    expect(withSafety.length).toBeGreaterThan(100)
+    for (const entry of withSafety) {
+      expect(entry.body.match(/:::callout warn/g)!.length, entry.id).toBe(1)
+      const { overview, sections } = splitGuide(entry.body)
+      expect(overview, entry.id).not.toContain(':::callout')
+      expect(sections, entry.id).not.toContain(':::callout')
+      expect(sections, entry.id).not.toContain('안전 점검')
+    }
+  })
+
+  it('요약표에서 이 탐구가 답하려는 질문을 꺼내고, 그 질문이 레시피마다 다르다', () => {
+    const questions = allRecipes.map((entry) => inquiryQuestion(entry.body))
+    for (const [index, question] of questions.entries()) {
+      expect(question, allRecipes[index].id).toMatch(/\?$/)
+    }
+    expect(new Set(questions).size).toBe(questions.length)
+  })
+})
+
+describe('실행 계획이 스케치와 어긋나지 않는다', () => {
+  /**
+   * 예전에는 표본 간격을 센서 종류만 보고 정해, 10 ms마다 한 줄을 찍는 스케치에도
+   * "표본 간격 1초"라고 적었습니다. 111개 중 39개가 그랬습니다.
+   */
+  it('표본 간격을 스케치가 실제로 쉬는 시간에서 읽는다', () => {
+    const ina219 = recipe('ina219-current')
+    expect(/samplingIntervalMs\s*=\s*50/.test(ina219.sketch)).toBe(true)
+    expect(ina219.body).toContain('| 표본 간격 | 50밀리초 |')
+
+    const bme = recipe('S6')
+    expect(bme.body).toMatch(/\| 표본 간격 \| \d+(?:\.\d+)?초 \|/)
+  })
+
+  /**
+   * 스케치가 `for (int pwm = 0; pwm <= 255; pwm += 51)`로 조건을 스스로 훑는
+   * 레시피에 "조건을 바꾼 뒤 기다렸다가 저장하라"고 시키면, 학생에게는 손으로
+   * 바꿀 조건이 없어 그 자리에서 멈춥니다.
+   */
+  it('코드가 조건을 훑는 레시피에는 사람이 할 일만 남긴다', () => {
+    for (const id of ['a1-led-brightness', 'a3-servo-angle']) {
+      const entry = recipe(id)
+      expect(entry.body, id).toContain('조건을 바꾸는 쪽 | 스케치 (사람이 바꾸지 않습니다)')
+      expect(entry.body, id).not.toContain('조건을 바꾼 뒤')
+      expect(entry.body, id).toContain('한 바퀴의 단계 수')
+      // 더 천천히 훑고 싶을 때 고칠 자리를 코드에서 그대로 가리킵니다.
+      expect(entry.body, id).toContain(entry.tunables[0].anchor)
+    }
+  })
+
+  it('손으로 조건을 바꾸는 레시피는 그대로 조건표 계획을 받는다', () => {
+    expect(recipe('p8-inverse-square-light').body).toContain('조건을 바꾼 뒤')
   })
 })

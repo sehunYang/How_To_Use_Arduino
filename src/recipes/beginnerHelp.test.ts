@@ -94,7 +94,7 @@ describe('처음 나온 값 점검', () => {
 describe('용어 사전', () => {
   it('배선에 나온 핀 이름만 골라 뜻을 붙인다', () => {
     for (const recipe of allRecipes) {
-      const terms = glossaryFor(recipe).map((entry) => entry.term)
+      const terms = glossaryFor(recipe).wiring.map((entry) => entry.term)
       const pins = new Set(
         recipe.wiring
           .flatMap((step) => [step.from, step.to])
@@ -105,15 +105,15 @@ describe('용어 사전', () => {
       for (const term of terms.filter((entry) => /^[A-Z+-]+$/.test(entry))) {
         expect(pins.has(term), `${recipe.id}: ${term}`).toBe(true)
       }
-      // 레시피와 상관없이 반드시 만나는 말은 언제나 들어 있습니다.
-      expect(terms, recipe.id).toContain('시리얼 모니터')
+      // 코드 절에서 처음 나오는 말은 그 절 사전에 언제나 들어 있습니다.
+      expect(glossaryFor(recipe).code.map((entry) => entry.term), recipe.id).toContain('시리얼 모니터')
     }
   })
 
   it('GND를 쓰는 레시피는 GND의 뜻을 받는다', () => {
     const recipe = allRecipes.find((entry) => entry.wiring.some((step) => step.to === 'UNO.GND'))
     expect(recipe).toBeDefined()
-    expect(glossaryFor(recipe!).map((entry) => entry.term)).toContain('GND')
+    expect(glossaryFor(recipe!).wiring.map((entry) => entry.term)).toContain('GND')
   })
 })
 

@@ -66,7 +66,14 @@ const TEXT_TERMS: Array<GlossaryEntry & { pattern: RegExp }> = [
   },
 ]
 
-/** 레시피와 상관없이 학생이 반드시 만나는 말. */
+/**
+ * 레시피와 상관없이 학생이 반드시 만나는 말.
+ *
+ * 다섯 항목 모두 화면의 "3. 코드 넣기"에서 처음 나옵니다. 예전에는 사전 전체가
+ * 배선 절 안에 접혀 있어서, 위에서 아래로 한 번만 읽는 학생은 "9600 baud로
+ * 맞추세요"를 뜻도 모른 채 지나갔습니다. 되돌아가지 않기 때문입니다. 그래서
+ * 사전을 두 벌 만들지 않고 절별로 나눠 각 말이 처음 나오는 자리에 둡니다.
+ */
 const ALWAYS_TERMS: GlossaryEntry[] = [
   { term: '스케치', meaning: '아두이노에 넣는 프로그램. 이 화면의 코드가 스케치입니다.' },
   { term: '업로드', meaning: '스케치를 보드로 옮겨 넣는 일. 왼쪽 위 화살표 단추가 이 일을 합니다.' },
@@ -75,7 +82,13 @@ const ALWAYS_TERMS: GlossaryEntry[] = [
   { term: '라이브러리', meaning: '센서를 다루는 방법이 미리 적혀 있는 꾸러미. 설치해야 코드가 컴파일됩니다.' },
 ]
 
-export function glossaryFor(recipe: Pick<Recipe, 'wiring'>): GlossaryEntry[] {
+/** 배선 절에서 쓰는 말과 코드 절에서 쓰는 말. 각 말이 처음 나오는 자리에 둡니다. */
+export interface Glossary {
+  wiring: GlossaryEntry[]
+  code: GlossaryEntry[]
+}
+
+export function glossaryFor(recipe: Pick<Recipe, 'wiring'>): Glossary {
   const pins = new Set<string>()
   for (const step of recipe.wiring) {
     for (const endpoint of [step.from, step.to]) {
@@ -96,5 +109,5 @@ export function glossaryFor(recipe: Pick<Recipe, 'wiring'>): GlossaryEntry[] {
     ({ term, meaning }) => ({ term, meaning }),
   )
 
-  return [...pinEntries, ...textEntries, ...ALWAYS_TERMS]
+  return { wiring: [...pinEntries, ...textEntries], code: ALWAYS_TERMS }
 }

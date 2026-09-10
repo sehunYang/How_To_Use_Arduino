@@ -135,11 +135,11 @@ describe('Phase 7 출력 장치 예제', () => {
   it('탐구 가이드를 붙여 번호가 이어진 절로 낸다', () => {
     for (const recipe of phase7Recipes) {
       expect(recipe.body, recipe.id).toContain('## 한눈에 보기')
-      expect(recipe.body, recipe.id).toContain('## 1. 과학 이론 쉽게 이해하기')
-      expect(recipe.body, recipe.id).toMatch(/## \d+\. 탐구 순서/)
+      expect(recipe.body, recipe.id).toContain('### 4-1. 과학 이론 쉽게 이해하기')
+      expect(recipe.body, recipe.id).toMatch(/### 4-\d+\. 탐구 순서/)
       // 센서를 쓰지 않는 예제는 센서 다리 절을 내지 않습니다.
       if (!recipe.sensors.length) {
-        expect(recipe.body, recipe.id).not.toContain('### 센서는 무엇을 대신해 주나요')
+        expect(recipe.body, recipe.id).not.toContain('#### 센서는 무엇을 대신해 주나요')
       }
     }
   })

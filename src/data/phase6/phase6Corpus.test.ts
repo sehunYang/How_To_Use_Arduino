@@ -36,7 +36,7 @@ describe('Phase 6 recipe expansion', () => {
       expect(recipe.reviewedOnDevice, recipe.id).toBeNull()
       expect(recipe.commentReviewed, recipe.id).toBeNull()
       expect(recipe.body, recipe.id).toContain('## 한눈에 보기')
-      expect(recipe.body, recipe.id).toContain('## 1. 과학 이론 쉽게 이해하기')
+      expect(recipe.body, recipe.id).toContain('### 4-1. 과학 이론 쉽게 이해하기')
       expect(recipe.body, recipe.id).toContain('변인 설계')
       expect(recipe.body, recipe.id).toContain('데이터 처리와 그래프')
       expect(recipe.body, recipe.id).toContain('실험 실행 계획')

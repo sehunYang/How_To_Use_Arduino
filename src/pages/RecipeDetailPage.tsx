@@ -8,6 +8,7 @@ import { SafeMarkdown } from '@/components/ui/SafeMarkdown'
 import { SimBadge } from '@/components/ui/SimBadge'
 import { WiringIllustration } from '@/components/WiringIllustration'
 import { canarySimStatus, studentRecipes } from '@/data/studentCatalog'
+import { splitGuide } from '@/data/inquiryGuide'
 import { INVENTORY_VERSION } from '@/data/inventory-seed/version'
 import { useWiringSteps } from '@/hooks/useWiringSteps'
 import {
@@ -30,13 +31,32 @@ import {
   safetyNotice,
 } from '@/recipes/firstRun'
 import { firstReadingFor } from '@/recipes/firstReading'
-import { glossaryFor } from '@/recipes/glossary'
+import { glossaryFor, type GlossaryEntry } from '@/recipes/glossary'
 import { librariesFor } from '@/recipes/libraries'
 import { jumperWireLabel, partsFor, shortComponentLabel, type PartLine } from '@/recipes/parts'
+import { pinMapFor, type PinLine } from '@/recipes/pinMap'
 import { powerChecks, type PowerCheck } from '@/recipes/powerCheck'
+import { linkRecipeTitles, type RecipeLink } from '@/recipes/relatedRecipes'
 import { sketchSummary } from '@/recipes/sketchSummary'
 import type { Recipe } from '@/schema'
 import { planBreadboardWiring } from '@/wokwi/buildDiagram'
+
+/**
+ * 화면 맨 위의 절 이동 줄.
+ *
+ * 배선을 마친 학생이 코드만 다시 보려면, 또는 아이디어만 훑으려는 학생이 탐구
+ * 가이드로 바로 가려면 스크롤 말고는 길이 없었습니다. 절 제목에 붙은 id가 이미
+ * 있으므로 그 자리로 보내는 링크만 세웁니다.
+ */
+const SECTION_LINKS = [
+  { id: 'overview-title', label: '한눈에 보기' },
+  { id: 'parts-title', label: '1. 준비물' },
+  { id: 'wiring-title', label: '2. 배선' },
+  { id: 'code-title', label: '3. 코드' },
+  { id: 'guide-title', label: '4. 탐구 가이드' },
+  { id: 'record-title', label: '5. 측정값' },
+  { id: 'trouble-title', label: '문제 해결' },
+] as const
 
 export interface PreviewServices {
   authorize: () => Promise<boolean>
@@ -109,6 +129,12 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
   const [previewChecked, setPreviewChecked] = useState(!previewRequested)
   const [remoteRecipe, setRemoteRecipe] = useState<Recipe | null>(null)
   const [publicCatalogStatus, setPublicCatalogStatus] = useState<'checking' | 'available' | 'withdrawn'>('checking')
+  // 가이드가 이름으로 가리키는 다음 탐구를 링크로 바꾸는 데 씁니다. 색인을 아직
+  // 받지 못했으면 번들에 든 레시피만으로도 시작할 수 있게 미리 채워 둡니다.
+  const [catalog, setCatalog] = useState<RecipeLink[]>(() =>
+    studentRecipes.map((entry) => ({ id: entry.id, title: entry.title })))
+  const [wiringInView, setWiringInView] = useState(true)
+  const wiringRef = useRef<HTMLElement>(null)
   const bundledRecipe = studentRecipes.find((candidate) => candidate.id === id)
   const recipe = remoteRecipe ?? (publicCatalogStatus !== 'withdrawn' ? bundledRecipe : undefined)
   const stored = useMemo(() => recipe ? loadProgress(recipe.id, recipe.wiring.length, typeof window === 'undefined' ? undefined : window.localStorage) : null, [recipe])
@@ -137,6 +163,7 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
         const loaded = recipeResult.status === 'fulfilled' ? recipeResult.value : null
         const index = indexResult.status === 'fulfilled' ? indexResult.value : null
         setRemoteRecipe(loaded)
+        if (index?.length) setCatalog(index.map((entry) => ({ id: entry.id, title: entry.title })))
         setPublicCatalogStatus(index && !index.some((entry) => entry.id === id) ? 'withdrawn' : 'available')
       })
       .catch(() => {
@@ -170,6 +197,25 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
       })
     return () => { active = false }
   }, [id, previewRequested, previewServices])
+
+  /**
+   * 하단 고정 바는 배선 절에서만 뜹니다.
+   *
+   * 조건 없이 그리던 때에는 모바일에서 코드·탐구 가이드·문제 해결을 읽는 내내
+   * "1/8 완료 · 이전/다음"이 화면 아래를 덮었습니다. 배선을 이미 끝낸 학생에게는
+   * 가릴 뿐인 줄입니다. 관찰자를 만들 수 없는 환경(테스트·구형 브라우저)에서는
+   * 예전처럼 늘 보이게 두어, 있어야 할 조작이 사라지는 쪽으로는 실패하지 않습니다.
+   */
+  useEffect(() => {
+    const node = wiringRef.current
+    if (!node || typeof IntersectionObserver === 'undefined') return
+    const observer = new IntersectionObserver(
+      ([entry]) => setWiringInView(entry.isIntersecting),
+      { rootMargin: '-20% 0px -20% 0px' },
+    )
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [recipe?.id])
 
   useEffect(() => {
     const match = location.hash.match(/^#step-(\d+)$/)
@@ -235,6 +281,8 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
   const reading = firstReadingFor(recipe)
   const glossary = glossaryFor(recipe)
   const summary = sketchSummary(recipe)
+  const guide = splitGuide(recipe.body)
+  const pins = pinMapFor(recipe)
   const checkedSteps = machine.checked.filter(Boolean).length
   // 레시피가 쓴 증상을 먼저 보여 주고, 어느 레시피에서나 똑같이 겪는 첫 실행
   // 문제를 뒤에 붙입니다. 같은 증상을 이미 적어 둔 레시피는 그것을 남깁니다.
@@ -263,8 +311,24 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
         <h1 className="mt-3 text-4xl font-semibold">{recipe.title}</h1>
       </header>
 
-      <section aria-labelledby="parts-title" className="mt-8 max-w-3xl">
-        <h2 id="parts-title" className="text-2xl font-semibold">1. 준비물 챙기기</h2>
+      <nav aria-label="이 레시피의 절" className="mt-5 flex flex-wrap gap-x-4 gap-y-2 border-b border-border pb-4 text-caption">
+        {SECTION_LINKS.map((link) => (
+          <a key={link.id} className="text-accent hover:underline" href={`#${link.id}`}>{link.label}</a>
+        ))}
+      </nav>
+
+      {/* 무엇을 왜 재는지가 부품·배선·코드보다 먼저 와야 합니다. 예전에는 이 표가
+          가이드 본문 첫머리에 있어 네 번째 절에 가서야 나왔고, 그때는 이미 부품을
+          챙기고 배선을 마친 뒤였습니다. */}
+      {guide.overview && (
+        <section aria-labelledby="overview-title" className="prose mt-8 max-w-3xl">
+          <h2 id="overview-title" className="scroll-mt-24 text-2xl font-semibold">한눈에 보기</h2>
+          <SafeMarkdown source={guide.overview} />
+        </section>
+      )}
+
+      <section aria-labelledby="parts-title" className="mt-12 max-w-3xl">
+        <h2 id="parts-title" className="scroll-mt-24 text-2xl font-semibold">1. 준비물 챙기기</h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <PartsGroup title="어떤 레시피든 필요한 것" lines={parts.always} />
           <PartsGroup title="이 레시피에서 쓰는 부품" lines={parts.specific} />
@@ -272,8 +336,8 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
         </div>
       </section>
 
-      <section aria-labelledby="wiring-title" className="mt-12">
-        <h2 id="wiring-title" className="text-2xl font-semibold">2. 배선하기</h2>
+      <section ref={wiringRef} aria-labelledby="wiring-title" className="mt-12">
+        <h2 id="wiring-title" className="scroll-mt-24 text-2xl font-semibold">2. 배선하기</h2>
         {/* 안전 안내는 꽂기 전에 읽어야 뜻이 있습니다. 본문 안에 두면 다 꽂은 뒤에 만납니다. */}
         <aside className="mt-4 rounded-card border border-warning bg-warning-background p-4">
           <strong className="text-warning">꽂기 전에 읽으세요</strong>
@@ -348,19 +412,9 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
         </div>
         <PowerCheckList checks={checks} recipeId={recipe.id} />
 
-        <details className="mt-4 max-w-3xl rounded-card border border-border p-4">
-          <summary className="cursor-pointer font-semibold">이 화면에 나오는 말의 뜻</summary>
-          <dl className="mt-3 space-y-2">
-            {glossary.map((entry) => (
-              <div key={entry.term}>
-                <dt className="inline font-semibold">{entry.term}</dt>
-                <dd className="ml-2 inline text-caption text-muted">{entry.meaning}</dd>
-              </div>
-            ))}
-          </dl>
-        </details>
+        <GlossaryList title="이 절에 나오는 말의 뜻" entries={glossary.wiring} />
 
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background px-page pt-3 [padding-bottom:calc(0.75rem+env(safe-area-inset-bottom))] lg:static lg:mt-5 lg:border-0 lg:p-0">
+        <div className={`${wiringInView ? '' : 'max-lg:hidden '}fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background px-page pt-3 [padding-bottom:calc(0.75rem+env(safe-area-inset-bottom))] lg:static lg:mt-5 lg:border-0 lg:p-0`}>
           <div className="mx-auto flex max-w-3xl items-center justify-between gap-3">
             <Button variant="outline" disabled={active === 0} onClick={() => machine.setActiveStep(active - 1)}>이전</Button>
             <span className="text-caption text-muted">{machine.checked.filter(Boolean).length}/{recipe.wiring.length} 완료</span>
@@ -386,7 +440,7 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
       </section>
 
       <section className="mt-12" aria-labelledby="code-title">
-        <h2 id="code-title" className="text-2xl font-semibold">3. 코드 넣기</h2>
+        <h2 id="code-title" className="scroll-mt-24 text-2xl font-semibold">3. 코드 넣기</h2>
         {/* 두 번째 레시피부터는 이미 아는 내용이라 늘 펼쳐 두면 코드가 화면 밖으로
             밀려납니다. 접어 두되 요약 줄만 읽고도 열지 말지 고를 수 있게 합니다. */}
         <details className="mt-4 max-w-3xl rounded-card border border-border p-4">
@@ -434,6 +488,11 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
           </details>
         )}
 
+        {/* 스케치·업로드·시리얼 모니터·baud·라이브러리는 모두 이 절에서 처음 나오는
+            말입니다. 사전이 배선 절에만 있던 때에는, 되돌아가지 않는 학생이 "9600
+            baud로 맞추세요"를 뜻도 모른 채 지나갔습니다. */}
+        <GlossaryList title="이 절에 나오는 말의 뜻" entries={glossary.code} />
+
         {/* 속도만은 접지 않습니다. 맞추지 않으면 시리얼 모니터에 깨진 기호만 나오고,
             학생은 무엇이 잘못됐는지 짐작할 단서를 얻지 못합니다. */}
         <p className="mt-4 max-w-3xl text-caption">
@@ -449,6 +508,8 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
             <SafeMarkdown source={summary.map((line) => `- ${line}`).join('\n')} />
           </div>
         </div>
+
+        <PinMap lines={pins} />
 
         <div className="mt-3 overflow-hidden rounded-card border border-border"><CodeBlock code={recipe.sketch} tunables={recipe.tunables} /></div>
 
@@ -485,14 +546,16 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
           </table>
         </section>
       </section>
-      <section className="prose mt-12 max-w-3xl" aria-labelledby="guide-title"><h2 id="guide-title" className="text-2xl font-semibold">4. 탐구 가이드</h2><SafeMarkdown source={recipe.body} checklistScope={`guide:${recipe.id}`} /></section>
+      <section className="prose mt-12 max-w-3xl" aria-labelledby="guide-title">
+        <h2 id="guide-title" className="scroll-mt-24 text-2xl font-semibold">4. 탐구 가이드</h2>
+        <SafeMarkdown source={linkRecipeTitles(guide.sections, catalog, recipe.id)} checklistScope={`guide:${recipe.id}`} />
+      </section>
       <section className="mt-12 max-w-3xl" aria-labelledby="record-title">
-        <h2 id="record-title" className="text-2xl font-semibold">5. 측정값 저장하고 분석하기</h2>
+        <h2 id="record-title" className="scroll-mt-24 text-2xl font-semibold">5. 측정값 저장하고 분석하기</h2>
         <p className="mt-3">시리얼 모니터에 쌓인 글을 <strong>열 이름이 적힌 첫 줄부터 끝까지</strong> 끌어서 복사한 뒤, 데이터 화면에 붙여 넣으세요.</p>
         <Link className="mt-4 inline-block text-accent hover:underline" to="/data-analysis">데이터 변환·분석 화면 열기 →</Link>
       </section>
-      <section className="mt-12 max-w-3xl" aria-labelledby="application-title"><h2 id="application-title" className="text-2xl font-semibold">응용해 보기</h2><div className="mt-3 text-muted"><SafeMarkdown source={recipe.applicationGuide} /></div></section>
-      <section className="mt-12 max-w-3xl" aria-labelledby="trouble-title"><h2 id="trouble-title" className="text-2xl font-semibold">문제가 생겼나요?</h2><div className="mt-4 space-y-3">{troubleshooting.map((item) => <details key={item.symptom} className="rounded-card border border-border p-4"><summary className="cursor-pointer font-semibold">{item.symptom}</summary><p className="mt-3 text-muted">원인: {item.cause}</p><p className="mt-2">해결: {item.fix}</p></details>)}</div>
+      <section className="mt-12 max-w-3xl" aria-labelledby="trouble-title"><h2 id="trouble-title" className="scroll-mt-24 text-2xl font-semibold">문제가 생겼나요?</h2><div className="mt-4 space-y-3">{troubleshooting.map((item) => <details key={item.symptom} className="rounded-card border border-border p-4"><summary className="cursor-pointer font-semibold">{item.symptom}</summary><p className="mt-3 text-muted">원인: {item.cause}</p><p className="mt-2">해결: {item.fix}</p></details>)}</div>
         <HelpCard recipe={activeRecipe} checkedSteps={checkedSteps} />
       </section>
     </article>
@@ -595,6 +658,74 @@ function HelpCard({ recipe, checkedSteps }: { recipe: Recipe; checkedSteps: numb
         <p className="mt-2 text-caption">이 브라우저에서는 복사할 수 없습니다. 위 내용을 직접 옮겨 적으세요.</p>
       )}
     </div>
+  )
+}
+
+/** 그 절에서 처음 나오는 말만 모아 접어 두는 사전. 두 절이 같은 모양을 씁니다. */
+function GlossaryList({ title, entries }: { title: string; entries: GlossaryEntry[] }) {
+  if (!entries.length) return null
+  return (
+    <details className="mt-4 max-w-3xl rounded-card border border-border p-4">
+      <summary className="cursor-pointer font-semibold">
+        {title}: {entries.map((entry) => entry.term).join(' · ')}
+      </summary>
+      <dl className="mt-3 space-y-2">
+        {entries.map((entry) => (
+          <div key={entry.term}>
+            <dt className="inline font-semibold">{entry.term}</dt>
+            <dd className="ml-2 inline text-caption text-muted">{entry.meaning}</dd>
+          </div>
+        ))}
+      </dl>
+    </details>
+  )
+}
+
+/**
+ * 배선 한 줄과 코드 한 줄이 같은 핀을 가리킨다는 사실을 보여 주는 표.
+ *
+ * 이 대응은 스케치의 `// @pin` 선언에 이미 적혀 있고 빌드가 배선과 교차검증까지
+ * 하지만, 화면은 그 줄을 지우고 그렸습니다(`parseDisplayCode`). 그래서 핀을 다른
+ * 자리로 옮기고 싶은 학생은 배선과 코드 가운데 어디를 몇 군데 고쳐야 하는지
+ * 알 수 없었습니다. 따라 하기만 하는 학생에게는 필요 없는 표이므로 접어 두되,
+ * 요약 줄만 읽고도 안에 무엇이 있는지 알 수 있게 합니다.
+ */
+function PinMap({ lines }: { lines: PinLine[] }) {
+  if (!lines.length) return null
+  return (
+    <details className="mt-4 max-w-3xl rounded-card border border-border p-4">
+      <summary className="cursor-pointer font-semibold">
+        배선과 코드가 이어지는 자리 {lines.length}곳: 핀을 옮기려면 어디를 함께 고쳐야 하나
+      </summary>
+      <table className="mt-3 w-full text-left">
+        <caption className="sr-only">배선 단계와 스케치의 핀 선언이 짝지어지는 표</caption>
+        <thead>
+          <tr className="border-b border-border">
+            <th scope="col" className="py-2 pr-4 font-semibold">배선 단계</th>
+            <th scope="col" className="py-2 pr-4 font-semibold">보드 핀</th>
+            <th scope="col" className="py-2 pr-4 font-semibold">이어지는 곳</th>
+            <th scope="col" className="py-2 font-semibold">코드가 부르는 이름</th>
+          </tr>
+        </thead>
+        <tbody>
+          {lines.map((line) => (
+            <tr key={line.pin} className="border-b border-border align-top">
+              <td className="py-2 pr-4">
+                {line.step === null
+                  ? <span className="text-muted">배선에 없음</span>
+                  : <a className="text-accent hover:underline" href={`#step-${line.step}`}>{line.step}단계</a>}
+              </td>
+              <td className="py-2 pr-4"><code>{line.pin}</code></td>
+              <td className="py-2 pr-4 text-muted">{line.endpoint ?? '-'}</td>
+              <td className="py-2">{line.role ? <code>{line.role}</code> : <span className="text-muted">이름 없이 자리만</span>}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p className="mt-3 text-caption text-muted">
+        핀을 다른 자리로 옮기려면 <strong>배선과 코드를 함께</strong> 고쳐야 합니다. 한쪽만 고치면 값이 나오지 않습니다.
+      </p>
+    </details>
   )
 }
 

@@ -3,9 +3,54 @@ import { formatArduinoCode } from '@/lib/formatArduinoCode'
 import { sensorProfileById } from '@/data/sensorProfiles'
 import { conceptById } from './inquiry/concepts'
 import { describeHeader, findCsvHeader } from './inquiry/columns'
+import { inquiryQuestion } from './inquiry/question'
 import type { InquiryPlan } from './inquiry/types'
 
+/** 카드와 색인이 함께 쓰는 함수라 잎 모듈에 두고 여기서는 다시 내보내기만 합니다. */
+export { inquiryQuestion }
+
 const GUIDE_MARKER = '<!-- inquiry-workbook-v2 -->'
+
+/** 화면에서 탐구 가이드가 놓이는 절 번호. 가이드 안의 절은 이 번호의 하위 번호를 받습니다. */
+const GUIDE_SECTION_NUMBER = 4
+
+/**
+ * '한눈에 보기'와 번호 붙은 절 사이의 경계.
+ *
+ * 요약은 배선·코드보다 **먼저** 읽어야 뜻이 있습니다. 무엇을 왜 재는지 모른 채
+ * 부품부터 챙기면 표만 채우고 끝나기 때문입니다. 그런데 요약은 가이드 본문의
+ * 첫머리에 있어 화면에서는 네 번째 절에 가서야 나왔습니다. 이 표시를 두어
+ * 화면이 요약과 나머지를 서로 다른 자리에 그릴 수 있게 합니다.
+ */
+const GUIDE_SECTIONS_MARKER = '<!-- inquiry-guide-sections -->'
+
+/**
+ * 안전 안내 덩어리.
+ *
+ * 화면은 배선을 시작하기 **전에** 같은 문장을 이미 보여 줍니다(`safetyNotice`).
+ * 본문에는 그 문장을 한 벌만 남겨 두어 그 함수가 계속 찾아 쓸 수 있게 하고,
+ * 가이드를 그릴 때만 빼냅니다. 예전에는 배선 위 경고와 가이드의 '안전 점검'
+ * 절이 글자까지 같은 문장을 두 번 보여 주었습니다(111개 중 104개).
+ */
+const SAFETY_CALLOUT = /:::callout\s+warn\s*\n[\s\S]*?\n:::\s*/g
+
+/** 요약 절의 제목. 화면이 이 제목으로 절을 세우므로 본문에서는 떼어 냅니다. */
+export const OVERVIEW_TITLE = '한눈에 보기'
+
+/** 가이드 본문을 '한눈에 보기'와 번호 붙은 절로 가릅니다. 표시가 없으면 전부 뒤쪽입니다. */
+export function splitGuide(body: string): { overview: string; sections: string } {
+  const guide = body.replace(SAFETY_CALLOUT, '')
+  const at = guide.indexOf(GUIDE_SECTIONS_MARKER)
+  const strip = (text: string) => text
+    .replace(GUIDE_MARKER, '')
+    .replace(/^[ \t]*## 한눈에 보기[ \t]*$/m, '')
+    .trim()
+  if (at === -1) return { overview: '', sections: strip(guide) }
+  return {
+    overview: strip(guide.slice(0, at)),
+    sections: guide.slice(at + GUIDE_SECTIONS_MARKER.length).trim(),
+  }
+}
 
 type ExperimentPlan = 'event' | 'time-series' | 'transient' | 'condition-comparison'
 
@@ -36,14 +81,52 @@ function experimentPlan(recipe: Recipe): ExperimentPlan {
   return 'condition-comparison'
 }
 
+/**
+ * 스케치가 실제로 한 줄을 찍는 간격(ms). 읽어 낼 수 없으면 `null`.
+ *
+ * 예전에는 이 간격을 센서 종류만 보고 정했습니다. 그래서 10 ms마다 한 줄을 찍는
+ * 스케치를 얹은 레시피에도 실행 계획표는 "표본 간격 1초"라고 적었습니다. 111개
+ * 가운데 39개가 이렇게 어긋나 있었고, 표대로 맞추려는 학생은 고칠 자리를 찾지
+ * 못한 채 둘 중 무엇이 맞는지 물어야 했습니다. 스케치가 이미 답을 들고 있으므로
+ * 거기에서 읽습니다.
+ *
+ * `loop` 안에서 가장 긴 `delay`를 고릅니다. 초음파의 트리거 펄스처럼 짧은
+ * 기다림은 표본과 표본 사이가 아니라 한 번의 측정 안에서 쓰이기 때문입니다.
+ */
+function sketchIntervalMs(recipe: Recipe): number | null {
+  const { sketch } = recipe
+  const loopBody = sketch.split(/void\s+loop\s*\(\s*\)/)[1]
+  const declaredValue = (name: string) =>
+    Number(new RegExp(String.raw`\b${name}\s*=\s*(\d+)`).exec(sketch)?.[1] ?? Number.NaN)
+
+  const waits = [...(loopBody ?? '').matchAll(/\bdelay\s*\(\s*([A-Za-z_]\w*|\d+)\s*\)/g)]
+    // `delay(samplingIntervalMs)`처럼 변수를 넘기는 스케치는 그 초깃값을 봅니다.
+    .map((match) => (Number.isFinite(Number(match[1])) ? Number(match[1]) : declaredValue(match[1])))
+    .filter((value) => Number.isFinite(value) && value > 0)
+  if (waits.length) return Math.max(...waits)
+
+  // `delay` 없이 `millis()`로 간격을 재는 스케치도 그 간격을 변수 하나로 들고
+  // 있고, 화면이 가리키는 '바꿔볼 값'이 바로 그 변수입니다.
+  const anchor = recipe.tunables[0]?.anchor
+  if (!anchor || !/interval/i.test(anchor)) return null
+  const declared = declaredValue(anchor)
+  return Number.isFinite(declared) && declared > 0 ? declared : null
+}
+
+/** 1초보다 짧은 간격을 "0.05초"라고 적으면 읽기 어렵습니다. 그때는 밀리초로 씁니다. */
+function intervalLabel(ms: number): string {
+  return ms >= 1000 ? `${ms / 1000}초` : `${ms}밀리초`
+}
+
 function samplingPlan(recipe: Recipe) {
   const repeats = 3
   const samples = recipe.difficulty === '초급' ? 20 : 30
-  const intervalSeconds = recipe.sensors.some((sensor) => sensor === 'ds18b20' || sensor === 'bme280')
-    ? 2
-    : 1
+  const fallbackMs = recipe.sensors.some((sensor) => sensor === 'ds18b20' || sensor === 'bme280')
+    ? 2000
+    : 1000
+  const intervalMs = sketchIntervalMs(recipe) ?? fallbackMs
   const settlingSeconds = recipe.sensors.includes('ds18b20') ? 60 : recipe.sensors.includes('bme280') ? 30 : 10
-  return { repeats, samples, intervalSeconds, settlingSeconds }
+  return { repeats, samples, intervalMs, interval: intervalLabel(intervalMs), settlingSeconds }
 }
 
 function latexize(source: string) {
@@ -168,7 +251,7 @@ function overviewSection(recipe: Recipe, plan: InquiryPlan, authored: AuthoredBo
   ]
   if (apparatus) rows.push(`| 준비물 | ${apparatus.replace(/\n+/g, ' ')} |`)
 
-  return `## 한눈에 보기
+  return `## ${OVERVIEW_TITLE}
 
 ${lead}
 
@@ -196,7 +279,7 @@ function formulaBlock(plan: InquiryPlan): string {
     .join('\n')
   return `
 
-### 이 탐구의 핵심 식
+#### 이 탐구의 핵심 식
 
 ${expression}
 
@@ -224,7 +307,7 @@ function sensorBridge(recipe: Recipe, plan: ExperimentPlan): string {
 
   return `
 
-### 센서는 무엇을 대신해 주나요
+#### 센서는 무엇을 대신해 주나요
 
 | | |
 |:---|:---|
@@ -248,7 +331,7 @@ function theorySection(recipe: Recipe, plan: InquiryPlan, kind: ExperimentPlan):
 
 > **${plan.relation}**
 
-### 먼저 알아 둘 말
+#### 먼저 알아 둘 말
 
 ${conceptList(plan)}${formulaBlock(plan)}${sensorBridge(recipe, kind)}`,
   }
@@ -274,15 +357,6 @@ ${controls}`,
   }
 }
 
-function safetySection(authored: AuthoredBody): Section {
-  if (!authored.safety) return null
-  return {
-    title: '안전 점검',
-    body: `:::callout warn
-${authored.safety}
-:::`,
-  }
-}
 
 /**
  * 시키는 문장이 아니라 사실을 말하는 문장의 어미.
@@ -353,10 +427,43 @@ function toProcedure(setup: string[], sentences: string[]): string {
   return lead.length ? `${lead.join(' ')}\n\n${body}` : body
 }
 
+/**
+ * 화면의 "3. 코드 넣기"가 이미 시킨 일.
+ *
+ * 111개 가운데 107개의 조립 단계가 이 문장을 그대로 다시 적고 있었습니다. 위에서
+ * 아래로 한 번만 읽는 학생에게는 방금 한 일을 또 시키는 것이라, 앞에서 무언가를
+ * 빠뜨린 줄 알고 되돌아가게 만듭니다.
+ */
+const ALREADY_DONE_IN_CODE_SECTION = /^USB 케이블을 연결하고 시리얼 모니터를 \d+\s*baud로 엽니다\.$/
+
+const PROCEDURE_LEAD = '화면의 **3. 코드 넣기**까지 마쳐 시리얼 모니터에 값이 흐르는 상태에서 시작합니다. 손을 대기 전에 다음 절의 **실험 실행 계획** 표를 먼저 읽어, 몇 번 반복하고 몇 개를 저장할지 정해 두세요.'
+
+/**
+ * 앞 단계를 **더 짧게** 되풀이하기만 하는 문장인가.
+ *
+ * 닮았다는 것만으로 버리면 지시를 잃습니다. p1의 "센서의 x축이 실과 나란하도록
+ * 추에 단단히 붙이고, 진폭을 10° 이하로 맞추고 놓은 뒤 10회 이상 왕복을
+ * 기록하세요."는 앞 절반이 조립 단계와 같은 말이지만 뒤 절반에만 있는 지시가
+ * 사라집니다. 그래서 길이까지 함께 봅니다. 앞 단계보다 길어진 문장에는 새 지시가
+ * 들어 있을 수 있으므로 남기고, 짧아진 문장만 되풀이로 봅니다. 애매하면 남기는
+ * 편이 안전합니다 — 같은 말을 두 번 읽는 것보다 할 일을 못 보는 쪽이 훨씬
+ * 나쁩니다.
+ */
+function isShorterRestatement(step: string, sentence: string): boolean {
+  return similarity(step, sentence) > RESTATEMENT_THRESHOLD && sentence.length <= step.length * 1.15
+}
+
 function procedureSection(plan: InquiryPlan, authored: AuthoredBody): Section {
+  const setup = (plan.setup ?? []).filter((step) => !ALREADY_DONE_IN_CODE_SECTION.test(step.trim()))
+  // 레시피가 쓴 '측정 방법'에는 설계의 조립 단계를 다른 말로 되풀이한 문장이
+  // 섞여 있습니다. 그대로 이어 붙이면 같은 일을 두 번 시키게 되고(111개 중
+  // 52개가 그랬습니다), 학생은 앞의 것을 잘못한 줄 알고 처음부터 다시 합니다.
+  // 계산 단계에서 이미 쓰고 있는 거름망을 여기에도 씁니다.
   const measurement = toSteps(authored.sections.get('측정 방법') ?? '')
-  if (!plan.setup.length && !measurement.length) return null
-  return { title: '탐구 순서', body: toProcedure(plan.setup, measurement) }
+    .filter((sentence) => !ALREADY_DONE_IN_CODE_SECTION.test(sentence.trim()))
+    .filter((sentence) => !setup.some((step) => isShorterRestatement(step, sentence)))
+  if (!setup.length && !measurement.length) return null
+  return { title: '탐구 순서', body: `${PROCEDURE_LEAD}\n\n${toProcedure(setup, measurement)}` }
 }
 
 function columnSection(recipe: Recipe): Section {
@@ -413,7 +520,7 @@ function analysisSection(plan: InquiryPlan, authored: AuthoredBody): Section {
   if (!steps.length) return null
   return {
     title: '데이터 처리와 그래프',
-    body: `저장한 CSV를 열어 순서대로 계산하세요. 원시값을 남겨 두었으므로 방법을 바꿔도 다시 측정하지 않아도 됩니다.
+    body: `화면의 **5. 측정값 저장하고 분석하기**에서 시킨 대로 CSV를 뽑은 뒤, 순서대로 계산하세요. 원시값을 남겨 두었으므로 방법을 바꿔도 다시 측정하지 않아도 됩니다.
 
 ${checklist(steps)}`,
   }
@@ -469,7 +576,7 @@ function eventWorkbook(recipe: Recipe) {
 4. [ ] 저장한 CSV에서 누락률, 오검출률, 응답 지연과 반복 간 차이를 계산합니다.`
 }
 
-function timeSeriesWorkbook(recipe: Recipe, intervalSeconds: number) {
+function timeSeriesWorkbook(recipe: Recipe, interval: string) {
   const durationMinutes = recipe.sensors.some((sensor) => sensor === 'ds18b20' || sensor === 'bme280') ? 30 : 10
   return `이 탐구는 **끊김 없는 연속 기록**에서 시간에 따른 변화를 찾는 실험입니다.
 
@@ -477,11 +584,11 @@ function timeSeriesWorkbook(recipe: Recipe, intervalSeconds: number) {
 |:---|---:|
 | 예비 관찰 시간 | 60초 |
 | 연속 기록 시간 | ${durationMinutes}분 이상 |
-| 기록 간격 | ${intervalSeconds}초 |
+| 기록 간격 | ${interval} |
 | 함께 기록할 환경 정보 | 시작·종료 시각과 관찰 메모 |
 
 1. [ ] 센서 시각과 실제 시작 시각을 기록하고 60초간 예비 관찰하여 단선과 측정 범위 초과를 확인합니다.
-2. [ ] ${intervalSeconds}초 간격으로 ${durationMinutes}분 이상 중단 없이 원시 CSV를 저장합니다.
+2. [ ] ${interval} 간격으로 ${durationMinutes}분 이상 중단 없이 원시 CSV를 저장합니다.
 3. [ ] 장치를 만지거나 주변 환경이 달라진 시각은 측정을 다시 배열하지 말고 관찰 메모로 남깁니다.
 4. [ ] 저장한 CSV에서 누락 구간을 확인한 뒤 이동평균, 변화량 또는 시간 추세를 계산합니다.`
 }
@@ -500,7 +607,7 @@ function transientWorkbook(recipe: Recipe) {
 1. [ ] 장치를 정지 상태로 두고 2초 이상 기준 신호를 기록한 뒤 한 번의 운동 또는 변화를 시작합니다.
 2. [ ] 변화가 끝난 뒤까지 동일한 간격으로 원시 CSV를 연속 저장합니다.
 3. [ ] 장치를 같은 시작 상태로 되돌린 뒤 총 ${repetitions}회의 독립 시행을 기록합니다.
-4. [ ] 주기, 봉우리, 적분값, 시간상수 또는 에너지는 스케치에서 미리 확정하지 말고 저장한 CSV를 후처리하여 구합니다.`
+4. [ ] 주기, 봉우리, 적분값, 시간상수 또는 에너지는 스케치에서 미리 확정하지 말고 저장한 CSV를 나중에 계산해서(후처리) 구합니다.`
 }
 
 /**
@@ -517,7 +624,7 @@ function transientWorkbook(recipe: Recipe) {
  * 치우침 걸러 내기)를 함께 알려 줄 수 있습니다.
  */
 function comparisonWorkbook(recipe: Recipe, plan: InquiryPlan | undefined) {
-  const { repeats, samples, intervalSeconds, settlingSeconds } = samplingPlan(recipe)
+  const { repeats, samples, interval, settlingSeconds } = samplingPlan(recipe)
   const conditions = plan?.variables.independent ?? '변인 설계에 적은 조건'
   // 조건 하나가 그 자체로 시간에 따라 변해 가는 탐구(냉각 곡선, 발효 압력,
   // 되먹임 회복 시간…)에서는 "안정된 뒤 30개"라는 지시가 성립하지 않습니다.
@@ -530,15 +637,15 @@ function comparisonWorkbook(recipe: Recipe, plan: InquiryPlan | undefined) {
     curve
       ? `| 조건마다 기록할 구간 | 조건을 시작한 순간부터 변화가 멎을 때까지 통째로 |`
       : `| 조건마다 저장할 표본 수 | ${samples}개 |`,
-    `| 표본 간격 | ${intervalSeconds}초 |`,
+    `| 표본 간격 | ${interval} |`,
     curve
       ? `| 기록을 멈추는 시점 | 변화가 멎었을 때 또는 정해 둔 관찰 시간이 끝났을 때 |`
       : `| 조건을 바꾼 뒤 기다릴 시간 | ${settlingSeconds}초 |`,
   ]
 
   const record = curve
-    ? `조건을 시작한 순간부터 ${intervalSeconds}초 간격으로 끊지 말고 저장하고, 값이 더 이상 변하지 않거나 정해 둔 관찰 시간이 끝나면 멈춥니다.`
-    : `조건을 바꾼 뒤 ${settlingSeconds}초 기다려 값이 안정되면 ${intervalSeconds}초 간격으로 ${samples}개를 저장합니다.`
+    ? `조건을 시작한 순간부터 ${interval} 간격으로 끊지 말고 저장하고, 값이 더 이상 변하지 않거나 정해 둔 관찰 시간이 끝나면 멈춥니다.`
+    : `조건을 바꾼 뒤 ${settlingSeconds}초 기다려 값이 안정되면 ${interval} 간격으로 ${samples}개를 저장합니다.`
 
   // 규칙은 표에 실제로 있는 칸만 이야기해야 합니다. 표에 없는 "기다리는 시간"을
   // 늘리라고 하면 학생은 없는 칸을 찾아 헤맵니다.
@@ -566,23 +673,79 @@ ${rows.join('\n')}
 2. [ ] 위 표의 조건을 실험 노트에 하나씩 줄로 적고, 조건마다 이름을 붙여 스케치가 찍는 조건 이름과 맞춥니다.
 3. [ ] 첫 조건과 마지막 조건을 한 번씩 미리 시험해 장치가 그 범위를 견디는지 확인합니다.
 4. [ ] ${record}
-5. [ ] 조건 순서를 적어 둔 차례대로 1회, 거꾸로 1회, 무작위로 1회 측정합니다. 순서 때문에 생기는 치우침은 이렇게만 걸러 낼 수 있습니다.
+5. [ ] 조건 순서를 적어 둔 차례대로 1회, 거꾸로 1회, 무작위로 1회 측정합니다. 먼저 잰 조건이 유리해지는 쏠림(치우침)은 이렇게만 걸러 낼 수 있습니다.
 6. [ ] 적어 둔 조건이 저마다 ${repeats}회씩 빠짐없이 채워졌는지 조건 이름과 반복 번호로 확인합니다.`
+}
+
+/**
+ * 스케치가 조건을 스스로 훑는가.
+ *
+ * `for (int pwm = 0; pwm <= 255; pwm += 51)`처럼 `loop` 안에서 값을 단계적으로
+ * 올리며 한 단계마다 한 줄을 찍는 스케치입니다. 표본을 여러 개 평균 내려고 도는
+ * 반복문(`++i`)이나 채널을 훑는 반복문과는 다릅니다. 그래서 걸음 폭을 숫자로
+ * 지정한 `+=` 만 봅니다.
+ */
+const SWEEPING_LOOP = /for\s*\(\s*(?:\w+\s+)?(\w+)\s*=\s*(-?\d+)\s*;[^;]*?(-?\d+)\s*;\s*\1\s*\+=\s*(\d+)\s*\)/
+
+function sweptSweep(sketch: string): { steps: number } | null {
+  const loopBody = sketch.split(/void\s+loop\s*\(\s*\)/)[1]
+  if (!loopBody) return null
+  const match = SWEEPING_LOOP.exec(loopBody)
+  if (!match) return null
+  const [, , from, to, step] = match
+  const steps = Math.floor((Number(to) - Number(from)) / Number(step)) + 1
+  return steps > 1 ? { steps } : null
+}
+
+/**
+ * 코드가 조건을 스스로 바꾸는 탐구의 실행 계획.
+ *
+ * 이런 레시피에도 조건표 계획이 나가던 때에는 "조건을 바꾼 뒤 10초 기다려 1초
+ * 간격으로 20개를 저장하라"고 시켰습니다. 학생에게는 손으로 바꿀 조건이 없어서
+ * 그 자리에서 멈춥니다. 사람이 실제로 할 일만 남기고, 조건을 더 천천히 훑고
+ * 싶을 때 어디를 고치는지도 함께 적습니다.
+ */
+function sweptWorkbook(recipe: Recipe, plan: InquiryPlan | undefined, sweep: { steps: number }): string {
+  const { repeats, intervalMs, interval } = samplingPlan(recipe)
+  const conditions = plan?.variables.independent ?? '스케치가 정해 둔 조건'
+  const anchor = recipe.tunables[0]?.anchor
+  const cycleSeconds = Math.round((sweep.steps * intervalMs) / 1000)
+
+  return `이 탐구는 조건을 손으로 바꾸는 실험이 아닙니다. **스케치가 조건을 차례대로 바꾸며** 한 단계마다 한 줄을 찍습니다. 사람이 할 일은 한 바퀴가 도는 동안 장치를 가만히 두고, 나온 글을 저장하는 것입니다.
+
+| 항목 | 권장값 |
+|:---|---:|
+| 조건을 바꾸는 쪽 | 스케치 (사람이 바꾸지 않습니다) |
+| 코드가 훑는 조건 | ${conditions} |
+| 한 바퀴의 단계 수 | ${sweep.steps}단계 |
+| 한 단계를 유지하는 시간 | ${interval} |
+| 한 바퀴에 걸리는 시간 | 약 ${cycleSeconds}초 |
+| 기록할 바퀴 수 | ${repeats}바퀴 |
+
+1. [ ] 업로드한 뒤 한 바퀴(약 ${cycleSeconds}초)가 끝날 때까지 장치와 센서를 건드리지 않습니다.
+2. [ ] 시리얼 모니터에 쌓인 글을 열 이름이 적힌 첫 줄부터 끝까지 복사해 저장합니다.
+3. [ ] 같은 방식으로 ${repeats}바퀴를 기록해, 같은 조건에서 값이 얼마나 흔들리는지 봅니다.
+4. [ ] 한 단계에서 값이 미처 안정되지 않으면 코드의 ${anchor ? `\`${anchor}\`` : '유지 시간'} 값을 늘리고 **다시 업로드**한 뒤 처음부터 기록합니다.`
 }
 
 function executionSection(
   recipe: Recipe,
   kind: ExperimentPlan,
-  intervalSeconds: number,
+  interval: string,
   plan: InquiryPlan | undefined,
 ): Section {
-  const body = kind === 'event'
-    ? eventWorkbook(recipe)
-    : kind === 'time-series'
-      ? timeSeriesWorkbook(recipe, intervalSeconds)
-      : kind === 'transient'
-        ? transientWorkbook(recipe)
-        : comparisonWorkbook(recipe, plan)
+  // 스케치가 조건을 스스로 훑는지가 먼저입니다. 제목으로 고른 갈래가 무엇이든,
+  // 손으로 바꿀 조건이 없는 레시피에 "조건을 바꾼 뒤"라고 시킬 수는 없습니다.
+  const sweep = sweptSweep(recipe.sketch)
+  const body = sweep
+    ? sweptWorkbook(recipe, plan, sweep)
+    : kind === 'event'
+      ? eventWorkbook(recipe)
+      : kind === 'time-series'
+        ? timeSeriesWorkbook(recipe, interval)
+        : kind === 'transient'
+          ? transientWorkbook(recipe)
+          : comparisonWorkbook(recipe, plan)
   return { title: '실험 실행 계획', body }
 }
 
@@ -606,7 +769,7 @@ function buildGuide(recipe: Recipe, plan: InquiryPlan | undefined): Recipe {
 
   const authored = parseAuthoredBody(latexize(recipe.body.trim()))
   const kind = experimentPlan(recipe)
-  const { intervalSeconds } = samplingPlan(recipe)
+  const { interval } = samplingPlan(recipe)
 
   // 계획이 아직 없는 레시피도 빈 표 대신 최소한의 안내는 받아야 하므로,
   // 계획이 있어야만 만들 수 있는 절만 빼고 나머지는 그대로 내보냅니다.
@@ -614,30 +777,40 @@ function buildGuide(recipe: Recipe, plan: InquiryPlan | undefined): Recipe {
     ? [
         theorySection(recipe, plan, kind),
         variableSection(plan),
-        safetySection(authored),
-        // 몇 번 반복할지 정한 다음에 손을 대야 합니다. 순서가 반대면 학생은
-        // 측정을 다 끝낸 뒤에야 시행 횟수가 모자랐다는 것을 알게 됩니다.
-        executionSection(recipe, kind, intervalSeconds, plan),
+        // 장치를 놓는 일이 먼저입니다. 실행 계획이 앞에 있던 때에는 그 절의 첫
+        // 체크 상자가 "전원을 넣고 60초간 예비 관찰"이었는데, 스탠드를 세우고
+        // 진자를 매다는 일은 그다음 절에 있었습니다. 위에서부터 상자를 누르는
+        // 학생은 아직 장치가 없는 채로 60초를 기다렸습니다. 몇 번 반복할지
+        // 먼저 정하라는 뜻은 순서가 아니라 `procedureSection`의 머리말로 지킵니다.
         procedureSection(plan, authored),
+        executionSection(recipe, kind, interval, plan),
         columnSection(recipe),
         analysisSection(plan, authored),
         checkpointSection(plan),
         extensionSection(plan),
       ]
     : [
-        safetySection(authored),
-        executionSection(recipe, kind, intervalSeconds, plan),
         // 설계가 없는 레시피는 조립 단계도 없으므로 측정 방법만 냅니다.
         procedureSection({ setup: [] } as unknown as InquiryPlan, authored),
+        executionSection(recipe, kind, interval, plan),
         columnSection(recipe),
       ]
 
   const head = plan ? overviewSection(recipe, plan, authored) : latexize(recipe.body.trim())
+  // 번호는 화면의 "4. 탐구 가이드" 아래 칸이므로 `4-1`처럼 하위 번호로 적고
+  // 제목도 한 단계 낮춥니다. 예전에는 이 절들이 화면 절과 똑같은 `## 1.`이라,
+  // 4번을 읽고 있는 학생 앞에 1번이 다시 나타나 앞으로 되돌아간 줄 알았습니다.
   const numberedSections = sections
     .filter((section): section is NonNullable<Section> => section !== null)
-    .map((section, index) => `## ${index + 1}. ${section.title}\n\n${section.body}`)
+    .map((section, index) => `### ${GUIDE_SECTION_NUMBER}-${index + 1}. ${section.title}\n\n${section.body}`)
 
-  const body = [GUIDE_MARKER, head, ...numberedSections, deepDiveSection(authored)]
+  // 안전 안내는 번호 붙은 절로 내지 않습니다. 화면이 배선을 시작하기 전에 같은
+  // 문장을 이미 보여 주기 때문입니다(`safetyNotice`). 본문에 한 번만 남겨 두면
+  // 그 함수가 계속 찾아 쓸 수 있고, 화면은 가이드를 그릴 때 이 덩어리만 빼면
+  // 됩니다(`withoutSafetyNotice`).
+  const safety = authored.safety ? `:::callout warn\n${authored.safety}\n:::` : ''
+
+  const body = [GUIDE_MARKER, head, safety, GUIDE_SECTIONS_MARKER, ...numberedSections, deepDiveSection(authored)]
     .filter(Boolean)
     .join('\n\n')
 
