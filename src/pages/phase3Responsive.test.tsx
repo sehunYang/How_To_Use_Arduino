@@ -4,7 +4,7 @@ import { cleanup, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { AppShell } from '@/components/AppShell'
-import { RecipeDetailPage } from './RecipeDetailPage'
+import { RecipeDetailPage } from './recipe/RecipeDetailPage'
 import { RecipeListPage } from './RecipeListPage'
 
 beforeEach(() => {
@@ -43,9 +43,9 @@ describe('Phase 3 responsive layout contracts', () => {
     // jsdom은 스크롤을 구현하지 않아 호출마다 경고를 냅니다. 실제 실패를 가립니다.
     window.scrollBy = vi.fn()
     const { container } = render(
-      <MemoryRouter initialEntries={['/recipes/pendulum']}>
+      <MemoryRouter initialEntries={['/recipes/pendulum/wiring']}>
         <Routes>
-          <Route path="/recipes/:id" element={<RecipeDetailPage />} />
+          <Route path="/recipes/:id/*" element={<RecipeDetailPage />} />
         </Routes>
       </MemoryRouter>,
     )

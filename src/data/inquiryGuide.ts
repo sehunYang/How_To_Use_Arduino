@@ -11,8 +11,15 @@ export { inquiryQuestion }
 
 const GUIDE_MARKER = '<!-- inquiry-workbook-v2 -->'
 
-/** 화면에서 탐구 가이드가 놓이는 절 번호. 가이드 안의 절은 이 번호의 하위 번호를 받습니다. */
-const GUIDE_SECTION_NUMBER = 4
+/**
+ * 화면에서 가이드가 놓이는 두 단계의 번호. 가이드 안의 절은 하위 번호를 받습니다.
+ *
+ * 재기 전에 정하는 것(이론·변인·순서·실행 계획)과 재고 나서 하는 것(측정값 읽기·
+ * 그래프·점검·다음 탐구)은 학생이 손을 대는 시점이 다릅니다. 한 덩어리로 두었을
+ * 때에는 한 번도 재보기 전에 '데이터 처리와 그래프'를 읽었습니다.
+ */
+const DESIGN_SECTION_NUMBER = 4
+const MEASURE_SECTION_NUMBER = 5
 
 /**
  * '한눈에 보기'와 번호 붙은 절 사이의 경계.
@@ -23,6 +30,34 @@ const GUIDE_SECTION_NUMBER = 4
  * 화면이 요약과 나머지를 서로 다른 자리에 그릴 수 있게 합니다.
  */
 const GUIDE_SECTIONS_MARKER = '<!-- inquiry-guide-sections -->'
+
+/** 설계 절과 측정 절의 경계. 두 단계가 서로 다른 화면이므로 본문도 여기에서 갈립니다. */
+const GUIDE_MEASURE_MARKER = '<!-- inquiry-guide-measure -->'
+
+/**
+ * 다른 단계를 가리키는 굵은 글씨를 그 단계로 가는 링크로 바꿉니다.
+ *
+ * 단계가 저마다 다른 주소를 갖게 되면서 "**2. 배선하기**를 끝까지 마친 뒤"는
+ * 스크롤로 닿을 수 없는 자리를 가리키게 되었습니다. 이름이 이미 정확하므로
+ * 링크로 바꾸기만 하면 됩니다. 본문을 다 조립한 뒤 한 번에 훑는 이유는, 이
+ * 참조가 레시피 설계 데이터(`plan.setup`)에서 오기도 하고 절을 만드는 함수에서
+ * 오기도 해서 한 자리에 모여 있지 않기 때문입니다.
+ */
+const STEP_PATHS: Record<string, string> = {
+  '1. 준비물 챙기기': 'parts',
+  '2. 배선하기': 'wiring',
+  '3. 코드 넣기': 'code',
+  '4. 탐구 설계': 'design',
+  '5. 측정과 분석': 'measure',
+}
+
+function linkStepReferences(body: string, recipeId: string): string {
+  let text = body
+  for (const [label, path] of Object.entries(STEP_PATHS)) {
+    text = text.split(`**${label}**`).join(`[${label}](/recipes/${recipeId}/${path})`)
+  }
+  return text
+}
 
 /**
  * 안전 안내 덩어리.
@@ -37,18 +72,30 @@ const SAFETY_CALLOUT = /:::callout\s+warn\s*\n[\s\S]*?\n:::\s*/g
 /** 요약 절의 제목. 화면이 이 제목으로 절을 세우므로 본문에서는 떼어 냅니다. */
 export const OVERVIEW_TITLE = '한눈에 보기'
 
-/** 가이드 본문을 '한눈에 보기'와 번호 붙은 절로 가릅니다. 표시가 없으면 전부 뒤쪽입니다. */
-export function splitGuide(body: string): { overview: string; sections: string } {
+/**
+ * 가이드 본문을 화면이 그리는 세 자리로 가릅니다.
+ *
+ * `overview`는 허브, `design`은 "4. 탐구 설계", `measure`는 "5. 측정과 분석"으로
+ * 갑니다. 표시가 없는 옛 본문은 전부 `design`으로 보내, 예전처럼 한자리에 이어
+ * 나오게 둡니다. 게시된 레시피가 아직 새 표시를 못 받았을 때 화면이 절을
+ * 통째로 잃지 않게 하려는 것입니다.
+ */
+export function splitGuide(body: string): { overview: string; design: string; measure: string } {
   const guide = body.replace(SAFETY_CALLOUT, '')
-  const at = guide.indexOf(GUIDE_SECTIONS_MARKER)
   const strip = (text: string) => text
     .replace(GUIDE_MARKER, '')
     .replace(/^[ \t]*## 한눈에 보기[ \t]*$/m, '')
     .trim()
-  if (at === -1) return { overview: '', sections: strip(guide) }
+  const at = guide.indexOf(GUIDE_SECTIONS_MARKER)
+  const overview = at === -1 ? '' : strip(guide.slice(0, at))
+  const rest = at === -1 ? strip(guide) : guide.slice(at + GUIDE_SECTIONS_MARKER.length).trim()
+
+  const splitAt = rest.indexOf(GUIDE_MEASURE_MARKER)
+  if (splitAt === -1) return { overview, design: rest, measure: '' }
   return {
-    overview: strip(guide.slice(0, at)),
-    sections: guide.slice(at + GUIDE_SECTIONS_MARKER.length).trim(),
+    overview,
+    design: rest.slice(0, splitAt).trim(),
+    measure: rest.slice(splitAt + GUIDE_MEASURE_MARKER.length).trim(),
   }
 }
 
@@ -520,7 +567,7 @@ function analysisSection(plan: InquiryPlan, authored: AuthoredBody): Section {
   if (!steps.length) return null
   return {
     title: '데이터 처리와 그래프',
-    body: `화면의 **5. 측정값 저장하고 분석하기**에서 시킨 대로 CSV를 뽑은 뒤, 순서대로 계산하세요. 원시값을 남겨 두었으므로 방법을 바꿔도 다시 측정하지 않아도 됩니다.
+    body: `이 단계 첫머리의 **측정값 내보내기**에서 시킨 대로 CSV를 뽑은 뒤, 순서대로 계산하세요. 원시값을 남겨 두었으므로 방법을 바꿔도 다시 측정하지 않아도 됩니다.
 
 ${checklist(steps)}`,
   }
@@ -773,7 +820,11 @@ function buildGuide(recipe: Recipe, plan: InquiryPlan | undefined): Recipe {
 
   // 계획이 아직 없는 레시피도 빈 표 대신 최소한의 안내는 받아야 하므로,
   // 계획이 있어야만 만들 수 있는 절만 빼고 나머지는 그대로 내보냅니다.
-  const sections: Section[] = plan
+  //
+  // 두 묶음으로 나눠 두는 것은 화면이 두 단계이기 때문입니다. 앞쪽은 재기 전에
+  // 정하는 것, 뒤쪽은 재고 나서 하는 것입니다. 어느 절이 어느 쪽인지는 학생이
+  // 그 절에 손을 대는 시점이 정하므로 여기에서 한 번만 적어 둡니다.
+  const designSections: Section[] = plan
     ? [
         theorySection(recipe, plan, kind),
         variableSection(plan),
@@ -784,25 +835,32 @@ function buildGuide(recipe: Recipe, plan: InquiryPlan | undefined): Recipe {
         // 먼저 정하라는 뜻은 순서가 아니라 `procedureSection`의 머리말로 지킵니다.
         procedureSection(plan, authored),
         executionSection(recipe, kind, interval, plan),
-        columnSection(recipe),
-        analysisSection(plan, authored),
-        checkpointSection(plan),
-        extensionSection(plan),
       ]
     : [
         // 설계가 없는 레시피는 조립 단계도 없으므로 측정 방법만 냅니다.
         procedureSection({ setup: [] } as unknown as InquiryPlan, authored),
         executionSection(recipe, kind, interval, plan),
-        columnSection(recipe),
       ]
 
+  const measureSections: Section[] = plan
+    ? [
+        columnSection(recipe),
+        analysisSection(plan, authored),
+        checkpointSection(plan),
+        extensionSection(plan),
+      ]
+    : [columnSection(recipe)]
+
   const head = plan ? overviewSection(recipe, plan, authored) : latexize(recipe.body.trim())
-  // 번호는 화면의 "4. 탐구 가이드" 아래 칸이므로 `4-1`처럼 하위 번호로 적고
-  // 제목도 한 단계 낮춥니다. 예전에는 이 절들이 화면 절과 똑같은 `## 1.`이라,
-  // 4번을 읽고 있는 학생 앞에 1번이 다시 나타나 앞으로 되돌아간 줄 알았습니다.
-  const numberedSections = sections
+  // 번호는 그 절이 놓이는 화면 단계의 하위 번호로 적고 제목도 한 단계 낮춥니다.
+  // 예전에는 이 절들이 화면 절과 똑같은 `## 1.`이라, 4번을 읽고 있는 학생 앞에
+  // 1번이 다시 나타나 앞으로 되돌아간 줄 알았습니다.
+  const number = (sections: Section[], step: number) => sections
     .filter((section): section is NonNullable<Section> => section !== null)
-    .map((section, index) => `### ${GUIDE_SECTION_NUMBER}-${index + 1}. ${section.title}\n\n${section.body}`)
+    .map((section, index) => `### ${step}-${index + 1}. ${section.title}\n\n${section.body}`)
+
+  const numberedDesign = number(designSections, DESIGN_SECTION_NUMBER)
+  const numberedMeasure = number(measureSections, MEASURE_SECTION_NUMBER)
 
   // 안전 안내는 번호 붙은 절로 내지 않습니다. 화면이 배선을 시작하기 전에 같은
   // 문장을 이미 보여 주기 때문입니다(`safetyNotice`). 본문에 한 번만 남겨 두면
@@ -810,11 +868,21 @@ function buildGuide(recipe: Recipe, plan: InquiryPlan | undefined): Recipe {
   // 됩니다(`withoutSafetyNotice`).
   const safety = authored.safety ? `:::callout warn\n${authored.safety}\n:::` : ''
 
-  const body = [GUIDE_MARKER, head, safety, GUIDE_SECTIONS_MARKER, ...numberedSections, deepDiveSection(authored)]
+  // '원리·오차까지 보기'는 결과를 손에 쥔 다음에 읽는 글이라 측정 쪽 끝에 둡니다.
+  const body = [
+    GUIDE_MARKER,
+    head,
+    safety,
+    GUIDE_SECTIONS_MARKER,
+    ...numberedDesign,
+    GUIDE_MEASURE_MARKER,
+    ...numberedMeasure,
+    deepDiveSection(authored),
+  ]
     .filter(Boolean)
     .join('\n\n')
 
-  return { ...recipe, body }
+  return { ...recipe, body: linkStepReferences(body, recipe.id) }
 }
 
 /**

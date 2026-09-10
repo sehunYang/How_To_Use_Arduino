@@ -51,7 +51,9 @@ export function DiscoveryPage() {
         <aside aria-labelledby="resume-title" className="mt-10 rounded-card border border-accent bg-muted-background p-5">
           <p id="resume-title" className="text-caption font-semibold text-accent">이어서 하기</p>
           <p className="mt-1">{resume.activeStep + 1}단계부터 배선을 계속할 수 있어요.</p>
-          <Button className="mt-4" onClick={() => navigate(`/recipes/${resume.recipeId}#step-${resume.activeStep + 1}`)}>계속하기</Button>
+          {/* 배선이 자기 주소를 갖게 되면서, 멈춘 자리는 레시피가 아니라 배선 화면의
+              그 단계입니다. 허브로 보내면 학생이 단계를 한 번 더 골라야 합니다. */}
+          <Button className="mt-4" onClick={() => navigate(`/recipes/${resume.recipeId}/wiring#step-${resume.activeStep + 1}`)}>계속하기</Button>
         </aside>
       )}
 

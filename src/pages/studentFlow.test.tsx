@@ -6,7 +6,7 @@ import userEvent from '@testing-library/user-event'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import type { ReactNode } from 'react'
 import { SearchResultsPage } from './SearchResultsPage'
-import { RecipeDetailPage } from './RecipeDetailPage'
+import { RecipeDetailPage } from './recipe/RecipeDetailPage'
 import { RecipeListPage } from './RecipeListPage'
 import { progressKey } from '@/progress'
 import { WiringIllustration } from '@/components/WiringIllustration'
@@ -15,6 +15,14 @@ import { pendulumRecipe } from '@/data/canary'
 function renderAt(path: string, element: ReactNode, route = path.split('?')[0]) {
   window.history.replaceState({}, '', path)
   return render(<BrowserRouter><Routes><Route path={route} element={element} /></Routes></BrowserRouter>)
+}
+
+/**
+ * 레시피 한 편이 다섯 단계로 갈라졌으므로 테스트도 단계를 골라 그립니다.
+ * 껍데기가 자기 안에서 다시 Routes를 그리므로 바깥 경로는 `/*`로 열어 둡니다.
+ */
+function renderStep(step: string, element: ReactNode = <RecipeDetailPage />) {
+  return renderAt(`/recipes/pendulum${step ? `/${step}` : ''}`, element, '/recipes/:id/*')
 }
 
 beforeEach(() => {
@@ -80,7 +88,7 @@ describe('Phase 3 student flow', () => {
   })
 
   it('advances wiring focus, persists progress, and reverses on uncheck', async () => {
-    renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
+    renderStep('wiring')
     const checks = screen.getAllByRole('checkbox')
     await userEvent.click(checks[0])
     expect(screen.getByText('1/4 완료')).toBeInTheDocument()
@@ -90,7 +98,7 @@ describe('Phase 3 student flow', () => {
   })
 
   it('names exact breadboard holes in the wiring instructions', () => {
-    renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
+    renderStep('wiring')
 
     expect(screen.getByText('MPU6050.VCC → BB.tp.5')).toBeInTheDocument()
     expect(screen.getByText('UNO.5V → BB.tp.1')).toBeInTheDocument()
@@ -104,7 +112,7 @@ describe('Phase 3 student flow', () => {
    * 화면 밖으로 밀려나므로, 무엇이 들었는지 알 만한 요약만 남기고 접어 둡니다.
    */
   it('folds the setup guidance away but says what is inside', () => {
-    renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
+    renderStep('code')
 
     const firstRun = screen.getByText(/아두이노가 처음이라면/)
     expect(firstRun.closest('details')).not.toHaveAttribute('open')
@@ -133,7 +141,7 @@ describe('Phase 3 student flow', () => {
   }
 
   it('lets the student tick a guide step and remembers it', async () => {
-    renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
+    renderStep('design')
 
     const step = guideStep(/책상 모서리에 스탠드를 고정하고/)
     expect(step).not.toBeChecked()
@@ -144,12 +152,12 @@ describe('Phase 3 student flow', () => {
       .toContain('책상 모서리에 스탠드를 고정하고')
 
     cleanup()
-    renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
+    renderStep('design')
     expect(guideStep(/책상 모서리에 스탠드를 고정하고/)).toBeChecked()
   })
 
   it('numbers the guide steps so none looks skipped', () => {
-    renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
+    renderStep('design')
 
     // 순서 있는 목록이라 번호가 붙고, 각 항목이 체크 상자를 하나씩 가집니다.
     const list = screen.getByText(/책상 모서리에 스탠드를 고정하고/).closest('ol')
@@ -158,7 +166,7 @@ describe('Phase 3 student flow', () => {
   })
 
   it('sends the student from a part in the list to that sensor page', () => {
-    renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
+    renderStep('parts')
 
     expect(screen.getByRole('link', { name: /MPU6050 가속도·자이로 센서/ }))
       .toHaveAttribute('href', '/sensors/mpu6050')
@@ -169,14 +177,14 @@ describe('Phase 3 student flow', () => {
   // is the point of the test (the handoff only appears after the last box),
   // so the timeout goes up rather than the interaction being faked.
   it('shows the completion handoff after the final wiring step', async () => {
-    renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
+    renderStep('wiring')
     for (const checkbox of screen.getAllByRole('checkbox')) await userEvent.click(checkbox)
     expect(screen.getByText(/배선 완료 → 이제 코드를 실행할 차례/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '페이지 주소 복사' })).toBeInTheDocument()
   }, 30_000)
 
   it('renders a friendly withdrawn-recipe state without leaking an error', () => {
-    renderAt('/recipes/withdrawn-recipe', <RecipeDetailPage />, '/recipes/:id')
+    renderAt('/recipes/withdrawn-recipe', <RecipeDetailPage />, '/recipes/:id/*')
     expect(screen.getByRole('heading', { name: '이 레시피는 현재 볼 수 없어요' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: '검색으로 돌아가기' })).toBeInTheDocument()
   })
@@ -201,7 +209,7 @@ describe('Phase 3 student flow', () => {
     renderAt(
       '/recipes/draft-preview?preview=1',
       <RecipeDetailPage previewServices={{ authorize: async () => true, loadRecipe: async () => draft }} />,
-      '/recipes/:id',
+      '/recipes/:id/*',
     )
     expect(await screen.findByText('관리자 미리보기 · 학생 화면과 동일한 레이아웃')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: draft.title })).toBeInTheDocument()
@@ -214,7 +222,7 @@ describe('Phase 3 student flow', () => {
         authorize: async () => { throw new Error('auth unavailable') },
         loadRecipe: async () => null,
       }} />,
-      '/recipes/:id',
+      '/recipes/:id/*',
     )
     expect(await screen.findByRole('heading', { name: '이 레시피는 현재 볼 수 없어요' })).toBeInTheDocument()
   })
@@ -230,7 +238,7 @@ describe('처음인 학생이 멈추던 자리', () => {
    * 표시를 하고 넘어가므로, 전원을 넣기 전에 한 번 더 묻는 자리가 필요합니다.
    */
   it('asks what to re-check before the USB goes in, drawn from the wiring itself', () => {
-    renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
+    renderStep('wiring')
 
     const check = screen.getByRole('region', { name: /USB를 꽂기 전에/ })
     // 점검 문항의 끝점은 이 레시피의 실제 배선에서 온 것입니다.
@@ -244,7 +252,7 @@ describe('처음인 학생이 멈추던 자리', () => {
    * 다시 읽어야 합니다. 배선 단계와 마찬가지로 눌리고 남아 있어야 합니다.
    */
   it('lets the student tick each pre-power check and remembers it', () => {
-    renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
+    renderStep('wiring')
 
     const check = screen.getByRole('region', { name: /USB를 꽂기 전에/ })
     const boxes = within(check).getAllByRole('checkbox')
@@ -256,7 +264,7 @@ describe('처음인 학생이 멈추던 자리', () => {
     expect(check).toHaveTextContent(`1/${boxes.length} 확인`)
 
     cleanup()
-    renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
+    renderStep('wiring')
     const reopened = screen.getByRole('region', { name: /USB를 꽂기 전에/ })
     expect(within(reopened).getAllByRole('checkbox')[0]).toBeChecked()
   })
@@ -266,7 +274,7 @@ describe('처음인 학생이 멈추던 자리', () => {
    * 값을 여기에서 걸러 내지 못하면 한 시간을 헛측정합니다.
    */
   it('says what a healthy first reading looks like, and which values mean broken wiring', () => {
-    renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
+    renderStep('code')
 
     const reading = screen.getByRole('region', { name: '처음 나온 값이 정상인지 확인하기' })
     expect(reading).toHaveTextContent(/평평한 책상에 두면/)
@@ -276,7 +284,7 @@ describe('처음인 학생이 멈추던 자리', () => {
   })
 
   it('explains the sketch before showing it', () => {
-    renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
+    renderStep('code')
 
     const summary = screen.getByRole('heading', { name: '이 코드가 하는 일' }).closest('div')!
     expect(summary).toHaveTextContent('115200 baud')
@@ -285,7 +293,7 @@ describe('처음인 학생이 멈추던 자리', () => {
 
   /** 한 칸 밀려 꽂았을 때 스스로 되짚으려면 어떤 구멍이 이어져 있는지를 알아야 합니다. */
   it('folds the breadboard primer away but keeps it above the wiring steps', () => {
-    renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
+    renderStep('wiring')
 
     const primer = screen.getByText(/브레드보드가 처음이라면/)
     expect(primer.closest('details')).not.toHaveAttribute('open')
@@ -293,26 +301,42 @@ describe('처음인 학생이 멈추던 자리', () => {
   })
 
   /**
-   * 무엇을 왜 재는지가 부품·배선·코드보다 먼저 와야 합니다. 예전에는 이 표가
-   * 가이드 본문 첫머리에 있어 네 번째 절에 가서야 나왔고, 그때는 이미 부품을
-   * 챙기고 배선을 마친 뒤였습니다.
+   * 레시피에 들어와 처음 만나는 것은 무엇을 왜 재는 탐구인가입니다. 부품도 배선도
+   * 아닙니다. 예전에는 이 표가 가이드 본문 첫머리에 있어 네 번째 절에 가서야
+   * 나왔고, 그때는 이미 부품을 챙기고 배선을 마친 뒤였습니다.
    */
-  it('puts the inquiry question above the parts list, not four sections down', () => {
-    renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
+  it('opens on the question the inquiry answers, not on the parts', () => {
+    renderStep('')
 
-    const overview = screen.getByRole('heading', { name: '한눈에 보기' })
-    const parts = screen.getByRole('heading', { name: '1. 준비물 챙기기' })
-    expect(overview.compareDocumentPosition(parts) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(screen.getByRole('heading', { name: '한눈에 보기' })).toBeInTheDocument()
     expect(screen.getByText('이 탐구가 답하려는 질문')).toBeInTheDocument()
+    // 부품은 이 화면에 없고, 골라서 들어가는 자리로만 있습니다.
+    expect(screen.queryByRole('heading', { name: '1. 준비물 챙기기' })).toBeNull()
+    expect(screen.getByRole('link', { name: '1. 준비물 챙기기' }))
+      .toHaveAttribute('href', '/recipes/pendulum/parts')
   })
 
-  /** 배선을 마친 학생이 코드만 다시 보려면 스크롤 말고 길이 있어야 합니다. */
-  it('offers a way to jump between the sections', () => {
-    renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
+  /**
+   * 단계마다 주소가 다르므로 이 줄은 화면 안에서 자리를 옮기는 것이 아니라 다른
+   * 화면으로 가는 길입니다. 배선을 마친 학생이 코드만 다시 보려면 이 줄이 필요합니다.
+   */
+  it('offers a way to move between the steps', () => {
+    renderStep('wiring')
 
-    const nav = screen.getByRole('navigation', { name: '이 레시피의 절' })
-    expect(within(nav).getByRole('link', { name: '3. 코드' })).toHaveAttribute('href', '#code-title')
-    expect(within(nav).getByRole('link', { name: '4. 탐구 가이드' })).toHaveAttribute('href', '#guide-title')
+    const nav = screen.getByRole('navigation', { name: '이 레시피의 단계' })
+    expect(within(nav).getByRole('link', { name: '3. 코드' })).toHaveAttribute('href', '/recipes/pendulum/code')
+    expect(within(nav).getByRole('link', { name: '4. 탐구 설계' })).toHaveAttribute('href', '/recipes/pendulum/design')
+    // 지금 서 있는 단계는 링크가 아니라 표시입니다.
+    expect(within(nav).getByText('2. 배선')).toHaveAttribute('aria-current', 'page')
+  })
+
+  /** 하던 일을 마친 학생이 다음으로 갈 자리는 화면 끝에 있어야 합니다. */
+  it('points at the next step from the end of the current one', () => {
+    renderStep('code')
+
+    const nav = screen.getByRole('navigation', { name: '단계 이동' })
+    expect(within(nav).getByRole('link', { name: /2\. 배선하기/ })).toHaveAttribute('href', '/recipes/pendulum/wiring')
+    expect(within(nav).getByRole('link', { name: /4\. 탐구 설계/ })).toHaveAttribute('href', '/recipes/pendulum/design')
   })
 
   /**
@@ -321,18 +345,19 @@ describe('처음인 학생이 멈추던 자리', () => {
    * 핀을 옮기려는 학생은 어디를 함께 고쳐야 하는지 알 수 없었습니다.
    */
   it('shows which wiring step each pin in the sketch belongs to', () => {
-    renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
+    renderStep('code')
 
     const map = screen.getByText(/배선과 코드가 이어지는 자리/).closest('details')!
     expect(map).not.toHaveAttribute('open')
     expect(map).toHaveTextContent('MPU6050.SDA')
     expect(map).toHaveTextContent('배선과 코드를 함께')
-    expect(within(map).getByRole('link', { name: '3단계' })).toHaveAttribute('href', '#step-3')
+    // 배선은 이제 다른 화면이라, 같은 화면 안의 자리가 아니라 그 화면을 가리킵니다.
+    expect(within(map).getByRole('link', { name: '3단계' })).toHaveAttribute('href', '/recipes/pendulum/wiring#step-3')
   })
 
   /** 값을 고친 뒤 업로드해야 한다는 사실이 없으면 학생은 코드를 잘못 고친 줄 압니다. */
   it('says the changed value only reaches the board after another upload', () => {
-    renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
+    renderStep('code')
 
     const note = screen.getByText(/업로드 단추를 다시 눌러야/).closest('p')!
     expect(note).toHaveTextContent('다시 눌러 원래 코드를 붙여 넣으세요')
@@ -343,7 +368,7 @@ describe('처음인 학생이 멈추던 자리', () => {
    * 모았습니다. 읽어야 할 자리는 꽂기 전입니다.
    */
   it('shows the safety notice once, before the wiring starts', () => {
-    renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
+    renderStep('wiring')
 
     expect(screen.getAllByText(/5V에 꽂으세요/)).toHaveLength(1)
     expect(screen.queryByRole('heading', { name: /안전 점검/ })).toBeNull()
@@ -351,34 +376,33 @@ describe('처음인 학생이 멈추던 자리', () => {
 
   /** '응용해 보기'는 가이드의 '더 나아가기'와 같은 일을 했습니다. 사다리 쪽만 남깁니다. */
   it('keeps one place for what to try next', () => {
-    renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
+    renderStep('measure')
 
     expect(screen.queryByRole('heading', { name: '응용해 보기' })).toBeNull()
     expect(screen.getByText(/더 나아가기/)).toBeInTheDocument()
   })
 
   /**
-   * 스케치·업로드·시리얼 모니터·baud·라이브러리는 코드 절에서 처음 나오는 말인데
-   * 사전은 배선 절에만 있었습니다. 되돌아가지 않는 학생은 뜻을 모른 채 지나갑니다.
+   * 스케치·업로드·시리얼 모니터·baud·라이브러리는 코드 단계에서 처음 나오는 말인데
+   * 사전은 배선 쪽에만 있었습니다. 되돌아가지 않는 학생은 뜻을 모른 채 지나갑니다.
+   * 단계가 갈라진 뒤에는 각 화면이 자기 사전을 하나씩만 들고 있어야 합니다.
    */
-  it('puts each term next to the section where it first appears', () => {
-    renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
-
-    const dictionaries = screen.getAllByText(/이 절에 나오는 말의 뜻/)
-    expect(dictionaries).toHaveLength(2)
-    const [wiring, code] = dictionaries.map((node) => node.closest('details')!)
+  it('puts each term on the step where it first appears', () => {
+    renderStep('wiring')
+    const wiring = screen.getByText(/이 단계에 나오는 말의 뜻/).closest('details')!
     expect(wiring).toHaveTextContent('SDA')
     expect(wiring).not.toHaveTextContent('baud')
+
+    cleanup()
+    renderStep('code')
+    const code = screen.getByText(/이 단계에 나오는 말의 뜻/).closest('details')!
     expect(code).toHaveTextContent('baud')
     expect(code).toHaveTextContent('시리얼 모니터')
-
-    // 코드 절 사전은 코드 절 제목 뒤에 옵니다.
-    const codeTitle = screen.getByRole('heading', { name: '3. 코드 넣기' })
-    expect(codeTitle.compareDocumentPosition(code) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(code).not.toHaveTextContent('SDA')
   })
 
   it('fills the help card with what the screen already knows', () => {
-    renderAt('/recipes/pendulum', <RecipeDetailPage />, '/recipes/:id')
+    renderStep('')
 
     const card = screen.getByRole('heading', { name: /선생님께 보여 줄 카드/ }).closest('div')!
     expect(card).toHaveTextContent(`${pendulumRecipe.wiring.length}단계 중 0단계까지 확인함`)

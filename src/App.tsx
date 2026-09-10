@@ -18,7 +18,7 @@ import { type AdminServices } from '@/admin/AdminServices'
 const DiscoveryPage = lazy(async () => ({ default: (await import('@/pages/DiscoveryPage')).DiscoveryPage }))
 const SearchResultsPage = lazy(async () => ({ default: (await import('@/pages/SearchResultsPage')).SearchResultsPage }))
 const RecipeListPage = lazy(async () => ({ default: (await import('@/pages/RecipeListPage')).RecipeListPage }))
-const RecipeDetailPage = lazy(async () => ({ default: (await import('@/pages/RecipeDetailPage')).RecipeDetailPage }))
+const RecipeDetailPage = lazy(async () => ({ default: (await import('@/pages/recipe/RecipeDetailPage')).RecipeDetailPage }))
 const SensorListPage = lazy(async () => ({ default: (await import('@/pages/SensorListPage')).SensorListPage }))
 const SensorDetailPage = lazy(async () => ({ default: (await import('@/pages/SensorDetailPage')).SensorDetailPage }))
 const DataAnalysisPage = lazy(async () => ({ default: (await import('@/pages/DataAnalysisPage')).DataAnalysisPage }))
@@ -70,7 +70,7 @@ function StudentRoutes({ adminServices }: { adminServices?: AdminServices }) {
           <Route path="/" element={<DiscoveryPage />} />
           <Route path="/search" element={<SearchResultsPage />} />
           <Route path="/recipes" element={<RecipeListPage />} />
-          <Route path="/recipes/:id" element={<RecipeRoute />} />
+          <Route path="/recipes/:id/*" element={<RecipeRoute />} />
           <Route path="/sensors" element={<SensorListPage />} />
           <Route path="/sensors/:id" element={<SensorDetailPage />} />
           <Route path="/data-analysis" element={<DataAnalysisPage />} />

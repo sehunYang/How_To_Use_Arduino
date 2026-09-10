@@ -24,8 +24,12 @@ function recipe(id: string) {
  * 번호가 화면 절의 하위 번호(`4-`)이고 제목도 한 단계 낮은 이유는
  * `inquiryGuide.ts`의 `GUIDE_SECTION_NUMBER` 설명에 적어 두었습니다.
  */
-function numberedHeadings(body: string) {
-  return [...body.matchAll(/^### 4-(\d+)\. (.+)$/gm)].map((match) => ({
+/**
+ * 가이드 절의 번호와 제목. 단계 번호를 받는 이유는 가이드가 두 화면으로 갈렸기
+ * 때문입니다. 설계 절은 `4-1`부터, 측정 절은 `5-1`부터 다시 셉니다.
+ */
+function numberedHeadings(body: string, step: 4 | 5 = 4) {
+  return [...body.matchAll(new RegExp(String.raw`^### ${step}-(\d+)\. (.+)$`, 'gm'))].map((match) => ({
     index: Number(match[1]),
     title: match[2],
   }))
@@ -192,20 +196,27 @@ describe('inquiry plan coverage', () => {
 describe('rendered guide structure', () => {
   it('numbers sections consecutively so no step looks skipped', () => {
     for (const entry of allRecipes) {
-      const headings = numberedHeadings(entry.body)
-      expect(headings.length, entry.id).toBeGreaterThanOrEqual(6)
-      expect(headings.map((heading) => heading.index), entry.id)
-        .toEqual(headings.map((_, index) => index + 1))
+      const design = numberedHeadings(entry.body, 4)
+      const measure = numberedHeadings(entry.body, 5)
+      expect(design.length + measure.length, entry.id).toBeGreaterThanOrEqual(6)
+      // 두 단계가 저마다 1부터 끊김 없이 셉니다. 한 화면 안에서 번호가 건너뛰면
+      // 학생은 자기가 절을 하나 지나쳤다고 봅니다.
+      for (const headings of [design, measure]) {
+        expect(headings.map((heading) => heading.index), entry.id)
+          .toEqual(headings.map((_, index) => index + 1))
+      }
     }
   })
 
   it('puts the theory before the measurement plan on every recipe', () => {
     for (const entry of allRecipes) {
-      const titles = numberedHeadings(entry.body).map((heading) => heading.title)
-      expect(titles[0], entry.id).toBe('과학 이론 쉽게 이해하기')
-      expect(titles[1], entry.id).toBe('변인 설계')
-      expect(titles.indexOf('실험 실행 계획'), entry.id).toBeGreaterThan(titles.indexOf('변인 설계'))
-      expect(titles.at(-1), entry.id).toBe('더 나아가기')
+      const design = numberedHeadings(entry.body, 4).map((heading) => heading.title)
+      const measure = numberedHeadings(entry.body, 5).map((heading) => heading.title)
+      expect(design[0], entry.id).toBe('과학 이론 쉽게 이해하기')
+      expect(design[1], entry.id).toBe('변인 설계')
+      expect(design.indexOf('실험 실행 계획'), entry.id).toBeGreaterThan(design.indexOf('변인 설계'))
+      // 다음 탐구로 가는 사다리는 결과를 손에 쥔 뒤에 옵니다.
+      expect(measure.at(-1), entry.id).toBe('더 나아가기')
     }
   })
 
@@ -369,13 +380,21 @@ describe('rendered guide structure', () => {
 })
 
 describe('화면이 나눠 그릴 수 있게 자른 가이드', () => {
-  /** 요약은 부품·배선·코드보다 먼저 읽어야 뜻이 있어 화면 맨 위로 올라갑니다. */
-  it('모든 레시피가 질문이 든 요약과 번호 붙은 절로 갈린다', () => {
+  /**
+   * 요약은 허브, 설계는 4단계, 측정은 5단계 화면으로 갑니다. 재기 전에 정하는 것과
+   * 재고 나서 하는 것이 한 덩어리로 있던 때에는, 한 번도 재보기 전에 '데이터
+   * 처리와 그래프'를 읽었습니다.
+   */
+  it('모든 레시피가 요약·설계·측정 세 자리로 갈린다', () => {
     for (const entry of allRecipes) {
-      const { overview, sections } = splitGuide(entry.body)
+      const { overview, design, measure } = splitGuide(entry.body)
       expect(overview, entry.id).toContain('이 탐구가 답하려는 질문')
       expect(overview, entry.id).not.toContain('## 한눈에 보기')
-      expect(sections, entry.id).toMatch(/^### 4-1\. /)
+      expect(design, entry.id).toMatch(/^### 4-1\. /)
+      expect(measure, entry.id).toMatch(/^### 5-1\. /)
+      // 재고 나서 하는 절이 설계 쪽에 남아 있으면 안 됩니다.
+      expect(design, entry.id).not.toContain('데이터 처리와 그래프')
+      expect(measure, entry.id).not.toContain('변인 설계')
     }
   })
 
@@ -388,10 +407,11 @@ describe('화면이 나눠 그릴 수 있게 자른 가이드', () => {
     expect(withSafety.length).toBeGreaterThan(100)
     for (const entry of withSafety) {
       expect(entry.body.match(/:::callout warn/g)!.length, entry.id).toBe(1)
-      const { overview, sections } = splitGuide(entry.body)
-      expect(overview, entry.id).not.toContain(':::callout')
-      expect(sections, entry.id).not.toContain(':::callout')
-      expect(sections, entry.id).not.toContain('안전 점검')
+      const { overview, design, measure } = splitGuide(entry.body)
+      for (const part of [overview, design, measure]) {
+        expect(part, entry.id).not.toContain(':::callout')
+        expect(part, entry.id).not.toContain('안전 점검')
+      }
     }
   })
 
