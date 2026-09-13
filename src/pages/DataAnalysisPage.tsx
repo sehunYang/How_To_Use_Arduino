@@ -9,6 +9,7 @@ import {
   type ChartSeries,
 } from '@/components/DataChart'
 import { GridSummary, type GridCell } from '@/components/GridSummary'
+import { SerialCapturePanel } from '@/components/SerialCapturePanel'
 import {
   MAX_SERIES,
   MAX_TRIAL_SERIES,
@@ -44,6 +45,7 @@ import {
   trialLabel,
   type Trial,
 } from '@/lib/trialAnalysis'
+import { DEFAULT_BAUD_RATE, parseBaudRate } from '@/lib/webSerial'
 
 const example = `time_ms,temperature_c,humidity_pct
 0,21.5,48.2
@@ -91,8 +93,15 @@ function describeCorrelation(correlation: number) {
   return '두 변인이 직선 관계를 이룬다고 보기 어렵습니다.'
 }
 
+/** 레시피 측정 화면이 `?baud=`로 넘겨 준 속도. 학생이 속도를 고르지 않아도 되게 합니다. */
+function initialBaudRate() {
+  if (typeof window === 'undefined') return DEFAULT_BAUD_RATE
+  return parseBaudRate(new URLSearchParams(window.location.search).get('baud')) ?? DEFAULT_BAUD_RATE
+}
+
 export function DataAnalysisPage() {
   const [input, setInput] = useState('')
+  const [baudRate, setBaudRate] = useState(initialBaudRate)
   const [trials, setTrials] = useState<PageTrial[]>([])
   const [lastResult, setLastResult] = useState<SerialCsvResult | null>(null)
   const [mismatchError, setMismatchError] = useState<string | null>(null)
@@ -427,36 +436,53 @@ export function DataAnalysisPage() {
   const sectionNumber = (key: string) => sectionKeys.indexOf(key) + 1
 
   function addTrial() {
-    const parsed = convertSerialTextToCsv(input)
+    addTrialFromText(input, 'paste')
+  }
+
+  /**
+   * USB로 받은 글도 붙여넣은 글과 같은 길로 들어옵니다. 읽지 못했을 때는 받은 글을
+   * 입력란에 남겨 두어, 학생이 무엇이 왔는지 보고 손으로 고쳐 다시 넣을 수 있게 합니다.
+   * 입력란에 이미 적어 둔 글이 있으면 그 글을 지키고, 받은 글은 넣지 않습니다.
+   */
+  function addTrialFromText(text: string, source: 'paste' | 'usb') {
+    const parsed = convertSerialTextToCsv(text)
     setLastResult(parsed)
     setMismatchError(null)
     setChartError(null)
-    if (!parsed.ok) return
+    const keepForFixing = () => {
+      if (source === 'usb' && !input.trim()) setInput(text)
+    }
+    if (!parsed.ok) {
+      keepForFixing()
+      return
+    }
 
     const firstTrial = trials[0]
     if (firstTrial) {
       const mismatch = describeHeaderMismatch(firstTrial.header, parsed.header)
       if (mismatch) {
         setMismatchError(mismatch)
+        keepForFixing()
         return
       }
     }
 
-    const nextTrials: PageTrial[] = [
-      ...trials,
+    // USB 받기는 몇 분씩 걸리고 그동안 회차를 붙여넣거나 지울 수 있으므로, 그때의 목록이
+    // 아니라 지금 목록 뒤에 붙입니다.
+    setTrials((current) => [
+      ...current,
       {
-        id: (trials.at(-1)?.id ?? 0) + 1,
-        label: trialLabel(trials.length + 1),
+        id: (current.at(-1)?.id ?? 0) + 1,
+        label: trialLabel(current.length + 1),
         header: parsed.header,
         rows: parsed.rows,
         manualValues: {},
       },
-    ]
-    setTrials(nextTrials)
-    // 다음 회차를 바로 붙여넣을 수 있도록 입력을 비웁니다.
-    setInput('')
+    ])
+    // 다음 회차를 이어서 붙여넣을 수 있도록 입력을 비웁니다. USB로 받았을 때는 학생이 적던 글을 지키려고 그대로 둡니다.
+    if (source === 'paste') setInput('')
     // 회차 비교는 변인 하나만 그리므로, 2회차가 들어오는 순간 선택을 하나로 줄입니다.
-    if (nextTrials.length >= 2) setYNames((names) => names.slice(0, 1))
+    if (trials.length + 1 >= 2) setYNames((names) => names.slice(0, 1))
 
     if (!firstTrial) {
       // 아두이노 스케치는 보통 시간을 첫 열에 출력하므로 첫 측정값 열을 가로축으로 둡니다.
@@ -652,11 +678,21 @@ export function DataAnalysisPage() {
     <div className="mx-auto max-w-5xl py-8 md:py-12">
       <h1 className="text-3xl font-semibold md:text-4xl">데이터 변환·분석</h1>
       <p className="mt-3 max-w-3xl text-body text-muted">
-        시리얼 모니터 내용을 붙여넣으면 요약 통계와 그래프가 나옵니다.
+        아두이노를 USB로 꽂은 채 받거나 시리얼 모니터 내용을 붙여넣으면 요약 통계와 그래프가 나옵니다.
       </p>
 
       <section aria-labelledby="paste-step" className="mt-8">
-        <h2 id="paste-step" className="text-heading font-semibold">{sectionNumber('paste')}. 측정값 붙여넣기</h2>
+        <h2 id="paste-step" className="text-heading font-semibold">{sectionNumber('paste')}. 측정값 가져오기</h2>
+
+        <div className="mt-4">
+          <SerialCapturePanel
+            baudRate={baudRate}
+            onBaudRateChange={setBaudRate}
+            onCaptured={(text) => addTrialFromText(text, 'usb')}
+          />
+        </div>
+
+        <p className="mt-6 text-body font-semibold">또는 시리얼 모니터에서 복사해 붙여넣기</p>
 
         <details className="mt-4 rounded-card border border-border bg-muted-background p-4">
           <summary className="cursor-pointer text-caption font-semibold">붙여넣기 형식 보기</summary>
@@ -751,7 +787,7 @@ export function DataAnalysisPage() {
         {lastResult && lastResult.excludedRows.length > 0 && (
           <aside aria-labelledby="excluded-rows" className="mt-4 rounded-card border border-warning bg-warning-background p-4 text-warning">
             <h3 id="excluded-rows" className="font-semibold">
-              마지막으로 붙여넣은 내용에서 {lastResult.excludedRows.length}개 행을 제외했습니다.
+              마지막으로 가져온 내용에서 {lastResult.excludedRows.length}개 행을 제외했습니다.
             </h3>
             <p className="mt-1 text-caption">제외된 행: {lastResult.excludedRows.map((row) => row.lineNumber).join(', ')}</p>
             <ul className="mt-2 max-h-40 list-disc overflow-y-auto pl-5 text-caption">

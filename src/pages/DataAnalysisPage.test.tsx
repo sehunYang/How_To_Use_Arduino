@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import '@testing-library/jest-dom/vitest'
-import { cleanup, render, screen, within } from '@testing-library/react'
+import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { DataAnalysisPage } from './DataAnalysisPage'
@@ -492,5 +492,172 @@ describe('DataAnalysisPage', () => {
 
       expect(screen.queryByRole('region', { name: /격자로 보기/ })).not.toBeInTheDocument()
     })
+  })
+})
+
+describe('USB로 바로 받기', () => {
+  interface FakeSerialPort {
+    push: (data: string | Uint8Array) => void
+    port: SerialPort & { open: ReturnType<typeof vi.fn>; close: ReturnType<typeof vi.fn> }
+  }
+
+  /** 크롬이 주는 포트를 흉내 냅니다. `push`로 아두이노가 보낸 글을 흘려 넣습니다. */
+  function fakeSerialPort(): FakeSerialPort {
+    const encoder = new TextEncoder()
+    let controller: ReadableStreamDefaultController<Uint8Array> | null = null
+    const readable = new ReadableStream<Uint8Array>({
+      start(c) {
+        controller = c
+      },
+      cancel() {
+        controller = null
+      },
+    })
+    const port = {
+      readable,
+      writable: null,
+      open: vi.fn(async () => undefined),
+      close: vi.fn(async () => undefined),
+      setSignals: vi.fn(async () => undefined),
+    }
+    return {
+      push: (data) => controller?.enqueue(typeof data === 'string' ? encoder.encode(data) : data),
+      port: port as unknown as FakeSerialPort['port'],
+    }
+  }
+
+  function installSerial(port: SerialPort | null) {
+    Object.defineProperty(navigator, 'serial', {
+      configurable: true,
+      value: port ? { requestPort: vi.fn(async () => port) } : undefined,
+    })
+  }
+
+  afterEach(() => {
+    cleanup()
+    Reflect.deleteProperty(navigator, 'serial')
+    window.history.replaceState({}, '', '/')
+  })
+
+  it('브라우저에 Web Serial이 없으면 단추 대신 안내 한 줄만 보인다', () => {
+    installSerial(null)
+    render(<DataAnalysisPage />)
+
+    expect(screen.queryByRole('button', { name: 'USB로 받기' })).not.toBeInTheDocument()
+    expect(screen.getByText(/크롬이나 엣지에서/)).toBeInTheDocument()
+    expect(screen.getByLabelText('시리얼 모니터 내용')).toBeInTheDocument()
+  })
+
+  it('레시피가 넘긴 속도로 포트를 열고, 멈추면 받은 줄이 회차가 된다', async () => {
+    const { push, port } = fakeSerialPort()
+    installSerial(port)
+    window.history.replaceState({}, '', '/data-analysis?baud=115200')
+    const user = userEvent.setup()
+    render(<DataAnalysisPage />)
+
+    expect(screen.getByLabelText('속도(baud)')).toHaveValue('115200')
+    await user.click(screen.getByRole('button', { name: 'USB로 받기' }))
+    await waitFor(() => expect(port.open).toHaveBeenCalledWith({ baudRate: 115200 }))
+
+    push('time_ms,temperature_c,humidity_pct\r\n0,20,50\r\n1000,22,48\r\n2000,24,4')
+    await waitFor(() => expect(screen.getByText(/3줄 받는 중/)).toBeInTheDocument())
+    push('6\r\n')
+    await waitFor(() => expect(screen.getByText(/4줄 받는 중/)).toBeInTheDocument())
+
+    await user.click(screen.getByRole('button', { name: '멈추고 회차로 넣기' }))
+
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('1개 회차, 3개 열, 모두 3개 데이터 행'))
+    expect(port.close).toHaveBeenCalledTimes(1)
+    expect(screen.getByLabelText('시리얼 모니터 내용')).toHaveValue('')
+    expect(screen.getByRole('button', { name: 'USB로 받기' })).toBeInTheDocument()
+  })
+
+  it('버리기를 누르면 받은 줄을 회차로 넣지 않는다', async () => {
+    const { push, port } = fakeSerialPort()
+    installSerial(port)
+    const user = userEvent.setup()
+    render(<DataAnalysisPage />)
+
+    await user.click(screen.getByRole('button', { name: 'USB로 받기' }))
+    push('time_ms,temperature_c\r\n0,20\r\n')
+    await waitFor(() => expect(screen.getByText(/2줄 받는 중/)).toBeInTheDocument())
+
+    await user.click(screen.getByRole('button', { name: '버리기' }))
+
+    await waitFor(() => expect(port.close).toHaveBeenCalledTimes(1))
+    expect(screen.queryByText(/개 회차/)).not.toBeInTheDocument()
+    expect(screen.getByLabelText('시리얼 모니터 내용')).toHaveValue('')
+  })
+
+  it('열 이름 없이 받은 글은 입력란에 남겨 학생이 고칠 수 있게 한다', async () => {
+    const { push, port } = fakeSerialPort()
+    installSerial(port)
+    const user = userEvent.setup()
+    render(<DataAnalysisPage />)
+
+    await user.click(screen.getByRole('button', { name: 'USB로 받기' }))
+    push('0,20\r\n1000,22\r\n')
+    await waitFor(() => expect(screen.getByText(/2줄 받는 중/)).toBeInTheDocument())
+    await user.click(screen.getByRole('button', { name: '멈추고 회차로 넣기' }))
+
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('CSV 헤더를 찾을 수 없습니다'))
+    expect(screen.getByLabelText('시리얼 모니터 내용')).toHaveValue('0,20\n1000,22')
+  })
+
+  it('포트가 다른 프로그램에 잡혀 있으면 시리얼 모니터를 닫으라고 알려 준다', async () => {
+    const { port } = fakeSerialPort()
+    port.open.mockRejectedValueOnce(new DOMException('Failed to open serial port.', 'NetworkError'))
+    installSerial(port)
+    const user = userEvent.setup()
+    render(<DataAnalysisPage />)
+
+    await user.click(screen.getByRole('button', { name: 'USB로 받기' }))
+
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('시리얼 모니터'))
+    expect(screen.getByRole('button', { name: 'USB로 받기' })).toBeEnabled()
+  })
+
+  it('속도가 어긋나 글자가 깨지면 다른 속도를 권한다', async () => {
+    const { push, port } = fakeSerialPort()
+    installSerial(port)
+    const user = userEvent.setup()
+    render(<DataAnalysisPage />)
+
+    await user.click(screen.getByRole('button', { name: 'USB로 받기' }))
+    push(Uint8Array.from([0xff, 0xfe, 0x0d, 0x0a, 0xff, 0x0d, 0x0a, 0xfe, 0x0d, 0x0a]))
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('속도를 115200으로 바꿔'))
+  })
+
+  it('받는 동안 붙여넣은 회차를 지우지 않고 뒤에 붙는다', async () => {
+    const { push, port } = fakeSerialPort()
+    installSerial(port)
+    const user = userEvent.setup()
+    render(<DataAnalysisPage />)
+
+    await user.click(screen.getByRole('button', { name: 'USB로 받기' }))
+    push('time_ms,temperature_c,humidity_pct\r\n0,20,50\r\n')
+    await waitFor(() => expect(screen.getByText(/2줄 받는 중/)).toBeInTheDocument())
+
+    await paste(user, RUN_1)
+    expect(screen.getByRole('status')).toHaveTextContent('1개 회차')
+
+    await user.click(screen.getByRole('button', { name: '멈추고 회차로 넣기' }))
+
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('2개 회차, 3개 열, 모두 4개 데이터 행'))
+  })
+
+  it('화면을 떠나면 포트를 닫는다', async () => {
+    const { push, port } = fakeSerialPort()
+    installSerial(port)
+    const user = userEvent.setup()
+    const { unmount } = render(<DataAnalysisPage />)
+
+    await user.click(screen.getByRole('button', { name: 'USB로 받기' }))
+    push('time_ms,temperature_c\r\n')
+    await waitFor(() => expect(screen.getByText(/1줄 받는 중/)).toBeInTheDocument())
+
+    unmount()
+
+    await waitFor(() => expect(port.close).toHaveBeenCalledTimes(1))
   })
 })
