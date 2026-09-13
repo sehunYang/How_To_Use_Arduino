@@ -307,6 +307,26 @@ ${lead}
 ${rows.join('\n')}`
 }
 
+/**
+ * 배선에 이름이 나오지 않는 준비물을 감싸는 표시.
+ *
+ * 준비물 화면은 배선 단계에서 부품을 끌어냅니다. 그래서 진자의 실·추·스탠드처럼
+ * 전선에 걸리지 않는 물건은 목록에 없고, 학생은 탐구 순서까지 읽고 나서야
+ * 무엇이 더 필요한지 알게 됩니다. 요약에 한 덩어리로 적고 그 자리를 표시해 두면
+ * 준비물 화면이 같은 글을 찾아 쓸 수 있습니다(`apparatusFor`). 표시는 HTML
+ * 주석이라 본문에서는 보이지 않습니다(`SafeMarkdown`이 주석을 지웁니다).
+ */
+export const APPARATUS_MARKERS = { start: '<!-- apparatus -->', end: '<!-- /apparatus -->' }
+
+function apparatusBlock(plan: InquiryPlan): string {
+  if (!plan.apparatus?.length) return ''
+  const lines = plan.apparatus.map((item) => `- ${item}`).join('\n')
+  // 제목은 `###`입니다. 요약 화면이 "한눈에 보기"를 `<h2>`로 세우고 그 아래에
+  // 이 글을 그리므로, `####`를 쓰면 h2 다음에 h4가 와서 단계가 하나 건너뜁니다.
+  // 화면 낭독기는 그 자리에서 절이 하나 빠진 것으로 읽습니다.
+  return `\n\n${APPARATUS_MARKERS.start}\n### 전자 부품 밖의 준비물\n\n${lines}\n${APPARATUS_MARKERS.end}`
+}
+
 function conceptList(plan: InquiryPlan): string {
   return plan.concepts
     .map((id) => {
@@ -640,21 +660,36 @@ function timeSeriesWorkbook(recipe: Recipe, interval: string) {
 4. [ ] 저장한 CSV에서 누락 구간을 확인한 뒤 이동평균, 변화량 또는 시간 추세를 계산합니다.`
 }
 
-function transientWorkbook(recipe: Recipe) {
-  const repetitions = recipe.difficulty === '초급' ? 5 : 8
-  return `이 탐구는 정상 상태의 조건표를 채우는 실험이 아니라 **한 번의 운동이나 과도 변화 전체 파형**을 기록하는 실험입니다.
+/**
+ * 한 번의 움직임을 통째로 기록하는 탐구의 실행 계획.
+ *
+ * 예전 글은 "정상 상태의 조건표가 아니라 과도 변화 전체 파형", "독립 시행
+ * 횟수 8회", "적분값·시간상수는 후처리로"라고 적었습니다. 중2가 한 번 읽어
+ * 알 수 있는 말이 아니었고, 반복 횟수도 분석 절이 시키는 "길이별로 3회
+ * 반복"과 어긋나 어느 쪽을 따라야 하는지 알 수 없었습니다. 조건은 변인
+ * 설계에서, 반복 횟수는 분석 절과 같은 `samplingPlan`에서 가져와 두 절이
+ * 같은 수를 말하게 합니다.
+ */
+function transientWorkbook(recipe: Recipe, plan: InquiryPlan | undefined) {
+  const { repeats } = samplingPlan(recipe)
+  const conditions = plan?.variables.independent ?? '변인 설계에 적은 조건'
+
+  // "움직임"이 아니라 "값이 변하는 동안"이라고 씁니다. 같은 계획을 진자와 함께
+  // 냉각 곡선·충전 곡선도 받는데, 식어 가는 물이나 충전되는 커패시터는 움직이지
+  // 않습니다. 두 갈래 모두에서 참인 말로 적어야 학생이 자기 실험을 알아봅니다.
+  return `이 탐구는 한 번 기록할 때마다 값이 변하기 시작하기 전부터 다 변한 뒤까지를 통째로 담습니다.
 
 | 항목 | 권장값 |
 |:---|---:|
-| 사건 전 기준 기록 | 2초 이상 |
-| 사건 전체 기록 | 시작 전부터 종료 후까지 |
-| 독립 시행 횟수 | ${repetitions}회 |
-| 시간 정보 | 모든 행에 발생 시각 기록 |
+| 바꿔 가며 잴 조건 | ${conditions} |
+| 조건마다 반복 | ${repeats}회 |
+| 시작 전 가만히 둘 시간 | 2초 |
+| 기록 범위 | 값이 변하기 시작하기 전부터 다 변한 뒤까지 |
 
-1. [ ] 장치를 정지 상태로 두고 2초 이상 기준 신호를 기록한 뒤 한 번의 운동 또는 변화를 시작합니다.
-2. [ ] 변화가 끝난 뒤까지 동일한 간격으로 원시 CSV를 연속 저장합니다.
-3. [ ] 장치를 같은 시작 상태로 되돌린 뒤 총 ${repetitions}회의 독립 시행을 기록합니다.
-4. [ ] 주기, 봉우리, 적분값, 시간상수 또는 에너지는 스케치에서 미리 확정하지 말고 저장한 CSV를 나중에 계산해서(후처리) 구합니다.`
+1. [ ] 조건을 하나 골라 장치를 그 조건에 맞추고, 고른 값을 실험 노트에 적습니다.
+2. [ ] 장치를 가만히 둔 채 2초 동안 기록해, 아직 변하기 전의 값을 남깁니다.
+3. [ ] 실험을 시작하고, 값이 더 이상 변하지 않을 때까지 끊지 말고 이어서 기록합니다.
+4. [ ] 장치를 같은 시작 상태로 되돌려 같은 조건을 ${repeats}회 기록한 뒤, 다음 조건으로 넘어갑니다.`
 }
 
 /**
@@ -791,9 +826,46 @@ function executionSection(
       : kind === 'time-series'
         ? timeSeriesWorkbook(recipe, interval)
         : kind === 'transient'
-          ? transientWorkbook(recipe)
+          ? transientWorkbook(recipe, plan)
           : comparisonWorkbook(recipe, plan)
   return { title: '실험 실행 계획', body }
+}
+
+/**
+ * 학생이 손으로 조건을 바꾸는 탐구인가.
+ *
+ * `executionSection`이 조건표 계획(또는 한 번의 움직임을 되풀이하는 계획)을
+ * 내보내는 경우와 같은 갈래입니다. 스케치가 조건을 스스로 훑는 레시피에는
+ * 손으로 바꿀 조건이 없으므로 여기서도 빠집니다.
+ */
+function changesConditionsByHand(recipe: Recipe, kind: ExperimentPlan): boolean {
+  if (sweptSweep(recipe.sketch)) return false
+  return kind === 'condition-comparison' || kind === 'transient'
+}
+
+/**
+ * 한 조건을 다 재고 난 학생이 다음에 할 일.
+ *
+ * 분석 절은 "길이별로 3회 반복해 평균을 구하라"고 시키지만, 첫 조건을 재고
+ * 그래프를 본 학생에게는 두 번째 조건으로 돌아가는 길이 어디에도 없었습니다.
+ * 화면에 실제로 있는 단추 이름으로 그 길을 적습니다. 조건 값을 적는 열까지
+ * 일러 주는 것은, 그 열이 없으면 회차만 쌓이고 비교 그래프의 가로축이
+ * 비기 때문입니다.
+ */
+function rerunSection(recipe: Recipe, kind: ExperimentPlan, plan: InquiryPlan | undefined): Section {
+  if (!plan || !changesConditionsByHand(recipe, kind)) return null
+  const { repeats } = samplingPlan(recipe)
+  const conditions = plan.variables.independent
+
+  return {
+    title: '조건을 바꿔 다시 재기',
+    body: `첫 조건을 재고 그래프까지 봤다면 여기서부터 되풀이합니다.
+
+1. 장치를 다음 조건으로 바꿉니다: ${conditions}. 조건이 코드 안의 숫자라면 **3. 코드 넣기**의 "바꿔 볼 값"을 고쳐 다시 업로드합니다. 장치만 바꾸는 것이면 코드는 그대로 둡니다.
+2. 같은 방법으로 다시 재고, 데이터 화면에서 [**2회차로 추가하기**]를 누릅니다. USB로 받는 중이었다면 [멈추고 회차로 넣기]를 누릅니다.
+3. 화면 위쪽 **고급**을 켜고 "열 더하기"에서 조건 값 열을 만들어, 회차마다 바꾼 조건의 값을 적습니다. 그 열이 비교 그래프의 가로축이 됩니다.
+4. 적어 둔 조건이 저마다 ${repeats}회씩 채워질 때까지 되풀이합니다. 회차는 화면을 떠났다 와도 남아 있습니다.`,
+  }
 }
 
 /**
@@ -846,12 +918,17 @@ function buildGuide(recipe: Recipe, plan: InquiryPlan | undefined): Recipe {
     ? [
         columnSection(recipe),
         analysisSection(plan, authored),
+        // 조건을 바꿔 다시 재는 길은 그래프를 한 번 본 **뒤에** 필요합니다.
+        // 분석 절 앞에 두면 아직 재지도 않은 학생에게 "다시 재라"고 시킵니다.
+        rerunSection(recipe, kind, plan),
         checkpointSection(plan),
         extensionSection(plan),
       ]
     : [columnSection(recipe)]
 
-  const head = plan ? overviewSection(recipe, plan, authored) : latexize(recipe.body.trim())
+  const head = plan
+    ? `${overviewSection(recipe, plan, authored)}${apparatusBlock(plan)}`
+    : latexize(recipe.body.trim())
   // 번호는 그 절이 놓이는 화면 단계의 하위 번호로 적고 제목도 한 단계 낮춥니다.
   // 예전에는 이 절들이 화면 절과 똑같은 `## 1.`이라, 4번을 읽고 있는 학생 앞에
   // 1번이 다시 나타나 앞으로 되돌아간 줄 알았습니다.

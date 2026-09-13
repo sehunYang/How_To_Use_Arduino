@@ -7,6 +7,7 @@ import { firstRunTroubleshooting, safetyNotice } from './firstRun'
 import { librariesFor } from './libraries'
 import { sensors } from '@/data/inventory-seed/sensors'
 import {
+  apparatusFor,
   hasPartLabel,
   jumperWireLabel,
   partsFor,
@@ -63,6 +64,28 @@ describe('모든 레시피의 첫 실행 안내', () => {
         expect(linked, `${recipe.id} / ${sensorId}`).toContain(sensorId)
       }
     }
+  })
+
+  /**
+   * 배선에 이름이 나오지 않는 준비물은 본문 요약에 표시와 함께 적혀 있습니다.
+   * 표시가 한쪽에서만 바뀌면 준비물 화면이 목록을 통째로 잃으므로 왕복을 봅니다.
+   */
+  it('전자 부품 밖의 준비물을 본문에서 줄 단위로 꺼낸다', () => {
+    const body = [
+      '## 한눈에 보기',
+      '',
+      '<!-- apparatus -->',
+      '### 전자 부품 밖의 준비물',
+      '',
+      '- 실 약 1 m',
+      '- 자 (30 cm 이상)',
+      '<!-- /apparatus -->',
+      '',
+      '- 이 줄은 표시 밖이라 목록에 들어가지 않습니다',
+    ].join('\n')
+
+    expect(apparatusFor(body)).toEqual(['실 약 1 m', '자 (30 cm 이상)'])
+    expect(apparatusFor('표시가 없는 본문')).toEqual([])
   })
 
   it('센서를 여러 개 쓰는 레시피는 개수를 세어 보여 준다', () => {

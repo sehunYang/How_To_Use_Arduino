@@ -32,6 +32,13 @@ export const canaryPlans: Record<string, InquiryPlan> = {
       'USB 케이블을 연결하고 시리얼 모니터를 115200 baud로 엽니다.',
       '진자를 건드리지 않은 채 10초 동안 값을 보며 숫자가 흔들리지 않고 멈춰 있는지 확인합니다.',
     ],
+    apparatus: [
+      '실 약 1 m',
+      '추 (너트나 쇠공처럼 작고 무거운 것)',
+      '고리가 있는 스탠드, 또는 책상 모서리에 실을 고정할 집게',
+      '절연 테이프',
+      '자 (30 cm 이상)',
+    ],
     variables: {
       independent: '실의 길이 20~80 cm를 5단계',
       dependent: '연속 왕복의 총 시간에서 구한 한 주기의 길이',

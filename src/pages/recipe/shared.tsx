@@ -236,7 +236,8 @@ export function PartsGroup({ title, lines, note }: { title: string; lines: PartL
             {line.sensorId
               ? <Link className="text-accent hover:underline" to={`/sensors/${line.sensorId}`}>{line.name}</Link>
               : line.name}
-            {' '}<span className="text-muted">{line.count}개</span>
+            {/* 실이나 테이프처럼 개수로 세지 않는 준비물은 개수를 적지 않습니다. */}
+            {line.count !== undefined && <>{' '}<span className="text-muted">{line.count}개</span></>}
             {/* 저항은 값이 인쇄되어 있지 않아 이름만으로는 서랍에서 고를 수 없습니다. */}
             {line.ohms !== undefined && <ResistorBands ohms={line.ohms} />}
             {line.note && <span className="mt-1 block text-caption text-muted">{line.note}</span>}

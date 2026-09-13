@@ -1,3 +1,4 @@
+import { APPARATUS_MARKERS } from '@/data/inquiryGuide'
 import type { Recipe } from '@/schema'
 
 /**
@@ -138,8 +139,11 @@ export const sensorTokens = Object.keys(SENSOR_ID_BY_TOKEN)
 export interface PartLine {
   /** 화면에 그대로 적는 부품 이름. */
   name: string
-  /** 같은 부품을 몇 개 쓰는지. */
-  count: number
+  /**
+   * 같은 부품을 몇 개 쓰는지. 실이나 테이프처럼 개수로 세지 않는 준비물은
+   * 비워 둡니다. 그때는 화면이 개수를 아예 적지 않습니다.
+   */
+  count?: number
   note?: string
   /** 재고에 등록된 센서라면 그 id. 있으면 센서 설명 화면으로 이어 줍니다. */
   sensorId?: string
@@ -167,6 +171,23 @@ export function jumperWireLabel(from: string, to: string): string {
   if (femaleSocketCount === 2) return '수-수(MM) 점퍼선'
   if (femaleSocketCount === 1) return '수-암(MF) 점퍼선'
   return '암-암(FF) 점퍼선'
+}
+
+/**
+ * 본문 요약에 적힌 '전자 부품 밖의 준비물'을 줄 단위로 꺼냅니다.
+ *
+ * 이 목록은 배선에서 끌어낼 수 없습니다. 실도 추도 스탠드도 전선에 걸리지 않기
+ * 때문입니다. 탐구 설계가 적어 둔 것을 가이드가 표시와 함께 본문에 심어 두고
+ * (`apparatusBlock`), 준비물 화면이 그 자리에서 다시 읽습니다. 적어 둔 것이
+ * 없으면 빈 배열이고, 화면은 그 묶음을 아예 그리지 않습니다.
+ */
+export function apparatusFor(body: string): string[] {
+  const start = body.indexOf(APPARATUS_MARKERS.start)
+  if (start === -1) return []
+  const end = body.indexOf(APPARATUS_MARKERS.end, start)
+  if (end === -1) return []
+  const block = body.slice(start + APPARATUS_MARKERS.start.length, end)
+  return [...block.matchAll(/^-\s+(.+?)\s*$/gm)].map((match) => match[1])
 }
 
 export interface PartsList {

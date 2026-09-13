@@ -7,6 +7,7 @@ import { concepts } from '@/data/inquiry/concepts'
 import { findCsvHeader } from '@/data/inquiry/columns'
 import { formatArduinoCode } from '@/lib/formatArduinoCode'
 import { inquiryPlans } from '@/data/inquiry/plans'
+import { apparatusFor } from '@/recipes/parts'
 import { RESTATEMENT_THRESHOLD, inquiryQuestion, isStatement, similarity, splitGuide } from '@/data/inquiryGuide'
 
 const canaryRecipes = [pendulumRecipe, multiTsl2591Recipe, ina219CurrentRecipe]
@@ -40,11 +41,50 @@ describe('inquiry workbook experiment plans', () => {
     'uses a transient recording plan for %s',
     (id) => {
       const body = recipe(id).body
-      expect(body).toContain('한 번의 운동이나 과도 변화 전체 파형')
+      expect(body).toContain('값이 변하기 시작하기 전부터 다 변한 뒤까지를 통째로 담습니다')
+      expect(body).toContain('| 시작 전 가만히 둘 시간 | 2초 |')
       expect(body).not.toContain('조건을 바꾼 뒤 기다릴 시간')
       expect(body).not.toContain('조건 순서를 적어 둔 차례대로')
     },
   )
+
+  /**
+   * 실행 계획이 "8회", 분석 절이 "3회 반복"을 시키던 때에는 학생이 어느 쪽을
+   * 따라야 하는지 알 수 없었습니다. 두 절이 같은 수를 말하는지 고정합니다.
+   */
+  it('repeats a transient run as many times as the analysis section asks for', () => {
+    const body = recipe('pendulum').body
+    expect(body).toContain('| 조건마다 반복 | 3회 |')
+    expect(body).toContain('길이별로 3회 반복')
+    expect(body).not.toContain('독립 시행')
+  })
+
+  const executionBody = (body: string) =>
+    /### 4-\d+\. 실험 실행 계획\n\n([\s\S]*?)(?=\n### |\n<!--|$)/.exec(body)?.[1]
+
+  /** 중2가 한 번 읽어 아는 말만 씁니다. */
+  it('keeps the transient plan free of words a 중학생 has to look up', () => {
+    for (const id of ['pendulum', 'p1-pendulum-period', 'ph21-rc-time-constant']) {
+      const plan = executionBody(recipe(id).body)
+      expect(plan, id).toBeDefined()
+      for (const word of ['과도', '파형', '적분값', '시간상수', '후처리', '정상 상태']) {
+        expect(plan, `${id} → ${word}`).not.toContain(word)
+      }
+    }
+  })
+
+  /**
+   * 같은 계획을 진자와 함께 냉각 곡선·충전 곡선도 받습니다. 식어 가는 물이나
+   * 충전되는 커패시터는 움직이지 않으므로, 움직임으로 적으면 학생은 자기가
+   * 하는 실험을 알아보지 못합니다.
+   */
+  it('does not call a cooling or charging curve a movement', () => {
+    for (const id of ['cooling-curve', 'ph21-rc-time-constant']) {
+      const plan = executionBody(recipe(id).body)
+      expect(plan, id).toBeDefined()
+      expect(plan, id).not.toContain('움직')
+    }
+  })
 
   it('uses an event plan for interrupt-triggered measurements', () => {
     const body = recipe('s11-tsl2591-interrupt').body
@@ -456,5 +496,63 @@ describe('실행 계획이 스케치와 어긋나지 않는다', () => {
 
   it('손으로 조건을 바꾸는 레시피는 그대로 조건표 계획을 받는다', () => {
     expect(recipe('p8-inverse-square-light').body).toContain('조건을 바꾼 뒤')
+  })
+})
+
+/**
+ * 분석 절은 "길이별로 3회 반복해 평균을 구하라"고 시키지만, 첫 조건을 재고
+ * 그래프를 본 학생에게는 두 번째 조건으로 돌아가는 길이 어디에도 없었습니다.
+ */
+describe('한 조건을 다 잰 뒤 다음 조건으로 가는 길', () => {
+  it('측정 쪽에 화면의 단추 이름으로 되풀이하는 법을 적는다', () => {
+    const { measure, design } = splitGuide(recipe('pendulum').body)
+    expect(measure).toContain('조건을 바꿔 다시 재기')
+    expect(measure).toContain('2회차로 추가하기')
+    expect(measure).toContain('멈추고 회차로 넣기')
+    expect(measure).toContain('열 더하기')
+    expect(measure).toContain('실의 길이 20~80 cm를 5단계')
+    // 재기 전에 읽는 설계 쪽이 아니라 그래프를 본 뒤에 읽는 자리에 둡니다.
+    expect(design).not.toContain('조건을 바꿔 다시 재기')
+  })
+
+  it('데이터 처리와 그래프를 읽은 다음에 나온다', () => {
+    const { measure } = splitGuide(recipe('p8-inverse-square-light').body)
+    expect(measure.indexOf('조건을 바꿔 다시 재기'))
+      .toBeGreaterThan(measure.indexOf('데이터 처리와 그래프'))
+  })
+
+  /** 코드가 조건을 훑는 레시피에는 학생이 손으로 바꿀 조건이 없습니다. */
+  it('코드가 조건을 훑는 레시피에는 내지 않는다', () => {
+    for (const id of ['a1-led-brightness', 'a3-servo-angle']) {
+      expect(recipe(id).body, id).not.toContain('조건을 바꿔 다시 재기')
+    }
+  })
+
+  /** 이어서 기록하기만 하는 탐구에는 바꿀 조건이 없습니다. */
+  it('연속 기록과 사건 기록 탐구에는 내지 않는다', () => {
+    expect(recipe('ph33-light-source-stability').body).not.toContain('조건을 바꿔 다시 재기')
+    expect(recipe('s11-tsl2591-interrupt').body).not.toContain('조건을 바꿔 다시 재기')
+  })
+})
+
+/**
+ * 준비물 화면은 배선에서 부품을 끌어냅니다. 그래서 진자의 실·추·스탠드처럼
+ * 전선에 걸리지 않는 물건은 목록에 없었고, 학생은 탐구 순서까지 읽고 나서야
+ * 무엇이 더 필요한지 알게 되었습니다.
+ */
+describe('전자 부품 밖의 준비물', () => {
+  it('탐구 설계가 적어 둔 목록을 요약에 심고 준비물 화면이 그대로 읽는다', () => {
+    const body = recipe('pendulum').body
+    // 요약 화면의 `<h2>` 바로 아래에 놓이므로 제목 단계는 `###`입니다. `####`는
+    // h2 다음에 h4가 되어 접근성 검사(heading-order)가 걸립니다.
+    expect(body).toContain('### 전자 부품 밖의 준비물')
+    expect(apparatusFor(body)).toEqual(inquiryPlans.pendulum.apparatus)
+  })
+
+  it('적어 둔 것이 없는 레시피에서는 빈 목록이다', () => {
+    for (const entry of allRecipes) {
+      if (inquiryPlans[entry.id]?.apparatus?.length) continue
+      expect(apparatusFor(entry.body), entry.id).toEqual([])
+    }
   })
 })
