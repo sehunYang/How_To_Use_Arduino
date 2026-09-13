@@ -1,13 +1,13 @@
 import { useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { RecipeCard } from '@/components/RecipeCard'
-import { usePublishedRecipes } from '@/firebase/contentRepository'
+import { CATALOG_FAILED_MESSAGE, usePublishedCatalog } from '@/firebase/contentRepository'
 import { useSensorInventory } from '@/firebase/sensorInventory'
 
 type View = 'gallery' | 'table'
 
 export function RecipeListPage() {
-  const publishedRecipes = usePublishedRecipes()
+  const { recipes: publishedRecipes, status: catalogStatus } = usePublishedCatalog()
   // 센서 목록의 값은 저장용 id(mpu6050)라 학생이 부품에서 읽는 이름(MPU6050)과 다릅니다.
   const sensorNames = new Map(useSensorInventory().map((entry) => [entry.id, entry.name]))
   const [view, setView] = useState<View>('gallery')
@@ -36,6 +36,9 @@ export function RecipeListPage() {
           <button className={`rounded-card px-3 py-2 ${view === 'table' ? 'bg-accent text-accent-foreground' : ''}`} onClick={() => setView('table')}>테이블</button>
         </div>
       </div>
+      {catalogStatus === 'failed' && (
+        <p role="alert" className="mt-4 rounded-card border border-warning bg-warning-background p-3 text-caption text-warning">{CATALOG_FAILED_MESSAGE}</p>
+      )}
       <div className="mt-6 grid gap-3 rounded-card border border-border p-4 sm:grid-cols-2 xl:grid-cols-4">
         <Filter label="과목" value={subject} onChange={setSubject} options={['물리', '화학·환경', '생물', '공학·로봇']} />
         <Filter label="난이도" value={difficulty} onChange={setDifficulty} options={['초급', '중급', '고급']} />

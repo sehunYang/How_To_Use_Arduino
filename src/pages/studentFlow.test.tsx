@@ -7,6 +7,18 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import type { ReactNode } from 'react'
 import { SearchResultsPage } from './SearchResultsPage'
 import { RecipeDetailPage } from './recipe/RecipeDetailPage'
+
+// 공개 색인은 시험마다 다르게 답해야 합니다. 없으면(null) 닿지 못한 것이고, 있으면 그 안의 id만 게시된 것입니다.
+let catalogIndex: import('@/schema').SearchIndexEntry[] | null = null
+vi.mock('@/firebase/contentRepository', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/firebase/contentRepository')>()
+  return {
+    ...actual,
+    loadPublishedRecipe: async () => null,
+    loadDynamicSearchIndex: async () => catalogIndex,
+  }
+})
+
 import { RecipeListPage } from './RecipeListPage'
 import { progressKey } from '@/progress'
 import { WiringIllustration } from '@/components/WiringIllustration'
@@ -172,6 +184,28 @@ describe('Phase 3 student flow', () => {
       .toHaveAttribute('href', '/sensors/mpu6050')
   })
 
+  /**
+   * 준비물은 배선에서 끌어내므로 전선에 걸리지 않는 물건은 목록에 없었습니다.
+   * 진자는 실과 추와 스탠드가 있어야 시작되는데, 그 사실은 탐구 순서까지 읽어야
+   * 알 수 있었습니다.
+   */
+  it('lists the string and the stand the pendulum needs, not only the electronics', () => {
+    renderStep('parts')
+
+    expect(screen.getByRole('heading', { name: '실험 장치' })).toBeInTheDocument()
+    expect(screen.getByText('실 약 1 m')).toBeInTheDocument()
+    expect(screen.getByText('자 (30 cm 이상)')).toBeInTheDocument()
+  })
+
+  /** 준비물을 찾아 쓰는 표시는 HTML 주석이라 요약 화면에 글자로 남으면 안 됩니다. */
+  it('never shows the apparatus marker as text on the overview', () => {
+    const { container } = renderStep('')
+
+    expect(container.textContent).not.toContain('apparatus')
+    expect(container.textContent).not.toContain('<!--')
+    expect(screen.getByRole('heading', { name: '전자 부품 밖의 준비물' })).toBeInTheDocument()
+  })
+
   // Ticking every box on the page one at a time takes ~3s of the 5s default,
   // so this test failed whenever the full suite loaded the machine. The wait
   // is the point of the test (the handoff only appears after the last box),
@@ -183,10 +217,23 @@ describe('Phase 3 student flow', () => {
     expect(screen.getByRole('button', { name: '페이지 주소 복사' })).toBeInTheDocument()
   }, 30_000)
 
-  it('renders a friendly withdrawn-recipe state without leaking an error', () => {
+  it('공개 목록을 받아 왔는데 그 안에 없는 레시피는 게시가 취소된 것으로 알린다', async () => {
+    catalogIndex = [{ id: 'pendulum', title: pendulumRecipe.title }] as unknown as import('@/schema').SearchIndexEntry[]
     renderAt('/recipes/withdrawn-recipe', <RecipeDetailPage />, '/recipes/:id/*')
-    expect(screen.getByRole('heading', { name: '이 레시피는 현재 볼 수 없어요' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: '이 레시피는 현재 볼 수 없어요' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: '검색으로 돌아가기' })).toBeInTheDocument()
+  })
+
+  /**
+   * 목록도 레시피도 받지 못한 것은 게시 취소가 아니라 닿지 못한 것입니다. 학교 네트워크가
+   * reCAPTCHA를 막으면 이 길로 옵니다. 같은 문장으로 알리면 학생은 없는 레시피를 찾아 헤맵니다.
+   */
+  it('공개 목록에 닿지 못하면 새로 고침을 권하고 불러오는 동안은 기다리라고 한다', async () => {
+    catalogIndex = null
+    renderAt('/recipes/cooling-curve', <RecipeDetailPage />, '/recipes/:id/*')
+    expect(screen.getByText('레시피를 불러오고 있습니다…')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: '지금은 레시피를 불러오지 못했어요' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '새로 고침' })).toBeInTheDocument()
   })
 
   it.each([

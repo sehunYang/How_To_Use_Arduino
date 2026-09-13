@@ -39,6 +39,14 @@ export function DiscoveryPage() {
           id="inquiry"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
+          // 검색창에서 Enter는 줄바꿈이 아니라 찾기입니다. 학생은 단추를 찾기 전에 Enter부터 누릅니다.
+          onKeyDown={(event) => {
+            // 한글을 조합하는 중의 Enter는 글자를 굳히는 것입니다. 사파리는 isComposing 대신 keyCode 229로 알립니다.
+            if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing && event.nativeEvent.keyCode !== 229) {
+              event.preventDefault()
+              submit(query)
+            }
+          }}
           className="min-h-28 w-full resize-y bg-transparent p-3 text-body"
           placeholder="예: 진자 길이에 따라 움직임이 어떻게 달라지는지 측정하고 싶어요"
         />

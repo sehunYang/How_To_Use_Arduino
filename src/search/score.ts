@@ -88,6 +88,23 @@ function variantsForKeyword(keyword: string, synonyms: SynonymMap): string[] {
  * than the keyword, and `keyword ⊇ query-stem` for queries more general
  * than the keyword ("진자" must find recipes keyed "단진자").
  */
+/**
+ * 글자로는 안에 들어 있지만 뜻은 다른 짝. "속도"를 적은 학생은 빠르기를 재고 싶은
+ * 것이지 가속도 센서 탐구를 찾는 것이 아닌데, "가속도" ⊇ "속도"라서 냉각 속도·낙하
+ * 속도 같은 질문마다 진자 레시피가 "찾았습니다"로 올라왔습니다. "단진자" ⊇ "진자"처럼
+ * 뜻이 이어지는 짝은 그대로 두고, 어긋나는 짝만 여기 적습니다.
+ */
+const FALSE_PARTIALS: Record<string, string[]> = {
+  가속도: ['속도'],
+  중력가속도: ['속도', '가속'],
+  각속도: ['속도'],
+  '공기 저항': ['저항'],
+}
+
+function isFalsePartial(keyword: string, stem: string): boolean {
+  return FALSE_PARTIALS[keyword]?.includes(stem) ?? false
+}
+
 export function scoreRecipe(
   query: string,
   recipe: { id: string; coreKeywords: string[] },
@@ -103,7 +120,7 @@ export function scoreRecipe(
       matched.push(keyword)
       continue
     }
-    if (stems.some((stem) => keyword.includes(stem))) {
+    if (stems.some((stem) => keyword.includes(stem) && !isFalsePartial(keyword, stem))) {
       score += PARTIAL_WEIGHT
       matched.push(keyword)
       continue

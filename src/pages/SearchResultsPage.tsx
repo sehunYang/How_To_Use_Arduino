@@ -9,10 +9,10 @@ import { SensorCard } from '@/components/SensorCard'
 import { sensorRationales } from '@/data/sensorRationales'
 import { rankSensors } from '@/results/aggregateSensors'
 import { useSensorInventory } from '@/firebase/sensorInventory'
-import { usePublishedRecipes } from '@/firebase/contentRepository'
+import { CATALOG_FAILED_MESSAGE, usePublishedCatalog } from '@/firebase/contentRepository'
 
 export function SearchResultsPage() {
-  const studentRecipes = usePublishedRecipes()
+  const { recipes: studentRecipes, status: catalogStatus } = usePublishedCatalog()
   const sensorById = new Map(useSensorInventory().map((sensor) => [sensor.id, sensor]))
   const [params] = useSearchParams()
   const query = params.get('q')?.trim() ?? ''
@@ -44,6 +44,9 @@ export function SearchResultsPage() {
     <div className="mx-auto max-w-6xl">
       <Link to="/" className="text-caption text-accent hover:underline">← 다른 아이디어 검색</Link>
       <h1 className="mt-4 text-3xl font-semibold">“{query || '전체'}” 검색 결과</h1>
+      {catalogStatus === 'failed' && (
+        <p role="alert" className="mt-3 rounded-card border border-warning bg-warning-background p-3 text-caption text-warning">{CATALOG_FAILED_MESSAGE}</p>
+      )}
       <p aria-live="polite" className="mt-3 text-body text-muted">
         {results.length === 0
           ? '적어 주신 내용과 이어지는 레시피를 찾지 못했습니다.'

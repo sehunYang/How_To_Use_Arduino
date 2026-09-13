@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom'
+import { Button } from '@/components/ui/button'
 import { SimBadge } from '@/components/ui/SimBadge'
 import { canarySimStatus, studentRecipes } from '@/data/studentCatalog'
 import { INVENTORY_VERSION } from '@/data/inventory-seed/version'
@@ -52,7 +53,7 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
   const [previewAuthorized, setPreviewAuthorized] = useState(false)
   const [previewChecked, setPreviewChecked] = useState(!previewRequested)
   const [remoteRecipe, setRemoteRecipe] = useState<Recipe | null>(null)
-  const [publicCatalogStatus, setPublicCatalogStatus] = useState<'checking' | 'available' | 'withdrawn'>('checking')
+  const [publicCatalogStatus, setPublicCatalogStatus] = useState<'checking' | 'available' | 'withdrawn' | 'unreachable'>('checking')
   // 가이드가 이름으로 가리키는 다음 탐구를 링크로 바꾸는 데 씁니다. 색인을 아직
   // 받지 못했으면 번들에 든 레시피만으로도 시작할 수 있게 미리 채워 둡니다.
   const [catalog, setCatalog] = useState<RecipeLink[]>(() =>
@@ -72,10 +73,15 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
         const index = indexResult.status === 'fulfilled' ? indexResult.value : null
         setRemoteRecipe(loaded)
         if (index?.length) setCatalog(index.map((entry) => ({ id: entry.id, title: entry.title })))
-        setPublicCatalogStatus(index && !index.some((entry) => entry.id === id) ? 'withdrawn' : 'available')
-      })
-      .catch(() => {
-        if (active) setPublicCatalogStatus('available')
+        // 색인에 없으면 게시가 취소된 것이고, 색인과 상관없이 번들에도 없는 레시피를 못
+        // 받았으면 닿지 못한 것입니다. 둘을 같은 문장으로 알리면 학생은 없는 레시피를 찾아 헤맵니다.
+        setPublicCatalogStatus(
+          index && !index.some((entry) => entry.id === id)
+            ? 'withdrawn'
+            : !loaded && !studentRecipes.some((candidate) => candidate.id === id)
+              ? 'unreachable'
+              : 'available',
+        )
       })
     return () => {
       active = false
@@ -117,6 +123,21 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
 
   if (previewRequested && !previewChecked) {
     return <p className="py-20 text-center text-muted">미리보기 권한을 확인하고 있습니다…</p>
+  }
+
+  // 미리보기는 공개 목록을 묻지 않으므로 '확인 중'이 끝나지 않습니다. 그 길은 아래 판단으로 보냅니다.
+  if (!recipe && !previewRequested && publicCatalogStatus === 'checking') {
+    return <p className="py-20 text-center text-muted">레시피를 불러오고 있습니다…</p>
+  }
+
+  if (!recipe && publicCatalogStatus === 'unreachable') {
+    return (
+      <div className="mx-auto max-w-2xl py-20 text-center">
+        <h1 className="text-3xl font-semibold">지금은 레시피를 불러오지 못했어요</h1>
+        <p className="mt-3 text-muted">인터넷 연결을 확인하고 새로 고침하세요. 학교 네트워크가 구글 reCAPTCHA를 막고 있으면 다른 네트워크에서 열어야 합니다.</p>
+        <Button className="mt-6" onClick={() => window.location.reload()}>새로 고침</Button>
+      </div>
+    )
   }
 
   if (!recipe || (recipe.status !== 'published' && !previewAuthorized)) {

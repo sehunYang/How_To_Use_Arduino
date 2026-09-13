@@ -70,6 +70,8 @@ describe('search: dictionary + fuzzy pipeline', () => {
     stub({ id: 'fan-control', title: '온습도에 따른 자동 환풍기 제어', coreKeywords: ['온도', '습도', '환풍기'] }),
     stub({ id: 'light-follow', title: '빛을 따라가는 자동차', coreKeywords: ['빛', '자동차', '조도'] }),
     stub({ id: 'rpm-meter', title: '바퀴 회전수 측정기', coreKeywords: ['회전수', '자석', 'RPM'] }),
+    stub({ id: 'inertia', title: '회전 관성과 각속도', coreKeywords: ['각속도', '관성'] }),
+    stub({ id: 'drag', title: '낙하 물체의 공기 저항', coreKeywords: ['공기 저항', '종단 속도'] }),
   ]
 
   it('a query containing an exact core keyword ranks that recipe in the top 3', () => {
@@ -83,6 +85,18 @@ describe('search: dictionary + fuzzy pipeline', () => {
   it('a synonym-only query (no exact core keyword) still surfaces the recipe via dictionary scoring', () => {
     const results = search('시계추가 힘을 잃지 않는지 궁금해요', index, synonyms)
     expect(results.map((r) => r.entry.id)).toContain('pendulum')
+  })
+
+  it('"속도"를 적은 질문은 "가속도" 레시피를 찾았다고 하지 않는다', () => {
+    // 냉각 속도·낙하 속도를 묻는 문장마다 진자 레시피가 "찾았습니다"로 올라왔습니다.
+    const results = search('물의 양에 따라 식는 속도가 달라질까', index, synonyms)
+    const confident = results.filter((r) => r.via === 'dictionary').map((r) => r.entry.id)
+    expect(confident).not.toContain('pendulum')
+    expect(confident).not.toContain('free-fall')
+    expect(confident).not.toContain('inertia')
+    expect(search('저항을 바꾸면 전류가 어떻게 달라질까', index, synonyms).filter((r) => r.via === 'dictionary').map((r) => r.entry.id)).not.toContain('drag')
+    // 뜻이 이어지는 짝("진자" ⊂ "단진자")은 그대로 찾습니다.
+    expect(search('진자', index, synonyms)[0].via).toBe('dictionary')
   })
 
   it('a query more general than the keyword ("진자" vs "단진자") matches via dictionary, not fuzzy', () => {
