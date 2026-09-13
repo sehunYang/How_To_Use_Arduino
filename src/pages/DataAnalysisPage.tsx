@@ -1,4 +1,5 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Link, useInRouterContext } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import {
   CHART_HEIGHT,
@@ -45,8 +46,10 @@ import {
   trialLabel,
   type Trial,
 } from '@/lib/trialAnalysis'
+import { basePath } from '@/lib/basePath'
 import { parseRecipeHint, type RecipeHint } from '@/lib/serialLiveCheck'
 import { DEFAULT_BAUD_RATE, parseBaudRate } from '@/lib/webSerial'
+import { TRIALS_VERSION, clearTrials, loadLatestTrialsScope, loadTrials, saveTrials } from '@/progress'
 
 const example = `time_ms,temperature_c,humidity_pct
 0,21.5,48.2
@@ -95,26 +98,38 @@ function describeCorrelation(correlation: number) {
 }
 
 /** 레시피 측정 화면이 `?baud=`로 넘겨 준 속도. 학생이 속도를 고르지 않아도 되게 합니다. */
-function initialBaudRate() {
-  if (typeof window === 'undefined') return DEFAULT_BAUD_RATE
-  return parseBaudRate(new URLSearchParams(window.location.search).get('baud')) ?? DEFAULT_BAUD_RATE
-}
-
-/** 레시피 측정 화면이 함께 넘겨 준 열 이름과 센서. 받은 값이 그 레시피의 것인지 견줍니다. */
-function initialRecipeHint(): RecipeHint | null {
-  if (typeof window === 'undefined') return null
-  return parseRecipeHint(new URLSearchParams(window.location.search))
+/**
+ * 첫 상태는 주소와 저장소를 합쳐 정합니다.
+ *
+ * 레시피 측정 화면에서 오면 주소에 속도·열 이름·센서·레시피가 실려 있고, 위쪽 메뉴로
+ * 들어오면 아무것도 없습니다. 어느 쪽이든 저장해 둔 회차가 같은 레시피의 것이면
+ * 되살립니다. 다른 레시피에서 왔으면 그 회차는 남의 실험이므로 비워 둡니다.
+ */
+function initialSession() {
+  const params = typeof window === 'undefined' ? new URLSearchParams() : new URLSearchParams(window.location.search)
+  const storage = typeof window === 'undefined' ? undefined : window.localStorage
+  const urlHint = parseRecipeHint(params)
+  // 레시피에서 왔으면 그 레시피의 회차를, 메뉴로 들어왔으면 마지막으로 쓴 레시피의 회차를 되살립니다.
+  const scope = urlHint?.recipeId ?? loadLatestTrialsScope(storage)
+  const saved = loadTrials(scope, storage)
+  const hint: RecipeHint | null = urlHint ?? saved?.hint ?? null
+  const baudRate = parseBaudRate(params.get('baud')) ?? saved?.baudRate ?? DEFAULT_BAUD_RATE
+  return { baudRate, hint, saved }
 }
 
 export function DataAnalysisPage() {
+  const [session] = useState(initialSession)
+  const inRouter = useInRouterContext()
   const [input, setInput] = useState('')
-  const [baudRate, setBaudRate] = useState(initialBaudRate)
-  const [recipeHint] = useState(initialRecipeHint)
-  const [trials, setTrials] = useState<PageTrial[]>([])
+  const [baudRate, setBaudRate] = useState(session.baudRate)
+  const [recipeHint] = useState(session.hint)
+  const [trials, setTrials] = useState<PageTrial[]>(() => session.saved?.trials ?? [])
   const [lastResult, setLastResult] = useState<SerialCsvResult | null>(null)
   const [mismatchError, setMismatchError] = useState<string | null>(null)
-  const [xName, setXName] = useState<string | null>(null)
-  const [yNames, setYNames] = useState<string[]>([])
+  const [xName, setXName] = useState<string | null>(session.saved?.xName ?? null)
+  const [yNames, setYNames] = useState<string[]>(session.saved?.yNames ?? [])
+  /** 회차가 저장소에 들어가지 않을 만큼 클 때. 학생이 떠나기 전에 알아야 합니다. */
+  const [storageFull, setStorageFull] = useState(false)
   const [chartKind, setChartKind] = useState<ChartKind>('scatter')
   const [trialView, setTrialView] = useState<TrialView>('box')
   /**
@@ -134,8 +149,8 @@ export function DataAnalysisPage() {
   const [level, setLevel] = useState<'basic' | 'advanced'>('basic')
   const [range, setRange] = useState<RowRange>(EMPTY_RANGE)
   /** 회차마다 값을 적어 넣는 열의 이름. 값 자체는 회차가 들고 있습니다. */
-  const [manualNames, setManualNames] = useState<string[]>([])
-  const [calculatedColumns, setCalculatedColumns] = useState<CalculatedColumn[]>([])
+  const [manualNames, setManualNames] = useState<string[]>(session.saved?.manualNames ?? [])
+  const [calculatedColumns, setCalculatedColumns] = useState<CalculatedColumn[]>(session.saved?.calculatedColumns ?? [])
   const [groupName, setGroupName] = useState<string>('')
   const [spreadToColumns, setSpreadToColumns] = useState(false)
   const [gridMeasure, setGridMeasure] = useState<string>('')
@@ -146,10 +161,10 @@ export function DataAnalysisPage() {
   const [manualNameError, setManualNameError] = useState<string | null>(null)
   const [calculatedError, setCalculatedError] = useState<string | null>(null)
   /**
-   * 붙여넣은 회차는 이 화면 안에만 있고 어디에도 저장되지 않습니다. 잘못 지우면 실험을
-   * 여러 번 되풀이해 모은 값이 사라지므로, 지우기 전 상태를 한 벌 들고 있다가 되돌릴 수
-   * 있게 합니다. 지우기 전에 한 번 더 묻는 대신 이렇게 한 이유는, 지우기는 자주 하는 일이라
-   * 매번 확인을 받으면 성가시고 결국 읽지 않고 누르게 되기 때문입니다.
+   * 전체 지우기는 저장소의 회차까지 지웁니다. 잘못 지우면 실험을 여러 번 되풀이해 모은
+   * 값이 사라지므로, 지우기 전 상태를 한 벌 들고 있다가 되돌릴 수 있게 합니다. 지우기 전에
+   * 한 번 더 묻는 대신 이렇게 한 이유는, 지우기는 자주 하는 일이라 매번 확인을 받으면
+   * 성가시고 결국 읽지 않고 누르게 되기 때문입니다.
    */
   const [undoable, setUndoable] = useState<{
     input: string
@@ -163,6 +178,47 @@ export function DataAnalysisPage() {
 
   const advanced = level === 'advanced'
   const hasRepeats = trials.length >= 2
+
+  // 회차가 바뀔 때마다 저장합니다. 레시피로 돌아가 조건을 바꾸고 와도 1회차가 그대로
+  // 있어야 2회차를 더할 수 있습니다. 조건 값을 한 글자씩 적을 때마다 큰 표를 다시 쓰지
+  // 않도록 잠깐 모았다가 씁니다. 회차를 다 지웠을 때만 저장소도 비웁니다.
+  const firstSaveRef = useRef(true)
+  /** 아직 쓰지 않은 저장분. 화면을 떠날 때는 기다리지 않고 바로 씁니다. */
+  const pendingSaveRef = useRef<Parameters<typeof saveTrials>[0] | null>(null)
+  const flushSave = useCallback(() => {
+    const pending = pendingSaveRef.current
+    if (!pending || typeof window === 'undefined') return
+    pendingSaveRef.current = null
+    setStorageFull(!saveTrials(pending, window.localStorage))
+  }, [])
+  useEffect(() => flushSave, [flushSave])
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const scope = recipeHint?.recipeId ?? null
+    if (trials.length === 0) {
+      // 처음 그릴 때 회차가 없는 것은 지운 것이 아닙니다. 되살릴 것이 없었을 뿐입니다.
+      pendingSaveRef.current = null
+      if (!firstSaveRef.current) clearTrials(scope, window.localStorage)
+      firstSaveRef.current = false
+      setStorageFull(false)
+      return
+    }
+    firstSaveRef.current = false
+    pendingSaveRef.current = {
+      version: TRIALS_VERSION,
+      recipeId: scope,
+      baudRate,
+      hint: recipeHint,
+      trials,
+      xName,
+      yNames,
+      manualNames,
+      calculatedColumns,
+      updatedAt: new Date().toISOString(),
+    }
+    const timer = setTimeout(flushSave, 300)
+    return () => clearTimeout(timer)
+  }, [trials, xName, yNames, manualNames, calculatedColumns, baudRate, recipeHint, flushSave])
 
   // ── 붙여넣은 표를 다듬는 차례: 구간 자르기 → 계열 펼치기 → 열 더하기 ──
   const croppedTrials = useMemo(
@@ -689,6 +745,25 @@ export function DataAnalysisPage() {
         아두이노를 USB로 꽂은 채 받거나 시리얼 모니터 내용을 붙여넣으면 요약 통계와 그래프가 나옵니다.
       </p>
 
+      {recipeHint?.recipeId && (
+        <nav aria-label="레시피로 돌아가기" className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-card border border-border bg-muted-background p-4 text-caption">
+          <span>
+            {recipeHint.title ? `《${recipeHint.title}》` : '레시피'}에서 왔습니다.
+            {recipeHint.expectedHeader && ` 코드가 찍는 열: ${recipeHint.expectedHeader.join(', ')}`}
+          </span>
+          {(
+            [
+              { path: `recipes/${recipeHint.recipeId}/design`, label: '탐구 설계로 돌아가기 →' },
+              { path: `recipes/${recipeHint.recipeId}/measure`, label: '측정과 분석으로 돌아가기 →' },
+            ] as const
+          ).map((target) => inRouter ? (
+            <Link key={target.path} className="text-accent hover:underline" to={`/${target.path}`}>{target.label}</Link>
+          ) : (
+            <a key={target.path} className="text-accent hover:underline" href={`${basePath.replace(/\/$/, '')}/${target.path}`}>{target.label}</a>
+          ))}
+        </nav>
+      )}
+
       <section aria-labelledby="paste-step" className="mt-8">
         <h2 id="paste-step" className="text-heading font-semibold">{sectionNumber('paste')}. 측정값 가져오기</h2>
 
@@ -705,7 +780,10 @@ export function DataAnalysisPage() {
 
         <details className="mt-4 rounded-card border border-border bg-muted-background p-4">
           <summary className="cursor-pointer text-caption font-semibold">붙여넣기 형식 보기</summary>
-          <pre className="mt-3 overflow-x-auto whitespace-pre rounded-card border border-border bg-background p-4 text-caption"><code>{example}</code></pre>
+          {recipeHint?.expectedHeader && (
+            <p className="mt-3 text-caption">이 레시피의 코드는 첫 줄에 아래 열 이름을 찍습니다. 그 줄부터 끝까지 복사하세요.</p>
+          )}
+          <pre className="mt-3 overflow-x-auto whitespace-pre rounded-card border border-border bg-background p-4 text-caption"><code>{recipeHint?.expectedHeader ? `${recipeHint.expectedHeader.join(',')}\n(이 아래로 측정값 행이 이어집니다)` : example}</code></pre>
         </details>
 
         <div className="mt-4">
@@ -766,6 +844,11 @@ export function DataAnalysisPage() {
             <p className="mt-1 text-caption">
               숫자 열 {numericColumns.length}개
               {croppedAway > 0 && ` · 구간 자르기로 ${croppedAway.toLocaleString('ko-KR')}개 행 제외`}
+            </p>
+            <p className="mt-1 text-caption">
+              {storageFull
+                ? '회차가 너무 커서 이 화면을 떠나면 사라집니다. CSV 파일로 저장해 두세요.'
+                : '회차는 이 브라우저에 남아, 레시피로 돌아가 조건을 바꾸고 와도 그대로 있습니다.'}
             </p>
             {/* 행 수는 실제로 분석에 쓰인 수를 보여 줍니다. 구간을 자른 뒤에도 원래
                 행 수가 남아 있으면 위의 합계와 어긋나 보입니다. */}

@@ -16,6 +16,9 @@ export interface RecipeHint {
   /** 스케치가 첫 줄에 찍는 열 이름. 코드에서 못 찾았으면 비어 있습니다. */
   expectedHeader: string[] | null
   sensors: string[]
+  /** 돌아갈 레시피. 메뉴로 들어왔으면 없습니다. */
+  recipeId?: string
+  title?: string
 }
 
 export interface LiveCheckResult {
@@ -39,8 +42,8 @@ function deviceErrorLines(excludedRows: readonly ExcludedSerialRow[]) {
  * 레시피 화면이 데이터 화면 링크에 싣는 것: 시리얼 속도, 코드가 찍는 열 이름, 쓰는 센서.
  * 이 셋이면 데이터 화면이 레시피를 다시 받지 않고도 받은 값을 견줄 수 있습니다.
  */
-export function buildAnalysisParams(recipe: Pick<Recipe, 'baudRate' | 'sketch' | 'sensors'>) {
-  const params = new URLSearchParams({ baud: String(recipe.baudRate) })
+export function buildAnalysisParams(recipe: Pick<Recipe, 'id' | 'title' | 'baudRate' | 'sketch' | 'sensors'>) {
+  const params = new URLSearchParams({ recipe: recipe.id, title: recipe.title, baud: String(recipe.baudRate) })
   const header = findCsvHeader(recipe.sketch)
   if (header) params.set('header', header)
   if (recipe.sensors.length > 0) params.set('sensors', [...new Set(recipe.sensors)].join(','))
@@ -48,13 +51,20 @@ export function buildAnalysisParams(recipe: Pick<Recipe, 'baudRate' | 'sketch' |
 }
 
 /**
- * 주소의 `?header=`·`?sensors=`를 읽습니다. 둘 다 없으면 견줄 기준이 없는 것입니다.
+ * 주소의 `?recipe=`·`?title=`·`?header=`·`?sensors=`를 읽습니다. 아무것도 없으면 메뉴로 들어온 것입니다.
  */
 export function parseRecipeHint(params: URLSearchParams): RecipeHint | null {
   const header = params.get('header')?.split(',').map((name) => name.trim()).filter(Boolean) ?? []
   const sensors = params.get('sensors')?.split(',').map((name) => name.trim()).filter(Boolean) ?? []
-  if (header.length === 0 && sensors.length === 0) return null
-  return { expectedHeader: header.length > 0 ? header : null, sensors }
+  const recipeId = params.get('recipe')?.trim() || undefined
+  const title = params.get('title')?.trim() || undefined
+  if (header.length === 0 && sensors.length === 0 && !recipeId) return null
+  return {
+    expectedHeader: header.length > 0 ? header : null,
+    sensors,
+    ...(recipeId ? { recipeId } : {}),
+    ...(title ? { title } : {}),
+  }
 }
 
 /**

@@ -10,6 +10,12 @@ const RUN_2 = 'time_ms,temperature_c,humidity_pct{enter}0,22,51{enter}1000,24,49
 
 type User = ReturnType<typeof userEvent.setup>
 
+// 회차는 이제 브라우저 저장소에 남으므로, 시험마다 비워야 앞 시험의 회차가 새어 들지 않습니다.
+beforeEach(() => {
+  window.localStorage.clear()
+  window.history.replaceState({}, '', '/')
+})
+
 async function paste(user: User, text: string) {
   const textarea = screen.getByLabelText('시리얼 모니터 내용')
   await user.clear(textarea)
@@ -700,5 +706,83 @@ describe('USB로 바로 받기', () => {
     unmount()
 
     await waitFor(() => expect(port.close).toHaveBeenCalledTimes(1))
+  })
+})
+
+describe('레시피와 데이터 화면 사이를 오갈 때', () => {
+  afterEach(() => {
+    cleanup()
+  })
+
+  it('화면을 떠났다 돌아와도 회차와 축 선택이 남아 있다', async () => {
+    const user = userEvent.setup()
+    const first = render(<DataAnalysisPage />)
+    await paste(user, RUN_1)
+    await user.selectOptions(screen.getByLabelText('가로축(x) 변인'), 'temperature_c')
+    first.unmount()
+
+    render(<DataAnalysisPage />)
+
+    expect(screen.getByRole('status')).toHaveTextContent('1개 회차, 3개 열, 모두 3개 데이터 행')
+    expect(screen.getByRole('img')).toHaveAccessibleName(/가로축은 temperature_c/)
+    expect(screen.getByText(/레시피로 돌아가 조건을 바꾸고 와도 그대로/)).toBeInTheDocument()
+  })
+
+  it('레시피에서 왔으면 돌아갈 길과 기대하는 열 이름을 보여 준다', () => {
+    window.history.replaceState({}, '', '/data-analysis?recipe=pendulum&title=%EB%8B%A8%EC%A7%84%EC%9E%90&baud=115200&header=time_ms%2Caccel_x_raw&sensors=mpu6050')
+    render(<DataAnalysisPage />)
+
+    const nav = screen.getByRole('navigation', { name: '레시피로 돌아가기' })
+    expect(nav).toHaveTextContent('《단진자》에서 왔습니다')
+    expect(nav).toHaveTextContent('코드가 찍는 열: time_ms, accel_x_raw')
+    expect(within(nav).getByRole('link', { name: '탐구 설계로 돌아가기 →' })).toHaveAttribute('href', '/recipes/pendulum/design')
+    expect(within(nav).getByRole('link', { name: '측정과 분석으로 돌아가기 →' })).toHaveAttribute('href', '/recipes/pendulum/measure')
+  })
+
+  it('메뉴로 다시 들어와도 레시피 맥락과 속도를 되살린다', async () => {
+    window.history.replaceState({}, '', '/data-analysis?recipe=pendulum&title=%EB%8B%A8%EC%A7%84%EC%9E%90&baud=115200')
+    Object.defineProperty(navigator, 'serial', { configurable: true, value: { requestPort: vi.fn() } })
+    const user = userEvent.setup()
+    const first = render(<DataAnalysisPage />)
+    await paste(user, RUN_1)
+    first.unmount()
+
+    window.history.replaceState({}, '', '/data-analysis')
+    render(<DataAnalysisPage />)
+
+    expect(screen.getByRole('navigation', { name: '레시피로 돌아가기' })).toHaveTextContent('《단진자》')
+    expect(screen.getByLabelText('속도(baud)')).toHaveValue('115200')
+    expect(screen.getByRole('status')).toHaveTextContent('1개 회차')
+    Reflect.deleteProperty(navigator, 'serial')
+  })
+
+  it('다른 레시피에서 오면 남의 회차를 보여 주지 않고, 열어 보기만 해서는 지우지도 않는다', async () => {
+    window.history.replaceState({}, '', '/data-analysis?recipe=pendulum&title=%EB%8B%A8%EC%A7%84%EC%9E%90')
+    const user = userEvent.setup()
+    const first = render(<DataAnalysisPage />)
+    await paste(user, RUN_1)
+    first.unmount()
+
+    window.history.replaceState({}, '', '/data-analysis?recipe=cooling&title=%EB%83%89%EA%B0%81')
+    const second = render(<DataAnalysisPage />)
+    expect(screen.queryByText(/개 회차/)).not.toBeInTheDocument()
+    expect(screen.getByRole('navigation', { name: '레시피로 돌아가기' })).toHaveTextContent('《냉각》')
+    second.unmount()
+
+    // 진자 레시피로 돌아오면 1회차가 그대로 있어야 합니다.
+    window.history.replaceState({}, '', '/data-analysis?recipe=pendulum&title=%EB%8B%A8%EC%A7%84%EC%9E%90')
+    render(<DataAnalysisPage />)
+    expect(screen.getByRole('status')).toHaveTextContent('1개 회차')
+  })
+
+  it('전체 지우기는 저장소의 회차도 지운다', async () => {
+    const user = userEvent.setup()
+    const first = render(<DataAnalysisPage />)
+    await paste(user, RUN_1)
+    await user.click(screen.getByRole('button', { name: '전체 지우기' }))
+    first.unmount()
+
+    render(<DataAnalysisPage />)
+    expect(screen.queryByText(/개 회차/)).not.toBeInTheDocument()
   })
 })

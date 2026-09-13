@@ -9,15 +9,24 @@ function rows(header: string, makeRow: (index: number) => string, count = MIN_LI
 describe('buildAnalysisParams', () => {
   it('속도·코드의 열 이름·센서를 링크에 싣고, 열 이름을 못 찾으면 비워 둔다', () => {
     const sketch = 'void setup(){Serial.begin(9600);Serial.println("time_ms,temperature_c");}'
-    const params = new URLSearchParams(buildAnalysisParams({ baudRate: 9600, sketch, sensors: ['ds18b20', 'ds18b20'] }))
+    const params = new URLSearchParams(buildAnalysisParams({ id: 'cooling', title: '물의 냉각 곡선', baudRate: 9600, sketch, sensors: ['ds18b20', 'ds18b20'] }))
+    expect(params.get('recipe')).toBe('cooling')
+    expect(params.get('title')).toBe('물의 냉각 곡선')
     expect(params.get('baud')).toBe('9600')
     expect(params.get('header')).toBe('time_ms,temperature_c')
     expect(params.get('sensors')).toBe('ds18b20')
+    expect(parseRecipeHint(params)).toEqual({
+      expectedHeader: ['time_ms', 'temperature_c'],
+      sensors: ['ds18b20'],
+      recipeId: 'cooling',
+      title: '물의 냉각 곡선',
+    })
 
-    const bare = new URLSearchParams(buildAnalysisParams({ baudRate: 115200, sketch: 'void setup(){}', sensors: [] }))
+    const bare = new URLSearchParams(buildAnalysisParams({ id: 'x', title: 'X', baudRate: 115200, sketch: 'void setup(){}', sensors: [] }))
     expect(bare.get('header')).toBeNull()
     expect(bare.get('sensors')).toBeNull()
-    expect(parseRecipeHint(bare)).toBeNull()
+    expect(parseRecipeHint(bare)).toEqual({ expectedHeader: null, sensors: [], recipeId: 'x', title: 'X' })
+    expect(parseRecipeHint(new URLSearchParams('baud=9600'))).toBeNull()
   })
 })
 
