@@ -51,6 +51,13 @@ jobs:
       - run: npm test
       - run: npm run verify:wokwi-diagram
 
+      # Must precede `npm run build`: the build's first step regenerates
+      # public/index.json, so running this check afterwards would always pass
+      # and the committed copy could drift unnoticed until the daily cron
+      # (verify-daily.yml) caught it a day later.
+      - name: Verify published search index has not drifted
+        run: npm run verify:index
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
