@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { SafeMarkdown } from '@/components/ui/SafeMarkdown'
 import { splitGuide } from '@/data/inquiryGuide'
+import { buildAnalysisParams } from '@/lib/serialLiveCheck'
 import { linkRecipeTitles } from '@/recipes/relatedRecipes'
 import { useRecipeContext } from './RecipeContext'
 
@@ -22,7 +23,7 @@ export function MeasurePage() {
         <h3 id="export-title" className="font-semibold">측정값 내보내기</h3>
         <p className="mt-3">아두이노를 USB로 꽂은 채 데이터 화면에서 <strong>[USB로 받기]</strong>를 누르면 값이 들어옵니다. 그 전에 IDE의 시리얼 모니터 창은 닫으세요. 포트는 한 프로그램만 쓸 수 있습니다.</p>
         <p className="mt-2 text-caption text-muted">크롬·엣지가 아니거나 USB로 받기가 안 되면, 시리얼 모니터에 쌓인 글을 열 이름이 적힌 첫 줄부터 끝까지 복사해 데이터 화면에 붙여 넣으세요.</p>
-        <Link className="mt-4 inline-block text-accent hover:underline" to={`/data-analysis?baud=${recipe.baudRate}`}>데이터 변환·분석 화면 열기 →</Link>
+        <Link className="mt-4 inline-block text-accent hover:underline" to={`/data-analysis?${buildAnalysisParams(recipe)}`}>데이터 변환·분석 화면 열기 →</Link>
       </section>
 
       {guide.measure && (

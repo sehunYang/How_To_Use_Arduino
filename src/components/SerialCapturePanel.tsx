@@ -1,6 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
+  EMPTY_LIVE_CHECK,
+  LIVE_CHECK_WINDOW,
+  checkReceivedLines,
+  describeSilence,
+  type LiveCheckResult,
+  type RecipeHint,
+} from '@/lib/serialLiveCheck'
+import {
   BAUD_RATES,
   MAX_CAPTURE_CHARS,
   MAX_CAPTURE_LINES,
@@ -13,8 +21,11 @@ import {
 } from '@/lib/webSerial'
 
 const PREVIEW_LINES = 5
-/** 속도 불일치는 처음 몇 줄만 보면 압니다. 뒤 줄까지 매번 훑으면 화면이 느려집니다. */
-const GARBLE_CHECK_LINES = 20
+/**
+ * 리셋 뒤 부트로더가 2초쯤 기다리고, 센서 준비에 몇 초가 더 갑니다. 이만큼 지나도
+ * 줄이 없거나 열 이름 줄뿐이면 기다림이 아니라 멈춤입니다.
+ */
+export const SILENCE_TIMEOUT_MS = 10_000
 
 type Phase = 'idle' | 'opening' | 'capturing'
 
@@ -23,6 +34,10 @@ interface SerialCapturePanelProps {
   onBaudRateChange: (baudRate: number) => void
   /** 받기를 멈추면 받은 글 전체를 한 덩어리로 넘깁니다. 붙여넣은 글과 같은 길로 들어갑니다. */
   onCaptured: (text: string) => void
+  /** 레시피 화면에서 왔을 때 받은 값을 견줄 기준. 없으면 열 이름·고장값 점검은 하지 않습니다. */
+  hint?: RecipeHint | null
+  /** 시험에서 10초를 기다리지 않으려고 줄이는 용도. */
+  silenceTimeoutMs?: number
 }
 
 /**
@@ -31,15 +46,23 @@ interface SerialCapturePanelProps {
  * 받는 동안은 줄 수와 마지막 몇 줄만 보여 줍니다. 값이 오고 있다는 것과 속도가
  * 맞았다는 것만 알면 되고, 표와 그래프는 멈춘 뒤 아래에서 봅니다.
  */
-export function SerialCapturePanel({ baudRate, onBaudRateChange, onCaptured }: SerialCapturePanelProps) {
+export function SerialCapturePanel({
+  baudRate,
+  onBaudRateChange,
+  onCaptured,
+  hint = null,
+  silenceTimeoutMs = SILENCE_TIMEOUT_MS,
+}: SerialCapturePanelProps) {
   const [serial] = useState(findWebSerial)
   const [phase, setPhase] = useState<Phase>('idle')
   const [lineCount, setLineCount] = useState(0)
   const [preview, setPreview] = useState<string[]>([])
   const [garbled, setGarbled] = useState(false)
+  const [liveCheck, setLiveCheck] = useState<LiveCheckResult>(EMPTY_LIVE_CHECK)
   const [error, setError] = useState<SerialCaptureError | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
   const linesRef = useRef<string[]>([])
+  const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const charCountRef = useRef(0)
   /** [버리기]를 누른 뒤 포트가 닫히기 전에 도착한 줄까지 회차로 넘어가지 않게 합니다. */
   const discardedRef = useRef(false)
@@ -56,14 +79,42 @@ export function SerialCapturePanel({ baudRate, onBaudRateChange, onCaptured }: S
    */
   const onCapturedRef = useRef(onCaptured)
   onCapturedRef.current = onCaptured
+  const hintRef = useRef(hint)
+  hintRef.current = hint
 
   useEffect(() => {
     aliveRef.current = true
     return () => {
       aliveRef.current = false
+      clearSilenceTimer()
       void handleRef.current?.stop()
     }
   }, [])
+
+  function clearSilenceTimer() {
+    if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current)
+    silenceTimerRef.current = null
+  }
+
+  /** 기다릴 만큼 기다렸는데 값이 오지 않을 때, 무엇을 볼지 알려 줍니다. */
+  function checkSilence() {
+    silenceTimerRef.current = null
+    if (!aliveRef.current) return
+    const seconds = Math.max(1, Math.round(silenceTimeoutMs / 1000))
+    switch (describeSilence(linesRef.current)) {
+      case 'nothing':
+        setNotice(`${seconds}초가 지나도 아무 줄이 오지 않습니다. IDE에서 업로드가 끝났는지, 속도가 코드의 Serial.begin 값과 같은지 확인하세요.`)
+        break
+      case 'headerOnly':
+        setNotice('열 이름 줄만 오고 값이 따라오지 않습니다. 센서를 준비하는 단계에서 멈춘 것입니다. 전원과 통신 선(A4·A5 또는 데이터 핀)을 확인하세요.')
+        break
+      case 'deviceError':
+        // 보드가 찍은 오류 줄은 이미 위에 빨간 상자로 떠 있습니다.
+        break
+      default:
+        break
+    }
+  }
 
   if (!serial) {
     return (
@@ -76,6 +127,7 @@ export function SerialCapturePanel({ baudRate, onBaudRateChange, onCaptured }: S
   function finish(reason: SerialCaptureError | null) {
     endedRef.current = true
     handleRef.current = null
+    clearSilenceTimer()
     if (!aliveRef.current) return
     setPhase('idle')
     if (reason && !discardedRef.current) setError(reason)
@@ -90,6 +142,7 @@ export function SerialCapturePanel({ baudRate, onBaudRateChange, onCaptured }: S
     setError(null)
     setNotice(null)
     setGarbled(false)
+    setLiveCheck(EMPTY_LIVE_CHECK)
     setLineCount(0)
     setPreview([])
     linesRef.current = []
@@ -109,7 +162,10 @@ export function SerialCapturePanel({ baudRate, onBaudRateChange, onCaptured }: S
           charCountRef.current += line.length + 1
           setLineCount(lines.length)
           setPreview(lines.slice(-PREVIEW_LINES))
-          if (lines.length <= GARBLE_CHECK_LINES) setGarbled(looksGarbled(lines))
+          if (lines.length <= LIVE_CHECK_WINDOW) {
+            setGarbled(looksGarbled(lines))
+            setLiveCheck(checkReceivedLines(hintRef.current, lines))
+          }
           if (lines.length >= MAX_CAPTURE_LINES || charCountRef.current >= MAX_CAPTURE_CHARS) {
             limitRef.current = true
             setNotice('한 번에 받을 수 있는 양이 차서 받기를 멈췄습니다. 지금까지 받은 값은 회차로 넣습니다.')
@@ -125,6 +181,7 @@ export function SerialCapturePanel({ baudRate, onBaudRateChange, onCaptured }: S
       }
       handleRef.current = handle
       setPhase('capturing')
+      silenceTimerRef.current = setTimeout(checkSilence, silenceTimeoutMs)
       // 한계는 손잡이가 오기 전에도 닿을 수 있습니다. 그때는 손잡이가 오자마자 멈춥니다.
       if (limitRef.current) void handle.stop()
     } catch (caught) {
@@ -194,6 +251,29 @@ export function SerialCapturePanel({ baudRate, onBaudRateChange, onCaptured }: S
             <p role="alert" className="mt-2 rounded-card border border-warning bg-warning-background p-3 text-caption text-warning">
               받은 글자가 깨져 있습니다. 속도가 스케치와 다를 때 이렇게 나옵니다. [버리기]를 누른 뒤 속도를 {otherBaudRate}으로 바꿔 다시 받으세요.
             </p>
+          )}
+          {!garbled && liveCheck.deviceErrors.length > 0 && (
+            <div role="alert" className="mt-2 rounded-card border border-danger bg-danger-background p-3 text-caption text-danger">
+              <p className="font-semibold">보드가 오류를 알렸습니다. 센서를 준비하지 못한 것입니다. 전원과 통신 선(A4·A5 또는 데이터 핀)을 확인하세요.</p>
+              <pre className="mt-1 whitespace-pre-wrap font-mono">{liveCheck.deviceErrors.join('\n')}</pre>
+            </div>
+          )}
+          {!garbled && liveCheck.headerMismatch && (
+            <p role="alert" className="mt-2 rounded-card border border-warning bg-warning-background p-3 text-caption text-warning">
+              {liveCheck.headerMismatch}
+            </p>
+          )}
+          {!garbled && liveCheck.signals.length > 0 && (
+            <aside role="alert" aria-labelledby="live-reading-title" className="mt-2 rounded-card border border-warning bg-warning-background p-3 text-caption text-warning">
+              <h4 id="live-reading-title" className="font-semibold">고장났을 때만 나오는 값이 보입니다</h4>
+              <ul className="mt-1 list-disc pl-5">
+                {liveCheck.signals.map((signal) => (
+                  <li key={signal.sign}>
+                    <span className="font-medium">{signal.sign}.</span> {signal.meaning}
+                  </li>
+                ))}
+              </ul>
+            </aside>
           )}
         </div>
       )}

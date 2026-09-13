@@ -45,6 +45,7 @@ import {
   trialLabel,
   type Trial,
 } from '@/lib/trialAnalysis'
+import { parseRecipeHint, type RecipeHint } from '@/lib/serialLiveCheck'
 import { DEFAULT_BAUD_RATE, parseBaudRate } from '@/lib/webSerial'
 
 const example = `time_ms,temperature_c,humidity_pct
@@ -99,9 +100,16 @@ function initialBaudRate() {
   return parseBaudRate(new URLSearchParams(window.location.search).get('baud')) ?? DEFAULT_BAUD_RATE
 }
 
+/** 레시피 측정 화면이 함께 넘겨 준 열 이름과 센서. 받은 값이 그 레시피의 것인지 견줍니다. */
+function initialRecipeHint(): RecipeHint | null {
+  if (typeof window === 'undefined') return null
+  return parseRecipeHint(new URLSearchParams(window.location.search))
+}
+
 export function DataAnalysisPage() {
   const [input, setInput] = useState('')
   const [baudRate, setBaudRate] = useState(initialBaudRate)
+  const [recipeHint] = useState(initialRecipeHint)
   const [trials, setTrials] = useState<PageTrial[]>([])
   const [lastResult, setLastResult] = useState<SerialCsvResult | null>(null)
   const [mismatchError, setMismatchError] = useState<string | null>(null)
@@ -689,6 +697,7 @@ export function DataAnalysisPage() {
             baudRate={baudRate}
             onBaudRateChange={setBaudRate}
             onCaptured={(text) => addTrialFromText(text, 'usb')}
+            hint={recipeHint}
           />
         </div>
 

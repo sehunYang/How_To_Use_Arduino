@@ -646,6 +646,47 @@ describe('USB로 바로 받기', () => {
     await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('2개 회차, 3개 열, 모두 4개 데이터 행'))
   })
 
+  it('레시피가 넘긴 열 이름과 다르면 다른 코드가 올라가 있다고 알린다', async () => {
+    const { push, port } = fakeSerialPort()
+    installSerial(port)
+    window.history.replaceState({}, '', '/data-analysis?baud=9600&header=time_ms%2Ctemperature_c&sensors=ds18b20')
+    const user = userEvent.setup()
+    render(<DataAnalysisPage />)
+
+    await user.click(screen.getByRole('button', { name: 'USB로 받기' }))
+    push(['time_ms,distance_cm', ...Array.from({ length: 8 }, (_, i) => `${i * 100},${20 + i}`)].join('\r\n') + '\r\n')
+
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('다른 레시피의 코드'))
+  })
+
+  it('레시피의 센서가 고장났을 때만 내는 값이 보이면 받는 중에 알린다', async () => {
+    const { push, port } = fakeSerialPort()
+    installSerial(port)
+    window.history.replaceState({}, '', '/data-analysis?baud=9600&header=time_ms%2Ctemperature_c&sensors=ds18b20')
+    const user = userEvent.setup()
+    render(<DataAnalysisPage />)
+
+    await user.click(screen.getByRole('button', { name: 'USB로 받기' }))
+    push(['time_ms,temperature_c', ...Array.from({ length: 8 }, (_, i) => `${i * 1000},-127.00`)].join('\r\n') + '\r\n')
+
+    const warning = await screen.findByRole('alert', { name: '고장났을 때만 나오는 값이 보입니다' })
+    expect(warning).toHaveTextContent('-127.00이 나옵니다')
+    expect(warning).toHaveTextContent('4.7 kΩ 저항')
+  })
+
+  it('레시피 기준이 없으면 열 이름도 고장값도 따지지 않는다', async () => {
+    const { push, port } = fakeSerialPort()
+    installSerial(port)
+    const user = userEvent.setup()
+    render(<DataAnalysisPage />)
+
+    await user.click(screen.getByRole('button', { name: 'USB로 받기' }))
+    push(['time_ms,temperature_c', ...Array.from({ length: 8 }, (_, i) => `${i * 1000},-127.00`)].join('\r\n') + '\r\n')
+    await waitFor(() => expect(screen.getByText(/9줄 받는 중/)).toBeInTheDocument())
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+
   it('화면을 떠나면 포트를 닫는다', async () => {
     const { push, port } = fakeSerialPort()
     installSerial(port)

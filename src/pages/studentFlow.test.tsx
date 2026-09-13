@@ -278,7 +278,7 @@ describe('처음인 학생이 멈추던 자리', () => {
 
     const reading = screen.getByRole('region', { name: '처음 나온 값이 정상인지 확인하기' })
     expect(reading).toHaveTextContent(/평평한 책상에 두면/)
-    expect(reading).toHaveTextContent('여섯 값이 모두 0입니다')
+    expect(reading).toHaveTextContent('가속도·자이로 값이 모두 0입니다')
     // 센서와 상관없이 겪는 증상도 같은 표에 함께 둡니다.
     expect(reading).toHaveTextContent('알아볼 수 없는 기호만 나옵니다')
   })
