@@ -71,6 +71,13 @@ describe('Phase 3 student flow', () => {
     expect(screen.queryByRole('heading', { name: '필요한 센서' })).not.toBeInTheDocument()
   })
 
+  it('비슷한 탐구만 있을 때는 그 탐구의 센서를 필요한 센서로 권하지 않는다', () => {
+    renderAt('/search?q=%EB%AC%BC%EC%9D%98%20%EC%96%91%EC%97%90%20%EB%94%B0%EB%9D%BC%20%EC%8B%9D%EB%8A%94%20%EC%86%8D%EB%8F%84%EA%B0%80%20%EB%8B%AC%EB%9D%BC%EC%A7%88%EA%B9%8C', <SearchResultsPage />, '/search')
+
+    expect(screen.getByText(/딱 맞는 레시피는 찾지 못해/)).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: '필요한 센서' })).not.toBeInTheDocument()
+  })
+
   it('counts the recipes it actually matched', () => {
     renderAt('/search?q=진자', <SearchResultsPage />, '/search')
 

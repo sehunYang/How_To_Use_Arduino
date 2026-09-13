@@ -34,6 +34,7 @@ describe('saved trials', () => {
     yNames: ['accel_x_raw'],
     manualNames: ['length_cm'],
     calculatedColumns: [{ name: 'g', expression: 'accel_x_raw / 16384' }],
+    level: 'advanced',
     updatedAt: '2026-09-13T00:00:00.000Z',
   }
 

@@ -36,7 +36,9 @@ export function SearchResultsPage() {
       }).catch(() => undefined)
     }
   }, [query, dictionaryMissed])
-  const rankedSensors = rankSensors(results, sensorRationales)
+  // 딱 맞는 레시피가 없을 때 비슷한 탐구의 센서를 "필요한 센서"로 내놓으면, 온도를 묻는
+  // 학생이 가속도 센서가 필요하다고 읽습니다. 자신 있게 맞춘 것이 있을 때만 권합니다.
+  const rankedSensors = exactCount > 0 ? rankSensors(results, sensorRationales) : []
   const sensorCards = rankedSensors
     .map(({ sensorId, whyText }) => ({ sensor: sensorById.get(sensorId), whyText }))
     .filter((card): card is { sensor: NonNullable<typeof card.sensor>; whyText: string } => Boolean(card.sensor))

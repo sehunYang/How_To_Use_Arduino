@@ -11,7 +11,7 @@ export const canaryPlans: Record<string, InquiryPlan> = {
   pendulum: {
     question: '진자가 한 번 왕복하는 시간은 무엇이 정할까?',
     measures: '진자에 붙인 센서의 3축 가속도 원시값',
-    changes: '실의 길이와 추의 질량',
+    changes: '실의 길이 (추의 질량은 더 나아가기에서 바꿔 봅니다)',
     relation: '주기는 실 길이의 제곱근에 비례하고 추의 질량과는 거의 관계가 없다',
     concepts: ['period', 'simplePendulum', 'amplitude', 'mechanicalEnergy', 'gravitationalAcceleration'],
     formula: {

@@ -146,7 +146,7 @@ export function DataAnalysisPage() {
    * 더 가는 기능은 고급으로 바꿀 때만 나타납니다. 대부분의 탐구는 붙여넣기만으로
    * 끝나는데, 그 사람들에게까지 식 입력란을 먼저 보여 주면 화면이 어려워 보입니다.
    */
-  const [level, setLevel] = useState<'basic' | 'advanced'>('basic')
+  const [level, setLevel] = useState<'basic' | 'advanced'>(session.saved?.level ?? 'basic')
   const [range, setRange] = useState<RowRange>(EMPTY_RANGE)
   /** 회차마다 값을 적어 넣는 열의 이름. 값 자체는 회차가 들고 있습니다. */
   const [manualNames, setManualNames] = useState<string[]>(session.saved?.manualNames ?? [])
@@ -214,11 +214,12 @@ export function DataAnalysisPage() {
       yNames,
       manualNames,
       calculatedColumns,
+      level,
       updatedAt: new Date().toISOString(),
     }
     const timer = setTimeout(flushSave, 300)
     return () => clearTimeout(timer)
-  }, [trials, xName, yNames, manualNames, calculatedColumns, baudRate, recipeHint, flushSave])
+  }, [trials, xName, yNames, manualNames, calculatedColumns, level, baudRate, recipeHint, flushSave])
 
   // ── 붙여넣은 표를 다듬는 차례: 구간 자르기 → 계열 펼치기 → 열 더하기 ──
   const croppedTrials = useMemo(

@@ -156,6 +156,8 @@ export interface SavedTrials {
   yNames: string[]
   manualNames: string[]
   calculatedColumns: Array<{ name: string; expression: string }>
+  /** 기본/고급. 고급에서 조건 값 열을 적던 학생이 새로 고침 뒤 입력란을 잃지 않게 합니다. */
+  level?: 'basic' | 'advanced'
   updatedAt: string
 }
 
@@ -218,6 +220,7 @@ export function loadTrials(recipeId: string | null, storage?: Storage): SavedTri
         ? value.calculatedColumns.filter((column): column is { name: string; expression: string } =>
             !!column && typeof column.name === 'string' && typeof column.expression === 'string')
         : [],
+      level: value.level === 'advanced' ? 'advanced' : 'basic',
       updatedAt: typeof value.updatedAt === 'string' ? value.updatedAt : EMPTY_UPDATED_AT,
     }
   } catch {
