@@ -43,15 +43,36 @@ describe('Phase 5 Wokwi project generation', () => {
     const projects = buildPhase5WokwiProjects(eligible, phase5Recipes, sensors)
 
     for (const project of projects) {
-      expect(project.sketch).toContain(`Serial.println("# PHASE5_READY:${project.id}");`)
       expect(project.diagram.author).toBe(project.id)
       expect(project.timeoutMs).toBeLessThanOrEqual(PHASE5_SIMULATION_TIMEOUT_CAP_MS)
       expect(project.command).toBe(
         `wokwi-cli ${project.path} --scenario scenario.test.yaml --timeout ${project.timeoutMs}`,
       )
       expect(renderPhase5WokwiToml(project)).toContain('firmware = "firmware.hex"')
+      if (project.behavior) continue
+      expect(project.sketch).toContain(`Serial.println("# PHASE5_READY:${project.id}");`)
       expect(renderPhase5Scenario(project))
         .toContain(`  - wait-serial: "# PHASE5_READY:${project.id}"`)
+    }
+  })
+
+  it('runs behaviour projects on the unmodified student sketch with every stimulus', () => {
+    const projects = buildPhase5WokwiProjects(eligible, phase5Recipes, sensors)
+    const behaviorProjects = projects.filter((project) => project.behavior)
+    expect(behaviorProjects.map((project) => project.id)).toEqual(['cooling-curve'])
+
+    for (const project of behaviorProjects) {
+      const recipe = phase5Recipes.find((candidate) => candidate.id === project.id)!
+      expect(project.sketch).toBe(`${recipe.sketch.trimEnd()}\n`)
+      expect(project.sketch).not.toContain('PHASE5_READY')
+
+      const partIds = new Set(project.diagram.parts.map((part) => part.id))
+      const scenario = renderPhase5Scenario(project)
+      expect(scenario).toContain(`  - wait-serial: ${JSON.stringify(project.behavior!.header)}`)
+      for (const stimulus of project.behavior!.stimuli) {
+        expect(partIds.has(stimulus.partId), stimulus.partId).toBe(true)
+        expect(scenario).toContain(`      value: ${stimulus.value}\n  - wait-serial: ${JSON.stringify(stimulus.expectSerial)}`)
+      }
     }
   })
 

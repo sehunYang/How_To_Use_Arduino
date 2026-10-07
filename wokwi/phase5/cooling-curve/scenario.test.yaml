@@ -1,5 +1,26 @@
-name: Phase 5 deterministic smoke - cooling-curve
+name: Phase 5 behavior - cooling-curve
 version: 1
 author: phase5-generator
 steps:
-  - wait-serial: "# PHASE5_READY:cooling-curve"
+  - wait-serial: "time_s,temperature_c,excess_temperature_c"
+  - wait-serial: ",22.000,0.000"
+  - set-control:
+      part-id: ds18b20
+      control: temperature
+      value: 60
+  - wait-serial: ",60.000,38.000"
+  - set-control:
+      part-id: ds18b20
+      control: temperature
+      value: 45
+  - wait-serial: ",45.000,23.000"
+  - set-control:
+      part-id: ds18b20
+      control: temperature
+      value: 30
+  - wait-serial: ",30.000,8.000"
+  - set-control:
+      part-id: ds18b20
+      control: temperature
+      value: 22.5
+  - wait-serial: ",22.500,0.500"

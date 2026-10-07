@@ -113,6 +113,22 @@ npm run build:wokwi
 wokwi-cli wokwi/ina219-current --scenario scenario.test.yaml --timeout 10000
 ```
 
+### 4-4. Phase 5 행동 검증 (`wokwi/phase5/cooling-curve`)
+
+부팅 스모크는 `Serial.begin()` 직후 주입한 마커만 기다리므로 센서가 빠져 있어도
+통과합니다. 행동 검증은 그 빈틈을 막습니다.
+
+- [x] 학생이 받는 스케치를 **수정 없이** 실행합니다(마커 주입 없음).
+- [x] 시나리오가 DS18B20 `temperature` 컨트롤을 22 → 60 → 45 → 30 → 22.5°C로
+      바꾸며, 각 값이 `temperature_c`와 `excess_temperature_c`(= T − 22)로 출력되는지 기다립니다.
+- [x] `--serial-log-file` 로그의 **모든 행**을 `src/wokwi/serialBehavior.ts`가 판정합니다:
+      헤더, 열 개수, `nan` 없음, 시간 증가와 샘플 간격(1.6–2.0초), 적용한 자극과의
+      일치(85°C 같은 초기값 거부), 초과온도 계산.
+- [ ] 실제 GitHub Actions에서 성공을 확인합니다.
+
+행동 명세는 `src/wokwi/behaviorSpecs.ts`에 추가하며, 명세가 있는 레시피는
+`npm run generate:wokwi:phase5`가 자동으로 행동 시나리오를 생성합니다.
+
 ## 5. GitHub Actions L3 검증
 
 - [x] `.github/workflows/verify-pr.yml`에 `workflow_dispatch`를 제공합니다.
