@@ -10,7 +10,6 @@ const byte RELAY_PIN = 7;
 float targetLux = 500.0;
 void setup() {
   Serial.begin(9600);
-  Serial.println("# PHASE5_READY:photosynthesis-light-control");
   pinMode(RELAY_PIN, OUTPUT);
   digitalWrite(RELAY_PIN, LOW);
   if (!light.begin()) Serial.println("# TSL2591_ERROR");

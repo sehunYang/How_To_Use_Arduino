@@ -1,5 +1,21 @@
-name: Phase 5 deterministic smoke - S6
+name: Phase 5 behavior - S6
 version: 1
 author: phase5-generator
 steps:
-  - wait-serial: "# PHASE5_READY:S6"
+  - wait-serial: "time_ms,temperature_c,humidity_pct,pressure_hpa"
+  - delay: 2500ms
+  - set-control:
+      part-id: bme280
+      control: temperatureRaw
+      value: 538788
+  - delay: 2500ms
+  - set-control:
+      part-id: bme280
+      control: humidityRaw
+      value: 34868
+  - delay: 2500ms
+  - set-control:
+      part-id: bme280
+      control: pressureRaw
+      value: 440000
+  - delay: 2500ms

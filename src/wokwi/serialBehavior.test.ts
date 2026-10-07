@@ -70,6 +70,12 @@ describe('serial behaviour checker', () => {
       .toEqual(['line 3 "# sensor-error": unexpected diagnostic'])
   })
 
+  it('ignores a final line the end of the simulation cut short', () => {
+    expect(checkSerialBehavior(cooling, `${goodLog}9.6,22.5`)).toEqual({ ok: true, rows: 5, failures: [] })
+    // ...but not a bad line in the middle of the log.
+    expect(checkSerialBehavior(cooling, goodLog.replace('4.4,', '4.4,22.5\n4.4,')).ok).toBe(false)
+  })
+
   const stepSpec: Phase5BehaviorSpec = {
     recipeId: 'fixture',
     header: 'time_ms,level,state',

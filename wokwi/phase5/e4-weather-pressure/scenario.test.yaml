@@ -1,5 +1,6 @@
-name: Phase 5 deterministic smoke - e4-weather-pressure
+name: Phase 5 behavior - e4-weather-pressure
 version: 1
 author: phase5-generator
 steps:
-  - wait-serial: "# PHASE5_READY:e4-weather-pressure"
+  - wait-serial: "time_min,pressure_hpa,relative_altitude_m"
+  - wait-serial: ",1006.53,"

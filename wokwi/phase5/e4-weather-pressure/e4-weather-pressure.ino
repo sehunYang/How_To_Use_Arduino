@@ -100,7 +100,6 @@ float bmeHumidity() {
 float seaLevelPressureHpa = 1013.25;
 void setup() {
   Serial.begin(9600);
-  Serial.println("# PHASE5_READY:e4-weather-pressure");
   Wire.begin();
   if(!bmeBegin())Serial.println("# BME280_ERROR");
   Serial.println("time_min,pressure_hpa,relative_altitude_m");

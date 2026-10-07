@@ -1,5 +1,35 @@
-name: Phase 5 deterministic smoke - p7-solar-panel-angle
+name: Phase 5 behavior - p7-solar-panel-angle
 version: 1
 author: phase5-generator
 steps:
-  - wait-serial: "# PHASE5_READY:p7-solar-panel-angle"
+  - wait-serial: "time_ms,voltage_v,current_ma,power_mw,lux,power_density_mw_cm2"
+  - set-control:
+      part-id: tsl2591
+      control: ch0Raw
+      value: 4000
+  - set-control:
+      part-id: tsl2591
+      control: ch1Raw
+      value: 1000
+  - set-control:
+      part-id: ina219
+      control: shuntRaw
+      value: 1000
+  - set-control:
+      part-id: ina219
+      control: busRaw
+      value: 4000
+  - delay: 1500ms
+  - set-control:
+      part-id: tsl2591
+      control: ch0Raw
+      value: 2000
+  - set-control:
+      part-id: tsl2591
+      control: ch1Raw
+      value: 500
+  - set-control:
+      part-id: ina219
+      control: shuntRaw
+      value: 500
+  - delay: 1500ms

@@ -30,7 +30,7 @@ TEST_CASE("the four measurement registers are read-only") {
 
   CHECK(ina219_read_register(&regs, 0x01) == 1000);
   CHECK(ina219_read_register(&regs, 0x02) == 5000);
-  CHECK(ina219_read_register(&regs, 0x03) == 1000);
+  CHECK(ina219_read_register(&regs, 0x03) == 125);
   CHECK(ina219_read_register(&regs, 0x04) == 1000);
 }
 
@@ -50,8 +50,9 @@ TEST_CASE("current and power are derived from calibration per the documented mod
 
   // CURRENT = (SHUNT * CALIBRATION) / 4096 = (1000 * 4096) / 4096
   CHECK(ina219_read_register(&regs, 0x04) == 1000);
-  // POWER = (CURRENT * BUS) / 5000 = (1000 * 5000) / 5000
-  CHECK(ina219_read_register(&regs, 0x03) == 1000);
+  // POWER = (CURRENT * (BUS >> 3)) / 5000 = (1000 * 625) / 5000. With the
+  // 4096 calibration that is 125 * 2 mW = 250 mW = 2.5 V * 100 mA.
+  CHECK(ina219_read_register(&regs, 0x03) == 125);
 }
 
 TEST_CASE("a different calibration changes current for the same raw shunt/bus reading") {
@@ -71,7 +72,8 @@ TEST_CASE("a different calibration changes current for the same raw shunt/bus re
   CHECK(calibrated4096 == 1000);
   CHECK(calibrated8192 == 2000);
   CHECK(calibrated8192 != calibrated4096);
-  CHECK(ina219_read_register(&regs, 0x03) == 2000);
+  // (2000 * (5000 >> 3)) / 5000
+  CHECK(ina219_read_register(&regs, 0x03) == 250);
 }
 
 TEST_CASE("an uncalibrated chip reads zero current") {

@@ -1,5 +1,44 @@
-name: Phase 5 deterministic smoke - p8-inverse-square-light
+name: Phase 5 behavior - p8-inverse-square-light
 version: 1
 author: phase5-generator
 steps:
-  - wait-serial: "# PHASE5_READY:p8-inverse-square-light"
+  - wait-serial: "time_ms,distance_m,mean_lux,d2_times_lux"
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 50
+  - set-control:
+      part-id: tsl2591
+      control: ch0Raw
+      value: 2000
+  - set-control:
+      part-id: tsl2591
+      control: ch1Raw
+      value: 500
+  - delay: 3500ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 100
+  - set-control:
+      part-id: tsl2591
+      control: ch0Raw
+      value: 500
+  - set-control:
+      part-id: tsl2591
+      control: ch1Raw
+      value: 125
+  - delay: 3500ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 25
+  - set-control:
+      part-id: tsl2591
+      control: ch0Raw
+      value: 8000
+  - set-control:
+      part-id: tsl2591
+      control: ch1Raw
+      value: 2000
+  - delay: 3500ms

@@ -9,6 +9,8 @@ if (!process.env.WOKWI_CLI_TOKEN) {
   process.exit(1)
 }
 
+// Run every project and report all failures together, so one CI run shows them all.
+const failed: string[] = []
 for (const project of manifest.projects) {
   console.log(`Running ${project.id} [${project.kind}] (${project.timeoutMs}ms cap)...`)
   const args = [project.path, '--scenario', project.scenario, '--timeout', String(project.timeoutMs)]
@@ -21,7 +23,10 @@ for (const project of manifest.projects) {
   })
   if (result.error) throw result.error
   if (behavior) process.stdout.write(result.stdout)
-  if (result.status !== 0) process.exit(result.status ?? 1)
+  if (result.status !== 0) {
+    failed.push(`${project.id}: wokwi-cli exited with ${result.status}`)
+    continue
+  }
 
   if (behavior) {
     const spec = phase5BehaviorSpecById.get(project.id)
@@ -30,10 +35,17 @@ for (const project of manifest.projects) {
     if (!verdict.ok) {
       console.error(`${project.id}: serial behaviour check failed (${verdict.rows} rows)`)
       for (const failure of verdict.failures) console.error(`  - ${failure}`)
-      process.exit(1)
+      failed.push(`${project.id}: ${verdict.failures.length} behaviour failure(s)`)
+      continue
     }
     console.log(`${project.id}: ${verdict.rows} rows matched the physical stimulus`)
   }
+}
+
+if (failed.length > 0) {
+  console.error(`\n${failed.length} of ${manifest.projects.length} Phase 5 Wokwi projects failed:`)
+  for (const failure of failed) console.error(`  - ${failure}`)
+  process.exit(1)
 }
 
 const behaviorCount = manifest.projects.filter((project) => project.kind === 'behavior').length

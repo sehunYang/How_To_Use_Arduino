@@ -26,7 +26,6 @@ uint16_t inaRead(byte reg) {
 }
 void setup() {
   Serial.begin(9600);
-  Serial.println("# PHASE5_READY:p7-solar-panel-angle");
   Wire.begin();
   inaWrite(0x05,4096);
   tsl.begin();

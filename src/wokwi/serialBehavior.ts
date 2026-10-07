@@ -72,6 +72,17 @@ function misses(
  * before it, for readings taken while the stimulus was changing.
  */
 export function checkSerialBehavior(spec: Phase5BehaviorSpec, log: string): SerialBehaviorResult {
+  const result = checkLines(spec, log)
+  if (result.ok) return result
+  // The simulation stops the moment the scenario's last step completes, which
+  // can cut the line the board was still printing. Only that final line may be
+  // dropped, and only if everything before it passes.
+  const lines = log.trimEnd().split(/\r?\n/)
+  const withoutLast = checkLines(spec, lines.slice(0, -1).join('\n'))
+  return withoutLast.ok ? withoutLast : result
+}
+
+function checkLines(spec: Phase5BehaviorSpec, log: string): SerialBehaviorResult {
   const failures: string[] = []
   const allowedComments = new Set(spec.allowedComments ?? [])
   const lines = log
@@ -95,6 +106,7 @@ export function checkSerialBehavior(spec: Phase5BehaviorSpec, log: string): Seri
   let phase = 0
   let settleBudget = spec.phases[1]?.settleRows ?? 0
   let previousPhase: number | undefined
+  let startupBudget = spec.startupRows ?? 0
 
   for (const [offset, line] of lines.slice(headerIndex + 1).entries()) {
     const where = `line ${offset + 1} "${line}"`
@@ -146,6 +158,10 @@ export function checkSerialBehavior(spec: Phase5BehaviorSpec, log: string): Seri
       seenPhases.add(phase)
       previousPhase = phase
       settleBudget = spec.phases[phase + 1]?.settleRows ?? 0
+      continue
+    }
+    if (seenPhases.size === 0 && startupBudget > 0) {
+      startupBudget -= 1
       continue
     }
     // Settle rows sit between two phases, so the current one must have been reached first.

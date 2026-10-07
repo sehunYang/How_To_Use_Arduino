@@ -63,6 +63,8 @@ export interface Phase5BehaviorSpec {
   textColumns?: string[]
   /** `#` lines the sketch may print; any other diagnostic fails the run. */
   allowedComments?: string[]
+  /** Rows printed before the first stimulus could take effect, exempt from phase matching. */
+  startupRows?: number
   /** Minimum data rows the log must contain. */
   minRows: number
   /** Cross-row invariants the per-row expectations cannot express. */
@@ -70,6 +72,22 @@ export interface Phase5BehaviorSpec {
   /** Simulated-time cap, when the registry default is not enough. */
   timeoutMs?: number
 }
+
+import {
+  barometricAltitudeM,
+  BME280_DEFAULT_RAW,
+  bme280HumidityPct,
+  bme280HumidityRawFor,
+  bme280PressureHpa,
+  bme280TemperatureC,
+  bme280TemperatureRawFor,
+  ina219BusRegisterFor,
+  ina219BusVolts,
+  ina219CurrentMa,
+  TSL2591_DEFAULT_RAW,
+  TSL2591_GAIN,
+  tsl2591Lux,
+} from './sensorOracles'
 
 const G = 9.80665
 // MPU6050 at its power-on ±2 g range.
@@ -113,6 +131,27 @@ function ds18b20Temperature(column: string, partId: string, values: number[], fo
     steps: index === 0 ? [waitSerial(format(value))] : [set(partId, 'temperature', value), waitSerial(format(value))],
     expect: { [column]: approx(value, DS18B20_LSB_C) },
   }))
+}
+
+interface BmeRaw { temperature: number; pressure: number; humidity: number }
+
+/** Steps that move the BME280 chip from `from` to `to`, one control per changed reading. */
+function bmeSteps(partId: string, from: BmeRaw, to: BmeRaw): ScenarioStep[] {
+  return (['temperature', 'pressure', 'humidity'] as const)
+    .filter((quantity) => from[quantity] !== to[quantity])
+    .map((quantity) => set(partId, `${quantity}Raw`, to[quantity]))
+}
+
+/** Lux expectation for raw light at `gain`, allowing float rounding in the sketch. */
+const lux = (ch0Raw: number, ch1Raw: number, gain: number) => {
+  const value = tsl2591Lux(ch0Raw, ch1Raw, gain)
+  return approx(value, Math.max(0.02, Math.abs(value) * 0.001))
+}
+
+/** Raw light that falls off with the inverse square of distance from a lamp. */
+const lampAt = (distanceM: number) => {
+  const ch0 = Math.round(2000 * (0.5 / distanceM) ** 2)
+  return { ch0, ch1: ch0 / 4 }
 }
 
 // The cooling-curve recipe's @tunable default; students change it to their room temperature.
@@ -505,6 +544,305 @@ export const phase5BehaviorSpecs: readonly Phase5BehaviorSpec[] = [
     timeColumn: 'time_ms',
     sampleInterval: { min: 1000, max: 1002 },
     minRows: 7,
+  },
+  // ── BME280 / INA219 / TSL2591 custom chips ───────────────────────────────
+  (() => {
+    const states: Array<{ label: string; raw: BmeRaw }> = [
+      { label: 'room air', raw: { ...BME280_DEFAULT_RAW } },
+      { label: 'warmed to 31 °C', raw: { ...BME280_DEFAULT_RAW, temperature: bme280TemperatureRawFor(31) } },
+      {
+        label: 'humid air (75 %RH at 31 °C)',
+        raw: {
+          ...BME280_DEFAULT_RAW,
+          temperature: bme280TemperatureRawFor(31),
+          humidity: bme280HumidityRawFor(75, bme280TemperatureRawFor(31)),
+        },
+      },
+      {
+        label: 'a low-pressure front',
+        raw: {
+          temperature: bme280TemperatureRawFor(31),
+          humidity: bme280HumidityRawFor(75, bme280TemperatureRawFor(31)),
+          pressure: 440000,
+        },
+      },
+    ]
+    return {
+      recipeId: 'S6',
+      header: 'time_ms,temperature_c,humidity_pct,pressure_hpa',
+      phases: states.map(({ label, raw }, index) => ({
+        label,
+        steps: [...(index === 0 ? [] : bmeSteps('bme280', states[index - 1].raw, raw)), delayMs(2500)],
+        expect: {
+          temperature_c: approx(bme280TemperatureC(raw.temperature), 0.015),
+          humidity_pct: approx(bme280HumidityPct(raw.humidity, raw.temperature), 0.15),
+          pressure_hpa: approx(bme280PressureHpa(raw.pressure, raw.temperature), 0.05),
+        },
+      })),
+      timeColumn: 'time_ms',
+      sampleInterval: { min: 1000, max: 1060 },
+      minRows: 8,
+    } satisfies Phase5BehaviorSpec
+  })(),
+  {
+    recipeId: 'e4-weather-pressure',
+    header: 'time_min,pressure_hpa,relative_altitude_m',
+    // The recipe logs once a minute, so one reading fits in the run.
+    phases: [
+      {
+        label: 'today\'s air pressure',
+        steps: [waitSerial(',1006.53,')],
+        expect: {
+          pressure_hpa: approx(bme280PressureHpa(BME280_DEFAULT_RAW.pressure, BME280_DEFAULT_RAW.temperature), 0.05),
+        },
+      },
+    ],
+    always: {
+      // The default sea-level reference is the standard atmosphere's 1013.25 hPa.
+      relative_altitude_m: derived(({ values }) => barometricAltitudeM(values.pressure_hpa, 1013.25), 0.1),
+    },
+    minRows: 1,
+  },
+  (() => {
+    const t25 = BME280_DEFAULT_RAW.temperature
+    const t31 = bme280TemperatureRawFor(31)
+    const at = (temperature: number, humidityPct: number): BmeRaw => ({
+      ...BME280_DEFAULT_RAW,
+      temperature,
+      humidity: bme280HumidityRawFor(humidityPct, temperature),
+    })
+    // On at >=70 %RH or >=30 °C, off only once <=65 %RH and <30 °C (the recipe's stated rule).
+    const states: Array<{ label: string; raw: BmeRaw; fan: 0 | 1 }> = [
+      { label: 'bathroom at rest', raw: { ...BME280_DEFAULT_RAW }, fan: 0 },
+      { label: 'shower running: 75 %RH turns the fan on', raw: at(t25, 75), fan: 1 },
+      { label: 'drying: 67 %RH is inside the hysteresis band, fan stays on', raw: at(t25, 67), fan: 1 },
+      { label: 'dry: 60 %RH turns it off', raw: at(t25, 60), fan: 0 },
+      { label: 'hot day: 31 °C turns it on regardless of humidity', raw: { ...at(t25, 60), temperature: t31 }, fan: 1 },
+    ]
+    return {
+      recipeId: 'fan-control',
+      header: 'time_s,temperature_c,humidity_percent,fan',
+      phases: states.map(({ label, raw, fan }, index) => ({
+        label,
+        steps: [
+          ...(index === 0 ? [] : bmeSteps('bme280', states[index - 1].raw, raw)),
+          delayMs(2500),
+          expectPin('uno', '7', fan),
+        ],
+        expect: {
+          temperature_c: approx(bme280TemperatureC(raw.temperature), 0.015),
+          humidity_percent: approx(bme280HumidityPct(raw.humidity, raw.temperature), 0.1),
+          fan: approx(fan, 0),
+        },
+      })),
+      timeColumn: 'time_s',
+      sampleInterval: { min: 0.95, max: 1.15 },
+      minRows: 10,
+    } satisfies Phase5BehaviorSpec
+  })(),
+  (() => {
+    const t = BME280_DEFAULT_RAW.temperature
+    const brighter = { ch0: TSL2591_DEFAULT_RAW.ch0 * 2, ch1: TSL2591_DEFAULT_RAW.ch1 * 2 }
+    const drier = bme280HumidityRawFor(60)
+    return {
+      recipeId: 'plant-growth',
+      header: 'time_ms,lux,temperature_c,humidity_pct',
+      phases: [
+        {
+          label: 'window light, room air',
+          steps: [delayMs(6000)],
+          expect: {
+            lux: lux(TSL2591_DEFAULT_RAW.ch0, TSL2591_DEFAULT_RAW.ch1, TSL2591_GAIN.low),
+            temperature_c: approx(bme280TemperatureC(t), 0.015),
+            humidity_pct: approx(bme280HumidityPct(BME280_DEFAULT_RAW.humidity, t), 0.15),
+          },
+        },
+        {
+          label: 'grow lamp doubles the light, air dries to 60 %RH',
+          steps: [
+            set('tsl2591', 'ch0Raw', brighter.ch0),
+            set('tsl2591', 'ch1Raw', brighter.ch1),
+            set('bme280', 'humidityRaw', drier),
+            delayMs(10000),
+          ],
+          expect: {
+            lux: lux(brighter.ch0, brighter.ch1, TSL2591_GAIN.low),
+            temperature_c: approx(bme280TemperatureC(t), 0.015),
+            humidity_pct: approx(bme280HumidityPct(drier, t), 0.15),
+          },
+        },
+      ],
+      timeColumn: 'time_ms',
+      // 5 s logging interval + 120 ms TSL2591 integration.
+      sampleInterval: { min: 5100, max: 5200 },
+      minRows: 4,
+    } satisfies Phase5BehaviorSpec
+  })(),
+  (() => {
+    const states = [
+      { label: 'USB load at 2.5 V', shunt: 100, bus: 5000 },
+      { label: 'LED strip switched on (250 mA)', shunt: 2500, bus: 5000 },
+      { label: 'supply raised to 5 V', shunt: 2500, bus: ina219BusRegisterFor(5) },
+    ]
+    return {
+      recipeId: 'S7',
+      header: 'time_ms,voltage_v,current_ma,power_mw',
+      phases: states.map(({ label, shunt, bus }, index) => ({
+        label,
+        steps: [
+          ...(index > 0 && shunt !== states[index - 1].shunt ? [set('ina219', 'shuntRaw', shunt)] : []),
+          ...(index > 0 && bus !== states[index - 1].bus ? [set('ina219', 'busRaw', bus)] : []),
+          delayMs(1200),
+        ],
+        expect: { voltage_v: approx(ina219BusVolts(bus), 0.002), current_ma: approx(ina219CurrentMa(shunt), 0.01) },
+      })),
+      // P = V × I
+      always: { power_mw: derived(({ values }) => values.voltage_v * values.current_ma, 0.02) },
+      timeColumn: 'time_ms',
+      sampleInterval: { min: 500, max: 520 },
+      minRows: 6,
+    } satisfies Phase5BehaviorSpec
+  })(),
+  {
+    recipeId: 'S8',
+    header: 'time_ms,lux',
+    phases: [
+      {
+        label: 'indoor light',
+        steps: [delayMs(1500)],
+        expect: { lux: lux(TSL2591_DEFAULT_RAW.ch0, TSL2591_DEFAULT_RAW.ch1, TSL2591_GAIN.medium) },
+      },
+      {
+        label: 'twice the light',
+        steps: [
+          set('tsl2591', 'ch0Raw', TSL2591_DEFAULT_RAW.ch0 * 2),
+          set('tsl2591', 'ch1Raw', TSL2591_DEFAULT_RAW.ch1 * 2),
+          delayMs(1500),
+        ],
+        expect: { lux: lux(TSL2591_DEFAULT_RAW.ch0 * 2, TSL2591_DEFAULT_RAW.ch1 * 2, TSL2591_GAIN.medium) },
+        settleRows: 1,
+      },
+      {
+        // The recipe tells students that -1 means the medium gain is saturated.
+        label: 'direct sun saturates the medium gain',
+        steps: [set('tsl2591', 'ch0Raw', 3000), set('tsl2591', 'ch1Raw', 780), delayMs(1500)],
+        expect: { lux: approx(tsl2591Lux(3000, 780, TSL2591_GAIN.medium), 0) },
+        settleRows: 1,
+      },
+    ],
+    timeColumn: 'time_ms',
+    // 500 ms delay + 120 ms integration.
+    sampleInterval: { min: 610, max: 680 },
+    minRows: 6,
+  },
+  (() => {
+    // Irradiance on a tilted panel falls with cos(angle); so do its current and the light it sees.
+    const facing = { ch0: 4000, ch1: 1000, shunt: 1000 }
+    const tilted = { ch0: 2000, ch1: 500, shunt: 500 }
+    const bus = ina219BusRegisterFor(2)
+    return {
+      recipeId: 'p7-solar-panel-angle',
+      header: 'time_ms,voltage_v,current_ma,power_mw,lux,power_density_mw_cm2',
+      startupRows: 1,
+      phases: [
+        {
+          label: 'panel facing the lamp (0°)',
+          steps: [
+            set('tsl2591', 'ch0Raw', facing.ch0),
+            set('tsl2591', 'ch1Raw', facing.ch1),
+            set('ina219', 'shuntRaw', facing.shunt),
+            set('ina219', 'busRaw', bus),
+            delayMs(1500),
+          ],
+          expect: {
+            voltage_v: approx(ina219BusVolts(bus), 0.002),
+            current_ma: approx(ina219CurrentMa(facing.shunt), 0.01),
+            lux: lux(facing.ch0, facing.ch1, TSL2591_GAIN.low),
+          },
+        },
+        {
+          label: 'panel tilted 60° (cos 60° = 0.5)',
+          steps: [
+            set('tsl2591', 'ch0Raw', tilted.ch0),
+            set('tsl2591', 'ch1Raw', tilted.ch1),
+            set('ina219', 'shuntRaw', tilted.shunt),
+            delayMs(1500),
+          ],
+          expect: {
+            voltage_v: approx(ina219BusVolts(bus), 0.002),
+            current_ma: approx(ina219CurrentMa(tilted.shunt), 0.01),
+            lux: lux(tilted.ch0, tilted.ch1, TSL2591_GAIN.low),
+          },
+          settleRows: 1,
+        },
+      ],
+      always: {
+        // The power register has a 2 mW LSB and truncates.
+        power_mw: derived(({ values }) => values.voltage_v * values.current_ma, 2.1),
+        power_density_mw_cm2: derived(({ values }) => values.power_mw / 100, 0.0001),
+      },
+      timeColumn: 'time_ms',
+      // 250 ms delay + 120 ms integration.
+      sampleInterval: { min: 370, max: 410 },
+      minRows: 6,
+    } satisfies Phase5BehaviorSpec
+  })(),
+  (() => {
+    const phase = (distanceM: number, first: boolean): BehaviorPhase => {
+      const light = lampAt(distanceM)
+      const lux0 = tsl2591Lux(light.ch0, light.ch1, TSL2591_GAIN.low)
+      return {
+        label: `lamp ${distanceM} m away`,
+        steps: [
+          set('hc-sr04', 'distance', distanceM * 100),
+          set('tsl2591', 'ch0Raw', light.ch0),
+          set('tsl2591', 'ch1Raw', light.ch1),
+          delayMs(3500),
+        ],
+        expect: {
+          distance_m: echo(distanceM * 100, 'm'),
+          mean_lux: lux(light.ch0, light.ch1, TSL2591_GAIN.low),
+          // Inverse-square law: d² × E stays the lamp's constant at every distance.
+          d2_times_lux: approx(lux0 * distanceM ** 2, lux0 * distanceM ** 2 * 0.06),
+        },
+        ...(first ? {} : { settleRows: 1 }),
+      }
+    }
+    return {
+      recipeId: 'p8-inverse-square-light',
+      header: 'time_ms,distance_m,mean_lux,d2_times_lux',
+      startupRows: 1,
+      phases: [phase(0.5, true), phase(1, false), phase(0.25, false)],
+      always: {
+        d2_times_lux: derived(({ values }) => values.mean_lux * values.distance_m ** 2, 0.01),
+      },
+      minRows: 6,
+    } satisfies Phase5BehaviorSpec
+  })(),
+  {
+    recipeId: 'photosynthesis-light-control',
+    header: 'time_ms,lux,lamp',
+    phases: [
+      {
+        label: 'sunlit bench, lamp off',
+        steps: [delayMs(4000)],
+        expect: { lux: lux(TSL2591_DEFAULT_RAW.ch0, TSL2591_DEFAULT_RAW.ch1, TSL2591_GAIN.low), lamp: approx(0, 0) },
+      },
+      {
+        label: 'clouds at 4 s: dark, but the 10 s minimum hold keeps the lamp off',
+        steps: [set('tsl2591', 'ch0Raw', 50), set('tsl2591', 'ch1Raw', 12), delayMs(5000), expectPin('uno', '7', 0)],
+        expect: { lux: lux(50, 12, TSL2591_GAIN.low), lamp: approx(0, 0) },
+      },
+      {
+        label: 'hold expired: lamp switches on',
+        steps: [delayMs(3000), expectPin('uno', '7', 1)],
+        expect: { lux: lux(50, 12, TSL2591_GAIN.low), lamp: approx(1, 0) },
+      },
+    ],
+    timeColumn: 'time_ms',
+    // 1 s delay + 120 ms integration.
+    sampleInterval: { min: 1100, max: 1170 },
+    minRows: 10,
   },
 ]
 
