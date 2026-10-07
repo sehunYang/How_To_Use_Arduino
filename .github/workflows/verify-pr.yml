@@ -136,7 +136,16 @@ jobs:
           timeout: 10000
           scenario: scenario.test.yaml
 
-      - name: L3 Wokwi simulation — 32 eligible Phase 5 recipes
+      # Wokwi time is metered (docs/wokwi-setup.md §6-1): a pull request
+      # simulates only the Phase 5 recipes its diff can affect, judged by the
+      # per-project fingerprints in wokwi/phase5/manifest.json. Scheduled and
+      # manual runs still simulate all of them.
+      - name: Fetch the base branch for Phase 5 change selection
+        if: github.event_name == 'pull_request'
+        run: git fetch --no-tags --depth=1 origin ${{ github.base_ref }}
+
+      - name: L3 Wokwi simulation — Phase 5 recipes (changed ones on PRs)
         env:
           WOKWI_CLI_TOKEN: ${{ secrets.WOKWI_CLI_TOKEN }}
-        run: npm run test:wokwi:phase5
+          CHANGED_AGAINST: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || '' }}
+        run: npm run test:wokwi:phase5 -- ${CHANGED_AGAINST:+--changed-against "$CHANGED_AGAINST"}

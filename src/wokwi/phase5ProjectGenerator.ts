@@ -33,7 +33,15 @@ export interface Phase5WokwiManifest {
   projects: Array<Pick<
     Phase5WokwiProject,
     'id' | 'path' | 'timeoutMs' | 'scenario' | 'command' | 'chips'
-  > & { kind: 'behavior' | 'smoke' }>
+  > & {
+    kind: 'behavior' | 'smoke'
+    /**
+     * Changes whenever anything that decides this project's Wokwi verdict
+     * changes: sketch, circuit, scenario, or behaviour expectations. PR runs
+     * compare it with the base branch to simulate only the recipes that moved.
+     */
+    fingerprint: string
+  }>
 }
 
 function instrumentSketch(recipeId: string, sketch: string): string {
@@ -155,6 +163,32 @@ export function renderPhase5Scenario(project: Phase5WokwiProject): string {
   ].join('\n')
 }
 
+function fnv1a(text: string, seed: number): string {
+  let hash = seed
+  for (let index = 0; index < text.length; index += 1) {
+    hash ^= text.charCodeAt(index)
+    hash = Math.imul(hash, 0x01000193)
+  }
+  return (hash >>> 0).toString(16).padStart(8, '0')
+}
+
+/** Spec as text, with derived expectations and row checks reduced to their source. */
+function serializeSpec(spec: Phase5BehaviorSpec | undefined): string {
+  return JSON.stringify(spec ?? null, (_key, value: unknown) =>
+    typeof value === 'function' ? value.toString() : value)
+}
+
+export function phase5ProjectFingerprint(project: Phase5WokwiProject): string {
+  const text = [
+    project.sketch,
+    JSON.stringify(project.diagram),
+    renderPhase5Scenario(project),
+    String(project.timeoutMs),
+    serializeSpec(project.behavior),
+  ].join('\u0000')
+  return fnv1a(text, 0x811c9dc5) + fnv1a(text, 0x01000193)
+}
+
 export function buildPhase5WokwiManifest(
   projects: Phase5WokwiProject[],
   exclusions: string[],
@@ -164,14 +198,15 @@ export function buildPhase5WokwiManifest(
     generatedFrom: 'phase5SimulationRegistry',
     projectCount: projects.length,
     exclusions: [...exclusions],
-    projects: projects.map(({ id, path, timeoutMs, scenario, command, chips, behavior }) => ({
-      id,
-      path,
-      kind: behavior ? 'behavior' : 'smoke',
-      timeoutMs,
-      scenario,
-      command,
-      chips,
+    projects: projects.map((project) => ({
+      id: project.id,
+      path: project.path,
+      kind: project.behavior ? 'behavior' : 'smoke',
+      timeoutMs: project.timeoutMs,
+      scenario: project.scenario,
+      command: project.command,
+      chips: project.chips,
+      fingerprint: phase5ProjectFingerprint(project),
     })),
   }
 }
