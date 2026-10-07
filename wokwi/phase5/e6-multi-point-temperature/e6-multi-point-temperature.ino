@@ -1,37 +1,46 @@
 // @pin ONE_WIRE=D2
 // @baud 9600
 const byte ONE_WIRE_PIN=2;
+// 1-Wire는 마이크로초 단위 타이밍으로 비트를 주고받습니다. 그 사이 시리얼 출력
+// 인터럽트가 끼어들면 펄스가 늘어나 온도가 -0.06처럼 엉뚱하게 읽히므로 잠시 막습니다.
 bool owReset() {
   pinMode(ONE_WIRE_PIN,OUTPUT);
   digitalWrite(ONE_WIRE_PIN,LOW);
   delayMicroseconds(480);
+  noInterrupts();
   pinMode(ONE_WIRE_PIN,INPUT_PULLUP);
   delayMicroseconds(70);
   bool present=!digitalRead(ONE_WIRE_PIN);
+  interrupts();
   delayMicroseconds(410);
   return present;
 }
 void owWriteBit(bool bitValue) {
+  noInterrupts();
   pinMode(ONE_WIRE_PIN,OUTPUT);
   digitalWrite(ONE_WIRE_PIN,LOW);
   if(bitValue) {
     delayMicroseconds(6);
     pinMode(ONE_WIRE_PIN,INPUT_PULLUP);
+    interrupts();
     delayMicroseconds(64);
   }
   else {
     delayMicroseconds(60);
     pinMode(ONE_WIRE_PIN,INPUT_PULLUP);
+    interrupts();
     delayMicroseconds(10);
   }
 }
 bool owReadBit() {
+  noInterrupts();
   pinMode(ONE_WIRE_PIN,OUTPUT);
   digitalWrite(ONE_WIRE_PIN,LOW);
   delayMicroseconds(3);
   pinMode(ONE_WIRE_PIN,INPUT_PULLUP);
   delayMicroseconds(10);
   bool bitValue=digitalRead(ONE_WIRE_PIN);
+  interrupts();
   delayMicroseconds(53);
   return bitValue;
 }
@@ -106,7 +115,6 @@ float readAddressTemperatureC(const byte address[8]) {
 const byte sensorCount = 3;
 void setup() {
   Serial.begin(9600);
-  Serial.println("# PHASE5_READY:e6-multi-point-temperature");
   Serial.println("time_ms,index,temperature_c");
 }
 void loop() {

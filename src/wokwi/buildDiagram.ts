@@ -407,7 +407,15 @@ export function buildDiagram(recipe: Recipe, sensors: Sensor[]): Diagram {
     }
     if (sensor && !seenPartIds.has(partId)) {
       seenPartIds.add(partId)
-      parts.push({ id: partId, type: sensor.wokwi.part, top: 0, left: nextLeft })
+      const instance = /_(\d+)$/.exec(token)?.[1]
+      const idAttr = sensor.wokwi.instanceIdAttr
+      parts.push({
+        id: partId,
+        type: sensor.wokwi.part,
+        top: 0,
+        left: nextLeft,
+        ...(idAttr && instance ? { attrs: { [idAttr]: Number(instance).toString(16).padStart(12, '0') } } : {}),
+      })
       nextLeft += PART_SPACING
     }
     if (!sensor && partId !== UNO_PART_ID && partId !== BREADBOARD_PART_ID && !seenPartIds.has(partId)) {

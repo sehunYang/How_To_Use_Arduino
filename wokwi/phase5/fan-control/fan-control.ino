@@ -106,7 +106,6 @@ float humidityOffPercent = 65.0;
 bool fanOn = false;
 void setup() {
   Serial.begin(9600);
-  Serial.println("# PHASE5_READY:fan-control");
   Wire.begin();
   if(!bmeBegin())Serial.println("# BME280_ERROR");
   pinMode(RELAY,OUTPUT);

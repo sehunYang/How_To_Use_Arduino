@@ -7,7 +7,6 @@ int zeroLevel = 512;
 
 void setup() {
   Serial.begin(9600);
-  Serial.println("# PHASE5_READY:S10");
   Serial.println("raw,polarity,relative_strength");
 }
 

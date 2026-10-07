@@ -20,7 +20,6 @@ float distanceM() {
 }
 void setup() {
   Serial.begin(9600);
-  Serial.println("# PHASE5_READY:p4-friction-energy-loss");
   Wire.begin();
   imu.initialize();
   pinMode(TRIG,OUTPUT);

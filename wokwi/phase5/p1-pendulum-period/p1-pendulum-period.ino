@@ -8,7 +8,6 @@ MPU6050 imu;
 const unsigned long samplingIntervalMs = 10;
 void setup() {
   Serial.begin(115200);
-  Serial.println("# PHASE5_READY:p1-pendulum-period");
   Wire.begin();
   imu.initialize();
   Serial.println("time_ms,ax_mps2");

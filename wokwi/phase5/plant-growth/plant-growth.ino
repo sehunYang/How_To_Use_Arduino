@@ -67,7 +67,6 @@ float humidityPct() {
 }
 void setup() {
   Serial.begin(9600);
-  Serial.println("# PHASE5_READY:plant-growth");
   Wire.begin();
   if (!light.begin()) Serial.println("# TSL2591_ERROR");
   if (read8(0xD0)!=0x60) Serial.println("# BME280_ERROR");

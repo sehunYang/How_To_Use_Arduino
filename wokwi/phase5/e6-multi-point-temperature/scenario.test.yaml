@@ -1,5 +1,19 @@
-name: Phase 5 deterministic smoke - e6-multi-point-temperature
+name: Phase 5 behavior - e6-multi-point-temperature
 version: 1
 author: phase5-generator
 steps:
-  - wait-serial: "# PHASE5_READY:e6-multi-point-temperature"
+  - wait-serial: "time_ms,index,temperature_c"
+  - wait-serial: ",2,22.000"
+  - set-control:
+      part-id: ds18b20_1
+      control: temperature
+      value: 30
+  - set-control:
+      part-id: ds18b20_2
+      control: temperature
+      value: 40
+  - set-control:
+      part-id: ds18b20_3
+      control: temperature
+      value: 50
+  - delay: 4000ms

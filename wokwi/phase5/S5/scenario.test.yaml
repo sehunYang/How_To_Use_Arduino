@@ -1,5 +1,16 @@
-name: Phase 5 deterministic smoke - S5
+name: Phase 5 behavior - S5
 version: 1
 author: phase5-generator
 steps:
-  - wait-serial: "# PHASE5_READY:S5"
+  - wait-serial: "time_ms,water_c"
+  - wait-serial: ",22.00"
+  - set-control:
+      part-id: ds18b20
+      control: temperature
+      value: 4
+  - wait-serial: ",4.00"
+  - set-control:
+      part-id: ds18b20
+      control: temperature
+      value: 80
+  - wait-serial: ",80.00"

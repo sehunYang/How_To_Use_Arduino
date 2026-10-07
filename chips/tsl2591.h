@@ -23,6 +23,7 @@ extern "C" {
 #define TSL2591_REG_AILTH 0x05
 #define TSL2591_REG_AIHTL 0x06
 #define TSL2591_REG_AIHTH 0x07
+#define TSL2591_REG_ID 0x12      // device ID, always 0x50 (datasheet)
 #define TSL2591_REG_STATUS 0x13
 #define TSL2591_REG_C0DATAL 0x14  // CH0 = full spectrum (visible + IR)
 #define TSL2591_REG_C0DATAH 0x15

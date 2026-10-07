@@ -1,5 +1,16 @@
-name: Phase 5 deterministic smoke - free-fall
+name: Phase 5 behavior - free-fall
 version: 1
 author: phase5-generator
 steps:
-  - wait-serial: "# PHASE5_READY:free-fall"
+  - wait-serial: "time_ms,distance_m"
+  - delay: 400ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 150
+  - delay: 400ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 50
+  - delay: 400ms

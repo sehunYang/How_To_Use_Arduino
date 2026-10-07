@@ -1,5 +1,16 @@
-name: Phase 5 deterministic smoke - S10
+name: Phase 5 behavior - S10
 version: 1
 author: phase5-generator
 steps:
-  - wait-serial: "# PHASE5_READY:S10"
+  - wait-serial: "raw,polarity,relative_strength"
+  - delay: 300ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 1
+  - delay: 300ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 0.75
+  - delay: 300ms

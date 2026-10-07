@@ -19,19 +19,28 @@
       "id": "ds18b20_1",
       "type": "wokwi-ds18b20",
       "top": 0,
-      "left": 100
+      "left": 100,
+      "attrs": {
+        "deviceID": "000000000001"
+      }
     },
     {
       "id": "ds18b20_2",
       "type": "wokwi-ds18b20",
       "top": 0,
-      "left": 200
+      "left": 200,
+      "attrs": {
+        "deviceID": "000000000002"
+      }
     },
     {
       "id": "ds18b20_3",
       "type": "wokwi-ds18b20",
       "top": 0,
-      "left": 300
+      "left": 300,
+      "attrs": {
+        "deviceID": "000000000003"
+      }
     },
     {
       "id": "resistor_4700",

@@ -36,7 +36,6 @@ void drive(byte left, byte right) {
 }
 void setup() {
   Serial.begin(9600);
-  Serial.println("# PHASE5_READY:obstacle-avoid-car");
   Wire.begin();
   imu.initialize();
   pinMode(TRIG,OUTPUT);

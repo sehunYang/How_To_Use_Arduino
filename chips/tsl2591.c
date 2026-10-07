@@ -93,6 +93,9 @@ uint8_t tsl2591_read_register(const Tsl2591Registers* regs, uint8_t addr) {
       return (uint8_t)(regs->highThreshold & 0xff);
     case TSL2591_REG_AIHTH:
       return (uint8_t)(regs->highThreshold >> 8);
+    case TSL2591_REG_ID:
+      // Libraries (Adafruit_TSL2591::begin) refuse to talk to a part without it.
+      return 0x50;
     case TSL2591_REG_STATUS:
       return (regs->enable & TSL2591_ENABLE_AIEN)
           && (regs->ch0 < regs->lowThreshold || regs->ch0 > regs->highThreshold)

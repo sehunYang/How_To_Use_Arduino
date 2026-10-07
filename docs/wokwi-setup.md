@@ -113,6 +113,37 @@ npm run build:wokwi
 wokwi-cli wokwi/ina219-current --scenario scenario.test.yaml --timeout 10000
 ```
 
+### 4-4. Phase 5 행동 검증 (`wokwi/phase5/*`, 28개 중 26개)
+
+부팅 스모크는 `Serial.begin()` 직후 주입한 마커만 기다리므로 센서가 빠져 있어도
+통과합니다. 행동 검증은 그 빈틈을 막습니다.
+
+- [x] 학생이 받는 스케치를 **수정 없이** 실행합니다(마커 주입 없음).
+- [x] 레시피마다 `src/wokwi/behaviorSpecs.ts`에 물리 상황의 순서(단계)를 적습니다. 예를 들어
+      "물이 60 → 45 → 30°C로 식는다", "램프를 0.5 → 1 → 0.25 m로 옮긴다"처럼 적습니다.
+      시나리오는 `set-control`·`delay`·`wait-serial`·`expect-pin`으로 그 상황을 만듭니다.
+- [x] 기대값은 스케치가 아니라 `src/wokwi/sensorOracles.ts`의 데이터시트 변환식에서 나옵니다.
+      Bosch BME280 보정식(데이터시트 예제 25.08 °C / 1006.53 hPa 재현), TSL2591 lux 식,
+      INA219 션트 물리식, 그리고 레시피가 다루는 물리 법칙(V·I, d²·E 일정, cos θ, 기압 고도식)입니다.
+- [x] wokwi-cli 표준출력에서 복원한 시리얼 로그의 **모든 행**을 `src/wokwi/serialBehavior.ts`가 판정합니다.
+      헤더, 열 개수, `nan`·진단 메시지 없음, 샘플 간격, 단계 순서(역행 금지), 행 간 불변식을 봅니다.
+- [x] 릴레이·LED·모터 핀은 `expect-pin`으로 확인합니다(팬 히스테리시스, 주차 경보 LED, 조명 최소 유지 시간).
+- [ ] PIR 레시피 2개(S3, automatic-door)는 부팅 스모크로 남아 있습니다. 센서 안정화에 30초가
+      필요해 시나리오 상한(20초)을 넘고, Wokwi PIR에는 문서화된 자동화 컨트롤이 없습니다.
+- [x] 실제 GitHub Actions에서 26개 모두 통과: run `37566001857` (2026-10-07).
+
+행동 검증이 처음 찾아낸 문제(모두 수정함):
+
+| 문제 | 영향 |
+| --- | --- |
+| TSL2591 칩 모델에 ID 레지스터(0x12 = 0x50)가 없음 | Adafruit 라이브러리 `begin()` 실패, 조도 레시피 5개가 시뮬레이션에서 `nan` |
+| INA219 칩 모델이 POWER를 상태 비트를 밀어내지 않은 버스 레지스터로 계산 | 전력이 실제 V·I의 8배 |
+| 여러 DS18B20이 같은 ROM ID를 공유 | 다점 온도 레시피의 1-Wire 검색이 센서를 1개만 찾음 |
+| 1-Wire 드라이버가 인터럽트를 켠 채 µs 타이밍을 만듦 | 측정 직전 시리얼 출력이 있으면 온도가 -0.06 °C로 읽힘(실물에서도 생길 수 있음) |
+
+명세가 있는 레시피는 `npm run generate:wokwi:phase5`가 행동 시나리오를 생성하고,
+`npm run test:wokwi:phase5`가 실행·판정합니다.
+
 ## 5. GitHub Actions L3 검증
 
 - [x] `.github/workflows/verify-pr.yml`에 `workflow_dispatch`를 제공합니다.
@@ -164,6 +195,24 @@ run `30281813853`의 `Starting simulation...`부터 `Scenario completed successf
 - [ ] Phase 5에서 레시피가 34건으로 늘면 시나리오 수에 비례해 재측정합니다.
       레시피당 약 1초라면 전량 1회가 약 34초이므로, 월 1회 전량 스윕을 추가해도
       예산에 영향이 없습니다.
+
+### 6-1. 행동 검증 이후 (2026-10-07 재측정)
+
+행동 시나리오는 물리 상황을 실제 시간만큼 흘려야 하므로 부팅 스모크보다 깁니다.
+run `37566001857`의 프로젝트별 벽시계 시간 합은 약 244초이고, 연결 오버헤드(스모크 프로젝트 기준
+약 2초 × 28)를 빼면 **PR 1회당 약 3분**입니다. 가장 긴 것은 rpm-meter(약 29초), plant-growth(약 21초),
+fan-control(약 19초)입니다.
+
+매번 전체를 돌리면 40분 목표 안에서 PR 실행이 월 약 12회로 제한됩니다. 그래서 다음처럼 나눕니다.
+
+- [x] **PR**: 바뀐 레시피만 시뮬레이션합니다(`npm run test:wokwi:phase5 -- --changed-against origin/main`).
+      판단 기준은 `src/wokwi/phase5Selection.ts`에 있습니다.
+  - `wokwi/phase5/manifest.json`의 프로젝트별 `fingerprint`(스케치·회로·시나리오·행동 기대값의 해시)가
+    base 브랜치와 다른 레시피, 또는 새로 생긴 레시피
+  - 바뀐 커스텀 칩(`chips/<칩>.*`)을 쓰는 레시피
+  - 판정기·오라클·생성기·러너·툴체인·워크플로(`PHASE5_GLOBAL_INPUTS`)가 바뀌면 전체
+- [x] **월 1회 스케줄과 수동 실행**: 지금처럼 전체를 돌립니다(약 3분).
+- 레시피 1개만 고친 PR은 대략 5–30초만 씁니다.
 
 ## 완료 기준
 

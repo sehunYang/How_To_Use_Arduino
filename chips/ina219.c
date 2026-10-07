@@ -12,7 +12,10 @@ void ina219_reset(Ina219Registers* regs) {
 void ina219_recompute(Ina219Registers* regs) {
   const int32_t shunt = (int16_t)regs->shuntVoltage;
   const int32_t current = (shunt * (int32_t)regs->calibration) / 4096;
-  const int32_t power = (current * (int32_t)regs->busVoltage) / 5000;
+  // The datasheet's POWER = CURRENT * BUS / 5000 takes the bus voltage in its
+  // 4 mV LSB, i.e. the register shifted past its 3 status bits; using the raw
+  // register would report eight times the real V*I.
+  const int32_t power = (current * (int32_t)(regs->busVoltage >> 3)) / 5000;
   regs->current = (uint16_t)current;
   regs->power = (uint16_t)power;
 }

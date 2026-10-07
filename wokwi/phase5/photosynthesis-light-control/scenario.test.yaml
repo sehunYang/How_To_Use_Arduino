@@ -1,5 +1,24 @@
-name: Phase 5 deterministic smoke - photosynthesis-light-control
+name: Phase 5 behavior - photosynthesis-light-control
 version: 1
 author: phase5-generator
 steps:
-  - wait-serial: "# PHASE5_READY:photosynthesis-light-control"
+  - wait-serial: "time_ms,lux,lamp"
+  - delay: 4000ms
+  - set-control:
+      part-id: tsl2591
+      control: ch0Raw
+      value: 50
+  - set-control:
+      part-id: tsl2591
+      control: ch1Raw
+      value: 12
+  - delay: 5000ms
+  - expect-pin:
+      part-id: uno
+      pin: "7"
+      value: 0
+  - delay: 3000ms
+  - expect-pin:
+      part-id: uno
+      pin: "7"
+      value: 1

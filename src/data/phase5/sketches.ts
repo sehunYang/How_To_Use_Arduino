@@ -1,18 +1,20 @@
 export const oneWireDriver = `const byte ONE_WIRE_PIN=2;
+// 1-Wire는 마이크로초 단위 타이밍으로 비트를 주고받습니다. 그 사이 시리얼 출력
+// 인터럽트가 끼어들면 펄스가 늘어나 온도가 -0.06처럼 엉뚱하게 읽히므로 잠시 막습니다.
 bool owReset() {
   pinMode(ONE_WIRE_PIN,OUTPUT);digitalWrite(ONE_WIRE_PIN,LOW);delayMicroseconds(480);
-  pinMode(ONE_WIRE_PIN,INPUT_PULLUP);delayMicroseconds(70);
-  bool present=!digitalRead(ONE_WIRE_PIN);delayMicroseconds(410);return present;
+  noInterrupts();pinMode(ONE_WIRE_PIN,INPUT_PULLUP);delayMicroseconds(70);
+  bool present=!digitalRead(ONE_WIRE_PIN);interrupts();delayMicroseconds(410);return present;
 }
 void owWriteBit(bool bitValue) {
-  pinMode(ONE_WIRE_PIN,OUTPUT);digitalWrite(ONE_WIRE_PIN,LOW);
-  if(bitValue){delayMicroseconds(6);pinMode(ONE_WIRE_PIN,INPUT_PULLUP);delayMicroseconds(64);}
-  else{delayMicroseconds(60);pinMode(ONE_WIRE_PIN,INPUT_PULLUP);delayMicroseconds(10);}
+  noInterrupts();pinMode(ONE_WIRE_PIN,OUTPUT);digitalWrite(ONE_WIRE_PIN,LOW);
+  if(bitValue){delayMicroseconds(6);pinMode(ONE_WIRE_PIN,INPUT_PULLUP);interrupts();delayMicroseconds(64);}
+  else{delayMicroseconds(60);pinMode(ONE_WIRE_PIN,INPUT_PULLUP);interrupts();delayMicroseconds(10);}
 }
 bool owReadBit() {
-  pinMode(ONE_WIRE_PIN,OUTPUT);digitalWrite(ONE_WIRE_PIN,LOW);delayMicroseconds(3);
+  noInterrupts();pinMode(ONE_WIRE_PIN,OUTPUT);digitalWrite(ONE_WIRE_PIN,LOW);delayMicroseconds(3);
   pinMode(ONE_WIRE_PIN,INPUT_PULLUP);delayMicroseconds(10);
-  bool bitValue=digitalRead(ONE_WIRE_PIN);delayMicroseconds(53);return bitValue;
+  bool bitValue=digitalRead(ONE_WIRE_PIN);interrupts();delayMicroseconds(53);return bitValue;
 }
 void owWriteByte(byte value){for(byte i=0;i<8;i++){owWriteBit(value&1);value>>=1;}}
 byte owReadByte(){byte value=0;for(byte i=0;i<8;i++)if(owReadBit())value|=(1<<i);return value;}

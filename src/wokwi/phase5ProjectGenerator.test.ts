@@ -14,6 +14,7 @@ import {
   PHASE5_SIMULATION_TIMEOUT_CAP_MS,
   phase5SimulationRegistry,
 } from './phase5SimulationRegistry'
+import { phase5BehaviorSpecs } from './behaviorSpecs'
 
 const eligible = phase5SimulationRegistry.filter((entry) => entry.eligible)
 const excluded = phase5SimulationRegistry
@@ -43,15 +44,39 @@ describe('Phase 5 Wokwi project generation', () => {
     const projects = buildPhase5WokwiProjects(eligible, phase5Recipes, sensors)
 
     for (const project of projects) {
-      expect(project.sketch).toContain(`Serial.println("# PHASE5_READY:${project.id}");`)
       expect(project.diagram.author).toBe(project.id)
       expect(project.timeoutMs).toBeLessThanOrEqual(PHASE5_SIMULATION_TIMEOUT_CAP_MS)
       expect(project.command).toBe(
         `wokwi-cli ${project.path} --scenario scenario.test.yaml --timeout ${project.timeoutMs}`,
       )
       expect(renderPhase5WokwiToml(project)).toContain('firmware = "firmware.hex"')
+      if (project.behavior) continue
+      expect(project.sketch).toContain(`Serial.println("# PHASE5_READY:${project.id}");`)
       expect(renderPhase5Scenario(project))
         .toContain(`  - wait-serial: "# PHASE5_READY:${project.id}"`)
+    }
+  })
+
+  it('runs behaviour projects on the unmodified student sketch with every stimulus', () => {
+    const projects = buildPhase5WokwiProjects(eligible, phase5Recipes, sensors)
+    const behaviorProjects = projects.filter((project) => project.behavior)
+    expect(behaviorProjects.map((project) => project.id).sort()).toEqual(
+      phase5BehaviorSpecs.map((spec) => spec.recipeId).sort(),
+    )
+
+    for (const project of behaviorProjects) {
+      const recipe = phase5Recipes.find((candidate) => candidate.id === project.id)!
+      expect(project.sketch).toBe(`${recipe.sketch.trimEnd()}\n`)
+      expect(project.sketch).not.toContain('PHASE5_READY')
+
+      const scenario = renderPhase5Scenario(project)
+      expect(scenario).toContain(`  - wait-serial: ${JSON.stringify(project.behavior!.header)}`)
+      for (const step of project.behavior!.phases.flatMap((phase) => phase.steps)) {
+        if ('set' in step) {
+          expect(scenario).toContain(`      control: ${step.set.control}\n      value: ${step.set.value}`)
+        }
+        if ('waitSerial' in step) expect(scenario).toContain(`  - wait-serial: ${JSON.stringify(step.waitSerial)}`)
+      }
     }
   })
 

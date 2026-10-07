@@ -25,7 +25,6 @@ float distanceM() {
 }
 void setup() {
   Serial.begin(9600);
-  Serial.println("# PHASE5_READY:p8-inverse-square-light");
   Wire.begin();
   tsl.begin();
   // 0.2 m 거리의 램프는 기본 증폭(25배)의 측정 범위를 넘으므로 가장 낮은

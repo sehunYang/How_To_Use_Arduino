@@ -11,7 +11,6 @@ int samplingIntervalMs = 1000;
 
 void setup() {
   Serial.begin(9600);
-  Serial.println("# PHASE5_READY:S6");
   if (!bme.begin(0x76)) Serial.println("# BME280_ERROR");
   Serial.println("time_ms,temperature_c,humidity_pct,pressure_hpa");
 }

@@ -1,5 +1,16 @@
-name: Phase 5 deterministic smoke - e2-reaction-temperature
+name: Phase 5 behavior - e2-reaction-temperature
 version: 1
 author: phase5-generator
 steps:
-  - wait-serial: "# PHASE5_READY:e2-reaction-temperature"
+  - wait-serial: "time_s,temperature_c"
+  - wait-serial: ",22.000"
+  - set-control:
+      part-id: ds18b20
+      control: temperature
+      value: 35
+  - wait-serial: ",35.000"
+  - set-control:
+      part-id: ds18b20
+      control: temperature
+      value: 50
+  - wait-serial: ",50.000"

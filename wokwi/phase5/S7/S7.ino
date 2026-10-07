@@ -11,7 +11,6 @@ int samplingIntervalMs = 500;
 
 void setup() {
   Serial.begin(9600);
-  Serial.println("# PHASE5_READY:S7");
   if (!ina219.begin()) Serial.println("# INA219_ERROR");
   Serial.println("time_ms,voltage_v,current_ma,power_mw");
 }

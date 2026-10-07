@@ -1,4 +1,5 @@
 import type { Recipe, Sensor } from '@/schema'
+import { phase5BehaviorSpecById, type Phase5BehaviorSpec, type ScenarioStep } from './behaviorSpecs'
 import { buildDiagram, type Diagram } from './buildDiagram'
 import type { EligiblePhase5Simulation } from './phase5SimulationRegistry'
 
@@ -20,6 +21,8 @@ export interface Phase5WokwiProject {
   diagram: Diagram
   sketch: string
   chips: string[]
+  /** Present when the run is judged on sensor behaviour, not just boot. */
+  behavior?: Phase5BehaviorSpec
 }
 
 export interface Phase5WokwiManifest {
@@ -30,7 +33,15 @@ export interface Phase5WokwiManifest {
   projects: Array<Pick<
     Phase5WokwiProject,
     'id' | 'path' | 'timeoutMs' | 'scenario' | 'command' | 'chips'
-  >>
+  > & {
+    kind: 'behavior' | 'smoke'
+    /**
+     * Changes whenever anything that decides this project's Wokwi verdict
+     * changes: sketch, circuit, scenario, or behaviour expectations. PR runs
+     * compare it with the base branch to simulate only the recipes that moved.
+     */
+    fingerprint: string
+  }>
 }
 
 function instrumentSketch(recipeId: string, sketch: string): string {
@@ -57,7 +68,9 @@ export function buildPhase5WokwiProjects(
       throw new Error(`Phase 5 Wokwi generation: recipe "${entry.recipeId}" was not found`)
     }
 
+    const behavior = phase5BehaviorSpecById.get(recipe.id)
     const path = `${PHASE5_WOKWI_ROOT}/${entry.recipeId}`
+    const timeoutMs = behavior?.timeoutMs ?? entry.timeoutMs
     const scenario = 'scenario.test.yaml'
     const diagram = buildDiagram(recipe, sensors)
     const chips = [...new Set(
@@ -69,12 +82,14 @@ export function buildPhase5WokwiProjects(
     return {
       id: entry.recipeId,
       path,
-      timeoutMs: entry.timeoutMs,
+      timeoutMs,
       scenario,
-      command: `wokwi-cli ${path} --scenario ${scenario} --timeout ${entry.timeoutMs}`,
+      command: `wokwi-cli ${path} --scenario ${scenario} --timeout ${timeoutMs}`,
       diagram,
-      sketch: instrumentSketch(recipe.id, recipe.sketch),
+      // A behaviour run must exercise exactly what the student uploads.
+      sketch: behavior ? recipe.sketch.trimEnd() + '\n' : instrumentSketch(recipe.id, recipe.sketch),
       chips,
+      ...(behavior ? { behavior } : {}),
     }
   })
 }
@@ -97,7 +112,47 @@ export function renderPhase5WokwiToml(project: Phase5WokwiProject): string {
   ].join('\n').trimEnd()}\n`
 }
 
+function yamlString(value: string): string {
+  return JSON.stringify(value)
+}
+
+function renderStep(step: ScenarioStep): string[] {
+  if ('set' in step) {
+    return [
+      '  - set-control:',
+      `      part-id: ${step.set.partId}`,
+      `      control: ${step.set.control}`,
+      `      value: ${step.set.value}`,
+    ]
+  }
+  if ('waitSerial' in step) return [`  - wait-serial: ${yamlString(step.waitSerial)}`]
+  if ('delayMs' in step) return [`  - delay: ${step.delayMs}ms`]
+  return [
+    '  - expect-pin:',
+    `      part-id: ${step.expectPin.partId}`,
+    `      pin: ${yamlString(step.expectPin.pin)}`,
+    `      value: ${step.expectPin.value}`,
+  ]
+}
+
+function renderBehaviorScenario(id: string, spec: Phase5BehaviorSpec): string {
+  const steps: ScenarioStep[] = [
+    { waitSerial: spec.header },
+    ...spec.phases.flatMap((phase) => phase.steps),
+    ...(spec.finalSteps ?? []),
+  ]
+  return [
+    `name: Phase 5 behavior - ${id}`,
+    'version: 1',
+    'author: phase5-generator',
+    'steps:',
+    ...steps.flatMap(renderStep),
+    '',
+  ].join('\n')
+}
+
 export function renderPhase5Scenario(project: Phase5WokwiProject): string {
+  if (project.behavior) return renderBehaviorScenario(project.id, project.behavior)
   return [
     `name: Phase 5 deterministic smoke - ${project.id}`,
     'version: 1',
@@ -106,6 +161,32 @@ export function renderPhase5Scenario(project: Phase5WokwiProject): string {
     `  - wait-serial: "# PHASE5_READY:${project.id}"`,
     '',
   ].join('\n')
+}
+
+function fnv1a(text: string, seed: number): string {
+  let hash = seed
+  for (let index = 0; index < text.length; index += 1) {
+    hash ^= text.charCodeAt(index)
+    hash = Math.imul(hash, 0x01000193)
+  }
+  return (hash >>> 0).toString(16).padStart(8, '0')
+}
+
+/** Spec as text, with derived expectations and row checks reduced to their source. */
+function serializeSpec(spec: Phase5BehaviorSpec | undefined): string {
+  return JSON.stringify(spec ?? null, (_key, value: unknown) =>
+    typeof value === 'function' ? value.toString() : value)
+}
+
+export function phase5ProjectFingerprint(project: Phase5WokwiProject): string {
+  const text = [
+    project.sketch,
+    JSON.stringify(project.diagram),
+    renderPhase5Scenario(project),
+    String(project.timeoutMs),
+    serializeSpec(project.behavior),
+  ].join('\u0000')
+  return fnv1a(text, 0x811c9dc5) + fnv1a(text, 0x01000193)
 }
 
 export function buildPhase5WokwiManifest(
@@ -117,13 +198,15 @@ export function buildPhase5WokwiManifest(
     generatedFrom: 'phase5SimulationRegistry',
     projectCount: projects.length,
     exclusions: [...exclusions],
-    projects: projects.map(({ id, path, timeoutMs, scenario, command, chips }) => ({
-      id,
-      path,
-      timeoutMs,
-      scenario,
-      command,
-      chips,
+    projects: projects.map((project) => ({
+      id: project.id,
+      path: project.path,
+      kind: project.behavior ? 'behavior' : 'smoke',
+      timeoutMs: project.timeoutMs,
+      scenario: project.scenario,
+      command: project.command,
+      chips: project.chips,
+      fingerprint: phase5ProjectFingerprint(project),
     })),
   }
 }
