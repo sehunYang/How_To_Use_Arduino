@@ -31,7 +31,7 @@ for (const project of manifest.projects) {
   if (behavior) {
     const spec = phase5BehaviorSpecById.get(project.id)
     if (!spec) throw new Error(`No behaviour spec for ${project.id}; regenerate wokwi/phase5`)
-    const verdict = checkSerialBehavior(spec, serialFromCliOutput(result.stdout))
+    const verdict = checkSerialBehavior(spec, serialFromCliOutput(result.stdout, spec.header.split(',').length))
     if (!verdict.ok) {
       console.error(`${project.id}: serial behaviour check failed (${verdict.rows} rows)`)
       for (const failure of verdict.failures) console.error(`  - ${failure}`)

@@ -14,4 +14,4 @@ steps:
       control: accelZ
       value: 0.5
   - wait-serial: ",0.5000,0.0000,0.5000,0.7071"
-  - delay: 100ms
+  - delay: 300ms

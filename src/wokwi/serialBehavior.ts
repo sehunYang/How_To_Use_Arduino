@@ -11,14 +11,38 @@ export interface SerialBehaviorResult {
  * `--serial-log-file` is unusable: it exits without flushing that stream, so
  * the file can end up empty. Stdout carries the same bytes, preceded by the
  * CLI banner and interleaved with `[scenario name] ...` progress lines.
+ *
+ * A progress line that lands mid-row is printed on its own line, splitting
+ * that row in two (wokwi-cli TestScenario.log). Given the CSV's column count,
+ * a fragment and its continuation are rejoined when only together they form
+ * one row.
  */
-export function serialFromCliOutput(stdout: string): string {
+export function serialFromCliOutput(stdout: string, columnCount?: number): string {
   const lines = stdout.split(/\r?\n/)
   const start = lines.findIndex((line) => line.trim() === 'Starting simulation...')
-  return lines
-    .slice(start + 1)
-    .filter((line) => !/^\[[^\]]+\] /.test(line))
-    .join('\n')
+  const columns = (line: string) => line.split(',').length
+  const serial: string[] = []
+  let interrupted = false
+  for (const line of lines.slice(start + 1)) {
+    if (/^\[[^\]]+\] /.test(line)) {
+      interrupted = true
+      continue
+    }
+    if (line.trim() === '') continue
+    const previous = serial[serial.length - 1]
+    if (interrupted && columnCount !== undefined && previous !== undefined) {
+      const joined = previous + line
+      const wasCut = columns(previous) !== columnCount || columns(line) !== columnCount || previous.endsWith(',')
+      if (wasCut && columns(joined) === columnCount) {
+        serial[serial.length - 1] = joined
+        interrupted = false
+        continue
+      }
+    }
+    interrupted = false
+    serial.push(line)
+  }
+  return serial.join('\n')
 }
 
 const NUMBER = /^-?\d+(\.\d+)?$/

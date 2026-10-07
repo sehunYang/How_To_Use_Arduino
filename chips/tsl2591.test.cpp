@@ -35,6 +35,13 @@ TEST_CASE("the chip lives at the fixed I2C address from the inventory data") {
   CHECK(TSL2591_I2C_ADDRESS == 0x29);
 }
 
+TEST_CASE("the ID register identifies the part as a TSL2591") {
+  Tsl2591Registers regs;
+  tsl2591_reset(&regs);
+  // Adafruit_TSL2591::begin() reads 0x12 and gives up unless it sees 0x50.
+  CHECK(tsl2591_read_register(&regs, 0x12) == 0x50);
+}
+
 TEST_CASE("data registers read 0 until the device is powered on with ALS enabled") {
   Tsl2591Registers regs;
   tsl2591_reset(&regs);

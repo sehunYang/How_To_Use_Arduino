@@ -145,6 +145,44 @@ describe('wokwi-cli stdout extraction', () => {
   })
 })
 
+describe('wokwi-cli rows split by progress lines', () => {
+  const cut = (rows: string[]) => ['Starting simulation...', ...rows, ''].join('\n')
+
+  it('rejoins rows a progress line cut, wherever the cut fell', () => {
+    // Fragments captured from GitHub Actions run 37564176085.
+    const stdout = cut([
+      'time_s,temperature_c,humidity_percent,fan',
+      '9.0,25.08,60.00,0',
+      '10.0,25.08,',
+      '[Phase 5 behavior - fan-control] Expected text matched: ","',
+      '60.00,0',
+      '11.0,31.00,4',
+      '[Phase 5 behavior - fan-control] Executing step: set-control',
+      '7.62,1',
+      '12.0,31.00,47.6',
+      '[Phase 5 behavior - fan-control] Executing step: set-control',
+      '2,1',
+    ])
+    expect(serialFromCliOutput(stdout, 4).split('\n')).toEqual([
+      'time_s,temperature_c,humidity_percent,fan',
+      '9.0,25.08,60.00,0',
+      '10.0,25.08,60.00,0',
+      '11.0,31.00,47.62,1',
+      '12.0,31.00,47.62,1',
+    ])
+  })
+
+  it('rejoins a row cut inside its last cell', () => {
+    const stdout = cut(['time_ms,distance_cm,tilt_x_g', '2245,20.1,0', '[car] Executing step: delay', '.000'])
+    expect(serialFromCliOutput(stdout, 3).split('\n')).toEqual(['time_ms,distance_cm,tilt_x_g', '2245,20.1,0.000'])
+  })
+
+  it('leaves complete rows on either side of a progress line alone', () => {
+    const stdout = cut(['time_s,a,b', '0.8,22.000,0.000', '[x] Expected text matched: ",0.000"', '2.5,60.000,38.000'])
+    expect(serialFromCliOutput(stdout, 3).split('\n')).toEqual(['time_s,a,b', '0.8,22.000,0.000', '2.5,60.000,38.000'])
+  })
+})
+
 describe('behaviour specs', () => {
   it('cover distinct recipes and match the sketches they claim to test', () => {
     expect(new Set(phase5BehaviorSpecs.map((spec) => spec.recipeId)).size).toBe(phase5BehaviorSpecs.length)
