@@ -124,7 +124,8 @@ wokwi-cli wokwi/ina219-current --scenario scenario.test.yaml --timeout 10000
 - [x] wokwi-cli 표준출력에서 복원한 시리얼 로그의 **모든 행**을 `src/wokwi/serialBehavior.ts`가 판정합니다:
       헤더, 열 개수, `nan` 없음, 시간 증가와 샘플 간격(1.6–2.0초), 적용한 자극과의
       일치(85°C 같은 초기값 거부), 초과온도 계산.
-- [ ] 실제 GitHub Actions에서 성공을 확인합니다.
+- [x] 실제 GitHub Actions에서 성공을 확인했습니다: run `37561064444`
+      (2026-10-07), 5개 행이 모두 자극과 일치했습니다.
 
 행동 명세는 `src/wokwi/behaviorSpecs.ts`에 추가하며, 명세가 있는 레시피는
 `npm run generate:wokwi:phase5`가 자동으로 행동 시나리오를 생성합니다.
