@@ -1,37 +1,32 @@
 #!/usr/bin/env tsx
 import { spawnSync } from 'node:child_process'
-import { mkdirSync, readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
 import manifest from '../wokwi/phase5/manifest.json'
 import { phase5BehaviorSpecById } from '../src/wokwi/behaviorSpecs'
-import { checkSerialBehavior } from '../src/wokwi/serialBehavior'
+import { checkSerialBehavior, serialFromCliOutput } from '../src/wokwi/serialBehavior'
 
 if (!process.env.WOKWI_CLI_TOKEN) {
   console.error('WOKWI_CLI_TOKEN is required to run the Phase 5 Wokwi scenarios.')
   process.exit(1)
 }
 
-const logDir = resolve('.tools', 'wokwi', 'phase5-logs')
-mkdirSync(logDir, { recursive: true })
-
 for (const project of manifest.projects) {
   console.log(`Running ${project.id} [${project.kind}] (${project.timeoutMs}ms cap)...`)
-  const logFile = resolve(logDir, `${project.id}.log`)
   const args = [project.path, '--scenario', project.scenario, '--timeout', String(project.timeoutMs)]
-  if (project.kind === 'behavior') args.push('--serial-log-file', logFile)
-
+  // Behaviour runs capture stdout to judge it; see serialFromCliOutput for why not --serial-log-file.
+  const behavior = project.kind === 'behavior'
   const result = spawnSync('wokwi-cli', args, {
     encoding: 'utf8',
-    stdio: 'inherit',
+    stdio: behavior ? ['inherit', 'pipe', 'inherit'] : 'inherit',
     shell: process.platform === 'win32',
   })
   if (result.error) throw result.error
+  if (behavior) process.stdout.write(result.stdout)
   if (result.status !== 0) process.exit(result.status ?? 1)
 
-  if (project.kind === 'behavior') {
+  if (behavior) {
     const spec = phase5BehaviorSpecById.get(project.id)
     if (!spec) throw new Error(`No behaviour spec for ${project.id}; regenerate wokwi/phase5`)
-    const verdict = checkSerialBehavior(spec, readFileSync(logFile, 'utf8'))
+    const verdict = checkSerialBehavior(spec, serialFromCliOutput(result.stdout))
     if (!verdict.ok) {
       console.error(`${project.id}: serial behaviour check failed (${verdict.rows} rows)`)
       for (const failure of verdict.failures) console.error(`  - ${failure}`)

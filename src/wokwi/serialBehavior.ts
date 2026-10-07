@@ -7,6 +7,21 @@ export interface SerialBehaviorResult {
 }
 
 /**
+ * Recovers the board's serial output from wokwi-cli stdout. The CLI's own
+ * `--serial-log-file` is unusable: it exits without flushing that stream, so
+ * the file can end up empty. Stdout carries the same bytes, preceded by the
+ * CLI banner and interleaved with `[scenario name] ...` progress lines.
+ */
+export function serialFromCliOutput(stdout: string): string {
+  const lines = stdout.split(/\r?\n/)
+  const start = lines.findIndex((line) => line.trim() === 'Starting simulation...')
+  return lines
+    .slice(start + 1)
+    .filter((line) => !/^\[[^\]]+\] /.test(line))
+    .join('\n')
+}
+
+/**
  * Judges a Wokwi serial log against a behaviour spec. The scenario's
  * wait-serial steps only prove each expected line appeared once; this checks
  * every row, so a stray NaN, an 85 °C power-on read, or a reading that does

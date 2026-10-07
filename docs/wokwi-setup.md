@@ -121,7 +121,7 @@ wokwi-cli wokwi/ina219-current --scenario scenario.test.yaml --timeout 10000
 - [x] 학생이 받는 스케치를 **수정 없이** 실행합니다(마커 주입 없음).
 - [x] 시나리오가 DS18B20 `temperature` 컨트롤을 22 → 60 → 45 → 30 → 22.5°C로
       바꾸며, 각 값이 `temperature_c`와 `excess_temperature_c`(= T − 22)로 출력되는지 기다립니다.
-- [x] `--serial-log-file` 로그의 **모든 행**을 `src/wokwi/serialBehavior.ts`가 판정합니다:
+- [x] wokwi-cli 표준출력에서 복원한 시리얼 로그의 **모든 행**을 `src/wokwi/serialBehavior.ts`가 판정합니다:
       헤더, 열 개수, `nan` 없음, 시간 증가와 샘플 간격(1.6–2.0초), 적용한 자극과의
       일치(85°C 같은 초기값 거부), 초과온도 계산.
 - [ ] 실제 GitHub Actions에서 성공을 확인합니다.

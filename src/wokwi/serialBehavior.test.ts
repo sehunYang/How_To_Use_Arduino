@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { phase5Recipes } from '@/data/phase5'
 import { phase5BehaviorSpecById, phase5BehaviorSpecs } from './behaviorSpecs'
-import { checkSerialBehavior } from './serialBehavior'
+import { checkSerialBehavior, serialFromCliOutput } from './serialBehavior'
 
 const spec = phase5BehaviorSpecById.get('cooling-curve')!
 
@@ -60,6 +60,32 @@ describe('serial behaviour checker', () => {
   it('rejects a log that never reached the last stimulus', () => {
     const result = checkSerialBehavior(spec, goodLog.replace('7.9,22.500,0.500\r\n', ''))
     expect(result.failures).toContain('temperature_c never reported 22.5')
+  })
+})
+
+describe('wokwi-cli stdout extraction', () => {
+  it('recovers the serial log from a real CI run', () => {
+    // Captured from GitHub Actions run 37560501332 (wokwi-cli v0.28.1).
+    const stdout = [
+      'Wokwi CLI v0.28.1 (7cf4ffaebfd8)',
+      'Connected to Wokwi Simulation API 1.0.0-20261006-g9494a200',
+      'Starting simulation...',
+      'time_s,temperature_c,excess_temperature_c',
+      '[Phase 5 behavior - cooling-curve] Expected text matched: "time_s,temperature_c,excess_temperature_c"',
+      '0.8,22.000,0.000',
+      '[Phase 5 behavior - cooling-curve] Expected text matched: ",22.000,0.000"',
+      '2.5,60.000,38.000',
+      '[Phase 5 behavior - cooling-curve] Expected text matched: ",60.000,38.000"',
+      '4.3,45.000,23.000',
+      '[Phase 5 behavior - cooling-curve] Expected text matched: ",45.000,23.000"',
+      '6.0,30.000,8.000',
+      '[Phase 5 behavior - cooling-curve] Expected text matched: ",30.000,8.000"',
+      '7.8,22.500,0.500',
+      '[Phase 5 behavior - cooling-curve] Expected text matched: ",22.500,0.500"',
+      '[Phase 5 behavior - cooling-curve] Scenario completed successfully',
+      '',
+    ].join('\n')
+    expect(checkSerialBehavior(spec, serialFromCliOutput(stdout))).toEqual({ ok: true, rows: 5, failures: [] })
   })
 })
 
