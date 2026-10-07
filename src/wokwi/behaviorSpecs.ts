@@ -601,6 +601,8 @@ export const phase5BehaviorSpecs: readonly Phase5BehaviorSpec[] = [
       // The default sea-level reference is the standard atmosphere's 1013.25 hPa.
       relative_altitude_m: derived(({ values }) => barometricAltitudeM(values.pressure_hpa, 1013.25), 0.1),
     },
+    // The wait matches mid-row; let the altitude cell finish printing.
+    finalSteps: [delayMs(500)],
     minRows: 1,
   },
   (() => {
@@ -814,7 +816,8 @@ export const phase5BehaviorSpecs: readonly Phase5BehaviorSpec[] = [
       startupRows: 1,
       phases: [phase(0.5, true), phase(1, false), phase(0.25, false)],
       always: {
-        d2_times_lux: derived(({ values }) => values.mean_lux * values.distance_m ** 2, 0.01),
+        // The sketch multiplies by the unrounded distance; printing it to 0.1 mm moves d² × E by up to ~2.
+        d2_times_lux: derived(({ values }) => values.mean_lux * values.distance_m ** 2, 2),
       },
       minRows: 6,
     } satisfies Phase5BehaviorSpec
