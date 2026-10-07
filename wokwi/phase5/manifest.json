@@ -14,7 +14,7 @@
     {
       "id": "S1",
       "path": "wokwi/phase5/S1",
-      "kind": "smoke",
+      "kind": "behavior",
       "timeoutMs": 20000,
       "scenario": "scenario.test.yaml",
       "command": "wokwi-cli wokwi/phase5/S1 --scenario scenario.test.yaml --timeout 20000",
@@ -23,7 +23,7 @@
     {
       "id": "S2",
       "path": "wokwi/phase5/S2",
-      "kind": "smoke",
+      "kind": "behavior",
       "timeoutMs": 20000,
       "scenario": "scenario.test.yaml",
       "command": "wokwi-cli wokwi/phase5/S2 --scenario scenario.test.yaml --timeout 20000",
@@ -41,7 +41,7 @@
     {
       "id": "S5",
       "path": "wokwi/phase5/S5",
-      "kind": "smoke",
+      "kind": "behavior",
       "timeoutMs": 20000,
       "scenario": "scenario.test.yaml",
       "command": "wokwi-cli wokwi/phase5/S5 --scenario scenario.test.yaml --timeout 20000",
@@ -83,7 +83,7 @@
     {
       "id": "S10",
       "path": "wokwi/phase5/S10",
-      "kind": "smoke",
+      "kind": "behavior",
       "timeoutMs": 20000,
       "scenario": "scenario.test.yaml",
       "command": "wokwi-cli wokwi/phase5/S10 --scenario scenario.test.yaml --timeout 20000",
@@ -92,7 +92,7 @@
     {
       "id": "p1-pendulum-period",
       "path": "wokwi/phase5/p1-pendulum-period",
-      "kind": "smoke",
+      "kind": "behavior",
       "timeoutMs": 20000,
       "scenario": "scenario.test.yaml",
       "command": "wokwi-cli wokwi/phase5/p1-pendulum-period --scenario scenario.test.yaml --timeout 20000",
@@ -101,7 +101,7 @@
     {
       "id": "p2-mechanical-energy",
       "path": "wokwi/phase5/p2-mechanical-energy",
-      "kind": "smoke",
+      "kind": "behavior",
       "timeoutMs": 20000,
       "scenario": "scenario.test.yaml",
       "command": "wokwi-cli wokwi/phase5/p2-mechanical-energy --scenario scenario.test.yaml --timeout 20000",
@@ -110,7 +110,7 @@
     {
       "id": "free-fall",
       "path": "wokwi/phase5/free-fall",
-      "kind": "smoke",
+      "kind": "behavior",
       "timeoutMs": 20000,
       "scenario": "scenario.test.yaml",
       "command": "wokwi-cli wokwi/phase5/free-fall --scenario scenario.test.yaml --timeout 20000",
@@ -119,7 +119,7 @@
     {
       "id": "p4-friction-energy-loss",
       "path": "wokwi/phase5/p4-friction-energy-loss",
-      "kind": "smoke",
+      "kind": "behavior",
       "timeoutMs": 20000,
       "scenario": "scenario.test.yaml",
       "command": "wokwi-cli wokwi/phase5/p4-friction-energy-loss --scenario scenario.test.yaml --timeout 20000",
@@ -128,7 +128,7 @@
     {
       "id": "p5-incline-acceleration",
       "path": "wokwi/phase5/p5-incline-acceleration",
-      "kind": "smoke",
+      "kind": "behavior",
       "timeoutMs": 20000,
       "scenario": "scenario.test.yaml",
       "command": "wokwi-cli wokwi/phase5/p5-incline-acceleration --scenario scenario.test.yaml --timeout 20000",
@@ -137,7 +137,7 @@
     {
       "id": "p6-magnetic-field-distance",
       "path": "wokwi/phase5/p6-magnetic-field-distance",
-      "kind": "smoke",
+      "kind": "behavior",
       "timeoutMs": 20000,
       "scenario": "scenario.test.yaml",
       "command": "wokwi-cli wokwi/phase5/p6-magnetic-field-distance --scenario scenario.test.yaml --timeout 20000",
@@ -180,7 +180,7 @@
     {
       "id": "e2-reaction-temperature",
       "path": "wokwi/phase5/e2-reaction-temperature",
-      "kind": "smoke",
+      "kind": "behavior",
       "timeoutMs": 20000,
       "scenario": "scenario.test.yaml",
       "command": "wokwi-cli wokwi/phase5/e2-reaction-temperature --scenario scenario.test.yaml --timeout 20000",
@@ -209,7 +209,7 @@
     {
       "id": "e6-multi-point-temperature",
       "path": "wokwi/phase5/e6-multi-point-temperature",
-      "kind": "smoke",
+      "kind": "behavior",
       "timeoutMs": 20000,
       "scenario": "scenario.test.yaml",
       "command": "wokwi-cli wokwi/phase5/e6-multi-point-temperature --scenario scenario.test.yaml --timeout 20000",
@@ -241,7 +241,7 @@
     {
       "id": "human-activity-meter",
       "path": "wokwi/phase5/human-activity-meter",
-      "kind": "smoke",
+      "kind": "behavior",
       "timeoutMs": 20000,
       "scenario": "scenario.test.yaml",
       "command": "wokwi-cli wokwi/phase5/human-activity-meter --scenario scenario.test.yaml --timeout 20000",
@@ -250,7 +250,7 @@
     {
       "id": "obstacle-avoid-car",
       "path": "wokwi/phase5/obstacle-avoid-car",
-      "kind": "smoke",
+      "kind": "behavior",
       "timeoutMs": 20000,
       "scenario": "scenario.test.yaml",
       "command": "wokwi-cli wokwi/phase5/obstacle-avoid-car --scenario scenario.test.yaml --timeout 20000",
@@ -268,7 +268,7 @@
     {
       "id": "parking-alarm",
       "path": "wokwi/phase5/parking-alarm",
-      "kind": "smoke",
+      "kind": "behavior",
       "timeoutMs": 20000,
       "scenario": "scenario.test.yaml",
       "command": "wokwi-cli wokwi/phase5/parking-alarm --scenario scenario.test.yaml --timeout 20000",
@@ -277,7 +277,7 @@
     {
       "id": "rpm-meter",
       "path": "wokwi/phase5/rpm-meter",
-      "kind": "smoke",
+      "kind": "behavior",
       "timeoutMs": 20000,
       "scenario": "scenario.test.yaml",
       "command": "wokwi-cli wokwi/phase5/rpm-meter --scenario scenario.test.yaml --timeout 20000",

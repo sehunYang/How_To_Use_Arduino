@@ -1,5 +1,17 @@
-name: Phase 5 deterministic smoke - human-activity-meter
+name: Phase 5 behavior - human-activity-meter
 version: 1
 author: phase5-generator
 steps:
-  - wait-serial: "# PHASE5_READY:human-activity-meter"
+  - wait-serial: "time_ms,dynamic_g,active_fraction"
+  - wait-serial: ",0.0000,0.0000"
+  - set-control:
+      part-id: mpu6050
+      control: accelZ
+      value: 1.5
+  - wait-serial: ",0.5000,"
+  - set-control:
+      part-id: mpu6050
+      control: accelZ
+      value: 1.1
+  - wait-serial: ",0.1000,"
+  - delay: 500ms

@@ -1,5 +1,5 @@
 import type { Recipe, Sensor } from '@/schema'
-import { phase5BehaviorSpecById, type Phase5BehaviorSpec } from './behaviorSpecs'
+import { phase5BehaviorSpecById, type Phase5BehaviorSpec, type ScenarioStep } from './behaviorSpecs'
 import { buildDiagram, type Diagram } from './buildDiagram'
 import type { EligiblePhase5Simulation } from './phase5SimulationRegistry'
 
@@ -62,6 +62,7 @@ export function buildPhase5WokwiProjects(
 
     const behavior = phase5BehaviorSpecById.get(recipe.id)
     const path = `${PHASE5_WOKWI_ROOT}/${entry.recipeId}`
+    const timeoutMs = behavior?.timeoutMs ?? entry.timeoutMs
     const scenario = 'scenario.test.yaml'
     const diagram = buildDiagram(recipe, sensors)
     const chips = [...new Set(
@@ -73,9 +74,9 @@ export function buildPhase5WokwiProjects(
     return {
       id: entry.recipeId,
       path,
-      timeoutMs: entry.timeoutMs,
+      timeoutMs,
       scenario,
-      command: `wokwi-cli ${path} --scenario ${scenario} --timeout ${entry.timeoutMs}`,
+      command: `wokwi-cli ${path} --scenario ${scenario} --timeout ${timeoutMs}`,
       diagram,
       // A behaviour run must exercise exactly what the student uploads.
       sketch: behavior ? recipe.sketch.trimEnd() + '\n' : instrumentSketch(recipe.id, recipe.sketch),
@@ -107,26 +108,37 @@ function yamlString(value: string): string {
   return JSON.stringify(value)
 }
 
-function renderBehaviorScenario(id: string, spec: Phase5BehaviorSpec): string {
-  const steps = [
-    `  - wait-serial: ${yamlString(spec.header)}`,
-    `  - wait-serial: ${yamlString(spec.baselineSerial)}`,
-  ]
-  for (const stimulus of spec.stimuli) {
-    steps.push(
+function renderStep(step: ScenarioStep): string[] {
+  if ('set' in step) {
+    return [
       '  - set-control:',
-      `      part-id: ${stimulus.partId}`,
-      `      control: ${stimulus.control}`,
-      `      value: ${stimulus.value}`,
-      `  - wait-serial: ${yamlString(stimulus.expectSerial)}`,
-    )
+      `      part-id: ${step.set.partId}`,
+      `      control: ${step.set.control}`,
+      `      value: ${step.set.value}`,
+    ]
   }
+  if ('waitSerial' in step) return [`  - wait-serial: ${yamlString(step.waitSerial)}`]
+  if ('delayMs' in step) return [`  - delay: ${step.delayMs}ms`]
+  return [
+    '  - expect-pin:',
+    `      part-id: ${step.expectPin.partId}`,
+    `      pin: ${yamlString(step.expectPin.pin)}`,
+    `      value: ${step.expectPin.value}`,
+  ]
+}
+
+function renderBehaviorScenario(id: string, spec: Phase5BehaviorSpec): string {
+  const steps: ScenarioStep[] = [
+    { waitSerial: spec.header },
+    ...spec.phases.flatMap((phase) => phase.steps),
+    ...(spec.finalSteps ?? []),
+  ]
   return [
     `name: Phase 5 behavior - ${id}`,
     'version: 1',
     'author: phase5-generator',
     'steps:',
-    ...steps,
+    ...steps.flatMap(renderStep),
     '',
   ].join('\n')
 }

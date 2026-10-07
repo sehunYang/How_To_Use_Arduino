@@ -1,5 +1,20 @@
-name: Phase 5 deterministic smoke - obstacle-avoid-car
+name: Phase 5 behavior - obstacle-avoid-car
 version: 1
 author: phase5-generator
 steps:
-  - wait-serial: "# PHASE5_READY:obstacle-avoid-car"
+  - wait-serial: "time_ms,distance_cm,tilt_x_g"
+  - delay: 800ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 20
+  - delay: 1000ms
+  - expect-pin:
+      part-id: uno
+      pin: "5"
+      value: 0
+  - set-control:
+      part-id: mpu6050
+      control: accelX
+      value: 0.25
+  - delay: 500ms

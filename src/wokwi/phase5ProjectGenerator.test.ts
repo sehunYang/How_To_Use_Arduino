@@ -14,6 +14,7 @@ import {
   PHASE5_SIMULATION_TIMEOUT_CAP_MS,
   phase5SimulationRegistry,
 } from './phase5SimulationRegistry'
+import { phase5BehaviorSpecs } from './behaviorSpecs'
 
 const eligible = phase5SimulationRegistry.filter((entry) => entry.eligible)
 const excluded = phase5SimulationRegistry
@@ -59,19 +60,22 @@ describe('Phase 5 Wokwi project generation', () => {
   it('runs behaviour projects on the unmodified student sketch with every stimulus', () => {
     const projects = buildPhase5WokwiProjects(eligible, phase5Recipes, sensors)
     const behaviorProjects = projects.filter((project) => project.behavior)
-    expect(behaviorProjects.map((project) => project.id)).toEqual(['cooling-curve'])
+    expect(behaviorProjects.map((project) => project.id).sort()).toEqual(
+      phase5BehaviorSpecs.map((spec) => spec.recipeId).sort(),
+    )
 
     for (const project of behaviorProjects) {
       const recipe = phase5Recipes.find((candidate) => candidate.id === project.id)!
       expect(project.sketch).toBe(`${recipe.sketch.trimEnd()}\n`)
       expect(project.sketch).not.toContain('PHASE5_READY')
 
-      const partIds = new Set(project.diagram.parts.map((part) => part.id))
       const scenario = renderPhase5Scenario(project)
       expect(scenario).toContain(`  - wait-serial: ${JSON.stringify(project.behavior!.header)}`)
-      for (const stimulus of project.behavior!.stimuli) {
-        expect(partIds.has(stimulus.partId), stimulus.partId).toBe(true)
-        expect(scenario).toContain(`      value: ${stimulus.value}\n  - wait-serial: ${JSON.stringify(stimulus.expectSerial)}`)
+      for (const step of project.behavior!.phases.flatMap((phase) => phase.steps)) {
+        if ('set' in step) {
+          expect(scenario).toContain(`      control: ${step.set.control}\n      value: ${step.set.value}`)
+        }
+        if ('waitSerial' in step) expect(scenario).toContain(`  - wait-serial: ${JSON.stringify(step.waitSerial)}`)
       }
     }
   })

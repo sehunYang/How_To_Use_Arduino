@@ -58,6 +58,12 @@ export const WokwiDescriptorSchema = z.object({
    * in the wiring token instead: see `partAttrs` in src/wokwi/buildDiagram.ts.
    */
   attrs: z.record(z.string(), z.string()).optional(),
+  /**
+   * Attribute holding the device's factory-unique bus ID (DS18B20 `deviceID`).
+   * Real parts never share one, but every Wokwi instance defaults to the same
+   * value, so numbered instances (`DS18B20_2`) get a distinct ID from their suffix.
+   */
+  instanceIdAttr: z.string().min(1).optional(),
 })
 export type WokwiDescriptor = z.infer<typeof WokwiDescriptorSchema>
 

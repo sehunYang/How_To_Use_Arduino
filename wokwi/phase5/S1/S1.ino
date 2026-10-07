@@ -12,7 +12,6 @@ int samplingIntervalMs = 100;
 
 void setup() {
   Serial.begin(9600);
-  Serial.println("# PHASE5_READY:S1");
   Wire.begin();
   mpu.initialize();
   Serial.println("time_ms,roll_deg,pitch_deg");

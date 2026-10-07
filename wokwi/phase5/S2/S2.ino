@@ -9,7 +9,6 @@ int measurementIntervalMs = 200;
 
 void setup() {
   Serial.begin(9600);
-  Serial.println("# PHASE5_READY:S2");
   pinMode(TRIG_PIN, OUTPUT);
   pinMode(ECHO_PIN, INPUT);
   Serial.println("time_ms,distance_cm");

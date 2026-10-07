@@ -8,7 +8,6 @@ const byte TRIG=8,ECHO=9,BUZZER=3,LED_PIN=4;
 float warningDistanceCm = 60.0;
 void setup() {
   Serial.begin(9600);
-  Serial.println("# PHASE5_READY:parking-alarm");
   pinMode(TRIG,OUTPUT);
   pinMode(ECHO,INPUT);
   pinMode(BUZZER,OUTPUT);

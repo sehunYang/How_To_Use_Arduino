@@ -8,7 +8,6 @@ MPU6050 imu;
 const unsigned long samplingIntervalMs = 20;
 void setup() {
   Serial.begin(115200);
-  Serial.println("# PHASE5_READY:p5-incline-acceleration");
   Wire.begin();
   imu.initialize();
   Serial.println("time_ms,along_mps2,tilt_deg");

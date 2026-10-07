@@ -106,7 +106,6 @@ float readAddressTemperatureC(const byte address[8]) {
 const byte sensorCount = 3;
 void setup() {
   Serial.begin(9600);
-  Serial.println("# PHASE5_READY:e6-multi-point-temperature");
   Serial.println("time_ms,index,temperature_c");
 }
 void loop() {

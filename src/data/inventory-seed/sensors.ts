@@ -109,7 +109,12 @@ export const sensors: Sensor[] = [
       { name: 'DATA', kind: 'digital' },
     ],
     currentDrawMa: 1.5,
-    wokwi: { part: 'wokwi-ds18b20', pinMap: { VCC: 'VCC', GND: 'GND', DATA: 'DQ' }, simSupported: true },
+    wokwi: {
+      part: 'wokwi-ds18b20',
+      pinMap: { VCC: 'VCC', GND: 'GND', DATA: 'DQ' },
+      simSupported: true,
+      instanceIdAttr: 'deviceID',
+    },
     muxChannels: 0,
   },
   {

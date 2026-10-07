@@ -11,7 +11,6 @@ int conversionIntervalMs = 1000;
 
 void setup() {
   Serial.begin(9600);
-  Serial.println("# PHASE5_READY:S5");
   sensors.begin();
   Serial.println("time_ms,water_c");
 }
