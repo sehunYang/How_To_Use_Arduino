@@ -1,0 +1,54 @@
+name: Variant - d6-temperature-alarm--jitter
+version: 1
+author: phase5-generator
+steps:
+  - set-control:
+      part-id: ds18b20
+      control: temperature
+      value: 29.9375
+  - delay: 1100ms
+  - set-control:
+      part-id: ds18b20
+      control: temperature
+      value: 30.0625
+  - delay: 1100ms
+  - set-control:
+      part-id: ds18b20
+      control: temperature
+      value: 29.9375
+  - delay: 1100ms
+  - set-control:
+      part-id: ds18b20
+      control: temperature
+      value: 30.0625
+  - delay: 1100ms
+  - set-control:
+      part-id: ds18b20
+      control: temperature
+      value: 29.9375
+  - delay: 1100ms
+  - set-control:
+      part-id: ds18b20
+      control: temperature
+      value: 30.0625
+  - delay: 1100ms
+  - set-control:
+      part-id: ds18b20
+      control: temperature
+      value: 29.9375
+  - delay: 1100ms
+  - set-control:
+      part-id: ds18b20
+      control: temperature
+      value: 30.0625
+  - delay: 1100ms
+  - set-control:
+      part-id: ds18b20
+      control: temperature
+      value: 29.9375
+  - delay: 1100ms
+  - set-control:
+      part-id: ds18b20
+      control: temperature
+      value: 30.0625
+  - delay: 1100ms

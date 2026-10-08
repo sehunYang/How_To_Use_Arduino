@@ -6,6 +6,14 @@ import { phase5BehaviorSpecById } from '../src/wokwi/behaviorSpecs'
 import { checkSerialBehavior, serialFromCliOutput } from '../src/wokwi/serialBehavior'
 import { selectPhase5Projects, type SelectableProject } from '../src/wokwi/phase5Selection'
 import { simulationPhases } from '../src/wokwi/phase5SimulationRegistry'
+import { buildPhase5WokwiProjects } from '../src/wokwi/phase5ProjectGenerator'
+import { sensors } from '../src/data/inventory-seed/sensors'
+import {
+  buildWokwiVariants,
+  VARIANT_EXPECTATIONS,
+  VARIANTS_ROOT,
+  type VariantManifestEntry,
+} from '../src/wokwi/variants'
 
 interface ManifestProject extends SelectableProject {
   path: string
@@ -82,6 +90,56 @@ for (const project of projects) {
     }
     console.log(`${project.id}: ${verdict.rows} rows matched the physical stimulus`)
   }
+}
+
+// Fault variants: the same firmware facing a missing sensor, a different I2C address, or noise.
+const variantManifest = JSON.parse(readFileSync(resolve(VARIANTS_ROOT, 'manifest.json'), 'utf8')) as {
+  variants: VariantManifestEntry[]
+}
+let variants = variantManifest.variants
+if (baseRef && changedFiles !== undefined) {
+  const baseManifest = git('show', `${baseRef}:${VARIANTS_ROOT}/manifest.json`)
+  const base = baseManifest === undefined
+    ? undefined
+    : (JSON.parse(baseManifest) as { variants: SelectableProject[] }).variants
+  const selection = selectPhase5Projects(changedFiles.split('\n').filter(Boolean), variants, base)
+  console.log(`variants changed against ${baseRef}: ${selection.ids.length} of ${variants.length} to simulate.`)
+  variants = variants.filter((variant) => selection.ids.includes(variant.id))
+}
+const judges = new Map(
+  buildWokwiVariants(
+    simulationPhases.flatMap(({ root, recipes, registry }) =>
+      buildPhase5WokwiProjects(registry.filter((entry) => entry.eligible), recipes, sensors, root)),
+    { allowedComments: (recipeId) => phase5BehaviorSpecById.get(recipeId)?.allowedComments ?? [] },
+  ).map((variant) => [variant.id, variant]),
+)
+const outcomes: string[] = []
+for (const entry of variants) {
+  const variant = judges.get(entry.id)
+  if (!variant) throw new Error(`No variant definition for ${entry.id}; regenerate the Wokwi projects`)
+  console.log(`Running ${entry.id} [${entry.kind}] (${entry.timeoutMs}ms cap)...`)
+  const result = spawnSync(
+    'wokwi-cli',
+    [entry.path, '--scenario', entry.scenario, '--timeout', String(entry.timeoutMs)],
+    { encoding: 'utf8', stdio: ['inherit', 'pipe', 'inherit'], shell: process.platform === 'win32' },
+  )
+  if (result.error) throw result.error
+  process.stdout.write(result.stdout)
+  if (result.status !== 0) {
+    failed.push(`${entry.id}: wokwi-cli exited with ${result.status}`)
+    continue
+  }
+  const spec = phase5BehaviorSpecById.get(entry.recipeId)
+  const verdict = variant.judge(serialFromCliOutput(result.stdout, spec?.header.split(',').length))
+  const expected = VARIANT_EXPECTATIONS[entry.id]
+  outcomes.push(`  '${entry.id}': '${verdict.outcome}', // ${verdict.evidence}`)
+  if (verdict.outcome !== expected) {
+    failed.push(`${entry.id}: ${verdict.outcome} (${verdict.evidence}), expected ${expected ?? 'an entry in VARIANT_EXPECTATIONS'}`)
+  }
+}
+if (outcomes.length > 0) {
+  console.log('\nVariant outcomes (VARIANT_EXPECTATIONS format):')
+  for (const line of outcomes) console.log(line)
 }
 
 if (failed.length > 0) {

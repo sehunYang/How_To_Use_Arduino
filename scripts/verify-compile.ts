@@ -17,6 +17,15 @@ import { phase6Recipes } from '../src/data/phase6'
 import { phase7Recipes } from '../src/data/phase7'
 import { compileSketch, stageSketch } from '../src/verification/compileCheck'
 import { isArduinoCliInstalled, SETUP_HINT } from '../src/verification/arduinoCli'
+import { readdirSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
+
+/** The one-time hardware check probes (docs/hardware-check.md) must keep compiling too. */
+const PROBES = 'hardware-check/probes'
+const probeSketches = readdirSync(PROBES).map((name) => ({
+  id: `probe-${name}`,
+  sketch: readFileSync(join(PROBES, name, `${name}.ino`), 'utf8'),
+}))
 
 async function main(): Promise<void> {
   if (!isArduinoCliInstalled()) {
@@ -30,7 +39,7 @@ async function main(): Promise<void> {
       ? phase6Recipes
       : process.argv.includes('--phase5')
         ? phase5Recipes
-        : [...phase5Recipes, ...phase6Recipes, ...phase7Recipes]
+        : [...phase5Recipes, ...phase6Recipes, ...phase7Recipes, ...probeSketches]
   let failed = false
   for (const recipe of requestedPhase) {
     const inoPath = stageSketch(recipe.id, recipe.sketch)

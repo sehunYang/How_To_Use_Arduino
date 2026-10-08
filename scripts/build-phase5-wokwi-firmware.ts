@@ -45,4 +45,18 @@ for (const project of projects) {
   }
 }
 
-console.log(`Built and staged firmware for ${projects.length} Wokwi projects.`)
+// Fault variants run the same firmware as their source project on a changed circuit.
+const variants = (JSON.parse(readFileSync(resolve('wokwi/variants/manifest.json'), 'utf8')) as {
+  variants: Array<{ path: string; sourcePath: string; chips: string[] }>
+}).variants
+for (const variant of variants) {
+  for (const file of ['firmware.hex', 'firmware.elf']) {
+    copyFileSync(resolve(variant.sourcePath, file), resolve(variant.path, file))
+  }
+  for (const chip of variant.chips) {
+    copyFileSync(resolve('chips', `${chip}.chip.wasm`), resolve(variant.path, `${chip}.chip.wasm`))
+    copyFileSync(resolve('chips', `${chip}.chip.json`), resolve(variant.path, `${chip}.chip.json`))
+  }
+}
+
+console.log(`Built and staged firmware for ${projects.length} Wokwi projects and ${variants.length} variants.`)

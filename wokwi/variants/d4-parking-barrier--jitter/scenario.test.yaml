@@ -1,0 +1,154 @@
+name: Variant - d4-parking-barrier--jitter
+version: 1
+author: phase5-generator
+steps:
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 19
+  - delay: 120ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 21
+  - delay: 120ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 19
+  - delay: 120ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 21
+  - delay: 120ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 19
+  - delay: 120ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 21
+  - delay: 120ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 19
+  - delay: 120ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 21
+  - delay: 120ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 19
+  - delay: 120ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 21
+  - delay: 120ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 19
+  - delay: 120ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 21
+  - delay: 120ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 19
+  - delay: 120ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 21
+  - delay: 120ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 19
+  - delay: 120ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 21
+  - delay: 120ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 19
+  - delay: 120ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 21
+  - delay: 120ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 19
+  - delay: 120ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 21
+  - delay: 120ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 19
+  - delay: 120ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 21
+  - delay: 120ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 19
+  - delay: 120ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 21
+  - delay: 120ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 19
+  - delay: 120ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 21
+  - delay: 120ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 19
+  - delay: 120ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 21
+  - delay: 120ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 19
+  - delay: 120ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 21
+  - delay: 120ms

@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "author": "ph08-rpm-comparison",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "id": "uno",
+      "type": "wokwi-arduino-uno",
+      "top": 0,
+      "left": 0
+    },
+    {
+      "id": "bb",
+      "type": "wokwi-breadboard-half",
+      "top": 0,
+      "left": 100
+    },
+    {
+      "id": "mpu6050",
+      "type": "wokwi-mpu6050",
+      "top": 0,
+      "left": 100
+    },
+    {
+      "id": "hbe0704",
+      "type": "wokwi-potentiometer",
+      "top": 0,
+      "left": 200
+    }
+  ],
+  "connections": [
+    [
+      "uno:5V",
+      "bb:tp.1",
+      "red",
+      []
+    ],
+    [
+      "uno:GND",
+      "bb:tn.1",
+      "black",
+      []
+    ],
+    [
+      "hbe0704:VCC",
+      "bb:tp.9",
+      "red",
+      []
+    ],
+    [
+      "hbe0704:GND",
+      "bb:tn.9",
+      "black",
+      []
+    ],
+    [
+      "hbe0704:SIG",
+      "uno:A1",
+      "blue",
+      []
+    ]
+  ]
+}

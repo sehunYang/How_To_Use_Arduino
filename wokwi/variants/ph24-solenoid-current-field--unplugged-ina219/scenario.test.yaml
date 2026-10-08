@@ -1,0 +1,5 @@
+name: Variant - ph24-solenoid-current-field--unplugged-ina219
+version: 1
+author: phase5-generator
+steps:
+  - delay: 3000ms

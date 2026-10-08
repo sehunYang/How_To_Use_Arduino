@@ -135,6 +135,8 @@ function sonarMeters(recipeId: string, states: Array<{ label: string; cm: number
       steps: [...(index === 0 && cm === 400 ? [] : [set('hc-sr04', 'distance', cm)]), delayMs(700)],
       expect: { distance_m: echo(cm, 'm') },
     })),
+    // A reading taken before the first distance lands still shows the default 4 m.
+    startupRows: states[0].cm === 400 ? 0 : 1,
     // 100 ms delay + the echo itself (up to 23 ms at 4 m).
     timeColumn: 'time_ms',
     sampleInterval: { min: 100, max: 128 },
@@ -198,6 +200,7 @@ function tslRaw(recipeId: string, states: Array<{ label: string; ch0: number }>)
       // LOW gain and 100 ms integration: the ADC count is the incident light count itself.
       expect: { light_raw: approx(ch0, 0) },
     })),
+    startupRows: states[0].ch0 === TSL2591_DEFAULT_RAW.ch0 ? 0 : 1,
     timeColumn: 'time_ms',
     sampleInterval: { min: 100, max: 106 },
     minRows: states.length * 4,
@@ -322,11 +325,17 @@ function rotatingMagnet(recipeId: string): Phase5BehaviorSpec {
         steps: magnetPasses(10, periodMs),
         expect: { pulse_count: { min: 1, max: 11 }, hall_raw: { oneOf: [0, 1023], tolerance: 3 } },
       },
-      { label: 'rotor stopped', steps: [delayMs(500)], expect: { pulse_count: approx(11, 0) } },
     ],
+    finalSteps: [delayMs(500)],
+    // After the rotor stops: one count for the parked magnet plus one per pass, at the pass period.
     checkRows: (rows) => {
-      const last = rows[rows.length - 1].values.pulse_interval_us
-      return Math.abs(last - periodMs * 1000) <= 2000 ? [] : [`last pulse interval ${last} µs, expected ${periodMs * 1000}`]
+      const last = rows[rows.length - 1].values
+      const failures: string[] = []
+      if (last.pulse_count !== 11) failures.push(`${last.pulse_count} pulses counted, expected 11`)
+      if (Math.abs(last.pulse_interval_us - periodMs * 1000) > 2000) {
+        failures.push(`last pulse interval ${last.pulse_interval_us} µs, expected ${periodMs * 1000}`)
+      }
+      return failures
     },
     timeColumn: 'time_ms',
     sampleInterval: { min: 100, max: 106 },
@@ -735,7 +744,8 @@ const phase6: Phase5BehaviorSpec[] = [
         },
         {
           label: '10 Ω heater on 5 V: 500 mA, 2.5 W',
-          steps: [...inaSteps(INA_DEFAULT, heating), delayMs(2000)],
+          // A row takes 1.76 s; hold long enough for one full row before the water warms.
+          steps: [...inaSteps(INA_DEFAULT, heating), delayMs(4000)],
           expect: { bus_V: busVolts(heating.bus), current_mA: current(heating.shunt), temperature_C: approx(22, DS18B20_LSB_C) },
           settleRows: 1,
         },
@@ -945,7 +955,8 @@ const phase7: Phase5BehaviorSpec[] = [
     phases: [{ label: 'beeping at 880 Hz, half a second on and off', steps: [delayMs(3000)], expect: { tone_hz: approx(880, 0) } }],
     checkRows: cycles('buzzer_on', [1, 0]),
     timeColumn: 'time_ms',
-    sampleInterval: { min: 500, max: 505 },
+    // millis() lands a tick either side of the 500 ms delay.
+    sampleInterval: { min: 495, max: 505 },
     minRows: 5,
   },
   {
@@ -954,7 +965,7 @@ const phase7: Phase5BehaviorSpec[] = [
     phases: [{ label: 'sweeping 0° to 180° in 30° steps', steps: [delayMs(8000)], expect: { commanded_deg: { min: 0, max: 180 } } }],
     checkRows: cycles('commanded_deg', [0, 30, 60, 90, 120, 150, 180]),
     timeColumn: 'time_ms',
-    sampleInterval: { min: 1000, max: 1005 },
+    sampleInterval: { min: 995, max: 1005 },
     minRows: 7,
   },
   {

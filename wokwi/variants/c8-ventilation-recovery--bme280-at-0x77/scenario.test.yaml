@@ -1,0 +1,5 @@
+name: Variant - c8-ventilation-recovery--bme280-at-0x77
+version: 1
+author: phase5-generator
+steps:
+  - delay: 3000ms

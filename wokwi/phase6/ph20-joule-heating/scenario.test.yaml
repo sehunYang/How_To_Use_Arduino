@@ -12,7 +12,7 @@ steps:
       part-id: ina219
       control: busRaw
       value: 10000
-  - delay: 2000ms
+  - delay: 4000ms
   - set-control:
       part-id: ds18b20
       control: temperature

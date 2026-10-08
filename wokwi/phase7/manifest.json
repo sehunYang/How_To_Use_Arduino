@@ -27,7 +27,7 @@
       "scenario": "scenario.test.yaml",
       "command": "wokwi-cli wokwi/phase7/a2-buzzer-tone --scenario scenario.test.yaml --timeout 20000",
       "chips": [],
-      "fingerprint": "49a9912b887171d9"
+      "fingerprint": "df2523c6a4d44dec"
     },
     {
       "id": "a3-servo-angle",
@@ -37,7 +37,7 @@
       "scenario": "scenario.test.yaml",
       "command": "wokwi-cli wokwi/phase7/a3-servo-angle --scenario scenario.test.yaml --timeout 20000",
       "chips": [],
-      "fingerprint": "63ad14692751d65f"
+      "fingerprint": "75a053fd65f1d447"
     },
     {
       "id": "a4-relay-switch",

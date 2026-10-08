@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "author": "S8",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "id": "uno",
+      "type": "wokwi-arduino-uno",
+      "top": 0,
+      "left": 0
+    },
+    {
+      "id": "bb",
+      "type": "wokwi-breadboard-half",
+      "top": 0,
+      "left": 100
+    },
+    {
+      "id": "tsl2591",
+      "type": "chip-tsl2591",
+      "top": 0,
+      "left": 100
+    }
+  ],
+  "connections": [
+    [
+      "uno:5V",
+      "bb:tp.1",
+      "red",
+      []
+    ],
+    [
+      "uno:GND",
+      "bb:tn.1",
+      "black",
+      []
+    ]
+  ]
+}

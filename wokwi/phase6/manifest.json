@@ -59,7 +59,7 @@
       "scenario": "scenario.test.yaml",
       "command": "wokwi-cli wokwi/phase6/ph01-uniform-motion --scenario scenario.test.yaml --timeout 20000",
       "chips": [],
-      "fingerprint": "528746772ebf6741"
+      "fingerprint": "b4e866d2415ca0b8"
     },
     {
       "id": "ph02-newton-second-law",
@@ -99,7 +99,7 @@
       "scenario": "scenario.test.yaml",
       "command": "wokwi-cli wokwi/phase6/ph05-restitution-coefficient --scenario scenario.test.yaml --timeout 20000",
       "chips": [],
-      "fingerprint": "7610176211618ed0"
+      "fingerprint": "eb5f661f3d68ab69"
     },
     {
       "id": "ph06-spring-oscillation",
@@ -263,7 +263,7 @@
       "chips": [
         "ina219"
       ],
-      "fingerprint": "f5c62821c9df641f"
+      "fingerprint": "dfbb4545cb175b63"
     },
     {
       "id": "ph21-rc-time-constant",
@@ -334,7 +334,7 @@
       "scenario": "scenario.test.yaml",
       "command": "wokwi-cli wokwi/phase6/ph26-rotating-magnet-signal --scenario scenario.test.yaml --timeout 20000",
       "chips": [],
-      "fingerprint": "5042ea172f6d0ab9"
+      "fingerprint": "47b16b50e2062cf6"
     },
     {
       "id": "ph27-magnetic-shielding",
@@ -356,7 +356,7 @@
       "chips": [
         "tsl2591"
       ],
-      "fingerprint": "94cd1ff2e8bf9178"
+      "fingerprint": "b6c7f48b4e78f8dd"
     },
     {
       "id": "ph29-transmittance-absorbance",
@@ -368,7 +368,7 @@
       "chips": [
         "tsl2591"
       ],
-      "fingerprint": "162114bdc93fb747"
+      "fingerprint": "c1af8a781350b3b6"
     },
     {
       "id": "ph30-reflection-intensity-angle",
@@ -380,7 +380,7 @@
       "chips": [
         "tsl2591"
       ],
-      "fingerprint": "fdcc137a0b122b80"
+      "fingerprint": "d4c933e38e820755"
     },
     {
       "id": "ph31-lens-focal-length",
@@ -392,7 +392,7 @@
       "chips": [
         "tsl2591"
       ],
-      "fingerprint": "68e0bae926f6e1bf"
+      "fingerprint": "b6b6ca24272de03e"
     },
     {
       "id": "ph32-aperture-light",
@@ -404,7 +404,7 @@
       "chips": [
         "tsl2591"
       ],
-      "fingerprint": "ac70796b03a6708d"
+      "fingerprint": "3d5b128a5970a128"
     },
     {
       "id": "ph33-light-source-stability",
@@ -416,7 +416,7 @@
       "chips": [
         "tsl2591"
       ],
-      "fingerprint": "c24c3640dac61602"
+      "fingerprint": "b777b695dcc0133b"
     },
     {
       "id": "ph34-torricelli-drain",
@@ -426,7 +426,7 @@
       "scenario": "scenario.test.yaml",
       "command": "wokwi-cli wokwi/phase6/ph34-torricelli-drain --scenario scenario.test.yaml --timeout 20000",
       "chips": [],
-      "fingerprint": "54759645163e7c57"
+      "fingerprint": "1052a67c4cf5a072"
     },
     {
       "id": "ph35-temperature-speed-of-sound",
