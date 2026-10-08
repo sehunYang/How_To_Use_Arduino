@@ -11,7 +11,7 @@ import {
   renderPhase5WokwiToml,
   renderScenario,
 } from '../src/wokwi/phase5ProjectGenerator'
-import { simulationPhases } from '../src/wokwi/phase5SimulationRegistry'
+import { type EligiblePhase5Simulation, simulationPhases } from '../src/wokwi/phase5SimulationRegistry'
 import { buildVariantManifest, buildWokwiVariants, VARIANTS_ROOT } from '../src/wokwi/variants'
 
 const check = process.argv.includes('--check')
@@ -51,7 +51,7 @@ async function emit(label: string, rootPath: string, expectedNames: string[], ou
 }
 
 for (const { phase, root: rootPath, recipes, registry } of simulationPhases) {
-  const eligible = registry.filter((entry) => entry.eligible)
+  const eligible = registry.filter((entry): entry is EligiblePhase5Simulation => entry.eligible)
   const exclusions = registry
     .filter((entry) => !entry.eligible)
     .map((entry) => entry.recipeId)

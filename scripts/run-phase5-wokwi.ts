@@ -5,7 +5,7 @@ import { resolve } from 'node:path'
 import { phase5BehaviorSpecById } from '../src/wokwi/behaviorSpecs'
 import { checkSerialBehavior, serialFromCliOutput } from '../src/wokwi/serialBehavior'
 import { selectPhase5Projects, type SelectableProject } from '../src/wokwi/phase5Selection'
-import { simulationPhases } from '../src/wokwi/phase5SimulationRegistry'
+import { type EligiblePhase5Simulation, simulationPhases } from '../src/wokwi/phase5SimulationRegistry'
 import { buildPhase5WokwiProjects } from '../src/wokwi/phase5ProjectGenerator'
 import { sensors } from '../src/data/inventory-seed/sensors'
 import {
@@ -93,10 +93,12 @@ for (const project of projects) {
 }
 
 // Fault variants: the same firmware facing a missing sensor, a different I2C address, or noise.
+// They characterise the published sketches rather than gate a change, so they run only
+// with --variants (the monthly and manual runs), keeping PRs inside the Wokwi budget.
 const variantManifest = JSON.parse(readFileSync(resolve(VARIANTS_ROOT, 'manifest.json'), 'utf8')) as {
   variants: VariantManifestEntry[]
 }
-let variants = variantManifest.variants
+let variants = process.argv.includes('--variants') ? variantManifest.variants : []
 if (baseRef && changedFiles !== undefined) {
   const baseManifest = git('show', `${baseRef}:${VARIANTS_ROOT}/manifest.json`)
   const base = baseManifest === undefined
@@ -109,7 +111,7 @@ if (baseRef && changedFiles !== undefined) {
 const judges = new Map(
   buildWokwiVariants(
     simulationPhases.flatMap(({ root, recipes, registry }) =>
-      buildPhase5WokwiProjects(registry.filter((entry) => entry.eligible), recipes, sensors, root)),
+      buildPhase5WokwiProjects(registry.filter((entry): entry is EligiblePhase5Simulation => entry.eligible), recipes, sensors, root)),
     { allowedComments: (recipeId) => phase5BehaviorSpecById.get(recipeId)?.allowedComments ?? [] },
   ).map((variant) => [variant.id, variant]),
 )
@@ -133,17 +135,20 @@ for (const entry of variants) {
   const verdict = variant.judge(serialFromCliOutput(result.stdout, spec?.header.split(',').length))
   const expected = VARIANT_EXPECTATIONS[entry.id]
   outcomes.push(`  '${entry.id}': '${verdict.outcome}', // ${verdict.evidence}`)
-  if (verdict.outcome !== expected) {
+  // A variant nobody has recorded yet is reported, not failed: its first run is the record.
+  if (expected !== undefined && verdict.outcome !== expected) {
     failed.push(`${entry.id}: ${verdict.outcome} (${verdict.evidence}), expected ${expected ?? 'an entry in VARIANT_EXPECTATIONS'}`)
   }
 }
+const unrecorded = variants.filter((entry) => VARIANT_EXPECTATIONS[entry.id] === undefined).length
+if (unrecorded > 0) console.log(`\n${unrecorded} variant outcome(s) not yet recorded in VARIANT_EXPECTATIONS.`)
 if (outcomes.length > 0) {
   console.log('\nVariant outcomes (VARIANT_EXPECTATIONS format):')
   for (const line of outcomes) console.log(line)
 }
 
 if (failed.length > 0) {
-  console.error(`\n${failed.length} of ${projects.length} Wokwi projects failed:`)
+  console.error(`\n${failed.length} of ${projects.length + variants.length} Wokwi runs failed:`)
   for (const failure of failed) console.error(`  - ${failure}`)
   process.exit(1)
 }
