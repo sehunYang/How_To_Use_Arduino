@@ -1,0 +1,144 @@
+{
+  "version": 1,
+  "author": "ph21-rc-time-constant",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "id": "uno",
+      "type": "wokwi-arduino-uno",
+      "top": 0,
+      "left": 0
+    },
+    {
+      "id": "bb",
+      "type": "wokwi-breadboard-half",
+      "top": 0,
+      "left": 100
+    },
+    {
+      "id": "ina219",
+      "type": "chip-ina219",
+      "top": 0,
+      "left": 100
+    },
+    {
+      "id": "battery",
+      "type": "wokwi-slide-potentiometer",
+      "top": 0,
+      "left": 200
+    },
+    {
+      "id": "resistor_10000",
+      "type": "wokwi-resistor",
+      "top": 0,
+      "left": 300,
+      "attrs": {
+        "value": "10000"
+      }
+    },
+    {
+      "id": "capacitor",
+      "type": "visual-capacitor",
+      "top": 0,
+      "left": 400
+    }
+  ],
+  "connections": [
+    [
+      "ina219:VCC",
+      "bb:tp.5",
+      "red",
+      []
+    ],
+    [
+      "uno:5V",
+      "bb:tp.1",
+      "red",
+      []
+    ],
+    [
+      "ina219:GND",
+      "bb:tn.5",
+      "black",
+      []
+    ],
+    [
+      "uno:GND",
+      "bb:tn.1",
+      "black",
+      []
+    ],
+    [
+      "bb:tn.13",
+      "bb:9t.a",
+      "black",
+      []
+    ],
+    [
+      "ina219:SDA",
+      "uno:A4",
+      "green",
+      []
+    ],
+    [
+      "ina219:SCL",
+      "uno:A5",
+      "yellow",
+      []
+    ],
+    [
+      "battery:SIG",
+      "bb:2t.a",
+      "red",
+      []
+    ],
+    [
+      "resistor_10000:1",
+      "bb:2t.e",
+      "red",
+      []
+    ],
+    [
+      "resistor_10000:2",
+      "bb:4t.e",
+      "orange",
+      []
+    ],
+    [
+      "ina219:VIN+",
+      "bb:4t.a",
+      "orange",
+      []
+    ],
+    [
+      "ina219:VIN-",
+      "bb:7t.a",
+      "purple",
+      []
+    ],
+    [
+      "capacitor:1",
+      "bb:7t.e",
+      "purple",
+      []
+    ],
+    [
+      "uno:A0",
+      "bb:7t.b",
+      "blue",
+      []
+    ],
+    [
+      "capacitor:2",
+      "bb:9t.e",
+      "black",
+      []
+    ],
+    [
+      "battery:GND",
+      "bb:tn.9",
+      "black",
+      []
+    ]
+  ]
+}

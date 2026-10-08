@@ -10,6 +10,7 @@ typedef struct {
   uint32_t humidity_raw_attr;
   uint8_t register_pointer;
   bool awaiting_register;
+  uint8_t address;
 } chip_state_t;
 
 static void refresh_measurement(chip_state_t* chip) {
@@ -26,7 +27,7 @@ static bool on_i2c_connect(void* user_data, uint32_t address, bool read) {
   if (read) {
     refresh_measurement(chip);
   }
-  return address == BME280_I2C_ADDRESS_PRIMARY;
+  return address == chip->address;
 }
 
 static uint8_t on_i2c_read(void* user_data) {
@@ -55,10 +56,14 @@ void chip_init(void) {
   chip->temperature_raw_attr = attr_init("temperatureRaw", 519888);
   chip->pressure_raw_attr = attr_init("pressureRaw", 415148);
   chip->humidity_raw_attr = attr_init("humidityRaw", 30000);
+  // SDO to GND answers at 0x76, SDO to VCC at 0x77 (many breakouts ship that way).
+  chip->address = attr_read(attr_init("address", BME280_I2C_ADDRESS_PRIMARY)) == BME280_I2C_ADDRESS_SECONDARY
+      ? BME280_I2C_ADDRESS_SECONDARY
+      : BME280_I2C_ADDRESS_PRIMARY;
 
   const i2c_config_t config = {
       .user_data = chip,
-      .address = BME280_I2C_ADDRESS_PRIMARY,
+      .address = chip->address,
       .scl = pin_init("SCL", INPUT_PULLUP),
       .sda = pin_init("SDA", INPUT_PULLUP),
       .connect = on_i2c_connect,

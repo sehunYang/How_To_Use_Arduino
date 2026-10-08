@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "author": "rpm-meter",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "id": "uno",
+      "type": "wokwi-arduino-uno",
+      "top": 0,
+      "left": 0
+    },
+    {
+      "id": "bb",
+      "type": "wokwi-breadboard-half",
+      "top": 0,
+      "left": 100
+    },
+    {
+      "id": "hbe0704",
+      "type": "wokwi-potentiometer",
+      "top": 0,
+      "left": 100
+    }
+  ],
+  "connections": [
+    [
+      "hbe0704:VCC",
+      "bb:tp.5",
+      "red",
+      []
+    ],
+    [
+      "uno:5V",
+      "bb:tp.1",
+      "red",
+      []
+    ],
+    [
+      "hbe0704:GND",
+      "bb:tn.5",
+      "black",
+      []
+    ],
+    [
+      "uno:GND",
+      "bb:tn.1",
+      "black",
+      []
+    ],
+    [
+      "hbe0704:SIG",
+      "uno:A0",
+      "green",
+      []
+    ]
+  ]
+}

@@ -1,0 +1,5 @@
+name: Variant - plant-growth--unplugged-tsl2591
+version: 1
+author: phase5-generator
+steps:
+  - delay: 3000ms

@@ -1,0 +1,16 @@
+name: Phase 5 behavior - c3-turbidity-precipitation
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "time_ms,light_raw,transmittance_pct"
+  - delay: 800ms
+  - set-control:
+      part-id: tsl2591
+      control: ch0Raw
+      value: 617
+  - delay: 1200ms
+  - set-control:
+      part-id: tsl2591
+      control: ch0Raw
+      value: 123
+  - delay: 1200ms

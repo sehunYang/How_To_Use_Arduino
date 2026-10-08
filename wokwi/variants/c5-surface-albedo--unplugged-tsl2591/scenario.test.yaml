@@ -1,0 +1,5 @@
+name: Variant - c5-surface-albedo--unplugged-tsl2591
+version: 1
+author: phase5-generator
+steps:
+  - delay: 3000ms

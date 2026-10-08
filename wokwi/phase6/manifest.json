@@ -1,0 +1,444 @@
+{
+  "version": 1,
+  "generatedFrom": "phase5SimulationRegistry",
+  "projectCount": 39,
+  "exclusions": [
+    "s14-tca-address-reset",
+    "p10-eight-point-light-field"
+  ],
+  "projects": [
+    {
+      "id": "s11-tsl2591-interrupt",
+      "path": "wokwi/phase6/s11-tsl2591-interrupt",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase6/s11-tsl2591-interrupt --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "tsl2591"
+      ],
+      "fingerprint": "836817264efe330c"
+    },
+    {
+      "id": "s12-dual-mpu6050-address",
+      "path": "wokwi/phase6/s12-dual-mpu6050-address",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase6/s12-dual-mpu6050-address --scenario scenario.test.yaml --timeout 20000",
+      "chips": [],
+      "fingerprint": "4f41e42b8cccfb6d"
+    },
+    {
+      "id": "p9-motion-interrupt",
+      "path": "wokwi/phase6/p9-motion-interrupt",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase6/p9-motion-interrupt --scenario scenario.test.yaml --timeout 20000",
+      "chips": [],
+      "fingerprint": "92c103624353bd10"
+    },
+    {
+      "id": "s13-mpu-aux-tsl2591",
+      "path": "wokwi/phase6/s13-mpu-aux-tsl2591",
+      "kind": "smoke",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase6/s13-mpu-aux-tsl2591 --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "tsl2591"
+      ],
+      "fingerprint": "81f67f964bb16434"
+    },
+    {
+      "id": "ph01-uniform-motion",
+      "path": "wokwi/phase6/ph01-uniform-motion",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase6/ph01-uniform-motion --scenario scenario.test.yaml --timeout 20000",
+      "chips": [],
+      "fingerprint": "b4e866d2415ca0b8"
+    },
+    {
+      "id": "ph02-newton-second-law",
+      "path": "wokwi/phase6/ph02-newton-second-law",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase6/ph02-newton-second-law --scenario scenario.test.yaml --timeout 20000",
+      "chips": [],
+      "fingerprint": "913a07fce8e5461a"
+    },
+    {
+      "id": "ph03-projectile-motion",
+      "path": "wokwi/phase6/ph03-projectile-motion",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase6/ph03-projectile-motion --scenario scenario.test.yaml --timeout 20000",
+      "chips": [],
+      "fingerprint": "574c17469d38d790"
+    },
+    {
+      "id": "ph04-momentum-collision",
+      "path": "wokwi/phase6/ph04-momentum-collision",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase6/ph04-momentum-collision --scenario scenario.test.yaml --timeout 20000",
+      "chips": [],
+      "fingerprint": "efd32fe562f2b8c3"
+    },
+    {
+      "id": "ph05-restitution-coefficient",
+      "path": "wokwi/phase6/ph05-restitution-coefficient",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase6/ph05-restitution-coefficient --scenario scenario.test.yaml --timeout 20000",
+      "chips": [],
+      "fingerprint": "eb5f661f3d68ab69"
+    },
+    {
+      "id": "ph06-spring-oscillation",
+      "path": "wokwi/phase6/ph06-spring-oscillation",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase6/ph06-spring-oscillation --scenario scenario.test.yaml --timeout 20000",
+      "chips": [],
+      "fingerprint": "0c91494d19454bbb"
+    },
+    {
+      "id": "ph07-centripetal-acceleration",
+      "path": "wokwi/phase6/ph07-centripetal-acceleration",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase6/ph07-centripetal-acceleration --scenario scenario.test.yaml --timeout 20000",
+      "chips": [],
+      "fingerprint": "e2fee6fce1eb4bbe"
+    },
+    {
+      "id": "ph08-rpm-comparison",
+      "path": "wokwi/phase6/ph08-rpm-comparison",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase6/ph08-rpm-comparison --scenario scenario.test.yaml --timeout 20000",
+      "chips": [],
+      "fingerprint": "d5f7713fd09661e5"
+    },
+    {
+      "id": "ph09-friction-coefficients",
+      "path": "wokwi/phase6/ph09-friction-coefficients",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase6/ph09-friction-coefficients --scenario scenario.test.yaml --timeout 20000",
+      "chips": [],
+      "fingerprint": "82994420bc990f9a"
+    },
+    {
+      "id": "ph10-rotational-damping",
+      "path": "wokwi/phase6/ph10-rotational-damping",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase6/ph10-rotational-damping --scenario scenario.test.yaml --timeout 20000",
+      "chips": [],
+      "fingerprint": "cc2f6c865d48c88c"
+    },
+    {
+      "id": "ph11-specific-heat",
+      "path": "wokwi/phase6/ph11-specific-heat",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase6/ph11-specific-heat --scenario scenario.test.yaml --timeout 20000",
+      "chips": [],
+      "fingerprint": "c68028d9086bd683"
+    },
+    {
+      "id": "ph12-latent-heat",
+      "path": "wokwi/phase6/ph12-latent-heat",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase6/ph12-latent-heat --scenario scenario.test.yaml --timeout 20000",
+      "chips": [],
+      "fingerprint": "c8fed9ef34008ca5"
+    },
+    {
+      "id": "ph13-thermal-conductivity",
+      "path": "wokwi/phase6/ph13-thermal-conductivity",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase6/ph13-thermal-conductivity --scenario scenario.test.yaml --timeout 20000",
+      "chips": [],
+      "fingerprint": "e81b602b73b4b359"
+    },
+    {
+      "id": "ph14-insulation-performance",
+      "path": "wokwi/phase6/ph14-insulation-performance",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase6/ph14-insulation-performance --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "bme280"
+      ],
+      "fingerprint": "96dcc5dee3badfd0"
+    },
+    {
+      "id": "ph15-gas-temperature-pressure",
+      "path": "wokwi/phase6/ph15-gas-temperature-pressure",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase6/ph15-gas-temperature-pressure --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "bme280"
+      ],
+      "fingerprint": "954c34d15d98fabb"
+    },
+    {
+      "id": "ph16-altitude-pressure",
+      "path": "wokwi/phase6/ph16-altitude-pressure",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase6/ph16-altitude-pressure --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "bme280"
+      ],
+      "fingerprint": "f1c3f4b2cb2dd218"
+    },
+    {
+      "id": "ph17-ohms-law",
+      "path": "wokwi/phase6/ph17-ohms-law",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase6/ph17-ohms-law --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "ina219"
+      ],
+      "fingerprint": "b02126074ed0b781"
+    },
+    {
+      "id": "ph18-series-parallel-resistance",
+      "path": "wokwi/phase6/ph18-series-parallel-resistance",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase6/ph18-series-parallel-resistance --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "ina219"
+      ],
+      "fingerprint": "ff559dbcd4741ec2"
+    },
+    {
+      "id": "ph19-kirchhoff-laws",
+      "path": "wokwi/phase6/ph19-kirchhoff-laws",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase6/ph19-kirchhoff-laws --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "ina219"
+      ],
+      "fingerprint": "f325c04e0a45cce4"
+    },
+    {
+      "id": "ph20-joule-heating",
+      "path": "wokwi/phase6/ph20-joule-heating",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase6/ph20-joule-heating --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "ina219"
+      ],
+      "fingerprint": "dfbb4545cb175b63"
+    },
+    {
+      "id": "ph21-rc-time-constant",
+      "path": "wokwi/phase6/ph21-rc-time-constant",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase6/ph21-rc-time-constant --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "ina219"
+      ],
+      "fingerprint": "2a9fa6bebae70290"
+    },
+    {
+      "id": "ph22-battery-internal-resistance",
+      "path": "wokwi/phase6/ph22-battery-internal-resistance",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase6/ph22-battery-internal-resistance --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "ina219"
+      ],
+      "fingerprint": "d60a32eb98d64b75"
+    },
+    {
+      "id": "ph23-solar-iv-mpp",
+      "path": "wokwi/phase6/ph23-solar-iv-mpp",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase6/ph23-solar-iv-mpp --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "ina219",
+        "tsl2591"
+      ],
+      "fingerprint": "16202d66b948e32c"
+    },
+    {
+      "id": "ph24-solenoid-current-field",
+      "path": "wokwi/phase6/ph24-solenoid-current-field",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase6/ph24-solenoid-current-field --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "ina219"
+      ],
+      "fingerprint": "e2641d7f5147ed91"
+    },
+    {
+      "id": "ph25-coil-turns-field",
+      "path": "wokwi/phase6/ph25-coil-turns-field",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase6/ph25-coil-turns-field --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "ina219"
+      ],
+      "fingerprint": "fcdafa0d3e734a37"
+    },
+    {
+      "id": "ph26-rotating-magnet-signal",
+      "path": "wokwi/phase6/ph26-rotating-magnet-signal",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase6/ph26-rotating-magnet-signal --scenario scenario.test.yaml --timeout 20000",
+      "chips": [],
+      "fingerprint": "47b16b50e2062cf6"
+    },
+    {
+      "id": "ph27-magnetic-shielding",
+      "path": "wokwi/phase6/ph27-magnetic-shielding",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase6/ph27-magnetic-shielding --scenario scenario.test.yaml --timeout 20000",
+      "chips": [],
+      "fingerprint": "2d045a12b0710aac"
+    },
+    {
+      "id": "ph28-malus-law",
+      "path": "wokwi/phase6/ph28-malus-law",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase6/ph28-malus-law --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "tsl2591"
+      ],
+      "fingerprint": "b6c7f48b4e78f8dd"
+    },
+    {
+      "id": "ph29-transmittance-absorbance",
+      "path": "wokwi/phase6/ph29-transmittance-absorbance",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase6/ph29-transmittance-absorbance --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "tsl2591"
+      ],
+      "fingerprint": "c1af8a781350b3b6"
+    },
+    {
+      "id": "ph30-reflection-intensity-angle",
+      "path": "wokwi/phase6/ph30-reflection-intensity-angle",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase6/ph30-reflection-intensity-angle --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "tsl2591"
+      ],
+      "fingerprint": "d4c933e38e820755"
+    },
+    {
+      "id": "ph31-lens-focal-length",
+      "path": "wokwi/phase6/ph31-lens-focal-length",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase6/ph31-lens-focal-length --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "tsl2591"
+      ],
+      "fingerprint": "b6b6ca24272de03e"
+    },
+    {
+      "id": "ph32-aperture-light",
+      "path": "wokwi/phase6/ph32-aperture-light",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase6/ph32-aperture-light --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "tsl2591"
+      ],
+      "fingerprint": "3d5b128a5970a128"
+    },
+    {
+      "id": "ph33-light-source-stability",
+      "path": "wokwi/phase6/ph33-light-source-stability",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase6/ph33-light-source-stability --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "tsl2591"
+      ],
+      "fingerprint": "b777b695dcc0133b"
+    },
+    {
+      "id": "ph34-torricelli-drain",
+      "path": "wokwi/phase6/ph34-torricelli-drain",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase6/ph34-torricelli-drain --scenario scenario.test.yaml --timeout 20000",
+      "chips": [],
+      "fingerprint": "1052a67c4cf5a072"
+    },
+    {
+      "id": "ph35-temperature-speed-of-sound",
+      "path": "wokwi/phase6/ph35-temperature-speed-of-sound",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase6/ph35-temperature-speed-of-sound --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "bme280"
+      ],
+      "fingerprint": "d0f4cfc8b6b91d0a"
+    }
+  ]
+}

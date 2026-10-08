@@ -1,0 +1,54 @@
+name: Variant - fan-control--jitter
+version: 1
+author: phase5-generator
+steps:
+  - set-control:
+      part-id: bme280
+      control: humidityRaw
+      value: 33957
+  - delay: 1000ms
+  - set-control:
+      part-id: bme280
+      control: humidityRaw
+      value: 34138
+  - delay: 1000ms
+  - set-control:
+      part-id: bme280
+      control: humidityRaw
+      value: 33957
+  - delay: 1000ms
+  - set-control:
+      part-id: bme280
+      control: humidityRaw
+      value: 34138
+  - delay: 1000ms
+  - set-control:
+      part-id: bme280
+      control: humidityRaw
+      value: 33957
+  - delay: 1000ms
+  - set-control:
+      part-id: bme280
+      control: humidityRaw
+      value: 34138
+  - delay: 1000ms
+  - set-control:
+      part-id: bme280
+      control: humidityRaw
+      value: 33957
+  - delay: 1000ms
+  - set-control:
+      part-id: bme280
+      control: humidityRaw
+      value: 34138
+  - delay: 1000ms
+  - set-control:
+      part-id: bme280
+      control: humidityRaw
+      value: 33957
+  - delay: 1000ms
+  - set-control:
+      part-id: bme280
+      control: humidityRaw
+      value: 34138
+  - delay: 1000ms

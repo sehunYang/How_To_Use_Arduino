@@ -1,0 +1,17 @@
+name: Phase 5 behavior - ph07-centripetal-acceleration
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "time_ms,acceleration_x_g,acceleration_y_g,acceleration_z_g,gyro_z_dps"
+  - wait-serial: ",0.00000,0.00000,1.00000,0.000"
+  - set-control:
+      part-id: mpu6050
+      control: rotationZ
+      value: 180
+  - wait-serial: ",0.00000,0.00000,1.00000,180.000"
+  - set-control:
+      part-id: mpu6050
+      control: accelX
+      value: 0.25
+  - wait-serial: ",0.25000,0.00000,1.00000,180.000"
+  - delay: 300ms

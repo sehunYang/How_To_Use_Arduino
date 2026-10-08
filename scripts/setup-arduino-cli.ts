@@ -26,7 +26,7 @@ import {
 
 const ARDUINO_CLI_VERSION = '1.5.1'
 
-/** Libraries pulled from the Arduino library index for all Phase 5 sketches. */
+/** Libraries pulled from the Arduino library index for every recipe sketch (Phases 5-7). */
 const REQUIRED_LIBRARIES = [
   'MPU6050',
   'Adafruit TSL2591 Library',
@@ -37,6 +37,9 @@ const REQUIRED_LIBRARIES = [
   'OneWire',
   'DallasTemperature',
   'TCA9548A',
+  // Phase 7 actuator recipes. The Arduino IDE bundles Servo; arduino-cli does not.
+  'Servo',
+  'LiquidCrystal I2C',
 ]
 
 function releaseAsset(): string {

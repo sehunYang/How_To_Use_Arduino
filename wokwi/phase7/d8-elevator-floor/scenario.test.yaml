@@ -1,0 +1,20 @@
+name: Phase 5 behavior - d8-elevator-floor
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "time_ms,distance_cm,floor_index,commanded_deg"
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 3
+  - delay: 1200ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 17
+  - delay: 1200ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 40
+  - delay: 1200ms

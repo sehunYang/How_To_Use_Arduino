@@ -1,0 +1,10 @@
+name: Phase 5 behavior - c8-ventilation-recovery
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "time_ms,temperature_c,humidity_pct,fan"
+  - delay: 16000ms
+  - expect-pin:
+      part-id: uno
+      pin: "7"
+      value: 0

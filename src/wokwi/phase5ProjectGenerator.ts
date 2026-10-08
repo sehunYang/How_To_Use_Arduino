@@ -57,8 +57,9 @@ function instrumentSketch(recipeId: string, sketch: string): string {
 
 export function buildPhase5WokwiProjects(
   entries: EligiblePhase5Simulation[],
-  recipes: Recipe[],
+  recipes: readonly Recipe[],
   sensors: Sensor[],
+  root: string = PHASE5_WOKWI_ROOT,
 ): Phase5WokwiProject[] {
   const recipesById = new Map(recipes.map((recipe) => [recipe.id, recipe]))
 
@@ -69,15 +70,11 @@ export function buildPhase5WokwiProjects(
     }
 
     const behavior = phase5BehaviorSpecById.get(recipe.id)
-    const path = `${PHASE5_WOKWI_ROOT}/${entry.recipeId}`
+    const path = `${root}/${entry.recipeId}`
     const timeoutMs = behavior?.timeoutMs ?? entry.timeoutMs
     const scenario = 'scenario.test.yaml'
     const diagram = buildDiagram(recipe, sensors)
-    const chips = [...new Set(
-      diagram.parts
-        .map((part) => CUSTOM_CHIP_BY_PART_TYPE[part.type])
-        .filter((chip): chip is string => chip !== undefined),
-    )].sort()
+    const chips = chipsOf(diagram)
 
     return {
       id: entry.recipeId,
@@ -94,7 +91,7 @@ export function buildPhase5WokwiProjects(
   })
 }
 
-export function renderPhase5WokwiToml(project: Phase5WokwiProject): string {
+export function renderPhase5WokwiToml(project: Pick<Phase5WokwiProject, 'chips'>): string {
   const chips = project.chips.map((chip) => [
     '',
     '[[chip]]',
@@ -135,6 +132,20 @@ function renderStep(step: ScenarioStep): string[] {
   ]
 }
 
+/** A scenario file for `steps`, as wokwi-cli reads it. */
+export function renderScenario(name: string, steps: readonly ScenarioStep[]): string {
+  return [`name: ${name}`, 'version: 1', 'author: phase5-generator', 'steps:', ...steps.flatMap(renderStep), ''].join('\n')
+}
+
+/** Custom chips a diagram wires in, by their wokwi.toml name. */
+export function chipsOf(diagram: Diagram): string[] {
+  return [...new Set(
+    diagram.parts
+      .map((part) => CUSTOM_CHIP_BY_PART_TYPE[part.type])
+      .filter((chip): chip is string => chip !== undefined),
+  )].sort()
+}
+
 function renderBehaviorScenario(id: string, spec: Phase5BehaviorSpec): string {
   const steps: ScenarioStep[] = [
     { waitSerial: spec.header },
@@ -163,6 +174,11 @@ export function renderPhase5Scenario(project: Phase5WokwiProject): string {
   ].join('\n')
 }
 
+/** 64-bit change detector for manifest fingerprints. */
+export function fingerprintText(text: string): string {
+  return fnv1a(text, 0x811c9dc5) + fnv1a(text, 0x01000193)
+}
+
 function fnv1a(text: string, seed: number): string {
   let hash = seed
   for (let index = 0; index < text.length; index += 1) {
@@ -186,7 +202,7 @@ export function phase5ProjectFingerprint(project: Phase5WokwiProject): string {
     String(project.timeoutMs),
     serializeSpec(project.behavior),
   ].join('\u0000')
-  return fnv1a(text, 0x811c9dc5) + fnv1a(text, 0x01000193)
+  return fingerprintText(text)
 }
 
 export function buildPhase5WokwiManifest(

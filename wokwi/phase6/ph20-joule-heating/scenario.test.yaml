@@ -1,0 +1,20 @@
+name: Phase 5 behavior - ph20-joule-heating
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "condition_id,time_ms,bus_V,current_mA,power_W,temperature_C"
+  - delay: 2000ms
+  - set-control:
+      part-id: ina219
+      control: shuntRaw
+      value: 5000
+  - set-control:
+      part-id: ina219
+      control: busRaw
+      value: 10000
+  - delay: 4000ms
+  - set-control:
+      part-id: ds18b20
+      control: temperature
+      value: 30
+  - delay: 4000ms

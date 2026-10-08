@@ -1,0 +1,1455 @@
+{
+  "version": 1,
+  "variantCount": 119,
+  "variants": [
+    {
+      "id": "S1--unplugged-mpu6050",
+      "recipeId": "S1",
+      "kind": "unplugged",
+      "path": "wokwi/variants/S1--unplugged-mpu6050",
+      "sourcePath": "wokwi/phase5/S1",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "b2bd81009cd0b55e"
+    },
+    {
+      "id": "S2--unplugged-hc-sr04",
+      "recipeId": "S2",
+      "kind": "unplugged",
+      "path": "wokwi/variants/S2--unplugged-hc-sr04",
+      "sourcePath": "wokwi/phase5/S2",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "62ae8f9d3eb03ee3"
+    },
+    {
+      "id": "S5--unplugged-ds18b20",
+      "recipeId": "S5",
+      "kind": "unplugged",
+      "path": "wokwi/variants/S5--unplugged-ds18b20",
+      "sourcePath": "wokwi/phase5/S5",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "272c1385b41ab06b"
+    },
+    {
+      "id": "S6--unplugged-bme280",
+      "recipeId": "S6",
+      "kind": "unplugged",
+      "path": "wokwi/variants/S6--unplugged-bme280",
+      "sourcePath": "wokwi/phase5/S6",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "bme280"
+      ],
+      "fingerprint": "b5f0015c084fcdde"
+    },
+    {
+      "id": "S6--bme280-at-0x77",
+      "recipeId": "S6",
+      "kind": "i2c-address",
+      "path": "wokwi/variants/S6--bme280-at-0x77",
+      "sourcePath": "wokwi/phase5/S6",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "bme280"
+      ],
+      "fingerprint": "b70d1495fae7030b"
+    },
+    {
+      "id": "S7--unplugged-ina219",
+      "recipeId": "S7",
+      "kind": "unplugged",
+      "path": "wokwi/variants/S7--unplugged-ina219",
+      "sourcePath": "wokwi/phase5/S7",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "ina219"
+      ],
+      "fingerprint": "26fbdef33e291a09"
+    },
+    {
+      "id": "S8--unplugged-tsl2591",
+      "recipeId": "S8",
+      "kind": "unplugged",
+      "path": "wokwi/variants/S8--unplugged-tsl2591",
+      "sourcePath": "wokwi/phase5/S8",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "tsl2591"
+      ],
+      "fingerprint": "8433e9f378993a59"
+    },
+    {
+      "id": "p1-pendulum-period--unplugged-mpu6050",
+      "recipeId": "p1-pendulum-period",
+      "kind": "unplugged",
+      "path": "wokwi/variants/p1-pendulum-period--unplugged-mpu6050",
+      "sourcePath": "wokwi/phase5/p1-pendulum-period",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "196d3bc4415b358a"
+    },
+    {
+      "id": "p2-mechanical-energy--unplugged-mpu6050",
+      "recipeId": "p2-mechanical-energy",
+      "kind": "unplugged",
+      "path": "wokwi/variants/p2-mechanical-energy--unplugged-mpu6050",
+      "sourcePath": "wokwi/phase5/p2-mechanical-energy",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "c3c4484fc8385371"
+    },
+    {
+      "id": "free-fall--unplugged-hc-sr04",
+      "recipeId": "free-fall",
+      "kind": "unplugged",
+      "path": "wokwi/variants/free-fall--unplugged-hc-sr04",
+      "sourcePath": "wokwi/phase5/free-fall",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "8edc2721f2de14c3"
+    },
+    {
+      "id": "p4-friction-energy-loss--unplugged-mpu6050",
+      "recipeId": "p4-friction-energy-loss",
+      "kind": "unplugged",
+      "path": "wokwi/variants/p4-friction-energy-loss--unplugged-mpu6050",
+      "sourcePath": "wokwi/phase5/p4-friction-energy-loss",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "a650e1bc8c92d452"
+    },
+    {
+      "id": "p4-friction-energy-loss--unplugged-hc-sr04",
+      "recipeId": "p4-friction-energy-loss",
+      "kind": "unplugged",
+      "path": "wokwi/variants/p4-friction-energy-loss--unplugged-hc-sr04",
+      "sourcePath": "wokwi/phase5/p4-friction-energy-loss",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "0c1437b9f971b883"
+    },
+    {
+      "id": "p5-incline-acceleration--unplugged-mpu6050",
+      "recipeId": "p5-incline-acceleration",
+      "kind": "unplugged",
+      "path": "wokwi/variants/p5-incline-acceleration--unplugged-mpu6050",
+      "sourcePath": "wokwi/phase5/p5-incline-acceleration",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "147146f38ffeaca5"
+    },
+    {
+      "id": "p7-solar-panel-angle--unplugged-ina219",
+      "recipeId": "p7-solar-panel-angle",
+      "kind": "unplugged",
+      "path": "wokwi/variants/p7-solar-panel-angle--unplugged-ina219",
+      "sourcePath": "wokwi/phase5/p7-solar-panel-angle",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "ina219",
+        "tsl2591"
+      ],
+      "fingerprint": "62c8560d97f40667"
+    },
+    {
+      "id": "p7-solar-panel-angle--unplugged-tsl2591",
+      "recipeId": "p7-solar-panel-angle",
+      "kind": "unplugged",
+      "path": "wokwi/variants/p7-solar-panel-angle--unplugged-tsl2591",
+      "sourcePath": "wokwi/phase5/p7-solar-panel-angle",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "ina219",
+        "tsl2591"
+      ],
+      "fingerprint": "97a6302177e9565f"
+    },
+    {
+      "id": "p8-inverse-square-light--unplugged-tsl2591",
+      "recipeId": "p8-inverse-square-light",
+      "kind": "unplugged",
+      "path": "wokwi/variants/p8-inverse-square-light--unplugged-tsl2591",
+      "sourcePath": "wokwi/phase5/p8-inverse-square-light",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "tsl2591"
+      ],
+      "fingerprint": "11d31cd25c98c280"
+    },
+    {
+      "id": "p8-inverse-square-light--unplugged-hc-sr04",
+      "recipeId": "p8-inverse-square-light",
+      "kind": "unplugged",
+      "path": "wokwi/variants/p8-inverse-square-light--unplugged-hc-sr04",
+      "sourcePath": "wokwi/phase5/p8-inverse-square-light",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "tsl2591"
+      ],
+      "fingerprint": "1fcf075d873ebeaf"
+    },
+    {
+      "id": "fan-control--unplugged-bme280",
+      "recipeId": "fan-control",
+      "kind": "unplugged",
+      "path": "wokwi/variants/fan-control--unplugged-bme280",
+      "sourcePath": "wokwi/phase5/fan-control",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "bme280"
+      ],
+      "fingerprint": "5269c12143cf8b4f"
+    },
+    {
+      "id": "fan-control--bme280-at-0x77",
+      "recipeId": "fan-control",
+      "kind": "i2c-address",
+      "path": "wokwi/variants/fan-control--bme280-at-0x77",
+      "sourcePath": "wokwi/phase5/fan-control",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "bme280"
+      ],
+      "fingerprint": "922ad7c25cac6fec"
+    },
+    {
+      "id": "e2-reaction-temperature--unplugged-ds18b20",
+      "recipeId": "e2-reaction-temperature",
+      "kind": "unplugged",
+      "path": "wokwi/variants/e2-reaction-temperature--unplugged-ds18b20",
+      "sourcePath": "wokwi/phase5/e2-reaction-temperature",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "1dfe1a563fc299e8"
+    },
+    {
+      "id": "cooling-curve--unplugged-ds18b20",
+      "recipeId": "cooling-curve",
+      "kind": "unplugged",
+      "path": "wokwi/variants/cooling-curve--unplugged-ds18b20",
+      "sourcePath": "wokwi/phase5/cooling-curve",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "12a5ed605a29d9be"
+    },
+    {
+      "id": "e4-weather-pressure--unplugged-bme280",
+      "recipeId": "e4-weather-pressure",
+      "kind": "unplugged",
+      "path": "wokwi/variants/e4-weather-pressure--unplugged-bme280",
+      "sourcePath": "wokwi/phase5/e4-weather-pressure",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "bme280"
+      ],
+      "fingerprint": "a7e96d574224f31d"
+    },
+    {
+      "id": "e4-weather-pressure--bme280-at-0x77",
+      "recipeId": "e4-weather-pressure",
+      "kind": "i2c-address",
+      "path": "wokwi/variants/e4-weather-pressure--bme280-at-0x77",
+      "sourcePath": "wokwi/phase5/e4-weather-pressure",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "bme280"
+      ],
+      "fingerprint": "da3410e852832372"
+    },
+    {
+      "id": "e6-multi-point-temperature--unplugged-ds18b20_1",
+      "recipeId": "e6-multi-point-temperature",
+      "kind": "unplugged",
+      "path": "wokwi/variants/e6-multi-point-temperature--unplugged-ds18b20_1",
+      "sourcePath": "wokwi/phase5/e6-multi-point-temperature",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "8fd9e107f843f749"
+    },
+    {
+      "id": "plant-growth--unplugged-tsl2591",
+      "recipeId": "plant-growth",
+      "kind": "unplugged",
+      "path": "wokwi/variants/plant-growth--unplugged-tsl2591",
+      "sourcePath": "wokwi/phase5/plant-growth",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "bme280",
+        "tsl2591"
+      ],
+      "fingerprint": "4bc8fbd9b114a407"
+    },
+    {
+      "id": "plant-growth--unplugged-bme280",
+      "recipeId": "plant-growth",
+      "kind": "unplugged",
+      "path": "wokwi/variants/plant-growth--unplugged-bme280",
+      "sourcePath": "wokwi/phase5/plant-growth",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "bme280",
+        "tsl2591"
+      ],
+      "fingerprint": "47beace65d8df474"
+    },
+    {
+      "id": "plant-growth--bme280-at-0x77",
+      "recipeId": "plant-growth",
+      "kind": "i2c-address",
+      "path": "wokwi/variants/plant-growth--bme280-at-0x77",
+      "sourcePath": "wokwi/phase5/plant-growth",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "bme280",
+        "tsl2591"
+      ],
+      "fingerprint": "9bb9eb7c12db0826"
+    },
+    {
+      "id": "photosynthesis-light-control--unplugged-tsl2591",
+      "recipeId": "photosynthesis-light-control",
+      "kind": "unplugged",
+      "path": "wokwi/variants/photosynthesis-light-control--unplugged-tsl2591",
+      "sourcePath": "wokwi/phase5/photosynthesis-light-control",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "tsl2591"
+      ],
+      "fingerprint": "4efb3fd9cd128b03"
+    },
+    {
+      "id": "human-activity-meter--unplugged-mpu6050",
+      "recipeId": "human-activity-meter",
+      "kind": "unplugged",
+      "path": "wokwi/variants/human-activity-meter--unplugged-mpu6050",
+      "sourcePath": "wokwi/phase5/human-activity-meter",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "0450f9b6de2e67e0"
+    },
+    {
+      "id": "obstacle-avoid-car--unplugged-mpu6050",
+      "recipeId": "obstacle-avoid-car",
+      "kind": "unplugged",
+      "path": "wokwi/variants/obstacle-avoid-car--unplugged-mpu6050",
+      "sourcePath": "wokwi/phase5/obstacle-avoid-car",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "9a13634a51f51ef4"
+    },
+    {
+      "id": "obstacle-avoid-car--unplugged-hc-sr04",
+      "recipeId": "obstacle-avoid-car",
+      "kind": "unplugged",
+      "path": "wokwi/variants/obstacle-avoid-car--unplugged-hc-sr04",
+      "sourcePath": "wokwi/phase5/obstacle-avoid-car",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "d4dc02e06d5d25c2"
+    },
+    {
+      "id": "parking-alarm--unplugged-hc-sr04",
+      "recipeId": "parking-alarm",
+      "kind": "unplugged",
+      "path": "wokwi/variants/parking-alarm--unplugged-hc-sr04",
+      "sourcePath": "wokwi/phase5/parking-alarm",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "7e958010a3692952"
+    },
+    {
+      "id": "s11-tsl2591-interrupt--unplugged-tsl2591",
+      "recipeId": "s11-tsl2591-interrupt",
+      "kind": "unplugged",
+      "path": "wokwi/variants/s11-tsl2591-interrupt--unplugged-tsl2591",
+      "sourcePath": "wokwi/phase6/s11-tsl2591-interrupt",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "tsl2591"
+      ],
+      "fingerprint": "371cf765706f363b"
+    },
+    {
+      "id": "s12-dual-mpu6050-address--unplugged-mpu6050_1",
+      "recipeId": "s12-dual-mpu6050-address",
+      "kind": "unplugged",
+      "path": "wokwi/variants/s12-dual-mpu6050-address--unplugged-mpu6050_1",
+      "sourcePath": "wokwi/phase6/s12-dual-mpu6050-address",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "642a75fdb4921647"
+    },
+    {
+      "id": "p9-motion-interrupt--unplugged-mpu6050",
+      "recipeId": "p9-motion-interrupt",
+      "kind": "unplugged",
+      "path": "wokwi/variants/p9-motion-interrupt--unplugged-mpu6050",
+      "sourcePath": "wokwi/phase6/p9-motion-interrupt",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "ab5d6bf8efc6cbc2"
+    },
+    {
+      "id": "ph01-uniform-motion--unplugged-hc-sr04",
+      "recipeId": "ph01-uniform-motion",
+      "kind": "unplugged",
+      "path": "wokwi/variants/ph01-uniform-motion--unplugged-hc-sr04",
+      "sourcePath": "wokwi/phase6/ph01-uniform-motion",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "a63dd3e263186c10"
+    },
+    {
+      "id": "ph02-newton-second-law--unplugged-mpu6050",
+      "recipeId": "ph02-newton-second-law",
+      "kind": "unplugged",
+      "path": "wokwi/variants/ph02-newton-second-law--unplugged-mpu6050",
+      "sourcePath": "wokwi/phase6/ph02-newton-second-law",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "86d79b33972265c5"
+    },
+    {
+      "id": "ph03-projectile-motion--unplugged-mpu6050",
+      "recipeId": "ph03-projectile-motion",
+      "kind": "unplugged",
+      "path": "wokwi/variants/ph03-projectile-motion--unplugged-mpu6050",
+      "sourcePath": "wokwi/phase6/ph03-projectile-motion",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "07afe49cee629f62"
+    },
+    {
+      "id": "ph03-projectile-motion--unplugged-hc-sr04",
+      "recipeId": "ph03-projectile-motion",
+      "kind": "unplugged",
+      "path": "wokwi/variants/ph03-projectile-motion--unplugged-hc-sr04",
+      "sourcePath": "wokwi/phase6/ph03-projectile-motion",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "ddd60020c602780a"
+    },
+    {
+      "id": "ph04-momentum-collision--unplugged-mpu6050_1",
+      "recipeId": "ph04-momentum-collision",
+      "kind": "unplugged",
+      "path": "wokwi/variants/ph04-momentum-collision--unplugged-mpu6050_1",
+      "sourcePath": "wokwi/phase6/ph04-momentum-collision",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "c6137cd98d292313"
+    },
+    {
+      "id": "ph05-restitution-coefficient--unplugged-hc-sr04",
+      "recipeId": "ph05-restitution-coefficient",
+      "kind": "unplugged",
+      "path": "wokwi/variants/ph05-restitution-coefficient--unplugged-hc-sr04",
+      "sourcePath": "wokwi/phase6/ph05-restitution-coefficient",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "6aed91f6777950d0"
+    },
+    {
+      "id": "ph06-spring-oscillation--unplugged-mpu6050",
+      "recipeId": "ph06-spring-oscillation",
+      "kind": "unplugged",
+      "path": "wokwi/variants/ph06-spring-oscillation--unplugged-mpu6050",
+      "sourcePath": "wokwi/phase6/ph06-spring-oscillation",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "5837c617abb1ef89"
+    },
+    {
+      "id": "ph07-centripetal-acceleration--unplugged-mpu6050",
+      "recipeId": "ph07-centripetal-acceleration",
+      "kind": "unplugged",
+      "path": "wokwi/variants/ph07-centripetal-acceleration--unplugged-mpu6050",
+      "sourcePath": "wokwi/phase6/ph07-centripetal-acceleration",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "a9839d1261f56760"
+    },
+    {
+      "id": "ph08-rpm-comparison--unplugged-mpu6050",
+      "recipeId": "ph08-rpm-comparison",
+      "kind": "unplugged",
+      "path": "wokwi/variants/ph08-rpm-comparison--unplugged-mpu6050",
+      "sourcePath": "wokwi/phase6/ph08-rpm-comparison",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "70349e01989ea237"
+    },
+    {
+      "id": "ph09-friction-coefficients--unplugged-mpu6050",
+      "recipeId": "ph09-friction-coefficients",
+      "kind": "unplugged",
+      "path": "wokwi/variants/ph09-friction-coefficients--unplugged-mpu6050",
+      "sourcePath": "wokwi/phase6/ph09-friction-coefficients",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "c7ddae56ae516c50"
+    },
+    {
+      "id": "ph10-rotational-damping--unplugged-mpu6050",
+      "recipeId": "ph10-rotational-damping",
+      "kind": "unplugged",
+      "path": "wokwi/variants/ph10-rotational-damping--unplugged-mpu6050",
+      "sourcePath": "wokwi/phase6/ph10-rotational-damping",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "aa054b26e5ee9a60"
+    },
+    {
+      "id": "ph11-specific-heat--unplugged-ds18b20_1",
+      "recipeId": "ph11-specific-heat",
+      "kind": "unplugged",
+      "path": "wokwi/variants/ph11-specific-heat--unplugged-ds18b20_1",
+      "sourcePath": "wokwi/phase6/ph11-specific-heat",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "269e3bc0048027b6"
+    },
+    {
+      "id": "ph12-latent-heat--unplugged-ds18b20",
+      "recipeId": "ph12-latent-heat",
+      "kind": "unplugged",
+      "path": "wokwi/variants/ph12-latent-heat--unplugged-ds18b20",
+      "sourcePath": "wokwi/phase6/ph12-latent-heat",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "9736e57a8b0465dc"
+    },
+    {
+      "id": "ph13-thermal-conductivity--unplugged-ds18b20_1",
+      "recipeId": "ph13-thermal-conductivity",
+      "kind": "unplugged",
+      "path": "wokwi/variants/ph13-thermal-conductivity--unplugged-ds18b20_1",
+      "sourcePath": "wokwi/phase6/ph13-thermal-conductivity",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "cb211552a5c42fe8"
+    },
+    {
+      "id": "ph14-insulation-performance--unplugged-ds18b20",
+      "recipeId": "ph14-insulation-performance",
+      "kind": "unplugged",
+      "path": "wokwi/variants/ph14-insulation-performance--unplugged-ds18b20",
+      "sourcePath": "wokwi/phase6/ph14-insulation-performance",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "bme280"
+      ],
+      "fingerprint": "4879cb27866ad029"
+    },
+    {
+      "id": "ph14-insulation-performance--unplugged-bme280",
+      "recipeId": "ph14-insulation-performance",
+      "kind": "unplugged",
+      "path": "wokwi/variants/ph14-insulation-performance--unplugged-bme280",
+      "sourcePath": "wokwi/phase6/ph14-insulation-performance",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "bme280"
+      ],
+      "fingerprint": "db075d9e63afdfd4"
+    },
+    {
+      "id": "ph14-insulation-performance--bme280-at-0x77",
+      "recipeId": "ph14-insulation-performance",
+      "kind": "i2c-address",
+      "path": "wokwi/variants/ph14-insulation-performance--bme280-at-0x77",
+      "sourcePath": "wokwi/phase6/ph14-insulation-performance",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "bme280"
+      ],
+      "fingerprint": "9e09d7d7d7b46451"
+    },
+    {
+      "id": "ph15-gas-temperature-pressure--unplugged-bme280",
+      "recipeId": "ph15-gas-temperature-pressure",
+      "kind": "unplugged",
+      "path": "wokwi/variants/ph15-gas-temperature-pressure--unplugged-bme280",
+      "sourcePath": "wokwi/phase6/ph15-gas-temperature-pressure",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "bme280"
+      ],
+      "fingerprint": "d6b7c9472f7f9a95"
+    },
+    {
+      "id": "ph15-gas-temperature-pressure--bme280-at-0x77",
+      "recipeId": "ph15-gas-temperature-pressure",
+      "kind": "i2c-address",
+      "path": "wokwi/variants/ph15-gas-temperature-pressure--bme280-at-0x77",
+      "sourcePath": "wokwi/phase6/ph15-gas-temperature-pressure",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "bme280"
+      ],
+      "fingerprint": "111ab11800622eea"
+    },
+    {
+      "id": "ph16-altitude-pressure--unplugged-bme280",
+      "recipeId": "ph16-altitude-pressure",
+      "kind": "unplugged",
+      "path": "wokwi/variants/ph16-altitude-pressure--unplugged-bme280",
+      "sourcePath": "wokwi/phase6/ph16-altitude-pressure",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "bme280"
+      ],
+      "fingerprint": "174f756d12f937b7"
+    },
+    {
+      "id": "ph16-altitude-pressure--bme280-at-0x77",
+      "recipeId": "ph16-altitude-pressure",
+      "kind": "i2c-address",
+      "path": "wokwi/variants/ph16-altitude-pressure--bme280-at-0x77",
+      "sourcePath": "wokwi/phase6/ph16-altitude-pressure",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "bme280"
+      ],
+      "fingerprint": "1ee09382efd1fbc8"
+    },
+    {
+      "id": "ph17-ohms-law--unplugged-ina219",
+      "recipeId": "ph17-ohms-law",
+      "kind": "unplugged",
+      "path": "wokwi/variants/ph17-ohms-law--unplugged-ina219",
+      "sourcePath": "wokwi/phase6/ph17-ohms-law",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "ina219"
+      ],
+      "fingerprint": "9fefca0a10f5b310"
+    },
+    {
+      "id": "ph18-series-parallel-resistance--unplugged-ina219",
+      "recipeId": "ph18-series-parallel-resistance",
+      "kind": "unplugged",
+      "path": "wokwi/variants/ph18-series-parallel-resistance--unplugged-ina219",
+      "sourcePath": "wokwi/phase6/ph18-series-parallel-resistance",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "ina219"
+      ],
+      "fingerprint": "bd990bf196359397"
+    },
+    {
+      "id": "ph19-kirchhoff-laws--unplugged-ina219",
+      "recipeId": "ph19-kirchhoff-laws",
+      "kind": "unplugged",
+      "path": "wokwi/variants/ph19-kirchhoff-laws--unplugged-ina219",
+      "sourcePath": "wokwi/phase6/ph19-kirchhoff-laws",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "ina219"
+      ],
+      "fingerprint": "8788582d7401a88f"
+    },
+    {
+      "id": "ph20-joule-heating--unplugged-ina219",
+      "recipeId": "ph20-joule-heating",
+      "kind": "unplugged",
+      "path": "wokwi/variants/ph20-joule-heating--unplugged-ina219",
+      "sourcePath": "wokwi/phase6/ph20-joule-heating",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "ina219"
+      ],
+      "fingerprint": "7440f3d998b0b813"
+    },
+    {
+      "id": "ph20-joule-heating--unplugged-ds18b20",
+      "recipeId": "ph20-joule-heating",
+      "kind": "unplugged",
+      "path": "wokwi/variants/ph20-joule-heating--unplugged-ds18b20",
+      "sourcePath": "wokwi/phase6/ph20-joule-heating",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "ina219"
+      ],
+      "fingerprint": "6e7765032b403acd"
+    },
+    {
+      "id": "ph21-rc-time-constant--unplugged-ina219",
+      "recipeId": "ph21-rc-time-constant",
+      "kind": "unplugged",
+      "path": "wokwi/variants/ph21-rc-time-constant--unplugged-ina219",
+      "sourcePath": "wokwi/phase6/ph21-rc-time-constant",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "ina219"
+      ],
+      "fingerprint": "f38c703ce4fd55fa"
+    },
+    {
+      "id": "ph22-battery-internal-resistance--unplugged-ina219",
+      "recipeId": "ph22-battery-internal-resistance",
+      "kind": "unplugged",
+      "path": "wokwi/variants/ph22-battery-internal-resistance--unplugged-ina219",
+      "sourcePath": "wokwi/phase6/ph22-battery-internal-resistance",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "ina219"
+      ],
+      "fingerprint": "bd1888b4f3b790de"
+    },
+    {
+      "id": "ph23-solar-iv-mpp--unplugged-ina219",
+      "recipeId": "ph23-solar-iv-mpp",
+      "kind": "unplugged",
+      "path": "wokwi/variants/ph23-solar-iv-mpp--unplugged-ina219",
+      "sourcePath": "wokwi/phase6/ph23-solar-iv-mpp",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "ina219",
+        "tsl2591"
+      ],
+      "fingerprint": "77f37669fde426e7"
+    },
+    {
+      "id": "ph23-solar-iv-mpp--unplugged-tsl2591",
+      "recipeId": "ph23-solar-iv-mpp",
+      "kind": "unplugged",
+      "path": "wokwi/variants/ph23-solar-iv-mpp--unplugged-tsl2591",
+      "sourcePath": "wokwi/phase6/ph23-solar-iv-mpp",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "ina219",
+        "tsl2591"
+      ],
+      "fingerprint": "54a69ed656738408"
+    },
+    {
+      "id": "ph24-solenoid-current-field--unplugged-ina219",
+      "recipeId": "ph24-solenoid-current-field",
+      "kind": "unplugged",
+      "path": "wokwi/variants/ph24-solenoid-current-field--unplugged-ina219",
+      "sourcePath": "wokwi/phase6/ph24-solenoid-current-field",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "ina219"
+      ],
+      "fingerprint": "0d8b4b629b0ef718"
+    },
+    {
+      "id": "ph25-coil-turns-field--unplugged-ina219",
+      "recipeId": "ph25-coil-turns-field",
+      "kind": "unplugged",
+      "path": "wokwi/variants/ph25-coil-turns-field--unplugged-ina219",
+      "sourcePath": "wokwi/phase6/ph25-coil-turns-field",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "ina219"
+      ],
+      "fingerprint": "1a5e1b4b055420a1"
+    },
+    {
+      "id": "ph28-malus-law--unplugged-tsl2591",
+      "recipeId": "ph28-malus-law",
+      "kind": "unplugged",
+      "path": "wokwi/variants/ph28-malus-law--unplugged-tsl2591",
+      "sourcePath": "wokwi/phase6/ph28-malus-law",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "tsl2591"
+      ],
+      "fingerprint": "c35c34f67b44a73c"
+    },
+    {
+      "id": "ph29-transmittance-absorbance--unplugged-tsl2591",
+      "recipeId": "ph29-transmittance-absorbance",
+      "kind": "unplugged",
+      "path": "wokwi/variants/ph29-transmittance-absorbance--unplugged-tsl2591",
+      "sourcePath": "wokwi/phase6/ph29-transmittance-absorbance",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "tsl2591"
+      ],
+      "fingerprint": "ec552609aea34083"
+    },
+    {
+      "id": "ph30-reflection-intensity-angle--unplugged-tsl2591",
+      "recipeId": "ph30-reflection-intensity-angle",
+      "kind": "unplugged",
+      "path": "wokwi/variants/ph30-reflection-intensity-angle--unplugged-tsl2591",
+      "sourcePath": "wokwi/phase6/ph30-reflection-intensity-angle",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "tsl2591"
+      ],
+      "fingerprint": "dfe9cb1daff915a7"
+    },
+    {
+      "id": "ph31-lens-focal-length--unplugged-tsl2591",
+      "recipeId": "ph31-lens-focal-length",
+      "kind": "unplugged",
+      "path": "wokwi/variants/ph31-lens-focal-length--unplugged-tsl2591",
+      "sourcePath": "wokwi/phase6/ph31-lens-focal-length",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "tsl2591"
+      ],
+      "fingerprint": "03d3d186b7a549a8"
+    },
+    {
+      "id": "ph32-aperture-light--unplugged-tsl2591",
+      "recipeId": "ph32-aperture-light",
+      "kind": "unplugged",
+      "path": "wokwi/variants/ph32-aperture-light--unplugged-tsl2591",
+      "sourcePath": "wokwi/phase6/ph32-aperture-light",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "tsl2591"
+      ],
+      "fingerprint": "a058cddaa99f0ad8"
+    },
+    {
+      "id": "ph33-light-source-stability--unplugged-tsl2591",
+      "recipeId": "ph33-light-source-stability",
+      "kind": "unplugged",
+      "path": "wokwi/variants/ph33-light-source-stability--unplugged-tsl2591",
+      "sourcePath": "wokwi/phase6/ph33-light-source-stability",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "tsl2591"
+      ],
+      "fingerprint": "163b84355eadb55b"
+    },
+    {
+      "id": "ph34-torricelli-drain--unplugged-hc-sr04",
+      "recipeId": "ph34-torricelli-drain",
+      "kind": "unplugged",
+      "path": "wokwi/variants/ph34-torricelli-drain--unplugged-hc-sr04",
+      "sourcePath": "wokwi/phase6/ph34-torricelli-drain",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "f184fe05641be0a3"
+    },
+    {
+      "id": "ph35-temperature-speed-of-sound--unplugged-hc-sr04",
+      "recipeId": "ph35-temperature-speed-of-sound",
+      "kind": "unplugged",
+      "path": "wokwi/variants/ph35-temperature-speed-of-sound--unplugged-hc-sr04",
+      "sourcePath": "wokwi/phase6/ph35-temperature-speed-of-sound",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "bme280"
+      ],
+      "fingerprint": "2686742f10d75239"
+    },
+    {
+      "id": "ph35-temperature-speed-of-sound--unplugged-bme280",
+      "recipeId": "ph35-temperature-speed-of-sound",
+      "kind": "unplugged",
+      "path": "wokwi/variants/ph35-temperature-speed-of-sound--unplugged-bme280",
+      "sourcePath": "wokwi/phase6/ph35-temperature-speed-of-sound",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "bme280"
+      ],
+      "fingerprint": "ae6f9f5344c4a66d"
+    },
+    {
+      "id": "ph35-temperature-speed-of-sound--bme280-at-0x77",
+      "recipeId": "ph35-temperature-speed-of-sound",
+      "kind": "i2c-address",
+      "path": "wokwi/variants/ph35-temperature-speed-of-sound--bme280-at-0x77",
+      "sourcePath": "wokwi/phase6/ph35-temperature-speed-of-sound",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "bme280"
+      ],
+      "fingerprint": "56e37e4018e90b36"
+    },
+    {
+      "id": "a1-led-brightness--unplugged-tsl2591",
+      "recipeId": "a1-led-brightness",
+      "kind": "unplugged",
+      "path": "wokwi/variants/a1-led-brightness--unplugged-tsl2591",
+      "sourcePath": "wokwi/phase7/a1-led-brightness",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "tsl2591"
+      ],
+      "fingerprint": "d8ed7253f51e0fb1"
+    },
+    {
+      "id": "a6-lcd-display--unplugged-ds18b20",
+      "recipeId": "a6-lcd-display",
+      "kind": "unplugged",
+      "path": "wokwi/variants/a6-lcd-display--unplugged-ds18b20",
+      "sourcePath": "wokwi/phase7/a6-lcd-display",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "a2c0514d71db7d5b"
+    },
+    {
+      "id": "b1-yeast-fermentation--unplugged-bme280",
+      "recipeId": "b1-yeast-fermentation",
+      "kind": "unplugged",
+      "path": "wokwi/variants/b1-yeast-fermentation--unplugged-bme280",
+      "sourcePath": "wokwi/phase7/b1-yeast-fermentation",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "bme280"
+      ],
+      "fingerprint": "2bf480538407d105"
+    },
+    {
+      "id": "b1-yeast-fermentation--bme280-at-0x77",
+      "recipeId": "b1-yeast-fermentation",
+      "kind": "i2c-address",
+      "path": "wokwi/variants/b1-yeast-fermentation--bme280-at-0x77",
+      "sourcePath": "wokwi/phase7/b1-yeast-fermentation",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "bme280"
+      ],
+      "fingerprint": "a9652154816b0eca"
+    },
+    {
+      "id": "b1-yeast-fermentation--unplugged-ds18b20",
+      "recipeId": "b1-yeast-fermentation",
+      "kind": "unplugged",
+      "path": "wokwi/variants/b1-yeast-fermentation--unplugged-ds18b20",
+      "sourcePath": "wokwi/phase7/b1-yeast-fermentation",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "bme280"
+      ],
+      "fingerprint": "9324cfb4eb48fd92"
+    },
+    {
+      "id": "b2-leaf-transpiration--unplugged-bme280",
+      "recipeId": "b2-leaf-transpiration",
+      "kind": "unplugged",
+      "path": "wokwi/variants/b2-leaf-transpiration--unplugged-bme280",
+      "sourcePath": "wokwi/phase7/b2-leaf-transpiration",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "bme280"
+      ],
+      "fingerprint": "9eea4bfc80d0c866"
+    },
+    {
+      "id": "b2-leaf-transpiration--bme280-at-0x77",
+      "recipeId": "b2-leaf-transpiration",
+      "kind": "i2c-address",
+      "path": "wokwi/variants/b2-leaf-transpiration--bme280-at-0x77",
+      "sourcePath": "wokwi/phase7/b2-leaf-transpiration",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "bme280"
+      ],
+      "fingerprint": "750be33517c8d853"
+    },
+    {
+      "id": "b3-photosynthesis-pressure--unplugged-tsl2591",
+      "recipeId": "b3-photosynthesis-pressure",
+      "kind": "unplugged",
+      "path": "wokwi/variants/b3-photosynthesis-pressure--unplugged-tsl2591",
+      "sourcePath": "wokwi/phase7/b3-photosynthesis-pressure",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "bme280",
+        "tsl2591"
+      ],
+      "fingerprint": "7ad8a6143579afae"
+    },
+    {
+      "id": "b3-photosynthesis-pressure--unplugged-bme280",
+      "recipeId": "b3-photosynthesis-pressure",
+      "kind": "unplugged",
+      "path": "wokwi/variants/b3-photosynthesis-pressure--unplugged-bme280",
+      "sourcePath": "wokwi/phase7/b3-photosynthesis-pressure",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "bme280",
+        "tsl2591"
+      ],
+      "fingerprint": "12fc9e59c3174463"
+    },
+    {
+      "id": "b3-photosynthesis-pressure--bme280-at-0x77",
+      "recipeId": "b3-photosynthesis-pressure",
+      "kind": "i2c-address",
+      "path": "wokwi/variants/b3-photosynthesis-pressure--bme280-at-0x77",
+      "sourcePath": "wokwi/phase7/b3-photosynthesis-pressure",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "bme280",
+        "tsl2591"
+      ],
+      "fingerprint": "32d673c1b0464657"
+    },
+    {
+      "id": "b4-reaction-time--unplugged-hc-sr04",
+      "recipeId": "b4-reaction-time",
+      "kind": "unplugged",
+      "path": "wokwi/variants/b4-reaction-time--unplugged-hc-sr04",
+      "sourcePath": "wokwi/phase7/b4-reaction-time",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "030200e95d36c06f"
+    },
+    {
+      "id": "b5-step-counter--unplugged-mpu6050",
+      "recipeId": "b5-step-counter",
+      "kind": "unplugged",
+      "path": "wokwi/variants/b5-step-counter--unplugged-mpu6050",
+      "sourcePath": "wokwi/phase7/b5-step-counter",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "800a0e4e4082a24c"
+    },
+    {
+      "id": "b6-skin-temperature-recovery--unplugged-mpu6050",
+      "recipeId": "b6-skin-temperature-recovery",
+      "kind": "unplugged",
+      "path": "wokwi/variants/b6-skin-temperature-recovery--unplugged-mpu6050",
+      "sourcePath": "wokwi/phase7/b6-skin-temperature-recovery",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "b0a421f1004d3787"
+    },
+    {
+      "id": "b6-skin-temperature-recovery--unplugged-ds18b20",
+      "recipeId": "b6-skin-temperature-recovery",
+      "kind": "unplugged",
+      "path": "wokwi/variants/b6-skin-temperature-recovery--unplugged-ds18b20",
+      "sourcePath": "wokwi/phase7/b6-skin-temperature-recovery",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "6f9fd7897c458c0b"
+    },
+    {
+      "id": "b8-seed-germination-gdd--unplugged-ds18b20",
+      "recipeId": "b8-seed-germination-gdd",
+      "kind": "unplugged",
+      "path": "wokwi/variants/b8-seed-germination-gdd--unplugged-ds18b20",
+      "sourcePath": "wokwi/phase7/b8-seed-germination-gdd",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "727547620c7fa650"
+    },
+    {
+      "id": "c1-wet-dry-humidity--unplugged-bme280",
+      "recipeId": "c1-wet-dry-humidity",
+      "kind": "unplugged",
+      "path": "wokwi/variants/c1-wet-dry-humidity--unplugged-bme280",
+      "sourcePath": "wokwi/phase7/c1-wet-dry-humidity",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "bme280"
+      ],
+      "fingerprint": "4411c7c15673ae47"
+    },
+    {
+      "id": "c1-wet-dry-humidity--bme280-at-0x77",
+      "recipeId": "c1-wet-dry-humidity",
+      "kind": "i2c-address",
+      "path": "wokwi/variants/c1-wet-dry-humidity--bme280-at-0x77",
+      "sourcePath": "wokwi/phase7/c1-wet-dry-humidity",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "bme280"
+      ],
+      "fingerprint": "528cd616bc28fe48"
+    },
+    {
+      "id": "c1-wet-dry-humidity--unplugged-ds18b20_1",
+      "recipeId": "c1-wet-dry-humidity",
+      "kind": "unplugged",
+      "path": "wokwi/variants/c1-wet-dry-humidity--unplugged-ds18b20_1",
+      "sourcePath": "wokwi/phase7/c1-wet-dry-humidity",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "bme280"
+      ],
+      "fingerprint": "cb702066a1eeaac8"
+    },
+    {
+      "id": "c2-freezing-point-depression--unplugged-ds18b20",
+      "recipeId": "c2-freezing-point-depression",
+      "kind": "unplugged",
+      "path": "wokwi/variants/c2-freezing-point-depression--unplugged-ds18b20",
+      "sourcePath": "wokwi/phase7/c2-freezing-point-depression",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "6aeb71a0d22571ba"
+    },
+    {
+      "id": "c3-turbidity-precipitation--unplugged-tsl2591",
+      "recipeId": "c3-turbidity-precipitation",
+      "kind": "unplugged",
+      "path": "wokwi/variants/c3-turbidity-precipitation--unplugged-tsl2591",
+      "sourcePath": "wokwi/phase7/c3-turbidity-precipitation",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "tsl2591"
+      ],
+      "fingerprint": "4b3044072363b889"
+    },
+    {
+      "id": "c4-neutralization-endpoint--unplugged-ds18b20",
+      "recipeId": "c4-neutralization-endpoint",
+      "kind": "unplugged",
+      "path": "wokwi/variants/c4-neutralization-endpoint--unplugged-ds18b20",
+      "sourcePath": "wokwi/phase7/c4-neutralization-endpoint",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "4548d0db07138df1"
+    },
+    {
+      "id": "c5-surface-albedo--unplugged-tsl2591",
+      "recipeId": "c5-surface-albedo",
+      "kind": "unplugged",
+      "path": "wokwi/variants/c5-surface-albedo--unplugged-tsl2591",
+      "sourcePath": "wokwi/phase7/c5-surface-albedo",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "tsl2591"
+      ],
+      "fingerprint": "9230d127350219e9"
+    },
+    {
+      "id": "c6-soil-water-heat-capacity--unplugged-ds18b20_1",
+      "recipeId": "c6-soil-water-heat-capacity",
+      "kind": "unplugged",
+      "path": "wokwi/variants/c6-soil-water-heat-capacity--unplugged-ds18b20_1",
+      "sourcePath": "wokwi/phase7/c6-soil-water-heat-capacity",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "5d3b0a7a35777920"
+    },
+    {
+      "id": "c7-photobleaching--unplugged-tsl2591",
+      "recipeId": "c7-photobleaching",
+      "kind": "unplugged",
+      "path": "wokwi/variants/c7-photobleaching--unplugged-tsl2591",
+      "sourcePath": "wokwi/phase7/c7-photobleaching",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "tsl2591"
+      ],
+      "fingerprint": "9164bf0d161c6a9f"
+    },
+    {
+      "id": "c8-ventilation-recovery--unplugged-bme280",
+      "recipeId": "c8-ventilation-recovery",
+      "kind": "unplugged",
+      "path": "wokwi/variants/c8-ventilation-recovery--unplugged-bme280",
+      "sourcePath": "wokwi/phase7/c8-ventilation-recovery",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "bme280"
+      ],
+      "fingerprint": "7ee974138dc1d075"
+    },
+    {
+      "id": "c8-ventilation-recovery--bme280-at-0x77",
+      "recipeId": "c8-ventilation-recovery",
+      "kind": "i2c-address",
+      "path": "wokwi/variants/c8-ventilation-recovery--bme280-at-0x77",
+      "sourcePath": "wokwi/phase7/c8-ventilation-recovery",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "bme280"
+      ],
+      "fingerprint": "e726c4e0b8dadcc6"
+    },
+    {
+      "id": "d2-digital-level--unplugged-mpu6050",
+      "recipeId": "d2-digital-level",
+      "kind": "unplugged",
+      "path": "wokwi/variants/d2-digital-level--unplugged-mpu6050",
+      "sourcePath": "wokwi/phase7/d2-digital-level",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "e09832fb477bcd3d"
+    },
+    {
+      "id": "d4-parking-barrier--unplugged-hc-sr04",
+      "recipeId": "d4-parking-barrier",
+      "kind": "unplugged",
+      "path": "wokwi/variants/d4-parking-barrier--unplugged-hc-sr04",
+      "sourcePath": "wokwi/phase7/d4-parking-barrier",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "82fa484910645a8b"
+    },
+    {
+      "id": "d5-auto-curtain--unplugged-tsl2591",
+      "recipeId": "d5-auto-curtain",
+      "kind": "unplugged",
+      "path": "wokwi/variants/d5-auto-curtain--unplugged-tsl2591",
+      "sourcePath": "wokwi/phase7/d5-auto-curtain",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "tsl2591"
+      ],
+      "fingerprint": "ce74c946b07506e8"
+    },
+    {
+      "id": "d6-temperature-alarm--unplugged-ds18b20",
+      "recipeId": "d6-temperature-alarm",
+      "kind": "unplugged",
+      "path": "wokwi/variants/d6-temperature-alarm--unplugged-ds18b20",
+      "sourcePath": "wokwi/phase7/d6-temperature-alarm",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "b9f0c1612d8227ef"
+    },
+    {
+      "id": "d7-vibration-alarm--unplugged-mpu6050",
+      "recipeId": "d7-vibration-alarm",
+      "kind": "unplugged",
+      "path": "wokwi/variants/d7-vibration-alarm--unplugged-mpu6050",
+      "sourcePath": "wokwi/phase7/d7-vibration-alarm",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "89d56bdfe4b50705"
+    },
+    {
+      "id": "d8-elevator-floor--unplugged-hc-sr04",
+      "recipeId": "d8-elevator-floor",
+      "kind": "unplugged",
+      "path": "wokwi/variants/d8-elevator-floor--unplugged-hc-sr04",
+      "sourcePath": "wokwi/phase7/d8-elevator-floor",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "4dbdbdc36b1b107d"
+    },
+    {
+      "id": "e1-terminal-velocity--unplugged-hc-sr04",
+      "recipeId": "e1-terminal-velocity",
+      "kind": "unplugged",
+      "path": "wokwi/variants/e1-terminal-velocity--unplugged-hc-sr04",
+      "sourcePath": "wokwi/phase7/e1-terminal-velocity",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "efb451d3ec8ffe91"
+    },
+    {
+      "id": "e2-pendulum-damping--unplugged-mpu6050",
+      "recipeId": "e2-pendulum-damping",
+      "kind": "unplugged",
+      "path": "wokwi/variants/e2-pendulum-damping--unplugged-mpu6050",
+      "sourcePath": "wokwi/phase7/e2-pendulum-damping",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "882f0742ea692560"
+    },
+    {
+      "id": "e3-moment-of-inertia--unplugged-mpu6050",
+      "recipeId": "e3-moment-of-inertia",
+      "kind": "unplugged",
+      "path": "wokwi/variants/e3-moment-of-inertia--unplugged-mpu6050",
+      "sourcePath": "wokwi/phase7/e3-moment-of-inertia",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "0cc0495e7bd2a740"
+    },
+    {
+      "id": "fan-control--jitter",
+      "recipeId": "fan-control",
+      "kind": "jitter",
+      "path": "wokwi/variants/fan-control--jitter",
+      "sourcePath": "wokwi/phase5/fan-control",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "bme280"
+      ],
+      "fingerprint": "f3586262ee4925c4"
+    },
+    {
+      "id": "d4-parking-barrier--jitter",
+      "recipeId": "d4-parking-barrier",
+      "kind": "jitter",
+      "path": "wokwi/variants/d4-parking-barrier--jitter",
+      "sourcePath": "wokwi/phase7/d4-parking-barrier",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "8782f08edb784ad8"
+    },
+    {
+      "id": "d5-auto-curtain--jitter",
+      "recipeId": "d5-auto-curtain",
+      "kind": "jitter",
+      "path": "wokwi/variants/d5-auto-curtain--jitter",
+      "sourcePath": "wokwi/phase7/d5-auto-curtain",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "tsl2591"
+      ],
+      "fingerprint": "1737cb5ebc8805b0"
+    },
+    {
+      "id": "d6-temperature-alarm--jitter",
+      "recipeId": "d6-temperature-alarm",
+      "kind": "jitter",
+      "path": "wokwi/variants/d6-temperature-alarm--jitter",
+      "sourcePath": "wokwi/phase7/d6-temperature-alarm",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "3fe05a0131da5103"
+    },
+    {
+      "id": "d8-elevator-floor--jitter",
+      "recipeId": "d8-elevator-floor",
+      "kind": "jitter",
+      "path": "wokwi/variants/d8-elevator-floor--jitter",
+      "sourcePath": "wokwi/phase7/d8-elevator-floor",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "bd02743a21ea4938"
+    },
+    {
+      "id": "photosynthesis-light-control--jitter",
+      "recipeId": "photosynthesis-light-control",
+      "kind": "jitter",
+      "path": "wokwi/variants/photosynthesis-light-control--jitter",
+      "sourcePath": "wokwi/phase5/photosynthesis-light-control",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "tsl2591"
+      ],
+      "fingerprint": "c273a1db3d12fa05"
+    },
+    {
+      "id": "rpm-meter--jitter",
+      "recipeId": "rpm-meter",
+      "kind": "jitter",
+      "path": "wokwi/variants/rpm-meter--jitter",
+      "sourcePath": "wokwi/phase5/rpm-meter",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "chips": [],
+      "fingerprint": "546379b4d15eba82"
+    }
+  ]
+}
