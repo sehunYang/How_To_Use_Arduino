@@ -27,6 +27,32 @@ if (!process.env.WOKWI_CLI_TOKEN) {
   process.exit(1)
 }
 
+/**
+ * Runs wokwi-cli once more if the API connection dropped before the
+ * simulation started (`code 1006` before "Starting simulation..."): an infra
+ * failure that ran no part of the test. Any failure after the start counts.
+ */
+function simulate(args: string[]) {
+  const run = () => {
+    const result = spawnSync('wokwi-cli', args, {
+      encoding: 'utf8',
+      stdio: ['inherit', 'pipe', 'pipe'],
+      shell: process.platform === 'win32',
+    })
+    if (result.error) throw result.error
+    process.stdout.write(result.stdout)
+    process.stderr.write(result.stderr)
+    return result
+  }
+  const first = run()
+  const output = first.stdout + first.stderr
+  if (first.status !== 0 && /Connection to transport closed/.test(output) && !output.includes('Starting simulation...')) {
+    console.log('Wokwi API connection dropped before the simulation started; retrying once.')
+    return run()
+  }
+  return first
+}
+
 function git(...args: string[]): string | undefined {
   const result = spawnSync('git', args, { encoding: 'utf8' })
   return result.status === 0 ? result.stdout : undefined
@@ -64,15 +90,9 @@ const failed: string[] = []
 for (const project of projects) {
   console.log(`Running ${project.id} [${project.kind}] (${project.timeoutMs}ms cap)...`)
   const args = [project.path, '--scenario', project.scenario, '--timeout', String(project.timeoutMs)]
-  // Behaviour runs capture stdout to judge it; see serialFromCliOutput for why not --serial-log-file.
+  // Runs capture stdout to judge it; see serialFromCliOutput for why not --serial-log-file.
   const behavior = project.kind === 'behavior'
-  const result = spawnSync('wokwi-cli', args, {
-    encoding: 'utf8',
-    stdio: behavior ? ['inherit', 'pipe', 'inherit'] : 'inherit',
-    shell: process.platform === 'win32',
-  })
-  if (result.error) throw result.error
-  if (behavior) process.stdout.write(result.stdout)
+  const result = simulate(args)
   if (result.status !== 0) {
     failed.push(`${project.id}: wokwi-cli exited with ${result.status}`)
     continue
@@ -120,13 +140,7 @@ for (const entry of variants) {
   const variant = judges.get(entry.id)
   if (!variant) throw new Error(`No variant definition for ${entry.id}; regenerate the Wokwi projects`)
   console.log(`Running ${entry.id} [${entry.kind}] (${entry.timeoutMs}ms cap)...`)
-  const result = spawnSync(
-    'wokwi-cli',
-    [entry.path, '--scenario', entry.scenario, '--timeout', String(entry.timeoutMs)],
-    { encoding: 'utf8', stdio: ['inherit', 'pipe', 'inherit'], shell: process.platform === 'win32' },
-  )
-  if (result.error) throw result.error
-  process.stdout.write(result.stdout)
+  const result = simulate([entry.path, '--scenario', entry.scenario, '--timeout', String(entry.timeoutMs)])
   if (result.status !== 0) {
     failed.push(`${entry.id}: wokwi-cli exited with ${result.status}`)
     continue
