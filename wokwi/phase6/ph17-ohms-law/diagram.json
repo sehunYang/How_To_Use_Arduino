@@ -1,0 +1,159 @@
+{
+  "version": 1,
+  "author": "ph17-ohms-law",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "id": "uno",
+      "type": "wokwi-arduino-uno",
+      "top": 0,
+      "left": 0
+    },
+    {
+      "id": "bb",
+      "type": "wokwi-breadboard-half",
+      "top": 0,
+      "left": 100
+    },
+    {
+      "id": "ina219",
+      "type": "chip-ina219",
+      "top": 0,
+      "left": 100
+    },
+    {
+      "id": "resistor_100",
+      "type": "wokwi-resistor",
+      "top": 0,
+      "left": 200,
+      "attrs": {
+        "value": "100"
+      }
+    },
+    {
+      "id": "capacitor",
+      "type": "visual-capacitor",
+      "top": 0,
+      "left": 300
+    },
+    {
+      "id": "resistor_1000",
+      "type": "wokwi-resistor",
+      "top": 0,
+      "left": 400,
+      "attrs": {
+        "value": "1000"
+      }
+    }
+  ],
+  "connections": [
+    [
+      "ina219:VCC",
+      "bb:tp.5",
+      "red",
+      []
+    ],
+    [
+      "uno:5V",
+      "bb:tp.1",
+      "red",
+      []
+    ],
+    [
+      "ina219:GND",
+      "bb:tn.5",
+      "black",
+      []
+    ],
+    [
+      "uno:GND",
+      "bb:tn.1",
+      "black",
+      []
+    ],
+    [
+      "bb:tn.9",
+      "bb:14t.a",
+      "black",
+      []
+    ],
+    [
+      "bb:tn.13",
+      "bb:9t.a",
+      "black",
+      []
+    ],
+    [
+      "ina219:SDA",
+      "uno:A4",
+      "green",
+      []
+    ],
+    [
+      "ina219:SCL",
+      "uno:A5",
+      "yellow",
+      []
+    ],
+    [
+      "resistor_100:1",
+      "bb:2t.e",
+      "orange",
+      []
+    ],
+    [
+      "uno:9",
+      "bb:2t.a",
+      "orange",
+      []
+    ],
+    [
+      "resistor_100:2",
+      "bb:4t.e",
+      "orange",
+      []
+    ],
+    [
+      "capacitor:1",
+      "bb:7t.e",
+      "orange",
+      []
+    ],
+    [
+      "bb:4t.a",
+      "bb:7t.a",
+      "orange",
+      []
+    ],
+    [
+      "ina219:VIN+",
+      "bb:4t.a",
+      "red",
+      []
+    ],
+    [
+      "capacitor:2",
+      "bb:9t.e",
+      "black",
+      []
+    ],
+    [
+      "ina219:VIN-",
+      "bb:12t.a",
+      "purple",
+      []
+    ],
+    [
+      "resistor_1000:1",
+      "bb:12t.e",
+      "purple",
+      []
+    ],
+    [
+      "resistor_1000:2",
+      "bb:14t.e",
+      "black",
+      []
+    ]
+  ]
+}

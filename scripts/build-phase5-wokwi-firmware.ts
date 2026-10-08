@@ -1,8 +1,8 @@
 #!/usr/bin/env tsx
-import { copyFileSync, mkdirSync, rmSync } from 'node:fs'
+import { copyFileSync, mkdirSync, readFileSync, rmSync } from 'node:fs'
 import { spawnSync } from 'node:child_process'
 import { resolve } from 'node:path'
-import manifest from '../wokwi/phase5/manifest.json'
+import { simulationPhases } from '../src/wokwi/phase5SimulationRegistry'
 import {
   arduinoCliBin,
   arduinoEnv,
@@ -15,10 +15,15 @@ if (!isArduinoCliInstalled()) {
   process.exit(1)
 }
 
-for (const project of manifest.projects) {
+const projects = simulationPhases.flatMap(({ root }) =>
+  (JSON.parse(readFileSync(resolve(root, 'manifest.json'), 'utf8')) as {
+    projects: Array<{ id: string; path: string; chips: string[] }>
+  }).projects)
+
+for (const project of projects) {
   console.log(`Building Phase 5 Wokwi firmware: ${project.id}`)
   const projectRoot = resolve(project.path)
-  const outputDir = resolve('.tools', 'wokwi', 'phase5', project.id)
+  const outputDir = resolve('.tools', 'wokwi', project.path)
   const sketchPath = resolve(projectRoot, `${project.id}.ino`)
 
   rmSync(outputDir, { recursive: true, force: true })
@@ -40,4 +45,4 @@ for (const project of manifest.projects) {
   }
 }
 
-console.log(`Built and staged firmware for ${manifest.projects.length} Phase 5 Wokwi projects.`)
+console.log(`Built and staged firmware for ${projects.length} Wokwi projects.`)

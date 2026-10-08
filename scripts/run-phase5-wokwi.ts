@@ -1,12 +1,21 @@
 #!/usr/bin/env tsx
 import { spawnSync } from 'node:child_process'
-import manifest from '../wokwi/phase5/manifest.json'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { phase5BehaviorSpecById } from '../src/wokwi/behaviorSpecs'
 import { checkSerialBehavior, serialFromCliOutput } from '../src/wokwi/serialBehavior'
 import { selectPhase5Projects, type SelectableProject } from '../src/wokwi/phase5Selection'
+import { simulationPhases } from '../src/wokwi/phase5SimulationRegistry'
+
+interface ManifestProject extends SelectableProject {
+  path: string
+  kind: 'behavior' | 'smoke'
+  timeoutMs: number
+  scenario: string
+}
 
 if (!process.env.WOKWI_CLI_TOKEN) {
-  console.error('WOKWI_CLI_TOKEN is required to run the Phase 5 Wokwi scenarios.')
+  console.error('WOKWI_CLI_TOKEN is required to run the Wokwi scenarios.')
   process.exit(1)
 }
 
@@ -18,18 +27,28 @@ function git(...args: string[]): string | undefined {
 // `--changed-against <ref>` (pull requests): simulate only what the diff can affect.
 const refFlag = process.argv.indexOf('--changed-against')
 const baseRef = refFlag === -1 ? undefined : process.argv[refFlag + 1]
-let projects = manifest.projects
-if (baseRef) {
-  const diff = git('diff', '--name-only', baseRef, 'HEAD')
-  if (diff === undefined) throw new Error(`git diff against ${baseRef} failed; fetch the base branch first`)
-  const baseManifest = git('show', `${baseRef}:wokwi/phase5/manifest.json`)
+const changedFiles = baseRef === undefined ? undefined : git('diff', '--name-only', baseRef, 'HEAD')
+if (baseRef && changedFiles === undefined) {
+  throw new Error(`git diff against ${baseRef} failed; fetch the base branch first`)
+}
+
+const projects: ManifestProject[] = []
+for (const { phase, root } of simulationPhases) {
+  const manifest = JSON.parse(readFileSync(resolve(root, 'manifest.json'), 'utf8')) as {
+    projects: ManifestProject[]
+  }
+  if (!baseRef || changedFiles === undefined) {
+    projects.push(...manifest.projects)
+    continue
+  }
+  const baseManifest = git('show', `${baseRef}:${root}/manifest.json`)
   const base = baseManifest === undefined
     ? undefined
     : (JSON.parse(baseManifest) as { projects: SelectableProject[] }).projects
-  const selection = selectPhase5Projects(diff.split('\n').filter(Boolean), manifest.projects, base)
-  projects = manifest.projects.filter((project) => selection.ids.includes(project.id))
-  console.log(`Changed against ${baseRef}: ${projects.length} of ${manifest.projects.length} Phase 5 projects to simulate.`)
+  const selection = selectPhase5Projects(changedFiles.split('\n').filter(Boolean), manifest.projects, base)
+  console.log(`${phase} changed against ${baseRef}: ${selection.ids.length} of ${manifest.projects.length} projects to simulate.`)
   for (const id of selection.ids) console.log(`  - ${id}: ${selection.reasons[id]}`)
+  projects.push(...manifest.projects.filter((project) => selection.ids.includes(project.id)))
 }
 
 // Run every project and report all failures together, so one CI run shows them all.
@@ -53,7 +72,7 @@ for (const project of projects) {
 
   if (behavior) {
     const spec = phase5BehaviorSpecById.get(project.id)
-    if (!spec) throw new Error(`No behaviour spec for ${project.id}; regenerate wokwi/phase5`)
+    if (!spec) throw new Error(`No behaviour spec for ${project.id}; regenerate the Wokwi projects`)
     const verdict = checkSerialBehavior(spec, serialFromCliOutput(result.stdout, spec.header.split(',').length))
     if (!verdict.ok) {
       console.error(`${project.id}: serial behaviour check failed (${verdict.rows} rows)`)
@@ -66,13 +85,13 @@ for (const project of projects) {
 }
 
 if (failed.length > 0) {
-  console.error(`\n${failed.length} of ${projects.length} Phase 5 Wokwi projects failed:`)
+  console.error(`\n${failed.length} of ${projects.length} Wokwi projects failed:`)
   for (const failure of failed) console.error(`  - ${failure}`)
   process.exit(1)
 }
 
 const behaviorCount = projects.filter((project) => project.kind === 'behavior').length
 console.log(
-  `Passed ${projects.length} Phase 5 Wokwi scenarios ` +
+  `Passed ${projects.length} Wokwi scenarios ` +
     `(${behaviorCount} behaviour, ${projects.length - behaviorCount} boot smoke).`,
 )

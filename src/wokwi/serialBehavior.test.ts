@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { sensors } from '@/data/inventory-seed/sensors'
 import { phase5Recipes } from '@/data/phase5'
+import { simulationPhases } from './phase5SimulationRegistry'
 import { buildDiagram } from './buildDiagram'
-import { phase5BehaviorSpecById, phase5BehaviorSpecs, type Phase5BehaviorSpec } from './behaviorSpecs'
+import { behaviorSpecs, phase5BehaviorSpecById, type Phase5BehaviorSpec } from './behaviorSpecs'
 import { checkSerialBehavior, serialFromCliOutput } from './serialBehavior'
 
 const cooling = phase5BehaviorSpecById.get('cooling-curve')!
@@ -183,19 +184,41 @@ describe('wokwi-cli rows split by progress lines', () => {
   })
 })
 
+const allRecipes = simulationPhases.flatMap((phase) => phase.recipes)
+
+/**
+ * Simulatable recipes that stay on boot smoke, and why. Anything else Wokwi can
+ * run must carry a behaviour spec.
+ */
+const SMOKE_ONLY: Record<string, string> = {
+  S3: 'PIR needs 30 s to settle, past the 20 s cap, and Wokwi has no PIR automation control',
+  'automatic-door': 'PIR needs 30 s to settle, past the 20 s cap, and Wokwi has no PIR automation control',
+  's13-mpu-aux-tsl2591': "Wokwi's MPU6050 does not implement the auxiliary I2C master (XDA/XCL)",
+}
+
 describe('behaviour specs', () => {
+  it('cover every simulatable recipe except the documented smoke-only ones', () => {
+    const specified = new Set(behaviorSpecs.map((spec) => spec.recipeId))
+    for (const { registry } of simulationPhases) {
+      for (const entry of registry.filter((candidate) => candidate.eligible)) {
+        expect(specified.has(entry.recipeId) || entry.recipeId in SMOKE_ONLY, entry.recipeId).toBe(true)
+        expect(specified.has(entry.recipeId) && entry.recipeId in SMOKE_ONLY, entry.recipeId).toBe(false)
+      }
+    }
+  })
+
   it('cover distinct recipes and match the sketches they claim to test', () => {
-    expect(new Set(phase5BehaviorSpecs.map((spec) => spec.recipeId)).size).toBe(phase5BehaviorSpecs.length)
-    for (const spec of phase5BehaviorSpecs) {
-      const recipe = phase5Recipes.find((candidate) => candidate.id === spec.recipeId)
+    expect(new Set(behaviorSpecs.map((spec) => spec.recipeId)).size).toBe(behaviorSpecs.length)
+    for (const spec of behaviorSpecs) {
+      const recipe = allRecipes.find((candidate) => candidate.id === spec.recipeId)
       expect(recipe, spec.recipeId).toBeDefined()
       expect(recipe!.sketch, spec.recipeId).toContain(`Serial.println("${spec.header}");`)
     }
   })
 
   it('only drive parts that exist in the recipe circuit', () => {
-    for (const spec of phase5BehaviorSpecs) {
-      const recipe = phase5Recipes.find((candidate) => candidate.id === spec.recipeId)!
+    for (const spec of behaviorSpecs) {
+      const recipe = allRecipes.find((candidate) => candidate.id === spec.recipeId)!
       const partIds = new Set(buildDiagram(recipe, sensors).parts.map((part) => part.id))
       for (const step of [...spec.phases.flatMap((phase) => phase.steps), ...(spec.finalSteps ?? [])]) {
         if ('set' in step) expect(partIds.has(step.set.partId), `${spec.recipeId}: ${step.set.partId}`).toBe(true)
@@ -207,7 +230,7 @@ describe('behaviour specs', () => {
   })
 
   it('only expect columns the header declares', () => {
-    for (const spec of phase5BehaviorSpecs) {
+    for (const spec of behaviorSpecs) {
       const columns = new Set(spec.header.split(','))
       const used = [
         ...Object.keys(spec.always ?? {}),

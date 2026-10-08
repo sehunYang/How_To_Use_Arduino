@@ -1,0 +1,111 @@
+name: Phase 5 behavior - ph26-rotating-magnet-signal
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "time_ms,hall_raw,pulse_count,pulse_interval_us"
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 1
+  - delay: 500ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 0
+  - delay: 100ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 1
+  - delay: 100ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 0
+  - delay: 100ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 1
+  - delay: 100ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 0
+  - delay: 100ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 1
+  - delay: 100ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 0
+  - delay: 100ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 1
+  - delay: 100ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 0
+  - delay: 100ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 1
+  - delay: 100ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 0
+  - delay: 100ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 1
+  - delay: 100ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 0
+  - delay: 100ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 1
+  - delay: 100ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 0
+  - delay: 100ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 1
+  - delay: 100ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 0
+  - delay: 100ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 1
+  - delay: 100ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 0
+  - delay: 100ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 1
+  - delay: 100ms
+  - delay: 500ms

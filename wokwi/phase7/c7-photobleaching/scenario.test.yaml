@@ -1,0 +1,11 @@
+name: Phase 5 behavior - c7-photobleaching
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "time_ms,light_raw,baseline_raw"
+  - delay: 1500ms
+  - set-control:
+      part-id: tsl2591
+      control: ch0Raw
+      value: 1800
+  - delay: 11000ms

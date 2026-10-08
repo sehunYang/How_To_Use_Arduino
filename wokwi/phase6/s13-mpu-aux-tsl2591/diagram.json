@@ -1,0 +1,111 @@
+{
+  "version": 1,
+  "author": "s13-mpu-aux-tsl2591",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "id": "uno",
+      "type": "wokwi-arduino-uno",
+      "top": 0,
+      "left": 0
+    },
+    {
+      "id": "bb",
+      "type": "wokwi-breadboard-half",
+      "top": 0,
+      "left": 100
+    },
+    {
+      "id": "mpu6050",
+      "type": "wokwi-mpu6050",
+      "top": 0,
+      "left": 100
+    },
+    {
+      "id": "tsl2591",
+      "type": "chip-tsl2591",
+      "top": 0,
+      "left": 200
+    }
+  ],
+  "connections": [
+    [
+      "mpu6050:VCC",
+      "bb:tp.5",
+      "red",
+      []
+    ],
+    [
+      "uno:5V",
+      "bb:tp.1",
+      "red",
+      []
+    ],
+    [
+      "mpu6050:GND",
+      "bb:tn.5",
+      "black",
+      []
+    ],
+    [
+      "uno:GND",
+      "bb:tn.1",
+      "black",
+      []
+    ],
+    [
+      "mpu6050:SDA",
+      "uno:A4",
+      "green",
+      []
+    ],
+    [
+      "mpu6050:SCL",
+      "uno:A5",
+      "yellow",
+      []
+    ],
+    [
+      "tsl2591:VIN",
+      "bb:bp.5",
+      "orange",
+      []
+    ],
+    [
+      "uno:3.3V",
+      "bb:bp.1",
+      "orange",
+      []
+    ],
+    [
+      "tsl2591:GND",
+      "bb:tn.9",
+      "black",
+      []
+    ],
+    [
+      "tsl2591:SDA",
+      "bb:1t.a",
+      "green",
+      []
+    ],
+    [
+      "mpu6050:XDA",
+      "bb:1t.b",
+      "green",
+      []
+    ],
+    [
+      "tsl2591:SCL",
+      "bb:5t.a",
+      "yellow",
+      []
+    ],
+    [
+      "mpu6050:XCL",
+      "bb:5t.b",
+      "yellow",
+      []
+    ]
+  ]
+}

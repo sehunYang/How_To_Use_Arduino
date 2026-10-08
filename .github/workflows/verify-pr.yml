@@ -77,7 +77,7 @@ jobs:
       - name: Verify generated Wokwi diagrams are current
         run: npm run verify:wokwi-diagram
 
-      - name: Verify 32 generated Phase 5 Wokwi projects and scenarios
+      - name: Verify generated Phase 5-7 Wokwi projects and scenarios
         run: npm run verify:wokwi:phase5-projects
 
       - uses: actions/setup-java@v4
@@ -107,7 +107,7 @@ jobs:
       - name: Build Arduino Uno firmware + stage Wokwi project assets
         run: npm run build:wokwi
 
-      - name: Build and stage 32 Phase 5 Wokwi firmware projects
+      - name: Build and stage Phase 5-7 Wokwi firmware projects
         run: npm run build:wokwi:phase5
 
       - name: L3 Wokwi simulation — pendulum recipe
@@ -138,13 +138,13 @@ jobs:
 
       # Wokwi time is metered (docs/wokwi-setup.md §6-1): a pull request
       # simulates only the Phase 5 recipes its diff can affect, judged by the
-      # per-project fingerprints in wokwi/phase5/manifest.json. Scheduled and
+      # per-project fingerprints in wokwi/phase{5,6,7}/manifest.json. Scheduled and
       # manual runs still simulate all of them.
       - name: Fetch the base branch for Phase 5 change selection
         if: github.event_name == 'pull_request'
         run: git fetch --no-tags --depth=1 origin ${{ github.base_ref }}
 
-      - name: L3 Wokwi simulation — Phase 5 recipes (changed ones on PRs)
+      - name: L3 Wokwi simulation — Phase 5-7 recipes (changed ones on PRs)
         env:
           WOKWI_CLI_TOKEN: ${{ secrets.WOKWI_CLI_TOKEN }}
           CHANGED_AGAINST: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || '' }}

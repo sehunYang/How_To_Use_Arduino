@@ -1,0 +1,123 @@
+{
+  "version": 1,
+  "author": "ph04-momentum-collision",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "id": "uno",
+      "type": "wokwi-arduino-uno",
+      "top": 0,
+      "left": 0
+    },
+    {
+      "id": "bb",
+      "type": "wokwi-breadboard-half",
+      "top": 0,
+      "left": 100
+    },
+    {
+      "id": "mpu6050_1",
+      "type": "wokwi-mpu6050",
+      "top": 0,
+      "left": 100
+    },
+    {
+      "id": "mpu6050_2",
+      "type": "wokwi-mpu6050",
+      "top": 0,
+      "left": 200
+    }
+  ],
+  "connections": [
+    [
+      "mpu6050_1:VCC",
+      "bb:tp.5",
+      "red",
+      []
+    ],
+    [
+      "uno:5V",
+      "bb:tp.1",
+      "red",
+      []
+    ],
+    [
+      "mpu6050_1:GND",
+      "bb:tn.5",
+      "black",
+      []
+    ],
+    [
+      "uno:GND",
+      "bb:tn.1",
+      "black",
+      []
+    ],
+    [
+      "mpu6050_1:SDA",
+      "bb:1t.a",
+      "green",
+      []
+    ],
+    [
+      "uno:A4",
+      "bb:1t.b",
+      "green",
+      []
+    ],
+    [
+      "mpu6050_1:SCL",
+      "bb:5t.a",
+      "yellow",
+      []
+    ],
+    [
+      "uno:A5",
+      "bb:5t.b",
+      "yellow",
+      []
+    ],
+    [
+      "mpu6050_1:AD0",
+      "bb:tn.13",
+      "black",
+      []
+    ],
+    [
+      "mpu6050_2:VCC",
+      "bb:tp.9",
+      "red",
+      []
+    ],
+    [
+      "mpu6050_2:GND",
+      "bb:tn.9",
+      "black",
+      []
+    ],
+    [
+      "mpu6050_2:SDA",
+      "bb:1t.c",
+      "green",
+      []
+    ],
+    [
+      "mpu6050_2:SCL",
+      "bb:5t.c",
+      "yellow",
+      []
+    ],
+    [
+      "mpu6050_2:AD0",
+      "bb:bp.5",
+      "orange",
+      []
+    ],
+    [
+      "uno:3.3V",
+      "bb:bp.1",
+      "orange",
+      []
+    ]
+  ]
+}

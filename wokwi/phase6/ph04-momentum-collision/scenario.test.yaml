@@ -1,0 +1,16 @@
+name: Phase 5 behavior - ph04-momentum-collision
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "time_ms,mpu0_ax_g,mpu1_ax_g"
+  - wait-serial: ",0.0000,0.0000"
+  - set-control:
+      part-id: mpu6050_1
+      control: accelX
+      value: 4
+  - set-control:
+      part-id: mpu6050_2
+      control: accelX
+      value: -4
+  - wait-serial: ",4.0000,-4.0000"
+  - delay: 100ms

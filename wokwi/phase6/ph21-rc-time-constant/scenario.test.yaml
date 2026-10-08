@@ -1,0 +1,20 @@
+name: Phase 5 behavior - ph21-rc-time-constant
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "condition_id,time_ms,capacitor_V,current_mA"
+  - set-control:
+      part-id: ina219
+      control: shuntRaw
+      value: 5
+  - delay: 400ms
+  - set-control:
+      part-id: ina219
+      control: shuntRaw
+      value: 3
+  - delay: 400ms
+  - set-control:
+      part-id: ina219
+      control: shuntRaw
+      value: 1
+  - delay: 400ms

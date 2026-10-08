@@ -1,0 +1,41 @@
+name: Phase 5 behavior - d6-temperature-alarm
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "time_ms,temperature_c,alarm_state"
+  - set-control:
+      part-id: ds18b20
+      control: temperature
+      value: 25
+  - wait-serial: ",25.00,0"
+  - expect-pin:
+      part-id: uno
+      pin: "9"
+      value: 0
+  - set-control:
+      part-id: ds18b20
+      control: temperature
+      value: 31
+  - wait-serial: ",31.00,1"
+  - expect-pin:
+      part-id: uno
+      pin: "9"
+      value: 1
+  - set-control:
+      part-id: ds18b20
+      control: temperature
+      value: 29.5
+  - wait-serial: ",29.50,1"
+  - expect-pin:
+      part-id: uno
+      pin: "9"
+      value: 1
+  - set-control:
+      part-id: ds18b20
+      control: temperature
+      value: 28.5
+  - wait-serial: ",28.50,0"
+  - expect-pin:
+      part-id: uno
+      pin: "9"
+      value: 0

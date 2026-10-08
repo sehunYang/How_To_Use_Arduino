@@ -1,0 +1,15 @@
+name: Phase 5 behavior - b1-yeast-fermentation
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "time_ms,water_c,pressure_hpa"
+  - delay: 3000ms
+  - set-control:
+      part-id: ds18b20
+      control: temperature
+      value: 30
+  - set-control:
+      part-id: bme280
+      control: pressureRaw
+      value: 410000
+  - delay: 5000ms

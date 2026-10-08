@@ -57,8 +57,9 @@ function instrumentSketch(recipeId: string, sketch: string): string {
 
 export function buildPhase5WokwiProjects(
   entries: EligiblePhase5Simulation[],
-  recipes: Recipe[],
+  recipes: readonly Recipe[],
   sensors: Sensor[],
+  root: string = PHASE5_WOKWI_ROOT,
 ): Phase5WokwiProject[] {
   const recipesById = new Map(recipes.map((recipe) => [recipe.id, recipe]))
 
@@ -69,7 +70,7 @@ export function buildPhase5WokwiProjects(
     }
 
     const behavior = phase5BehaviorSpecById.get(recipe.id)
-    const path = `${PHASE5_WOKWI_ROOT}/${entry.recipeId}`
+    const path = `${root}/${entry.recipeId}`
     const timeoutMs = behavior?.timeoutMs ?? entry.timeoutMs
     const scenario = 'scenario.test.yaml'
     const diagram = buildDiagram(recipe, sensors)

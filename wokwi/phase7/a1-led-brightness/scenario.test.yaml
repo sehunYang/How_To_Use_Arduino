@@ -1,0 +1,36 @@
+name: Phase 5 behavior - a1-led-brightness
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "time_ms,pwm_value,light_raw"
+  - set-control:
+      part-id: tsl2591
+      control: ch0Raw
+      value: 0
+  - wait-serial: ",0,"
+  - set-control:
+      part-id: tsl2591
+      control: ch0Raw
+      value: 2040
+  - wait-serial: ",51,"
+  - set-control:
+      part-id: tsl2591
+      control: ch0Raw
+      value: 4080
+  - wait-serial: ",102,"
+  - set-control:
+      part-id: tsl2591
+      control: ch0Raw
+      value: 6120
+  - wait-serial: ",153,"
+  - set-control:
+      part-id: tsl2591
+      control: ch0Raw
+      value: 8160
+  - wait-serial: ",204,"
+  - set-control:
+      part-id: tsl2591
+      control: ch0Raw
+      value: 10200
+  - wait-serial: ",255,"
+  - delay: 200ms

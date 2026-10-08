@@ -1,0 +1,24 @@
+name: Phase 5 behavior - ph19-kirchhoff-laws
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "condition_id,time_ms,bus_V,shunt_mV,current_mA"
+  - set-control:
+      part-id: ina219
+      control: shuntRaw
+      value: 334
+  - set-control:
+      part-id: ina219
+      control: busRaw
+      value: 10000
+  - delay: 1500ms
+  - set-control:
+      part-id: ina219
+      control: shuntRaw
+      value: 227
+  - delay: 1500ms
+  - set-control:
+      part-id: ina219
+      control: shuntRaw
+      value: 106
+  - delay: 1500ms
