@@ -66,6 +66,8 @@ void setup(){
     mpuWrite(MPU_ADDRESSES[i],0x1A,0x01); // 대역폭 184 Hz: 짧은 충돌 봉우리를 뭉개지 않습니다.
     mpuWrite(MPU_ADDRESSES[i],0x1C,0x18); // ±16 g: 충돌 봉우리는 ±2 g 기본 범위를 넘습니다.
   }
+  // 센서가 I2C에 응답하는지 확인합니다. 선이 빠져도 0이나 65535 같은 그럴듯한 값이 계속 나와 고장을 알아채기 어렵습니다.
+  Wire.beginTransmission(0x68);if(Wire.endTransmission()!=0)Serial.println("# MPU6050_0x68_ERROR");Wire.beginTransmission(0x69);if(Wire.endTransmission()!=0)Serial.println("# MPU6050_0x69_ERROR");
   Serial.println("time_ms,mpu0_ax_g,mpu1_ax_g");
 }
 void loop(){
@@ -121,6 +123,8 @@ void mpuWrite(byte reg,byte value){Wire.beginTransmission(0x68);Wire.write(reg);
 unsigned long samplingIntervalMs=100;
 void setup(){
   Serial.begin(9600);Wire.begin();mpuWrite(0x6B,0);
+  // 센서가 I2C에 응답하는지 확인합니다. 선이 빠져도 0이나 65535 같은 그럴듯한 값이 계속 나와 고장을 알아채기 어렵습니다.
+  Wire.beginTransmission(0x68);if(Wire.endTransmission()!=0)Serial.println("# MPU6050_ERROR");
   Serial.println("time_ms,acceleration_x_g,acceleration_y_g,acceleration_z_g,gyro_z_dps");
 }
 void loop(){
@@ -279,6 +283,8 @@ void setup() {
   Wire.begin();
   pinMode(PWM_OUT, OUTPUT);
   analogWrite(PWM_OUT, 0);
+  // 센서가 I2C에 응답하는지 확인합니다. 선이 빠져도 0이나 65535 같은 그럴듯한 값이 계속 나와 고장을 알아채기 어렵습니다.
+  Wire.beginTransmission(0x40);if(Wire.endTransmission()!=0)Serial.println("# INA219_ERROR");
   Serial.println("condition_id,duty,bus_V,shunt_mV,current_mA");
 }
 
@@ -338,7 +344,7 @@ int16_t readIna(byte reg){
   byte high=Wire.read();byte low=Wire.read(); // 한 식에 두 번 읽으면 순서가 정해지지 않습니다.
   return (int16_t)(((uint16_t)high<<8)|low);
 }
-void setup(){Serial.begin(9600);Wire.begin();Serial.println("condition_id,time_ms,bus_V,current_mA,equivalent_ohm");}
+void setup(){Serial.begin(9600);Wire.begin();Wire.beginTransmission(0x40);if(Wire.endTransmission()!=0)Serial.println("# INA219_ERROR");Serial.println("condition_id,time_ms,bus_V,current_mA,equivalent_ohm");}
 void loop(){
   float busV=(readIna(0x02)>>3)*0.004f,shuntMv=readIna(0x01)*0.01f,currentMa=shuntMv/INA_SHUNT_OHMS;
   float equivalentOhm=currentMa==0?NAN:busV/(currentMa/1000.0f);
@@ -376,7 +382,7 @@ int16_t readIna(byte reg){
   byte high=Wire.read();byte low=Wire.read(); // 한 식에 두 번 읽으면 순서가 정해지지 않습니다.
   return (int16_t)(((uint16_t)high<<8)|low);
 }
-void setup(){Serial.begin(9600);Wire.begin();Serial.println("condition_id,time_ms,bus_V,shunt_mV,current_mA");}
+void setup(){Serial.begin(9600);Wire.begin();Wire.beginTransmission(0x40);if(Wire.endTransmission()!=0)Serial.println("# INA219_ERROR");Serial.println("condition_id,time_ms,bus_V,shunt_mV,current_mA");}
 void loop(){float busV=(readIna(2)>>3)*0.004f,shuntMv=readIna(1)*0.01f,currentMa=shuntMv/INA_SHUNT_OHMS;Serial.print(conditionId);Serial.print(',');Serial.print(millis());Serial.print(',');Serial.print(busV,4);Serial.print(',');Serial.print(shuntMv,4);Serial.print(',');Serial.println(currentMa,3);delay(samplingIntervalMs);}`,
   },
   {
@@ -413,12 +419,12 @@ int16_t readIna(byte reg){
   byte high=Wire.read();byte low=Wire.read(); // 한 식에 두 번 읽으면 순서가 정해지지 않습니다.
   return (int16_t)(((uint16_t)high<<8)|low);
 }
-void oneWireReset(){pinMode(ONEWIRE,OUTPUT);digitalWrite(ONEWIRE,LOW);delayMicroseconds(480);pinMode(ONEWIRE,INPUT_PULLUP);delayMicroseconds(480);}
+bool oneWireReset(){pinMode(ONEWIRE,OUTPUT);digitalWrite(ONEWIRE,LOW);delayMicroseconds(480);noInterrupts();pinMode(ONEWIRE,INPUT_PULLUP);delayMicroseconds(70);bool present=!digitalRead(ONEWIRE);interrupts();delayMicroseconds(410);return present;}
 // 1-Wire 비트는 마이크로초 단위입니다. 시리얼 인터럽트가 끼어들면 펄스가 늘어나 값이 틀어지므로 잠시 막습니다.
 void writeOneWire(byte value){for(byte i=0;i<8;i++){noInterrupts();pinMode(ONEWIRE,OUTPUT);digitalWrite(ONEWIRE,LOW);delayMicroseconds((value>>i)&1?6:60);pinMode(ONEWIRE,INPUT_PULLUP);interrupts();delayMicroseconds((value>>i)&1?64:10);}}
 byte readOneWire(){byte value=0;for(byte i=0;i<8;i++){noInterrupts();pinMode(ONEWIRE,OUTPUT);digitalWrite(ONEWIRE,LOW);delayMicroseconds(3);pinMode(ONEWIRE,INPUT_PULLUP);delayMicroseconds(10);bool bit=digitalRead(ONEWIRE);interrupts();if(bit)value|=(1<<i);delayMicroseconds(53);}return value;}
-float readTemperatureC(){oneWireReset();writeOneWire(0xCC);writeOneWire(0x44);delay(750);oneWireReset();writeOneWire(0xCC);writeOneWire(0xBE);byte lsb=readOneWire();byte msb=readOneWire();int16_t raw=(int16_t)(((uint16_t)msb<<8)|lsb);return raw/16.0f;}
-void setup(){Serial.begin(9600);Wire.begin();Serial.println("condition_id,time_ms,bus_V,current_mA,power_W,temperature_C");}
+float readTemperatureC(){if(!oneWireReset())return NAN;writeOneWire(0xCC);writeOneWire(0x44);delay(750);if(!oneWireReset())return NAN;writeOneWire(0xCC);writeOneWire(0xBE);byte lsb=readOneWire();byte msb=readOneWire();int16_t raw=(int16_t)(((uint16_t)msb<<8)|lsb);return raw/16.0f;}
+void setup(){Serial.begin(9600);Wire.begin();Wire.beginTransmission(0x40);if(Wire.endTransmission()!=0)Serial.println("# INA219_ERROR");Serial.println("condition_id,time_ms,bus_V,current_mA,power_W,temperature_C");}
 void loop(){float busV=(readIna(2)>>3)*0.004f,currentMa=(readIna(1)*0.01f)/INA_SHUNT_OHMS,tempC=readTemperatureC();Serial.print(conditionId);Serial.print(',');Serial.print(millis());Serial.print(',');Serial.print(busV,4);Serial.print(',');Serial.print(currentMa,3);Serial.print(',');Serial.print(busV*currentMa/1000.0f,4);Serial.print(',');Serial.println(tempC,3);delay(samplingIntervalMs);}`,
   },
   {
@@ -453,7 +459,7 @@ int16_t readIna(byte reg){
   byte high=Wire.read();byte low=Wire.read(); // 한 식에 두 번 읽으면 순서가 정해지지 않습니다.
   return (int16_t)(((uint16_t)high<<8)|low);
 }
-void setup(){Serial.begin(9600);Wire.begin();Serial.println("condition_id,time_ms,capacitor_V,current_mA");}
+void setup(){Serial.begin(9600);Wire.begin();Wire.beginTransmission(0x40);if(Wire.endTransmission()!=0)Serial.println("# INA219_ERROR");Serial.println("condition_id,time_ms,capacitor_V,current_mA");}
 void loop(){float capacitorV=analogRead(CAPACITOR_VOLTAGE_PIN)*(5.0f/1023.0f),currentMa=(readIna(1)*0.01f)/INA_SHUNT_OHMS;Serial.print(conditionId);Serial.print(',');Serial.print(millis());Serial.print(',');Serial.print(capacitorV,4);Serial.print(',');Serial.println(currentMa,4);delay(samplingIntervalMs);}`,
   },
   {
@@ -485,7 +491,7 @@ int16_t readIna(byte reg){
   byte high=Wire.read();byte low=Wire.read(); // 한 식에 두 번 읽으면 순서가 정해지지 않습니다.
   return (int16_t)(((uint16_t)high<<8)|low);
 }
-void setup(){Serial.begin(9600);Wire.begin();Serial.println("condition_id,time_ms,terminal_V,current_mA");}
+void setup(){Serial.begin(9600);Wire.begin();Wire.beginTransmission(0x40);if(Wire.endTransmission()!=0)Serial.println("# INA219_ERROR");Serial.println("condition_id,time_ms,terminal_V,current_mA");}
 void loop(){float terminalV=(readIna(2)>>3)*0.004f,currentMa=(readIna(1)*0.01f)/INA_SHUNT_OHMS;Serial.print(conditionId);Serial.print(',');Serial.print(millis());Serial.print(',');Serial.print(terminalV,4);Serial.print(',');Serial.println(currentMa,3);delay(samplingIntervalMs);}`,
   },
   {
@@ -525,7 +531,7 @@ uint16_t lightRaw(){
   byte low=Wire.read();byte high=Wire.read(); // TSL2591은 하위 바이트가 먼저 옵니다.
   return (uint16_t)low|((uint16_t)high<<8);
 }
-void setup(){Serial.begin(9600);Wire.begin();Wire.beginTransmission(0x29);Wire.write(0xA0);Wire.write(0x03);Wire.endTransmission();Serial.println("condition_id,time_ms,panel_V,current_mA,power_mW,light_raw");}
+void setup(){Serial.begin(9600);Wire.begin();Wire.beginTransmission(0x29);Wire.write(0xA0);Wire.write(0x03);Wire.endTransmission();Wire.beginTransmission(0x40);if(Wire.endTransmission()!=0)Serial.println("# INA219_ERROR");Wire.beginTransmission(0x29);if(Wire.endTransmission()!=0)Serial.println("# TSL2591_ERROR");Serial.println("condition_id,time_ms,panel_V,current_mA,power_mW,light_raw");}
 void loop(){float panelV=(readIna(2)>>3)*0.004f,currentMa=(readIna(1)*0.01f)/INA_SHUNT_OHMS;Serial.print(conditionId);Serial.print(',');Serial.print(millis());Serial.print(',');Serial.print(panelV,4);Serial.print(',');Serial.print(currentMa,3);Serial.print(',');Serial.print(panelV*currentMa,3);Serial.print(',');Serial.println(lightRaw());delay(samplingIntervalMs);}`,
   },
 ]
@@ -564,7 +570,7 @@ int16_t readIna(byte reg){
   byte high=Wire.read();byte low=Wire.read(); // 한 식에 두 번 읽으면 순서가 정해지지 않습니다.
   return (int16_t)(((uint16_t)high<<8)|low);
 }
-void setup(){Serial.begin(9600);Wire.begin();Serial.println("condition_id,time_ms,current_mA,hall_raw");}
+void setup(){Serial.begin(9600);Wire.begin();Wire.beginTransmission(0x40);if(Wire.endTransmission()!=0)Serial.println("# INA219_ERROR");Serial.println("condition_id,time_ms,current_mA,hall_raw");}
 void loop(){float currentMa=(readIna(1)*0.01f)/INA_SHUNT_OHMS;Serial.print(conditionId);Serial.print(',');Serial.print(millis());Serial.print(',');Serial.print(currentMa,3);Serial.print(',');Serial.println(analogRead(HALL_IN));delay(samplingIntervalMs);}`,
   },
   {
@@ -600,7 +606,7 @@ int16_t readIna(byte reg){
   byte high=Wire.read();byte low=Wire.read(); // 한 식에 두 번 읽으면 순서가 정해지지 않습니다.
   return (int16_t)(((uint16_t)high<<8)|low);
 }
-void setup(){Serial.begin(9600);Wire.begin();Serial.println("condition_id,time_ms,current_mA,hall_raw");}
+void setup(){Serial.begin(9600);Wire.begin();Wire.beginTransmission(0x40);if(Wire.endTransmission()!=0)Serial.println("# INA219_ERROR");Serial.println("condition_id,time_ms,current_mA,hall_raw");}
 void loop(){float currentMa=(readIna(1)*0.01f)/INA_SHUNT_OHMS;Serial.print(conditionId);Serial.print(',');Serial.print(millis());Serial.print(',');Serial.print(currentMa,3);Serial.print(',');Serial.println(analogRead(HALL_IN));delay(samplingIntervalMs);}`,
   },
   {

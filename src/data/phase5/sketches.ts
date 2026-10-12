@@ -109,6 +109,8 @@ MPU6050 imu;
 const unsigned long samplingIntervalMs = 10;
 void setup() {
   Serial.begin(115200); Wire.begin(); imu.initialize();
+  // 센서가 I2C에 응답하는지 확인합니다. 선이 빠져도 0이나 65535 같은 그럴듯한 값이 계속 나와 고장을 알아채기 어렵습니다.
+  Wire.beginTransmission(0x68);if(Wire.endTransmission()!=0)Serial.println("# MPU6050_ERROR");
   Serial.println("time_ms,ax_mps2");
 }
 void loop() {
@@ -130,6 +132,8 @@ MPU6050 imu;
 const unsigned long samplingIntervalMs = 20;
 void setup() {
   Serial.begin(115200); Wire.begin(); imu.initialize();
+  // 센서가 I2C에 응답하는지 확인합니다. 선이 빠져도 0이나 65535 같은 그럴듯한 값이 계속 나와 고장을 알아채기 어렵습니다.
+  Wire.beginTransmission(0x68);if(Wire.endTransmission()!=0)Serial.println("# MPU6050_ERROR");
   Serial.println("time_ms,ax,ay,az,g_norm");
 }
 void loop() {
@@ -185,6 +189,8 @@ float distanceM() {
 void setup() {
   Serial.begin(9600); Wire.begin(); imu.initialize();
   pinMode(TRIG,OUTPUT); pinMode(ECHO,INPUT);
+  // 센서가 I2C에 응답하는지 확인합니다. 선이 빠져도 0이나 65535 같은 그럴듯한 값이 계속 나와 고장을 알아채기 어렵습니다.
+  Wire.beginTransmission(0x68);if(Wire.endTransmission()!=0)Serial.println("# MPU6050_ERROR");
   Serial.println("time_ms,distance_m,ax_mps2");
 }
 void loop() {
@@ -204,6 +210,8 @@ MPU6050 imu;
 const unsigned long samplingIntervalMs = 20;
 void setup() {
   Serial.begin(115200); Wire.begin(); imu.initialize();
+  // 센서가 I2C에 응답하는지 확인합니다. 선이 빠져도 0이나 65535 같은 그럴듯한 값이 계속 나와 고장을 알아채기 어렵습니다.
+  Wire.beginTransmission(0x68);if(Wire.endTransmission()!=0)Serial.println("# MPU6050_ERROR");
   Serial.println("time_ms,along_mps2,tilt_deg");
 }
 void loop() {
@@ -254,6 +262,8 @@ void setup() {
   // 가장 낮은 증폭으로 두어야 lux가 -1(포화)로 떨어지지 않습니다.
   tsl.setGain(TSL2591_GAIN_LOW);
   tsl.setTiming(TSL2591_INTEGRATIONTIME_100MS);
+  // 센서가 I2C에 응답하는지 확인합니다. 선이 빠져도 0이나 65535 같은 그럴듯한 값이 계속 나와 고장을 알아채기 어렵습니다.
+  Wire.beginTransmission(0x40);if(Wire.endTransmission()!=0)Serial.println("# INA219_ERROR");
   Serial.println("time_ms,voltage_v,current_ma,power_mw,lux,power_density_mw_cm2");
 }
 void loop() {
@@ -440,5 +450,7 @@ void loop() {
     Serial.print(millis());Serial.print(',');Serial.print(index);Serial.print(',');
     Serial.println(readAddressTemperatureC(address),3);index++;
   }
+  // 찾은 프로브가 정한 수보다 적으면 알립니다. 빠진 프로브는 표에서 조용히 사라져 알아채기 어렵습니다.
+  if(index<sensorCount){Serial.print("# DS18B20_MISSING:");Serial.print(index);Serial.print('/');Serial.println(sensorCount);}
   delay(1000);
 }`

@@ -34,6 +34,10 @@ void setup() {
   Wire.write(0xA0);
   Wire.write(0x03);
   Wire.endTransmission();
+  Wire.beginTransmission(0x40);
+  if(Wire.endTransmission()!=0)Serial.println("# INA219_ERROR");
+  Wire.beginTransmission(0x29);
+  if(Wire.endTransmission()!=0)Serial.println("# TSL2591_ERROR");
   Serial.println("condition_id,time_ms,panel_V,current_mA,power_mW,light_raw");
 }
 void loop() {

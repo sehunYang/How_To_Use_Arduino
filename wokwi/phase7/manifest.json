@@ -17,7 +17,7 @@
       "chips": [
         "tsl2591"
       ],
-      "fingerprint": "dd2f26282b925502"
+      "fingerprint": "e13e019b33bbe66d"
     },
     {
       "id": "a2-buzzer-tone",
@@ -124,7 +124,7 @@
       "scenario": "scenario.test.yaml",
       "command": "wokwi-cli wokwi/phase7/b5-step-counter --scenario scenario.test.yaml --timeout 20000",
       "chips": [],
-      "fingerprint": "789f509a9a8b3698"
+      "fingerprint": "4847d1bbb061c435"
     },
     {
       "id": "b6-skin-temperature-recovery",
@@ -134,7 +134,7 @@
       "scenario": "scenario.test.yaml",
       "command": "wokwi-cli wokwi/phase7/b6-skin-temperature-recovery --scenario scenario.test.yaml --timeout 20000",
       "chips": [],
-      "fingerprint": "ca615720b37d047e"
+      "fingerprint": "e89387dd97185ddf"
     },
     {
       "id": "b8-seed-germination-gdd",
@@ -254,7 +254,7 @@
       "scenario": "scenario.test.yaml",
       "command": "wokwi-cli wokwi/phase7/d2-digital-level --scenario scenario.test.yaml --timeout 20000",
       "chips": [],
-      "fingerprint": "3ea3ac80f17c83fa"
+      "fingerprint": "fe78aa079c90cf4d"
     },
     {
       "id": "d4-parking-barrier",
@@ -296,7 +296,7 @@
       "scenario": "scenario.test.yaml",
       "command": "wokwi-cli wokwi/phase7/d7-vibration-alarm --scenario scenario.test.yaml --timeout 20000",
       "chips": [],
-      "fingerprint": "86d19c9891d8aad2"
+      "fingerprint": "be08edf1faa6374f"
     },
     {
       "id": "d8-elevator-floor",
@@ -306,7 +306,7 @@
       "scenario": "scenario.test.yaml",
       "command": "wokwi-cli wokwi/phase7/d8-elevator-floor --scenario scenario.test.yaml --timeout 20000",
       "chips": [],
-      "fingerprint": "262b7bf6d11b6340"
+      "fingerprint": "120af76daae8984f"
     },
     {
       "id": "e1-terminal-velocity",
@@ -326,7 +326,7 @@
       "scenario": "scenario.test.yaml",
       "command": "wokwi-cli wokwi/phase7/e2-pendulum-damping --scenario scenario.test.yaml --timeout 20000",
       "chips": [],
-      "fingerprint": "b28a668bd369a629"
+      "fingerprint": "1acbd23e72f91380"
     },
     {
       "id": "e3-moment-of-inertia",
@@ -336,7 +336,7 @@
       "scenario": "scenario.test.yaml",
       "command": "wokwi-cli wokwi/phase7/e3-moment-of-inertia --scenario scenario.test.yaml --timeout 20000",
       "chips": [],
-      "fingerprint": "1859d6a9cab0b283"
+      "fingerprint": "6e46a0da328fd620"
     }
   ]
 }

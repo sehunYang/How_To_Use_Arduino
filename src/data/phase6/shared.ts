@@ -228,7 +228,7 @@ void loop(){
   // 왕복시간 원시값도 함께 남겨, 고정 음속(343 m/s)으로 계산한 거리와
   // 온도 보정 거리(distance_m)를 나중에 모두 만들 수 있게 합니다.
   unsigned long us=pulseIn(ECHO_PIN,HIGH,30000);float t=bmeTemperatureC(),p=bmePressureHpa();
-  float soundSpeed=331.3f+0.606f*t,distanceM=us*soundSpeed/2000000.0f;
+  float soundSpeed=331.3f+0.606f*t,distanceM=us?us*soundSpeed/2000000.0f:-1.0f;
   Serial.print(millis());Serial.print(',');Serial.print(t,2);Serial.print(',');Serial.print(p,2);Serial.print(',');Serial.print(us);Serial.print(',');Serial.println(distanceM,4);
   delay(samplingIntervalMs);
 }`
@@ -238,16 +238,16 @@ void loop(){
 ${header}
 const byte TRIG_PIN=7,ECHO_PIN=6;
 ${mpuReadDriver}
-void setup(){Serial.begin(9600);Wire.begin();mpuWrite(0x68,0x6B,0);pinMode(TRIG_PIN,OUTPUT);pinMode(ECHO_PIN,INPUT);Serial.println("time_ms,distance_m,acceleration_x_g");}
+void setup(){Serial.begin(9600);Wire.begin();mpuWrite(0x68,0x6B,0);pinMode(TRIG_PIN,OUTPUT);pinMode(ECHO_PIN,INPUT);Wire.beginTransmission(0x68);if(Wire.endTransmission()!=0)Serial.println("# MPU6050_ERROR");Serial.println("time_ms,distance_m,acceleration_x_g");}
 void loop(){digitalWrite(TRIG_PIN,LOW);delayMicroseconds(2);digitalWrite(TRIG_PIN,HIGH);delayMicroseconds(10);digitalWrite(TRIG_PIN,LOW);unsigned long us=pulseIn(ECHO_PIN,HIGH,30000);
-Serial.print(millis());Serial.print(',');Serial.print(us*0.000343f/2.0f,4);Serial.print(',');Serial.println(mpuRead16(0x68,0x3B)/16384.0f,5);delay(samplingIntervalMs);}`
+Serial.print(millis());Serial.print(',');Serial.print(us?us*0.000343f/2.0f:-1.0f,4);Serial.print(',');Serial.println(mpuRead16(0x68,0x3B)/16384.0f,5);delay(samplingIntervalMs);}`
   }
   if (sensors.has('mpu6050') && sensors.has('hbe0704')) {
     return `#include <Wire.h>
 ${header}
 ${mpuReadDriver}
 ${hallPulseDriver('A1')}
-void setup(){Serial.begin(9600);Wire.begin();mpuWrite(0x68,0x6B,0);Serial.println("time_ms,gyro_z_dps,hall_raw,pulse_count,pulse_interval_us");}
+void setup(){Serial.begin(9600);Wire.begin();mpuWrite(0x68,0x6B,0);Wire.beginTransmission(0x68);if(Wire.endTransmission()!=0)Serial.println("# MPU6050_ERROR");Serial.println("time_ms,gyro_z_dps,hall_raw,pulse_count,pulse_interval_us");}
 void loop(){
   // 표본 간격 내내 홀 신호를 계속 살펴 자석 통과 펄스를 놓치지 않습니다.
   pollHallFor(samplingIntervalMs);
@@ -317,7 +317,7 @@ void loop(){Serial.print(millis());for(byte i=0;i<2;i++){byte a=MPU_ADDRESSES[i]
     return `#include <Wire.h>
 ${header}
 ${mpuReadDriver}
-void setup(){Serial.begin(9600);Wire.begin();mpuWrite(0x68,0x6B,0);Serial.println("time_ms,acceleration_x_g,acceleration_y_g,acceleration_z_g");}
+void setup(){Serial.begin(9600);Wire.begin();mpuWrite(0x68,0x6B,0);Wire.beginTransmission(0x68);if(Wire.endTransmission()!=0)Serial.println("# MPU6050_ERROR");Serial.println("time_ms,acceleration_x_g,acceleration_y_g,acceleration_z_g");}
 void loop(){
   float ax=mpuRead16(0x68,0x3B)/16384.0f,ay=mpuRead16(0x68,0x3D)/16384.0f,az=mpuRead16(0x68,0x3F)/16384.0f;
   Serial.print(millis());Serial.print(',');Serial.print(ax,5);Serial.print(',');Serial.print(ay,5);Serial.print(',');Serial.println(az,5);
@@ -342,7 +342,7 @@ ${tslReadDriver}
 // 증폭·측정시간 설정: 0x00=1배·100ms(기본), 0x10=25배, 0x20=428배.
 // 어두운 쪽이 0에 붙으면 값을 올리고, light_raw가 65535 근처에 붙으면 낮추세요.
 const byte LIGHT_CONFIG=0x00;
-void setup(){Serial.begin(9600);Wire.begin();Wire.beginTransmission(0x29);Wire.write(0xA0);Wire.write(0x03);Wire.endTransmission();Wire.beginTransmission(0x29);Wire.write(0xA1);Wire.write(LIGHT_CONFIG);Wire.endTransmission();Serial.println("time_ms,light_raw");}
+void setup(){Serial.begin(9600);Wire.begin();Wire.beginTransmission(0x29);Wire.write(0xA0);Wire.write(0x03);Wire.endTransmission();Wire.beginTransmission(0x29);Wire.write(0xA1);Wire.write(LIGHT_CONFIG);Wire.endTransmission();Wire.beginTransmission(0x29);if(Wire.endTransmission()!=0)Serial.println("# TSL2591_ERROR");Serial.println("time_ms,light_raw");}
 void loop(){Serial.print(millis());Serial.print(',');Serial.println(lightRaw());delay(samplingIntervalMs);}`
   }
   if (sensors.has('hbe0704')) {

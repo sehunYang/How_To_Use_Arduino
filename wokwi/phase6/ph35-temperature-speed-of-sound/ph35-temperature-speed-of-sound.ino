@@ -121,7 +121,7 @@ void loop() {
   // 온도 보정 거리(distance_m)를 나중에 모두 만들 수 있게 합니다.
   unsigned long us=pulseIn(ECHO_PIN,HIGH,30000);
   float t=bmeTemperatureC(),p=bmePressureHpa();
-  float soundSpeed=331.3f+0.606f*t,distanceM=us*soundSpeed/2000000.0f;
+  float soundSpeed=331.3f+0.606f*t,distanceM=us?us*soundSpeed/2000000.0f:-1.0f;
   Serial.print(millis());
   Serial.print(',');
   Serial.print(t,2);

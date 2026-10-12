@@ -10,6 +10,9 @@ void setup() {
   Serial.begin(115200);
   Wire.begin();
   imu.initialize();
+  // 센서가 I2C에 응답하는지 확인합니다. 선이 빠져도 0이나 65535 같은 그럴듯한 값이 계속 나와 고장을 알아채기 어렵습니다.
+  Wire.beginTransmission(0x68);
+  if(Wire.endTransmission()!=0)Serial.println("# MPU6050_ERROR");
   Serial.println("time_ms,along_mps2,tilt_deg");
 }
 void loop() {

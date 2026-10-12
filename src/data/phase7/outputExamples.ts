@@ -43,6 +43,8 @@ void setup() {
   pinMode(LED_PIN, OUTPUT);
   // 조도센서를 켜고 100 ms 동안 빛을 모으도록 설정합니다.
   Wire.beginTransmission(0x29); Wire.write(0xA0); Wire.write(0x03); Wire.endTransmission();
+  // 센서가 I2C에 응답하는지 확인합니다. 선이 빠져도 0이나 65535 같은 그럴듯한 값이 계속 나와 고장을 알아채기 어렵습니다.
+  Wire.beginTransmission(0x29);if(Wire.endTransmission()!=0)Serial.println("# TSL2591_ERROR");
   Serial.println("time_ms,pwm_value,light_raw");
 }
 
