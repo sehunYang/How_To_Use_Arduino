@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ResistorBands } from '@/components/ResistorBands'
 import { Button } from '@/components/ui/button'
+import { GuideTable, LabelledBox, SectionHeading, StepBadge, tdClass } from '@/components/ui/guide'
 import { loadChecklist, saveChecklist, type ChecklistState } from '@/progress'
 import { helpCardText } from '@/recipes/classroom'
 import type { GlossaryEntry } from '@/recipes/glossary'
@@ -53,6 +54,27 @@ export function HighlightedWiringText({ text }: { text: string }) {
   return fragments
 }
 
+/** 눌러 둔 체크 상자를 브라우저에 남깁니다. 다시 와도 어디까지 했는지 보입니다. */
+function useStoredChecklist(scope: string): [ChecklistState, (item: string, value: boolean) => void] {
+  const [checked, setChecked] = useState<ChecklistState>({})
+
+  useEffect(() => {
+    setChecked(loadChecklist(scope, typeof window === 'undefined' ? undefined : window.localStorage))
+  }, [scope])
+
+  function toggle(item: string, value: boolean) {
+    setChecked((previous) => {
+      const next = { ...previous }
+      if (value) next[item] = true
+      else delete next[item]
+      saveChecklist(scope, next, typeof window === 'undefined' ? undefined : window.localStorage)
+      return next
+    })
+  }
+
+  return [checked, toggle]
+}
+
 /**
  * 전원을 넣기 직전에 하나씩 짚어 보는 목록.
  *
@@ -62,22 +84,7 @@ export function HighlightedWiringText({ text }: { text: string }) {
  * 체크 목록과 같은 방식으로 눌리고 브라우저에 남게 합니다.
  */
 export function PowerCheckList({ checks, recipeId }: { checks: PowerCheck[]; recipeId: string }) {
-  const scope = `power:${recipeId}`
-  const [checked, setChecked] = useState<ChecklistState>({})
-
-  useEffect(() => {
-    setChecked(loadChecklist(scope, typeof window === 'undefined' ? undefined : window.localStorage))
-  }, [scope])
-
-  function toggle(question: string, value: boolean) {
-    setChecked((previous) => {
-      const next = { ...previous }
-      if (value) next[question] = true
-      else delete next[question]
-      saveChecklist(scope, next, typeof window === 'undefined' ? undefined : window.localStorage)
-      return next
-    })
-  }
+  const [checked, toggle] = useStoredChecklist(`power:${recipeId}`)
 
   const done = checks.filter((check) => checked[check.question]).length
 
@@ -93,9 +100,10 @@ export function PowerCheckList({ checks, recipeId }: { checks: PowerCheck[]; rec
         <span className="text-caption text-warning">{done}/{checks.length} 확인</span>
       </div>
       <ul className="mt-3 space-y-3">
-        {checks.map((check) => (
+        {checks.map((check, index) => (
           <li key={check.question}>
             <label className="flex min-h-11 cursor-pointer items-start gap-3">
+              <StepBadge>{index + 1}</StepBadge>
               <input
                 className="mt-1 size-5 accent-accent"
                 type="checkbox"
@@ -223,28 +231,55 @@ export function PinMap({ lines, recipeId }: { lines: PinLine[]; recipeId: string
   )
 }
 
-export function PartsGroup({ title, lines, note }: { title: string; lines: PartLine[]; note?: string }) {
+/**
+ * 준비물 한 묶음. 카드 안 줄글이던 것을 부품·수량·설명 표로 두고, 챙긴 것을
+ * 표시할 칸을 붙였습니다. 탐구 설계의 체크 목록처럼 눌러 둔 것이 브라우저에 남아,
+ * 서랍을 오가며 챙기다 끊겨도 어디까지 했는지 보입니다.
+ */
+export function PartsSection({ recipeId, badge, title, lines, note }: {
+  recipeId: string
+  badge: string
+  title: string
+  lines: PartLine[]
+  note?: string
+}) {
+  const [checked, toggle] = useStoredChecklist(`parts:${recipeId}`)
   if (!lines.length) return null
+  const done = lines.filter((line) => checked[`${title}:${line.name}`]).length
   return (
-    <div className="rounded-card border border-border p-4">
-      <h3 className="font-semibold">{title}</h3>
-      <ul className="mt-2 space-y-2">
-        {lines.map((line) => (
-          <li key={line.name}>
-            {/* 등록된 센서는 이름 자체를 설명 화면으로 가는 문이 되게 합니다.
-                무엇을 재는 물건인지 모른 채 부품만 챙기게 두지 않기 위해서입니다. */}
-            {line.sensorId
-              ? <Link className="text-accent hover:underline" to={`/sensors/${line.sensorId}`}>{line.name}</Link>
-              : line.name}
-            {/* 실이나 테이프처럼 개수로 세지 않는 준비물은 개수를 적지 않습니다. */}
-            {line.count !== undefined && <>{' '}<span className="text-muted">{line.count}개</span></>}
-            {/* 저항은 값이 인쇄되어 있지 않아 이름만으로는 서랍에서 고를 수 없습니다. */}
-            {line.ohms !== undefined && <ResistorBands ohms={line.ohms} />}
-            {line.note && <span className="mt-1 block text-caption text-muted">{line.note}</span>}
-          </li>
-        ))}
-      </ul>
-      {note && <p className="mt-3 text-caption text-muted">{note}</p>}
-    </div>
+    <section aria-label={title}>
+      <SectionHeading badge={badge}>{title}</SectionHeading>
+      {note && <LabelledBox label="알아 두기">{note}</LabelledBox>}
+      <GuideTable caption={`${title}: 챙겼는지 표시하는 표`} head={[`챙김 ${done}/${lines.length}`, '부품', '수량', '설명']} widths={['6rem', '38%', '4.5rem', 'auto']}>
+        {lines.map((line) => {
+          const key = `${title}:${line.name}`
+          return (
+            <tr key={line.name}>
+              <td className={tdClass}>
+                <input
+                  type="checkbox"
+                  className="mt-1 size-4 accent-accent"
+                  aria-label={`${line.name} 챙김`}
+                  checked={checked[key] ?? false}
+                  onChange={(event) => toggle(key, event.target.checked)}
+                />
+              </td>
+              <td className={tdClass}>
+                {/* 등록된 센서는 이름 자체를 설명 화면으로 가는 문이 되게 합니다.
+                    무엇을 재는 물건인지 모른 채 부품만 챙기게 두지 않기 위해서입니다. */}
+                {line.sensorId
+                  ? <Link className="text-accent hover:underline" to={`/sensors/${line.sensorId}`}>{line.name}</Link>
+                  : line.name}
+                {/* 저항은 값이 인쇄되어 있지 않아 이름만으로는 서랍에서 고를 수 없습니다. */}
+                {line.ohms !== undefined && <ResistorBands ohms={line.ohms} />}
+              </td>
+              {/* 실이나 테이프처럼 개수로 세지 않는 준비물은 개수를 적지 않습니다. */}
+              <td className={tdClass}>{line.count !== undefined ? `${line.count}개` : '-'}</td>
+              <td className={`${tdClass} text-muted`}>{line.note ?? ''}</td>
+            </tr>
+          )
+        })}
+      </GuideTable>
+    </section>
   )
 }
