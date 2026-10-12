@@ -1,0 +1,11 @@
+name: Phase 5 behavior - b4-reaction-time
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "time_ms,reaction_ms,distance_cm"
+  - wait-serial: ","
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 10
+  - delay: 8500ms

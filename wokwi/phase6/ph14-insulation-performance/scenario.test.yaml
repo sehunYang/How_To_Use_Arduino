@@ -1,0 +1,17 @@
+name: Phase 5 behavior - ph14-insulation-performance
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "time_ms,object_temperature_c,ambient_temperature_c,humidity_pct"
+  - wait-serial: ",22.000,"
+  - set-control:
+      part-id: ds18b20
+      control: temperature
+      value: 60
+  - wait-serial: ",60.000,"
+  - set-control:
+      part-id: ds18b20
+      control: temperature
+      value: 50
+  - wait-serial: ",50.000,"
+  - delay: 500ms

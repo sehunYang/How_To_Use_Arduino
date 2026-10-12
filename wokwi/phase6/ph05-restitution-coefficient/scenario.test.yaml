@@ -1,0 +1,20 @@
+name: Phase 5 behavior - ph05-restitution-coefficient
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "time_ms,distance_m"
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 100
+  - delay: 700ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 136
+  - delay: 700ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 159
+  - delay: 700ms

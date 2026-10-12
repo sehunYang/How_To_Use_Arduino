@@ -157,7 +157,9 @@ function checkLines(spec: Phase5BehaviorSpec, log: string): SerialBehaviorResult
 
     for (const reason of misses(spec.always, row, previous)) failures.push(`${where}: ${reason}`)
 
-    if (spec.timeColumn && previous.length > 0) {
+    // The first gap is skipped: at 9600 baud the header and first row overflow the
+    // 64-byte TX buffer, so the sketch's second loop starts a few tens of ms late.
+    if (spec.timeColumn && previous.length > 1) {
       const interval = (previousPhase === undefined ? undefined : spec.phases[previousPhase].sampleInterval)
         ?? spec.sampleInterval
       const gap = row.values[spec.timeColumn] - previous[previous.length - 1].values[spec.timeColumn]

@@ -1,0 +1,21 @@
+name: Phase 5 behavior - s11-tsl2591-interrupt
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "event,time_ms,interrupt_count,light_raw"
+  - delay: 500ms
+  - set-control:
+      part-id: tsl2591
+      control: ch0Raw
+      value: 500
+  - delay: 600ms
+  - set-control:
+      part-id: tsl2591
+      control: ch0Raw
+      value: 2000
+  - delay: 400ms
+  - set-control:
+      part-id: tsl2591
+      control: ch0Raw
+      value: 20000
+  - delay: 600ms

@@ -1,0 +1,54 @@
+name: Phase 5 behavior - ph08-rpm-comparison
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "time_ms,gyro_z_dps,hall_raw,pulse_count,pulse_interval_us"
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 1
+  - delay: 400ms
+  - set-control:
+      part-id: mpu6050
+      control: rotationZ
+      value: 240
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 0
+  - delay: 750ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 1
+  - delay: 750ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 0
+  - delay: 750ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 1
+  - delay: 750ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 0
+  - delay: 750ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 1
+  - delay: 750ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 0
+  - delay: 750ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 1
+  - delay: 750ms

@@ -1,0 +1,104 @@
+name: Variant - d8-elevator-floor--jitter
+version: 1
+author: phase5-generator
+steps:
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 11
+  - delay: 350ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 12
+  - delay: 350ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 11
+  - delay: 350ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 12
+  - delay: 350ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 11
+  - delay: 350ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 12
+  - delay: 350ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 11
+  - delay: 350ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 12
+  - delay: 350ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 11
+  - delay: 350ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 12
+  - delay: 350ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 11
+  - delay: 350ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 12
+  - delay: 350ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 11
+  - delay: 350ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 12
+  - delay: 350ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 11
+  - delay: 350ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 12
+  - delay: 350ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 11
+  - delay: 350ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 12
+  - delay: 350ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 11
+  - delay: 350ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 12
+  - delay: 350ms

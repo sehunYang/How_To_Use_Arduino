@@ -1,0 +1,5 @@
+name: Variant - S5--unplugged-ds18b20
+version: 1
+author: phase5-generator
+steps:
+  - delay: 3000ms

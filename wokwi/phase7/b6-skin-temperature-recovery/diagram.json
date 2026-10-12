@@ -1,0 +1,120 @@
+{
+  "version": 1,
+  "author": "b6-skin-temperature-recovery",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "id": "uno",
+      "type": "wokwi-arduino-uno",
+      "top": 0,
+      "left": 0
+    },
+    {
+      "id": "bb",
+      "type": "wokwi-breadboard-half",
+      "top": 0,
+      "left": 100
+    },
+    {
+      "id": "mpu6050",
+      "type": "wokwi-mpu6050",
+      "top": 0,
+      "left": 100
+    },
+    {
+      "id": "ds18b20",
+      "type": "wokwi-ds18b20",
+      "top": 0,
+      "left": 200
+    },
+    {
+      "id": "resistor_4700",
+      "type": "wokwi-resistor",
+      "top": 0,
+      "left": 300,
+      "attrs": {
+        "value": "4700"
+      }
+    }
+  ],
+  "connections": [
+    [
+      "mpu6050:VCC",
+      "bb:tp.5",
+      "red",
+      []
+    ],
+    [
+      "uno:5V",
+      "bb:tp.1",
+      "red",
+      []
+    ],
+    [
+      "bb:tp.13",
+      "bb:4t.a",
+      "red",
+      []
+    ],
+    [
+      "mpu6050:GND",
+      "bb:tn.5",
+      "black",
+      []
+    ],
+    [
+      "uno:GND",
+      "bb:tn.1",
+      "black",
+      []
+    ],
+    [
+      "mpu6050:SDA",
+      "uno:A4",
+      "green",
+      []
+    ],
+    [
+      "mpu6050:SCL",
+      "uno:A5",
+      "yellow",
+      []
+    ],
+    [
+      "ds18b20:VCC",
+      "bb:tp.9",
+      "red",
+      []
+    ],
+    [
+      "ds18b20:GND",
+      "bb:tn.9",
+      "black",
+      []
+    ],
+    [
+      "ds18b20:DQ",
+      "bb:2t.a",
+      "green",
+      []
+    ],
+    [
+      "uno:4",
+      "bb:2t.b",
+      "green",
+      []
+    ],
+    [
+      "resistor_4700:1",
+      "bb:2t.e",
+      "green",
+      []
+    ],
+    [
+      "resistor_4700:2",
+      "bb:4t.e",
+      "red",
+      []
+    ]
+  ]
+}

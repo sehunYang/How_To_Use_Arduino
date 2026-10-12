@@ -1,0 +1,19 @@
+name: Phase 5 behavior - b3-photosynthesis-pressure
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "time_ms,lux,pressure_hpa,temperature_c"
+  - delay: 6000ms
+  - set-control:
+      part-id: tsl2591
+      control: ch0Raw
+      value: 3702
+  - set-control:
+      part-id: tsl2591
+      control: ch1Raw
+      value: 963
+  - set-control:
+      part-id: bme280
+      control: pressureRaw
+      value: 410000
+  - delay: 10000ms

@@ -1,0 +1,103 @@
+name: Variant - d5-auto-curtain--jitter
+version: 1
+author: phase5-generator
+steps:
+  - set-control:
+      part-id: tsl2591
+      control: ch0Raw
+      value: 44
+  - set-control:
+      part-id: tsl2591
+      control: ch1Raw
+      value: 11
+  - delay: 3500ms
+  - set-control:
+      part-id: tsl2591
+      control: ch0Raw
+      value: 135
+  - set-control:
+      part-id: tsl2591
+      control: ch1Raw
+      value: 34
+  - delay: 1150ms
+  - set-control:
+      part-id: tsl2591
+      control: ch0Raw
+      value: 126
+  - set-control:
+      part-id: tsl2591
+      control: ch1Raw
+      value: 32
+  - delay: 1150ms
+  - set-control:
+      part-id: tsl2591
+      control: ch0Raw
+      value: 135
+  - set-control:
+      part-id: tsl2591
+      control: ch1Raw
+      value: 34
+  - delay: 1150ms
+  - set-control:
+      part-id: tsl2591
+      control: ch0Raw
+      value: 126
+  - set-control:
+      part-id: tsl2591
+      control: ch1Raw
+      value: 32
+  - delay: 1150ms
+  - set-control:
+      part-id: tsl2591
+      control: ch0Raw
+      value: 135
+  - set-control:
+      part-id: tsl2591
+      control: ch1Raw
+      value: 34
+  - delay: 1150ms
+  - set-control:
+      part-id: tsl2591
+      control: ch0Raw
+      value: 126
+  - set-control:
+      part-id: tsl2591
+      control: ch1Raw
+      value: 32
+  - delay: 1150ms
+  - set-control:
+      part-id: tsl2591
+      control: ch0Raw
+      value: 135
+  - set-control:
+      part-id: tsl2591
+      control: ch1Raw
+      value: 34
+  - delay: 1150ms
+  - set-control:
+      part-id: tsl2591
+      control: ch0Raw
+      value: 126
+  - set-control:
+      part-id: tsl2591
+      control: ch1Raw
+      value: 32
+  - delay: 1150ms
+  - set-control:
+      part-id: tsl2591
+      control: ch0Raw
+      value: 135
+  - set-control:
+      part-id: tsl2591
+      control: ch1Raw
+      value: 34
+  - delay: 1150ms
+  - set-control:
+      part-id: tsl2591
+      control: ch0Raw
+      value: 126
+  - set-control:
+      part-id: tsl2591
+      control: ch1Raw
+      value: 32
+  - delay: 1150ms

@@ -1,0 +1,17 @@
+name: Phase 5 behavior - e3-moment-of-inertia
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "time_ms,gyro_z_dps"
+  - wait-serial: ",0.000"
+  - set-control:
+      part-id: mpu6050
+      control: rotationZ
+      value: 90
+  - wait-serial: ",90.000"
+  - set-control:
+      part-id: mpu6050
+      control: rotationZ
+      value: -200
+  - wait-serial: ",-200.000"
+  - delay: 300ms

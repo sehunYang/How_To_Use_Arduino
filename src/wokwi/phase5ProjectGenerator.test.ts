@@ -13,6 +13,7 @@ import {
 import {
   PHASE5_SIMULATION_TIMEOUT_CAP_MS,
   phase5SimulationRegistry,
+  simulationPhases,
 } from './phase5SimulationRegistry'
 import { phase5BehaviorSpecs } from './behaviorSpecs'
 
@@ -96,4 +97,25 @@ describe('Phase 5 Wokwi project generation', () => {
       expect(readFileSync(resolve(root, `${project.id}.ino`), 'utf8')).toBe(project.sketch)
     }
   })
+})
+
+describe('Phase 6 and 7 Wokwi project generation', () => {
+  for (const { phase, root, recipes, registry } of simulationPhases.filter((candidate) => candidate.phase !== 'phase5')) {
+    it(`keeps the committed ${phase} tree complete and current`, () => {
+      const projects = buildPhase5WokwiProjects(registry.filter((entry) => entry.eligible), recipes, sensors, root)
+      const directories = readdirSync(resolve(root), { withFileTypes: true })
+        .filter((entry) => entry.isDirectory())
+        .map((entry) => entry.name)
+        .sort()
+      expect(directories).toEqual(projects.map((project) => project.id).sort())
+      for (const project of projects) {
+        expect(project.path).toBe(`${root}/${project.id}`)
+        expect(project.timeoutMs).toBeLessThanOrEqual(PHASE5_SIMULATION_TIMEOUT_CAP_MS)
+        const projectRoot = resolve(project.path)
+        expect(readFileSync(resolve(projectRoot, 'scenario.test.yaml'), 'utf8')).toBe(renderPhase5Scenario(project))
+        expect(readFileSync(resolve(projectRoot, `${project.id}.ino`), 'utf8')).toBe(project.sketch)
+        if (project.behavior) expect(project.sketch).not.toContain('PHASE5_READY')
+      }
+    })
+  }
 })

@@ -1,0 +1,42 @@
+name: Phase 5 behavior - d5-auto-curtain
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "time_ms,lux,commanded_deg"
+  - delay: 2500ms
+  - set-control:
+      part-id: tsl2591
+      control: ch0Raw
+      value: 88
+  - set-control:
+      part-id: tsl2591
+      control: ch1Raw
+      value: 22
+  - delay: 2500ms
+  - set-control:
+      part-id: tsl2591
+      control: ch0Raw
+      value: 44
+  - set-control:
+      part-id: tsl2591
+      control: ch1Raw
+      value: 11
+  - delay: 2500ms
+  - set-control:
+      part-id: tsl2591
+      control: ch0Raw
+      value: 88
+  - set-control:
+      part-id: tsl2591
+      control: ch1Raw
+      value: 22
+  - delay: 2500ms
+  - set-control:
+      part-id: tsl2591
+      control: ch0Raw
+      value: 176
+  - set-control:
+      part-id: tsl2591
+      control: ch1Raw
+      value: 44
+  - delay: 2500ms

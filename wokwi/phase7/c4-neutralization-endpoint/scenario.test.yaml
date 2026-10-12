@@ -1,0 +1,16 @@
+name: Phase 5 behavior - c4-neutralization-endpoint
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "time_ms,temperature_c"
+  - wait-serial: ",22.00"
+  - set-control:
+      part-id: ds18b20
+      control: temperature
+      value: 25
+  - wait-serial: ",25.00"
+  - set-control:
+      part-id: ds18b20
+      control: temperature
+      value: 24
+  - wait-serial: ",24.00"

@@ -1,0 +1,342 @@
+{
+  "version": 1,
+  "generatedFrom": "phase5SimulationRegistry",
+  "projectCount": 31,
+  "exclusions": [
+    "b7-woodlouse-phototaxis",
+    "d3-line-follower"
+  ],
+  "projects": [
+    {
+      "id": "a1-led-brightness",
+      "path": "wokwi/phase7/a1-led-brightness",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase7/a1-led-brightness --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "tsl2591"
+      ],
+      "fingerprint": "dd2f26282b925502"
+    },
+    {
+      "id": "a2-buzzer-tone",
+      "path": "wokwi/phase7/a2-buzzer-tone",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase7/a2-buzzer-tone --scenario scenario.test.yaml --timeout 20000",
+      "chips": [],
+      "fingerprint": "df2523c6a4d44dec"
+    },
+    {
+      "id": "a3-servo-angle",
+      "path": "wokwi/phase7/a3-servo-angle",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase7/a3-servo-angle --scenario scenario.test.yaml --timeout 20000",
+      "chips": [],
+      "fingerprint": "75a053fd65f1d447"
+    },
+    {
+      "id": "a4-relay-switch",
+      "path": "wokwi/phase7/a4-relay-switch",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase7/a4-relay-switch --scenario scenario.test.yaml --timeout 20000",
+      "chips": [],
+      "fingerprint": "3390cc8f81a4b4c1"
+    },
+    {
+      "id": "a5-dc-motor-drive",
+      "path": "wokwi/phase7/a5-dc-motor-drive",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase7/a5-dc-motor-drive --scenario scenario.test.yaml --timeout 20000",
+      "chips": [],
+      "fingerprint": "c37d513112b99b77"
+    },
+    {
+      "id": "a6-lcd-display",
+      "path": "wokwi/phase7/a6-lcd-display",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase7/a6-lcd-display --scenario scenario.test.yaml --timeout 20000",
+      "chips": [],
+      "fingerprint": "912f70e0dba9260e"
+    },
+    {
+      "id": "b1-yeast-fermentation",
+      "path": "wokwi/phase7/b1-yeast-fermentation",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase7/b1-yeast-fermentation --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "bme280"
+      ],
+      "fingerprint": "c81598265f411020"
+    },
+    {
+      "id": "b2-leaf-transpiration",
+      "path": "wokwi/phase7/b2-leaf-transpiration",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase7/b2-leaf-transpiration --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "bme280"
+      ],
+      "fingerprint": "5a623337ca73c34d"
+    },
+    {
+      "id": "b3-photosynthesis-pressure",
+      "path": "wokwi/phase7/b3-photosynthesis-pressure",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase7/b3-photosynthesis-pressure --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "bme280",
+        "tsl2591"
+      ],
+      "fingerprint": "18a6fa1d24e51cc7"
+    },
+    {
+      "id": "b4-reaction-time",
+      "path": "wokwi/phase7/b4-reaction-time",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase7/b4-reaction-time --scenario scenario.test.yaml --timeout 20000",
+      "chips": [],
+      "fingerprint": "7c988fc827f95596"
+    },
+    {
+      "id": "b5-step-counter",
+      "path": "wokwi/phase7/b5-step-counter",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase7/b5-step-counter --scenario scenario.test.yaml --timeout 20000",
+      "chips": [],
+      "fingerprint": "789f509a9a8b3698"
+    },
+    {
+      "id": "b6-skin-temperature-recovery",
+      "path": "wokwi/phase7/b6-skin-temperature-recovery",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase7/b6-skin-temperature-recovery --scenario scenario.test.yaml --timeout 20000",
+      "chips": [],
+      "fingerprint": "ca615720b37d047e"
+    },
+    {
+      "id": "b8-seed-germination-gdd",
+      "path": "wokwi/phase7/b8-seed-germination-gdd",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase7/b8-seed-germination-gdd --scenario scenario.test.yaml --timeout 20000",
+      "chips": [],
+      "fingerprint": "f11ad32b4aa47619"
+    },
+    {
+      "id": "c1-wet-dry-humidity",
+      "path": "wokwi/phase7/c1-wet-dry-humidity",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase7/c1-wet-dry-humidity --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "bme280"
+      ],
+      "fingerprint": "7f69fadfb6fe51ed"
+    },
+    {
+      "id": "c2-freezing-point-depression",
+      "path": "wokwi/phase7/c2-freezing-point-depression",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase7/c2-freezing-point-depression --scenario scenario.test.yaml --timeout 20000",
+      "chips": [],
+      "fingerprint": "70de81d2bfc92bb4"
+    },
+    {
+      "id": "c3-turbidity-precipitation",
+      "path": "wokwi/phase7/c3-turbidity-precipitation",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase7/c3-turbidity-precipitation --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "tsl2591"
+      ],
+      "fingerprint": "b2ccfb4a18ba6128"
+    },
+    {
+      "id": "c4-neutralization-endpoint",
+      "path": "wokwi/phase7/c4-neutralization-endpoint",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase7/c4-neutralization-endpoint --scenario scenario.test.yaml --timeout 20000",
+      "chips": [],
+      "fingerprint": "8448762451b8ed72"
+    },
+    {
+      "id": "c5-surface-albedo",
+      "path": "wokwi/phase7/c5-surface-albedo",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase7/c5-surface-albedo --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "tsl2591"
+      ],
+      "fingerprint": "7a7545da851d3628"
+    },
+    {
+      "id": "c6-soil-water-heat-capacity",
+      "path": "wokwi/phase7/c6-soil-water-heat-capacity",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase7/c6-soil-water-heat-capacity --scenario scenario.test.yaml --timeout 20000",
+      "chips": [],
+      "fingerprint": "c8a9dcd83808b17e"
+    },
+    {
+      "id": "c7-photobleaching",
+      "path": "wokwi/phase7/c7-photobleaching",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase7/c7-photobleaching --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "tsl2591"
+      ],
+      "fingerprint": "34ed2c0be9f7a3b9"
+    },
+    {
+      "id": "c8-ventilation-recovery",
+      "path": "wokwi/phase7/c8-ventilation-recovery",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase7/c8-ventilation-recovery --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "bme280"
+      ],
+      "fingerprint": "6e975df4f7c48ad6"
+    },
+    {
+      "id": "d1-motor-speed-control",
+      "path": "wokwi/phase7/d1-motor-speed-control",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase7/d1-motor-speed-control --scenario scenario.test.yaml --timeout 20000",
+      "chips": [],
+      "fingerprint": "0c50edab045616c9"
+    },
+    {
+      "id": "d2-digital-level",
+      "path": "wokwi/phase7/d2-digital-level",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase7/d2-digital-level --scenario scenario.test.yaml --timeout 20000",
+      "chips": [],
+      "fingerprint": "3ea3ac80f17c83fa"
+    },
+    {
+      "id": "d4-parking-barrier",
+      "path": "wokwi/phase7/d4-parking-barrier",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase7/d4-parking-barrier --scenario scenario.test.yaml --timeout 20000",
+      "chips": [],
+      "fingerprint": "e2088267e91678b1"
+    },
+    {
+      "id": "d5-auto-curtain",
+      "path": "wokwi/phase7/d5-auto-curtain",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase7/d5-auto-curtain --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "tsl2591"
+      ],
+      "fingerprint": "039ca5ec4535f3ee"
+    },
+    {
+      "id": "d6-temperature-alarm",
+      "path": "wokwi/phase7/d6-temperature-alarm",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase7/d6-temperature-alarm --scenario scenario.test.yaml --timeout 20000",
+      "chips": [],
+      "fingerprint": "e8ec4e5a4a23386c"
+    },
+    {
+      "id": "d7-vibration-alarm",
+      "path": "wokwi/phase7/d7-vibration-alarm",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase7/d7-vibration-alarm --scenario scenario.test.yaml --timeout 20000",
+      "chips": [],
+      "fingerprint": "86d19c9891d8aad2"
+    },
+    {
+      "id": "d8-elevator-floor",
+      "path": "wokwi/phase7/d8-elevator-floor",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase7/d8-elevator-floor --scenario scenario.test.yaml --timeout 20000",
+      "chips": [],
+      "fingerprint": "262b7bf6d11b6340"
+    },
+    {
+      "id": "e1-terminal-velocity",
+      "path": "wokwi/phase7/e1-terminal-velocity",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase7/e1-terminal-velocity --scenario scenario.test.yaml --timeout 20000",
+      "chips": [],
+      "fingerprint": "d3f41fb27f602850"
+    },
+    {
+      "id": "e2-pendulum-damping",
+      "path": "wokwi/phase7/e2-pendulum-damping",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase7/e2-pendulum-damping --scenario scenario.test.yaml --timeout 20000",
+      "chips": [],
+      "fingerprint": "b28a668bd369a629"
+    },
+    {
+      "id": "e3-moment-of-inertia",
+      "path": "wokwi/phase7/e3-moment-of-inertia",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase7/e3-moment-of-inertia --scenario scenario.test.yaml --timeout 20000",
+      "chips": [],
+      "fingerprint": "1859d6a9cab0b283"
+    }
+  ]
+}

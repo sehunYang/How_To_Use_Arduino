@@ -1,0 +1,34 @@
+name: Phase 5 behavior - a5-dc-motor-drive
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "time_ms,direction,speed_value"
+  - wait-serial: ",forward,"
+  - expect-pin:
+      part-id: uno
+      pin: "2"
+      value: 1
+  - expect-pin:
+      part-id: uno
+      pin: "4"
+      value: 0
+  - wait-serial: ",stop,"
+  - expect-pin:
+      part-id: uno
+      pin: "5"
+      value: 0
+  - wait-serial: ",reverse,"
+  - expect-pin:
+      part-id: uno
+      pin: "2"
+      value: 0
+  - expect-pin:
+      part-id: uno
+      pin: "4"
+      value: 1
+  - wait-serial: ",stop,"
+  - expect-pin:
+      part-id: uno
+      pin: "5"
+      value: 0
+  - delay: 100ms

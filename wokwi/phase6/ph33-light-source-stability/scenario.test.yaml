@@ -1,0 +1,20 @@
+name: Phase 5 behavior - ph33-light-source-stability
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "time_ms,light_raw"
+  - set-control:
+      part-id: tsl2591
+      control: ch0Raw
+      value: 3000
+  - delay: 600ms
+  - set-control:
+      part-id: tsl2591
+      control: ch0Raw
+      value: 2600
+  - delay: 600ms
+  - set-control:
+      part-id: tsl2591
+      control: ch0Raw
+      value: 2800
+  - delay: 600ms

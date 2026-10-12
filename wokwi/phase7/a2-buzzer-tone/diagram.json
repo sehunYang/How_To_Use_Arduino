@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "author": "a2-buzzer-tone",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "id": "uno",
+      "type": "wokwi-arduino-uno",
+      "top": 0,
+      "left": 0
+    },
+    {
+      "id": "bb",
+      "type": "wokwi-breadboard-half",
+      "top": 0,
+      "left": 100
+    },
+    {
+      "id": "buzzer",
+      "type": "wokwi-buzzer",
+      "top": 0,
+      "left": 100
+    }
+  ],
+  "connections": [
+    [
+      "buzzer:2",
+      "bb:2t.e",
+      "purple",
+      []
+    ],
+    [
+      "uno:8",
+      "bb:2t.a",
+      "purple",
+      []
+    ],
+    [
+      "buzzer:1",
+      "bb:4t.e",
+      "black",
+      []
+    ],
+    [
+      "uno:GND",
+      "bb:tn.1",
+      "black",
+      []
+    ],
+    [
+      "bb:tn.5",
+      "bb:4t.a",
+      "black",
+      []
+    ]
+  ]
+}

@@ -1,0 +1,20 @@
+name: Phase 5 behavior - c2-freezing-point-depression
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "time_ms,temperature_c"
+  - set-control:
+      part-id: ds18b20
+      control: temperature
+      value: 5
+  - wait-serial: ",5.00"
+  - set-control:
+      part-id: ds18b20
+      control: temperature
+      value: -3
+  - wait-serial: ",-3.00"
+  - set-control:
+      part-id: ds18b20
+      control: temperature
+      value: -2
+  - wait-serial: ",-2.00"

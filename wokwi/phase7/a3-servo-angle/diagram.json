@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "author": "a3-servo-angle",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "id": "uno",
+      "type": "wokwi-arduino-uno",
+      "top": 0,
+      "left": 0
+    },
+    {
+      "id": "bb",
+      "type": "wokwi-breadboard-half",
+      "top": 0,
+      "left": 100
+    },
+    {
+      "id": "servo",
+      "type": "wokwi-servo",
+      "top": 0,
+      "left": 100
+    },
+    {
+      "id": "servo_supply",
+      "type": "wokwi-slide-potentiometer",
+      "top": 0,
+      "left": 200
+    }
+  ],
+  "connections": [
+    [
+      "servo:PWM",
+      "uno:9",
+      "orange",
+      []
+    ],
+    [
+      "servo:V+",
+      "bb:1t.a",
+      "red",
+      []
+    ],
+    [
+      "servo_supply:SIG",
+      "bb:1t.b",
+      "red",
+      []
+    ],
+    [
+      "servo:GND",
+      "bb:tn.5",
+      "black",
+      []
+    ],
+    [
+      "servo_supply:GND",
+      "bb:tn.9",
+      "black",
+      []
+    ],
+    [
+      "uno:GND",
+      "bb:tn.1",
+      "black",
+      []
+    ]
+  ]
+}

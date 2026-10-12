@@ -1,0 +1,81 @@
+{
+  "version": 1,
+  "author": "a5-dc-motor-drive",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "id": "uno",
+      "type": "wokwi-arduino-uno",
+      "top": 0,
+      "left": 0
+    },
+    {
+      "id": "bb",
+      "type": "wokwi-breadboard-half",
+      "top": 0,
+      "left": 100
+    },
+    {
+      "id": "driver",
+      "type": "wokwi-a4988",
+      "top": 0,
+      "left": 100
+    },
+    {
+      "id": "battery",
+      "type": "wokwi-slide-potentiometer",
+      "top": 0,
+      "left": 200
+    }
+  ],
+  "connections": [
+    [
+      "driver:DIR",
+      "uno:2",
+      "orange",
+      []
+    ],
+    [
+      "driver:STEP",
+      "uno:4",
+      "orange",
+      []
+    ],
+    [
+      "driver:ENABLE",
+      "uno:5",
+      "yellow",
+      []
+    ],
+    [
+      "battery:SIG",
+      "bb:1t.a",
+      "red",
+      []
+    ],
+    [
+      "driver:VMOT",
+      "bb:1t.b",
+      "red",
+      []
+    ],
+    [
+      "battery:GND",
+      "bb:tn.5",
+      "black",
+      []
+    ],
+    [
+      "driver:GND",
+      "bb:tn.9",
+      "black",
+      []
+    ],
+    [
+      "uno:GND",
+      "bb:tn.1",
+      "black",
+      []
+    ]
+  ]
+}

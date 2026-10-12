@@ -1,0 +1,138 @@
+{
+  "version": 1,
+  "author": "c8-ventilation-recovery",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "id": "uno",
+      "type": "wokwi-arduino-uno",
+      "top": 0,
+      "left": 0
+    },
+    {
+      "id": "bb",
+      "type": "wokwi-breadboard-half",
+      "top": 0,
+      "left": 100
+    },
+    {
+      "id": "bme280",
+      "type": "chip-bme280",
+      "top": 0,
+      "left": 100,
+      "attrs": {
+        "address": "119"
+      }
+    },
+    {
+      "id": "relay",
+      "type": "wokwi-relay-module",
+      "top": 0,
+      "left": 200
+    },
+    {
+      "id": "fan_supply",
+      "type": "wokwi-slide-potentiometer",
+      "top": 0,
+      "left": 300
+    },
+    {
+      "id": "fan",
+      "type": "wokwi-resistor",
+      "top": 0,
+      "left": 400
+    }
+  ],
+  "connections": [
+    [
+      "bme280:VCC",
+      "bb:tp.5",
+      "red",
+      []
+    ],
+    [
+      "uno:5V",
+      "bb:tp.1",
+      "red",
+      []
+    ],
+    [
+      "bme280:GND",
+      "bb:tn.5",
+      "black",
+      []
+    ],
+    [
+      "uno:GND",
+      "bb:tn.1",
+      "black",
+      []
+    ],
+    [
+      "bme280:SDA",
+      "uno:A4",
+      "green",
+      []
+    ],
+    [
+      "bme280:SCL",
+      "uno:A5",
+      "yellow",
+      []
+    ],
+    [
+      "relay:IN",
+      "uno:7",
+      "orange",
+      []
+    ],
+    [
+      "relay:VCC",
+      "bb:tp.9",
+      "red",
+      []
+    ],
+    [
+      "relay:GND",
+      "bb:tn.9",
+      "black",
+      []
+    ],
+    [
+      "fan_supply:SIG",
+      "bb:1t.a",
+      "red",
+      []
+    ],
+    [
+      "relay:COM",
+      "bb:1t.b",
+      "red",
+      []
+    ],
+    [
+      "relay:NO",
+      "bb:5t.a",
+      "purple",
+      []
+    ],
+    [
+      "fan:1",
+      "bb:5t.b",
+      "purple",
+      []
+    ],
+    [
+      "fan:2",
+      "bb:9t.a",
+      "black",
+      []
+    ],
+    [
+      "fan_supply:GND",
+      "bb:9t.b",
+      "black",
+      []
+    ]
+  ]
+}

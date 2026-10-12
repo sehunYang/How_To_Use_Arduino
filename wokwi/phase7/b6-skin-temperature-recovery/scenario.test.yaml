@@ -1,0 +1,16 @@
+name: Phase 5 behavior - b6-skin-temperature-recovery
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "time_ms,skin_c,dynamic_g"
+  - wait-serial: ",22.00,0.0000"
+  - set-control:
+      part-id: ds18b20
+      control: temperature
+      value: 33
+  - wait-serial: ",33.00,0.0000"
+  - set-control:
+      part-id: mpu6050
+      control: accelZ
+      value: 1.5
+  - wait-serial: ",33.00,0.5000"

@@ -1,0 +1,11 @@
+name: Phase 5 behavior - b2-leaf-transpiration
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "time_ms,temperature_c,humidity_pct"
+  - delay: 6000ms
+  - set-control:
+      part-id: bme280
+      control: humidityRaw
+      value: 34047
+  - delay: 10000ms

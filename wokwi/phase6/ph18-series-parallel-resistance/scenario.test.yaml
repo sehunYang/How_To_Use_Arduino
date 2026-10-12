@@ -1,0 +1,19 @@
+name: Phase 5 behavior - ph18-series-parallel-resistance
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "condition_id,time_ms,bus_V,current_mA,equivalent_ohm"
+  - set-control:
+      part-id: ina219
+      control: shuntRaw
+      value: 41
+  - set-control:
+      part-id: ina219
+      control: busRaw
+      value: 10000
+  - delay: 1500ms
+  - set-control:
+      part-id: ina219
+      control: shuntRaw
+      value: 277
+  - delay: 1500ms

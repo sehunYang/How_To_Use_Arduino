@@ -1,0 +1,6 @@
+name: Phase 5 behavior - a2-buzzer-tone
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "time_ms,tone_hz,buzzer_on"
+  - delay: 3000ms

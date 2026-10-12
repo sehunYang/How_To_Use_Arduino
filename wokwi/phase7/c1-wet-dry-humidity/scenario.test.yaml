@@ -1,0 +1,19 @@
+name: Phase 5 behavior - c1-wet-dry-humidity
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "time_ms,dry_c,wet_c,humidity_pct"
+  - delay: 3000ms
+  - set-control:
+      part-id: ds18b20_1
+      control: temperature
+      value: 25
+  - set-control:
+      part-id: ds18b20_2
+      control: temperature
+      value: 19.5
+  - set-control:
+      part-id: bme280
+      control: humidityRaw
+      value: 32244
+  - delay: 5000ms

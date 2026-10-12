@@ -1,0 +1,16 @@
+name: Phase 5 behavior - e1-terminal-velocity
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "time_ms,distance_cm"
+  - delay: 400ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 200
+  - delay: 400ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 50
+  - delay: 400ms

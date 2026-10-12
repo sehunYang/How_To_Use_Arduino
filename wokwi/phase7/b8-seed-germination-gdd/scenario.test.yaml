@@ -1,0 +1,7 @@
+name: Phase 5 behavior - b8-seed-germination-gdd
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "time_ms,temperature_c"
+  - wait-serial: ",22.00"
+  - delay: 200ms

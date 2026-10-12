@@ -1,5 +1,8 @@
 import { sensors } from '@/data/inventory-seed/sensors'
 import { phase5Recipes } from '@/data/phase5'
+import { phase6Recipes } from '@/data/phase6'
+import { phase7Recipes } from '@/data/phase7'
+import type { Recipe } from '@/schema'
 
 export const PHASE5_SIMULATION_TIMEOUT_CAP_MS = 20_000
 
@@ -44,8 +47,8 @@ function stableSeed(value: string): number {
 
 const sensorById = new Map(sensors.map((sensor) => [sensor.id, sensor]))
 
-export const phase5SimulationRegistry: Phase5SimulationRegistryEntry[] =
-  phase5Recipes.map((recipe) => {
+function buildSimulationRegistry(phase: string, recipes: readonly Recipe[]): Phase5SimulationRegistryEntry[] {
+  return recipes.map((recipe) => {
     const unsupportedSensorIds = recipe.sensors
       .filter((sensorId) => sensorById.get(sensorId)?.wokwi.simSupported !== true)
       .sort()
@@ -66,10 +69,30 @@ export const phase5SimulationRegistry: Phase5SimulationRegistryEntry[] =
       status: 'eligible',
       timeoutMs: PHASE5_SIMULATION_TIMEOUT_CAP_MS,
       scenario: {
-        id: `phase5/${recipe.id}/smoke-v1`,
+        id: `${phase}/${recipe.id}/smoke-v1`,
         kind: 'deterministic-smoke',
         seed: stableSeed(recipe.id),
         sensorIds: [...recipe.sensors].sort(),
       },
     }
   })
+}
+
+export const phase5SimulationRegistry = buildSimulationRegistry('phase5', phase5Recipes)
+
+/**
+ * Every recipe set that gets generated Wokwi projects. The pipeline grew up on
+ * Phase 5, hence its names; each phase keeps its own directory and manifest.
+ */
+export interface SimulationPhase {
+  phase: 'phase5' | 'phase6' | 'phase7'
+  root: string
+  recipes: readonly Recipe[]
+  registry: Phase5SimulationRegistryEntry[]
+}
+
+export const simulationPhases: readonly SimulationPhase[] = [
+  { phase: 'phase5', root: 'wokwi/phase5', recipes: phase5Recipes, registry: phase5SimulationRegistry },
+  { phase: 'phase6', root: 'wokwi/phase6', recipes: phase6Recipes, registry: buildSimulationRegistry('phase6', phase6Recipes) },
+  { phase: 'phase7', root: 'wokwi/phase7', recipes: phase7Recipes, registry: buildSimulationRegistry('phase7', phase7Recipes) },
+]

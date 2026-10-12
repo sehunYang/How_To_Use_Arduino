@@ -1,0 +1,87 @@
+name: Phase 5 behavior - ph17-ohms-law
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "condition_id,duty,bus_V,shunt_mV,current_mA"
+  - set-control:
+      part-id: ina219
+      control: busRaw
+      value: 1016
+  - set-control:
+      part-id: ina219
+      control: shuntRaw
+      value: 5
+  - wait-serial: "R1K,26,"
+  - set-control:
+      part-id: ina219
+      control: busRaw
+      value: 2040
+  - set-control:
+      part-id: ina219
+      control: shuntRaw
+      value: 10
+  - wait-serial: "R1K,52,"
+  - set-control:
+      part-id: ina219
+      control: busRaw
+      value: 3056
+  - set-control:
+      part-id: ina219
+      control: shuntRaw
+      value: 15
+  - wait-serial: "R1K,78,"
+  - set-control:
+      part-id: ina219
+      control: busRaw
+      value: 4080
+  - set-control:
+      part-id: ina219
+      control: shuntRaw
+      value: 20
+  - wait-serial: "R1K,104,"
+  - set-control:
+      part-id: ina219
+      control: busRaw
+      value: 5096
+  - set-control:
+      part-id: ina219
+      control: shuntRaw
+      value: 25
+  - wait-serial: "R1K,130,"
+  - set-control:
+      part-id: ina219
+      control: busRaw
+      value: 6120
+  - set-control:
+      part-id: ina219
+      control: shuntRaw
+      value: 31
+  - wait-serial: "R1K,156,"
+  - set-control:
+      part-id: ina219
+      control: busRaw
+      value: 7136
+  - set-control:
+      part-id: ina219
+      control: shuntRaw
+      value: 36
+  - wait-serial: "R1K,182,"
+  - set-control:
+      part-id: ina219
+      control: busRaw
+      value: 8160
+  - set-control:
+      part-id: ina219
+      control: shuntRaw
+      value: 41
+  - wait-serial: "R1K,208,"
+  - set-control:
+      part-id: ina219
+      control: busRaw
+      value: 9176
+  - set-control:
+      part-id: ina219
+      control: shuntRaw
+      value: 46
+  - wait-serial: "R1K,234,"
+  - delay: 200ms

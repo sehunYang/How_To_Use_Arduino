@@ -1,0 +1,135 @@
+{
+  "version": 1,
+  "author": "d8-elevator-floor",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "id": "uno",
+      "type": "wokwi-arduino-uno",
+      "top": 0,
+      "left": 0
+    },
+    {
+      "id": "bb",
+      "type": "wokwi-breadboard-half",
+      "top": 0,
+      "left": 100
+    },
+    {
+      "id": "hc-sr04",
+      "type": "wokwi-hc-sr04",
+      "top": 0,
+      "left": 100
+    },
+    {
+      "id": "servo",
+      "type": "wokwi-servo",
+      "top": 0,
+      "left": 200
+    },
+    {
+      "id": "servo_supply",
+      "type": "wokwi-slide-potentiometer",
+      "top": 0,
+      "left": 300
+    },
+    {
+      "id": "lcd",
+      "type": "wokwi-lcd1602",
+      "top": 0,
+      "left": 400
+    }
+  ],
+  "connections": [
+    [
+      "hc-sr04:VCC",
+      "bb:tp.5",
+      "red",
+      []
+    ],
+    [
+      "uno:5V",
+      "bb:tp.1",
+      "red",
+      []
+    ],
+    [
+      "hc-sr04:GND",
+      "bb:tn.5",
+      "black",
+      []
+    ],
+    [
+      "uno:GND",
+      "bb:tn.1",
+      "black",
+      []
+    ],
+    [
+      "hc-sr04:TRIG",
+      "uno:7",
+      "blue",
+      []
+    ],
+    [
+      "hc-sr04:ECHO",
+      "uno:6",
+      "green",
+      []
+    ],
+    [
+      "servo:PWM",
+      "uno:9",
+      "orange",
+      []
+    ],
+    [
+      "servo:V+",
+      "bb:1t.a",
+      "red",
+      []
+    ],
+    [
+      "servo_supply:SIG",
+      "bb:1t.b",
+      "red",
+      []
+    ],
+    [
+      "servo:GND",
+      "bb:tn.17",
+      "black",
+      []
+    ],
+    [
+      "servo_supply:GND",
+      "bb:tn.13",
+      "black",
+      []
+    ],
+    [
+      "lcd:VCC",
+      "bb:tp.9",
+      "red",
+      []
+    ],
+    [
+      "lcd:GND",
+      "bb:tn.9",
+      "black",
+      []
+    ],
+    [
+      "lcd:SDA",
+      "uno:A4",
+      "green",
+      []
+    ],
+    [
+      "lcd:SCL",
+      "uno:A5",
+      "yellow",
+      []
+    ]
+  ]
+}

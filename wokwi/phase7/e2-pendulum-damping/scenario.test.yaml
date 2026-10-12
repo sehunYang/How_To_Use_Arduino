@@ -1,0 +1,17 @@
+name: Phase 5 behavior - e2-pendulum-damping
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "time_ms,g_norm"
+  - wait-serial: ",1.0000"
+  - set-control:
+      part-id: mpu6050
+      control: accelZ
+      value: 1.5
+  - wait-serial: ",1.5000"
+  - set-control:
+      part-id: mpu6050
+      control: accelX
+      value: 0.5
+  - wait-serial: ",1.5811"
+  - delay: 300ms

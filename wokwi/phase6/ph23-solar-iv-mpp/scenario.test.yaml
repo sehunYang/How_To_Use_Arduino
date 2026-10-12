@@ -1,0 +1,31 @@
+name: Phase 5 behavior - ph23-solar-iv-mpp
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "condition_id,time_ms,panel_V,current_mA,power_mW,light_raw"
+  - set-control:
+      part-id: tsl2591
+      control: ch0Raw
+      value: 4000
+  - set-control:
+      part-id: ina219
+      control: busRaw
+      value: 4000
+  - set-control:
+      part-id: ina219
+      control: shuntRaw
+      value: 20
+  - delay: 1500ms
+  - set-control:
+      part-id: tsl2591
+      control: ch0Raw
+      value: 2000
+  - set-control:
+      part-id: ina219
+      control: busRaw
+      value: 3600
+  - set-control:
+      part-id: ina219
+      control: shuntRaw
+      value: 18
+  - delay: 1500ms

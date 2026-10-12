@@ -1,0 +1,23 @@
+name: Phase 5 behavior - ph22-battery-internal-resistance
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "condition_id,time_ms,terminal_V,current_mA"
+  - set-control:
+      part-id: ina219
+      control: shuntRaw
+      value: 0
+  - set-control:
+      part-id: ina219
+      control: busRaw
+      value: 3000
+  - delay: 800ms
+  - set-control:
+      part-id: ina219
+      control: shuntRaw
+      value: 68
+  - set-control:
+      part-id: ina219
+      control: busRaw
+      value: 2992
+  - delay: 800ms

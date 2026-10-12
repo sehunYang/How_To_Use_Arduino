@@ -26,6 +26,7 @@ export const PHASE5_GLOBAL_INPUTS: readonly string[] = [
   'src/wokwi/sensorOracles.ts',
   'src/wokwi/phase5ProjectGenerator.ts',
   'src/wokwi/phase5Selection.ts',
+  'src/wokwi/phase5SimulationRegistry.ts',
   'scripts/run-phase5-wokwi.ts',
   'scripts/build-phase5-wokwi-firmware.ts',
   'scripts/generate-phase5-wokwi.ts',

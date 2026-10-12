@@ -1,0 +1,5 @@
+name: Variant - ph02-newton-second-law--unplugged-mpu6050
+version: 1
+author: phase5-generator
+steps:
+  - delay: 3000ms

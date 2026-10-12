@@ -1,0 +1,24 @@
+name: Phase 5 behavior - ph13-thermal-conductivity
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "time_ms,index,temperature_c"
+  - wait-serial: ",1,22.000"
+  - set-control:
+      part-id: ds18b20_1
+      control: temperature
+      value: 60
+  - set-control:
+      part-id: ds18b20_2
+      control: temperature
+      value: 20
+  - delay: 3000ms
+  - set-control:
+      part-id: ds18b20_1
+      control: temperature
+      value: 25
+  - set-control:
+      part-id: ds18b20_2
+      control: temperature
+      value: 25
+  - delay: 3000ms

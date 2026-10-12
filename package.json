@@ -40,7 +40,8 @@
     "test:wokwi-layout": "vitest run src/wokwi",
     "build:wokwi:chips": "wokwi-cli chip compile chips/ina219.chip.c chips/ina219.c -o chips/ina219.chip.wasm && wokwi-cli chip compile chips/tsl2591.chip.c chips/tsl2591.c -o chips/tsl2591.chip.wasm && wokwi-cli chip compile chips/bme280.chip.c chips/bme280.c -o chips/bme280.chip.wasm",
     "setup:zig": "node scripts/setup-zig.mjs",
-    "verify:logic": "node scripts/verify-logic.mjs"
+    "verify:logic": "node scripts/verify-logic.mjs",
+    "verify:hardware": "tsx scripts/verify-hardware-records.ts"
   },
   "dependencies": {
     "@wokwi/elements": "^1.9.2",

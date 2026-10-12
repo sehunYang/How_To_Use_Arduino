@@ -1,0 +1,26 @@
+name: Phase 5 behavior - d4-parking-barrier
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "time_ms,distance_cm,door_state,buzzer_on"
+  - delay: 600ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 15
+  - delay: 600ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 5
+  - delay: 600ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 22
+  - delay: 600ms
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 30
+  - delay: 600ms
