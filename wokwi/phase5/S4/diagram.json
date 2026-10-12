@@ -1,0 +1,89 @@
+{
+  "version": 1,
+  "author": "S4",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "id": "uno",
+      "type": "wokwi-arduino-uno",
+      "top": 0,
+      "left": 0
+    },
+    {
+      "id": "bb",
+      "type": "wokwi-breadboard-half",
+      "top": 0,
+      "left": 100
+    },
+    {
+      "id": "cds",
+      "type": "chip-cds",
+      "top": 0,
+      "left": 100,
+      "attrs": {
+        "nodePin": "2",
+        "fixedOhms": "10000",
+        "supplyVolts": "5"
+      }
+    },
+    {
+      "id": "cds_resistor",
+      "type": "wokwi-resistor",
+      "top": 0,
+      "left": 200,
+      "attrs": {
+        "value": "10000"
+      }
+    }
+  ],
+  "connections": [
+    [
+      "cds:L1",
+      "bb:tp.5",
+      "red",
+      []
+    ],
+    [
+      "uno:5V",
+      "bb:tp.1",
+      "red",
+      []
+    ],
+    [
+      "cds:L2",
+      "bb:2t.a",
+      "green",
+      []
+    ],
+    [
+      "cds_resistor:1",
+      "bb:2t.e",
+      "green",
+      []
+    ],
+    [
+      "uno:A0",
+      "bb:2t.b",
+      "green",
+      []
+    ],
+    [
+      "cds_resistor:2",
+      "bb:4t.e",
+      "black",
+      []
+    ],
+    [
+      "uno:GND",
+      "bb:tn.1",
+      "black",
+      []
+    ],
+    [
+      "bb:tn.5",
+      "bb:4t.a",
+      "black",
+      []
+    ]
+  ]
+}

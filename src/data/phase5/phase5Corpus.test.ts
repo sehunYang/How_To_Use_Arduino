@@ -56,15 +56,8 @@ describe('complete Phase 5 corpus', () => {
       .filter((recipe) => !supported.includes(recipe))
       .map((recipe) => recipe.id)
 
-    expect(supported).toHaveLength(28)
-    expect(unsupported).toEqual([
-      'S4',
-      'S9',
-      'e5-spatial-light-map',
-      'night-activity',
-      'light-follow-car',
-      'smart-lighting',
-    ])
+    expect(supported).toHaveLength(32)
+    expect(unsupported).toEqual(['S9', 'e5-spatial-light-map'])
   })
 
   it('keeps recipes aligned with the corrected physical pinouts', () => {

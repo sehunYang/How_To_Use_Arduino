@@ -4,7 +4,9 @@ import type { Sensor } from '@/schema'
  * Seed data for the 10 owned sensors (spec hardware inventory).
  * `wokwi.simSupported` reflects CURRENT state: true only for sensors with
  * a native Wokwi part, an approved analog stand-in, or an audited in-repo
- * custom chip. INA219, TSL2591, and BME280 use audited in-repo chips.
+ * custom chip. INA219, TSL2591, and BME280 use audited in-repo chips; the CdS
+ * keeps its illustration here and is swapped for the divider chip (chips/cds.c)
+ * only in generated simulation projects.
  * TCA9548A has no path to simulation and stays false permanently.
  */
 export const sensors: Sensor[] = [
@@ -168,7 +170,7 @@ export const sensors: Sensor[] = [
       { name: 'L2', kind: 'analog' },
     ],
     currentDrawMa: 0.5,
-    wokwi: { part: 'visual-cds', pinMap: { L1: 'L1', L2: 'L2' }, simSupported: false },
+    wokwi: { part: 'visual-cds', pinMap: { L1: 'L1', L2: 'L2' }, simSupported: true },
     muxChannels: 0,
   },
   {

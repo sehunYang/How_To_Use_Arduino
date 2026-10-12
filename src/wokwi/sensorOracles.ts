@@ -96,3 +96,16 @@ export const ina219CurrentMa = (shuntRaw: number) => (shuntRaw * 10e-6 / 0.1) * 
 /** Bus voltage register: 4 mV per LSB in bits 15:3. */
 export const ina219BusVolts = (busRegister: number) => (busRegister >> 3) * 0.004
 export const ina219BusRegisterFor = (volts: number) => Math.round(volts / 0.004) << 3
+
+/**
+ * GL5528 photoresistor: 10-20 kΩ at 10 lux (15 kΩ typical), γ = 0.7 between 10 and
+ * 100 lux, at least 1 MΩ in the dark.
+ */
+export const cdsOhms = (lux: number) => (lux <= 0 ? 1e6 : Math.min(1e6, 15000 * (lux / 10) ** -0.7))
+
+/**
+ * analogRead() of a CdS divider as every CdS recipe wires it: the CdS from 5 V to
+ * the analog pin, `fixedOhms` from the pin to GND, read against the 5 V reference.
+ */
+export const cdsDividerAdc = (lux: number, fixedOhms = 10000) =>
+  Math.min(1023, Math.round((1023 * fixedOhms) / (fixedOhms + cdsOhms(lux))))

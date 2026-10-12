@@ -17,6 +17,7 @@ import {
   DS18B20_LSB_C,
   echo,
   adc,
+  cdsAdc,
   expectPin,
   lux,
   type ParsedRow,
@@ -1153,6 +1154,24 @@ const phase7: Phase5BehaviorSpec[] = [
     minRows: 3,
   },
   {
+    recipeId: 'b7-woodlouse-phototaxis',
+    header: 'time_ms,left_adc,right_adc,error',
+    // The box lit evenly, then from the left, then from the right.
+    phases: [
+      { label: 'even light', steps: [delayMs(2500)], expect: { left_adc: cdsAdc(300), right_adc: cdsAdc(300), error: approx(0, 6) } },
+      ...([[800, 50, 'lamp at the left end'], [50, 800, 'lamp at the right end']] as const).map(([left, right, label]) => ({
+        label,
+        steps: [set('cds_1', 'lux', left), set('cds_2', 'lux', right), delayMs(2500)],
+        expect: { left_adc: cdsAdc(left), right_adc: cdsAdc(right) },
+        settleRows: 1,
+      })),
+    ],
+    always: { error: derived(({ values }) => values.left_adc - values.right_adc, 0) },
+    timeColumn: 'time_ms',
+    sampleInterval: { min: 1000, max: 1030 },
+    minRows: 6,
+  },
+  {
     recipeId: 'b8-seed-germination-gdd',
     header: 'time_ms,temperature_c',
     // One reading a minute, so a single one fits in the run.
@@ -1332,6 +1351,32 @@ const phase7: Phase5BehaviorSpec[] = [
     ],
     finalSteps: [delayMs(300)],
     minRows: 4,
+  },
+  {
+    recipeId: 'd3-line-follower',
+    header: 'time_ms,left_adc,right_adc,left_speed,right_speed',
+    // White paper reflects ~300 lux into the CdS, the black line ~20 lux.
+    phases: [
+      { label: 'centred: both sensors over white paper', steps: [delayMs(600)], expect: { left_adc: cdsAdc(300), right_adc: cdsAdc(300) } },
+      ...([[20, 300, 'drifted right: the left sensor is over the line'], [300, 20, 'drifted left: the right sensor is over the line']] as const)
+        .map(([left, right, label]) => ({
+          label,
+          steps: [set('cds_1', 'lux', left), set('cds_2', 'lux', right), delayMs(600)],
+          expect: { left_adc: cdsAdc(left), right_adc: cdsAdc(right) },
+          settleRows: 1,
+        })),
+    ],
+    // Steering back onto the line means slowing the wheel on the line's side.
+    checkRows: (rows) => rows.flatMap(({ values: v }, index) => {
+      const darker = v.left_adc < v.right_adc - 50 ? 'left' : v.right_adc < v.left_adc - 50 ? 'right' : undefined
+      if (!darker && Math.abs(v.left_speed - v.right_speed) > 3) return [`row ${index + 1}: centred but wheels at ${v.left_speed}/${v.right_speed}`]
+      if (darker === 'left' && !(v.left_speed < v.right_speed)) return [`row ${index + 1}: line under the left sensor but left wheel ${v.left_speed} is not slower than right ${v.right_speed}`]
+      if (darker === 'right' && !(v.right_speed < v.left_speed)) return [`row ${index + 1}: line under the right sensor but right wheel ${v.right_speed} is not slower than left ${v.left_speed}`]
+      return []
+    }),
+    timeColumn: 'time_ms',
+    sampleInterval: { min: 49, max: 60 },
+    minRows: 25,
   },
   {
     recipeId: 'd4-parking-barrier',

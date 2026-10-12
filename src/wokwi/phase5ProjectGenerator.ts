@@ -1,6 +1,7 @@
 import type { Recipe, Sensor } from '@/schema'
 import { phase5BehaviorSpecById, type Phase5BehaviorSpec, type ScenarioStep } from './behaviorSpecs'
 import { buildDiagram, type Diagram } from './buildDiagram'
+import { recipeNetlist } from './netlist'
 import type { EligiblePhase5Simulation } from './phase5SimulationRegistry'
 
 export const PHASE5_WOKWI_ROOT = 'wokwi/phase5'
@@ -8,6 +9,7 @@ export const PHASE5_WOKWI_MANIFEST_VERSION = 1
 
 const CUSTOM_CHIP_BY_PART_TYPE: Readonly<Record<string, string>> = {
   'chip-bme280': 'bme280',
+  'chip-cds': 'cds',
   'chip-ina219': 'ina219',
   'chip-tsl2591': 'tsl2591',
 }
@@ -60,6 +62,39 @@ function simulatable(diagram: Diagram): Diagram {
   }
 }
 
+/**
+ * Swaps each CdS illustration for the divider chip (chips/cds.chip.c). The chip
+ * drives the analog node itself, so the generator first proves the recipe wires
+ * the divider the way the chip models it: one leg on 5 V, the other on an analog
+ * pin that a single resistor pulls to GND.
+ */
+function withCdsChips(diagram: Diagram, recipe: Recipe, sensors: Sensor[]): Diagram {
+  if (!diagram.parts.some((part) => part.type === 'visual-cds')) return diagram
+  const nets = recipeNetlist(recipe, sensors)
+  const netOf = (pin: string) => nets.find((net) => net.includes(pin)) ?? [pin]
+  const resistorOhms = new Map(diagram.parts
+    .filter((part) => part.type === 'wokwi-resistor')
+    .map((part) => [part.id, Number(part.attrs?.value)]))
+  const parts = diagram.parts.map((part) => {
+    if (part.type !== 'visual-cds') return part
+    const fail = (why: string): never => {
+      throw new Error(`Phase 5 Wokwi generation: ${recipe.id} ${part.id} ${why}`)
+    }
+    const legs = ([1, 2] as const).map((leg) => ({ leg, net: netOf(`${part.id}:L${leg}`) }))
+    const supply = legs.find(({ net }) => net.includes('uno:5V')) ?? fail('has no leg on 5V')
+    const node = legs.find(({ leg }) => leg !== supply.leg)!
+    if (!node.net.some((pin) => /^uno:A\d$/.test(pin))) fail('does not feed an analog pin')
+    const pulls = node.net.filter((pin) => resistorOhms.has(pin.split(':')[0]))
+    if (pulls.length !== 1) fail(`needs exactly one resistor on its analog node, found ${pulls.length}`)
+    const [resistor, end] = pulls[0].split(':')
+    if (!netOf(`${resistor}:${end === '1' ? '2' : '1'}`).includes('uno:GND')) fail(`resistor ${resistor} does not reach GND`)
+    const fixedOhms = resistorOhms.get(resistor)!
+    if (!(fixedOhms > 0)) fail(`resistor ${resistor} has no value`)
+    return { ...part, type: 'chip-cds', attrs: { nodePin: String(node.leg), fixedOhms: String(fixedOhms), supplyVolts: '5' } }
+  })
+  return { ...diagram, parts }
+}
+
 function instrumentSketch(recipeId: string, sketch: string): string {
   const serialBegin = /Serial\.begin\(([^;]+)\);/
   if (!serialBegin.test(sketch)) {
@@ -89,7 +124,7 @@ export function buildPhase5WokwiProjects(
     const path = `${root}/${entry.recipeId}`
     const timeoutMs = behavior?.timeoutMs ?? entry.timeoutMs
     const scenario = 'scenario.test.yaml'
-    const diagram = simulatable(buildDiagram(recipe, sensors))
+    const diagram = simulatable(withCdsChips(buildDiagram(recipe, sensors), recipe, sensors))
     const chips = chipsOf(diagram)
 
     return {

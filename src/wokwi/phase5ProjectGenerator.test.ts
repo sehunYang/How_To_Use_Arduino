@@ -27,17 +27,10 @@ describe('Phase 5 Wokwi project generation', () => {
     const projects = buildPhase5WokwiProjects(eligible, phase5Recipes, sensors)
     const manifest = buildPhase5WokwiManifest(projects, excluded)
 
-    expect(projects).toHaveLength(28)
-    expect(manifest.projectCount).toBe(28)
-    expect(manifest.exclusions).toEqual([
-      'S4',
-      'S9',
-      'e5-spatial-light-map',
-      'night-activity',
-      'light-follow-car',
-      'smart-lighting',
-    ])
-    expect(new Set(projects.map((project) => project.id)).size).toBe(28)
+    expect(projects).toHaveLength(32)
+    expect(manifest.projectCount).toBe(32)
+    expect(manifest.exclusions).toEqual(['S9', 'e5-spatial-light-map'])
+    expect(new Set(projects.map((project) => project.id)).size).toBe(32)
     expect(projects.some((project) => excluded.includes(project.id))).toBe(false)
   })
 

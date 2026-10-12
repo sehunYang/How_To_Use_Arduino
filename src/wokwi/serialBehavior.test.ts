@@ -193,6 +193,8 @@ const allRecipes = simulationPhases.flatMap((phase) => phase.recipes)
 const SMOKE_ONLY: Record<string, string> = {
   S3: 'PIR needs 30 s to settle, past the 20 s cap, and Wokwi has no PIR automation control',
   'automatic-door': 'PIR needs 30 s to settle, past the 20 s cap, and Wokwi has no PIR automation control',
+  'night-activity': 'waits 30 s for the PIR to settle before its first row, past the 20 s cap',
+  'smart-lighting': 'waits 30 s for the PIR to settle before its first row, past the 20 s cap',
   's13-mpu-aux-tsl2591': "Wokwi's MPU6050 does not implement the auxiliary I2C master (XDA/XCL)",
 }
 

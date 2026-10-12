@@ -101,7 +101,7 @@ jobs:
       # self-contained wokwi/chip-conformance project, so rebuilding the wasm
       # afterwards would leave the rig simulating the committed binaries
       # instead of the ones just built from C source.
-      - name: Build INA219, TSL2591, and BME280 custom chips
+      - name: Build INA219, TSL2591, BME280, and CdS custom chips
         run: npm run build:wokwi:chips
 
       - name: Build Arduino Uno firmware + stage Wokwi project assets

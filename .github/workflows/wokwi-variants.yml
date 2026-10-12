@@ -37,7 +37,7 @@ jobs:
 
       # Before staging: the variants copy chips/*.chip.wasm, and the BME280
       # address attribute only exists in the source build.
-      - name: Build INA219, TSL2591, and BME280 custom chips
+      - name: Build INA219, TSL2591, BME280, and CdS custom chips
         run: npm run build:wokwi:chips
 
       - name: Build and stage firmware for every project and variant

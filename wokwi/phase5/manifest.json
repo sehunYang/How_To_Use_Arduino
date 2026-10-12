@@ -1,14 +1,10 @@
 {
   "version": 1,
   "generatedFrom": "phase5SimulationRegistry",
-  "projectCount": 28,
+  "projectCount": 32,
   "exclusions": [
-    "S4",
     "S9",
-    "e5-spatial-light-map",
-    "night-activity",
-    "light-follow-car",
-    "smart-lighting"
+    "e5-spatial-light-map"
   ],
   "projects": [
     {
@@ -40,6 +36,18 @@
       "command": "wokwi-cli wokwi/phase5/S3 --scenario scenario.test.yaml --timeout 20000",
       "chips": [],
       "fingerprint": "88d94d5ccdf407f2"
+    },
+    {
+      "id": "S4",
+      "path": "wokwi/phase5/S4",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/S4 --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "cds"
+      ],
+      "fingerprint": "0f71d273f4371cf1"
     },
     {
       "id": "S5",
@@ -250,6 +258,18 @@
       "fingerprint": "5d2a038065eedc8e"
     },
     {
+      "id": "night-activity",
+      "path": "wokwi/phase5/night-activity",
+      "kind": "smoke",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/night-activity --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "cds"
+      ],
+      "fingerprint": "c1c15af6ea5ff7e0"
+    },
+    {
       "id": "photosynthesis-light-control",
       "path": "wokwi/phase5/photosynthesis-light-control",
       "kind": "behavior",
@@ -282,6 +302,18 @@
       "fingerprint": "f8a888e23af3f180"
     },
     {
+      "id": "light-follow-car",
+      "path": "wokwi/phase5/light-follow-car",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/light-follow-car --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "cds"
+      ],
+      "fingerprint": "868dc36e4c404e88"
+    },
+    {
       "id": "automatic-door",
       "path": "wokwi/phase5/automatic-door",
       "kind": "smoke",
@@ -310,6 +342,18 @@
       "command": "wokwi-cli wokwi/phase5/rpm-meter --scenario scenario.test.yaml --timeout 20000",
       "chips": [],
       "fingerprint": "77e992a1da6ebf9b"
+    },
+    {
+      "id": "smart-lighting",
+      "path": "wokwi/phase5/smart-lighting",
+      "kind": "smoke",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/smart-lighting --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "cds"
+      ],
+      "fingerprint": "9d6de72c439054d6"
     }
   ]
 }

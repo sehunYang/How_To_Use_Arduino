@@ -1,11 +1,8 @@
 {
   "version": 1,
   "generatedFrom": "phase5SimulationRegistry",
-  "projectCount": 31,
-  "exclusions": [
-    "b7-woodlouse-phototaxis",
-    "d3-line-follower"
-  ],
+  "projectCount": 33,
+  "exclusions": [],
   "projects": [
     {
       "id": "a1-led-brightness",
@@ -137,6 +134,18 @@
       "fingerprint": "ca615720b37d047e"
     },
     {
+      "id": "b7-woodlouse-phototaxis",
+      "path": "wokwi/phase7/b7-woodlouse-phototaxis",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase7/b7-woodlouse-phototaxis --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "cds"
+      ],
+      "fingerprint": "40cfd9543cc4970a"
+    },
+    {
       "id": "b8-seed-germination-gdd",
       "path": "wokwi/phase7/b8-seed-germination-gdd",
       "kind": "behavior",
@@ -255,6 +264,18 @@
       "command": "wokwi-cli wokwi/phase7/d2-digital-level --scenario scenario.test.yaml --timeout 20000",
       "chips": [],
       "fingerprint": "3ea3ac80f17c83fa"
+    },
+    {
+      "id": "d3-line-follower",
+      "path": "wokwi/phase7/d3-line-follower",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase7/d3-line-follower --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "cds"
+      ],
+      "fingerprint": "2226f1f105099377"
     },
     {
       "id": "d4-parking-barrier",

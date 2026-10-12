@@ -1,0 +1,24 @@
+name: Phase 5 behavior - light-follow-car
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "time_ms,left_adc,right_adc,error"
+  - delay: 600ms
+  - set-control:
+      part-id: cds_1
+      control: lux
+      value: 1000
+  - set-control:
+      part-id: cds_2
+      control: lux
+      value: 100
+  - delay: 600ms
+  - set-control:
+      part-id: cds_1
+      control: lux
+      value: 100
+  - set-control:
+      part-id: cds_2
+      control: lux
+      value: 1000
+  - delay: 600ms

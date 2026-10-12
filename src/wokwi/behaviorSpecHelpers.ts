@@ -3,7 +3,7 @@
  * types, scenario step and expectation shorthands, and per-sensor helpers.
  */
 
-import { tsl2591Lux } from './sensorOracles'
+import { cdsDividerAdc, tsl2591Lux } from './sensorOracles'
 
 export type ScenarioStep =
   | { set: { partId: string; control: string; value: number } }
@@ -107,6 +107,9 @@ export const echo = (cm: number, unit: 'cm' | 'm' = 'cm') => {
 
 /** 10-bit ADC reading for a potentiometer at `position` of 5 V. */
 export const adc = (position: number) => approx(Math.min(1023, Math.round(position * 1023)), 3)
+
+/** 10-bit reading of a recipe's CdS divider (10 kΩ to GND) under `lux`; the chip refreshes every 1 ms. */
+export const cdsAdc = (lux: number) => approx(cdsDividerAdc(lux), 3)
 
 export function ds18b20Temperature(column: string, partId: string, values: number[], format: (t: number) => string) {
   return values.map<BehaviorPhase>((value, index) => ({

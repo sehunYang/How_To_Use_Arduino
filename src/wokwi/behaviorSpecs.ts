@@ -24,6 +24,7 @@ import {
   deg,
   echo,
   adc,
+  cdsAdc,
   lux,
   lampAt,
   ds18b20Temperature,
@@ -747,6 +748,45 @@ export const phase5BehaviorSpecs: readonly Phase5BehaviorSpec[] = [
     // 1 s delay + 120 ms integration.
     sampleInterval: { min: 1100, max: 1170 },
     minRows: 10,
+  },
+  // ── CdS divider (chips/cds.chip.c) ───────────────────────────────────────
+  {
+    recipeId: 'S4',
+    header: 'time_ms,light_adc',
+    // Room light, a covered sensor, dusk and a desk lamp: more light, lower CdS
+    // resistance, higher divider voltage.
+    phases: [
+      { label: 'classroom at 300 lux', steps: [delayMs(1000)], expect: { light_adc: cdsAdc(300) } },
+      ...[0, 30, 3000].map((lx) => ({
+        label: `${lx} lux`,
+        steps: [set('cds', 'lux', lx), delayMs(1000)],
+        expect: { light_adc: cdsAdc(lx) },
+        // A 10-sample average can straddle the change.
+        settleRows: 1,
+      })),
+    ],
+    timeColumn: 'time_ms',
+    // 10 × (analogRead + 5 ms) + 200 ms.
+    sampleInterval: { min: 248, max: 265 },
+    minRows: 12,
+  },
+  {
+    recipeId: 'light-follow-car',
+    header: 'time_ms,left_adc,right_adc,error',
+    phases: [
+      { label: 'even light', steps: [delayMs(600)], expect: { left_adc: cdsAdc(300), right_adc: cdsAdc(300), error: approx(0, 6) } },
+      ...([[1000, 100, 'lamp to the left'], [100, 1000, 'lamp to the right']] as const).map(([left, right, label]) => ({
+        label,
+        steps: [set('cds_1', 'lux', left), set('cds_2', 'lux', right), delayMs(600)],
+        expect: { left_adc: cdsAdc(left), right_adc: cdsAdc(right) },
+        settleRows: 1,
+      })),
+    ],
+    // The steering error is the brighter side's lead: positive when the light is on the left.
+    always: { error: derived(({ values }) => values.left_adc - values.right_adc, 0) },
+    timeColumn: 'time_ms',
+    sampleInterval: { min: 49, max: 60 },
+    minRows: 25,
   },
 ]
 

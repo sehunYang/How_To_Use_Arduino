@@ -160,11 +160,12 @@ void setup() {
 void loop() {
   int left = analogRead(A0);
   int right = analogRead(A1);
-  // 검은 선 위에 있는 쪽은 빛을 덜 되돌려 보내 값이 다릅니다. 그 차이만큼
-  // 한쪽 바퀴를 늦춰 차체를 선 쪽으로 되돌립니다.
+  // 검은 선 위에 있는 쪽은 빛을 덜 되돌려 보내 값이 낮습니다. 그 차이만큼
+  // 선 쪽 바퀴를 늦춰 차체를 선 쪽으로 되돌립니다. 왼쪽이 선 위면
+  // left - right가 음수이므로 왼쪽 속도가 줄어듭니다.
   int correction = (int)((left - right) * turnGain);
-  int leftSpeed = constrain(BASE_SPEED - correction, 0, 255);
-  int rightSpeed = constrain(BASE_SPEED + correction, 0, 255);
+  int leftSpeed = constrain(BASE_SPEED + correction, 0, 255);
+  int rightSpeed = constrain(BASE_SPEED - correction, 0, 255);
   analogWrite(ENA, leftSpeed);
   analogWrite(ENB, rightSpeed);
 
