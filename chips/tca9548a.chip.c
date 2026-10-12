@@ -1,7 +1,6 @@
 #include "wokwi-api.h"
 #include "tca9548a.h"
 
-#include <stdio.h>
 #include <stdlib.h>
 
 // The generator (src/wokwi/phase5ProjectGenerator.ts) reads the recipe's wiring
@@ -66,12 +65,13 @@ void chip_init(void) {
   chip_state_t *chip = calloc(1, sizeof(chip_state_t));
   chip->address = attr_read(attr_init("address", TCA9548A_BASE_ADDRESS));
   tca9548a_init(&chip->mux, (uint8_t)attr_read(attr_init("tslMask", 0)));
-  char name[8];
+  // Controls ch0Raw0..ch0Raw7 and ch1Raw0..ch1Raw7.
+  char ch0[] = "ch0RawN";
+  char ch1[] = "ch1RawN";
   for (int channel = 0; channel < TCA9548A_CHANNELS; channel++) {
-    snprintf(name, sizeof name, "ch0Raw%d", channel);
-    chip->ch0_attr[channel] = attr_init(name, 1234);
-    snprintf(name, sizeof name, "ch1Raw%d", channel);
-    chip->ch1_attr[channel] = attr_init(name, 321);
+    ch0[6] = ch1[6] = (char)('0' + channel);
+    chip->ch0_attr[channel] = attr_init(ch0, 1234);
+    chip->ch1_attr[channel] = attr_init(ch1, 321);
   }
   refresh_light(chip);
 
