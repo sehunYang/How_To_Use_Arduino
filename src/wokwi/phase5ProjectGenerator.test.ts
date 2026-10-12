@@ -140,6 +140,15 @@ describe('simulation stand-ins for parts Wokwi lacks', () => {
     expect(chips).toEqual(['tca9548a'])
   })
 
+  it('moves a TSL2591 on the MPU6050 auxiliary bus into the MPU chip', () => {
+    const { diagram, chips } = project('s13-mpu-aux-tsl2591')
+    expect(diagram.parts.find((part) => part.id === 'mpu6050')).toMatchObject({ type: 'chip-mpu6050aux', attrs: { tslOnAux: '1' } })
+    expect(diagram.parts.some((part) => part.type === 'chip-tsl2591')).toBe(false)
+    expect(chips).toEqual(['mpu6050aux'])
+    // MPU6050s with nothing on XDA/XCL keep Wokwi's own part.
+    expect(project('s12-dual-mpu6050-address').diagram.parts.filter((part) => part.type === 'wokwi-mpu6050')).toHaveLength(2)
+  })
+
   it('reads the switch address from the A0-A2 straps', () => {
     const muxes = project('s14-tca-address-reset').diagram.parts.filter((part) => part.type === 'chip-tca9548a')
     expect(muxes.map((part) => part.attrs?.address)).toEqual(['112', '113'])

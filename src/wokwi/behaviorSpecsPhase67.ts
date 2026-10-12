@@ -473,6 +473,39 @@ const phase6: Phase5BehaviorSpec[] = [
     sampleInterval: { min: 100, max: 106 },
     minRows: 4,
   },
+  (() => {
+    // Tilting the box 30° toward a window: gravity moves onto x, more light falls on the sensor.
+    const tilt = { x: Math.sin(Math.PI / 6), z: Math.cos(Math.PI / 6) }
+    const g = (value: number) => approx(accelG(value), 0.0001)
+    return {
+      recipeId: 's13-mpu-aux-tsl2591',
+      header: 'time_ms,acceleration_x_g,acceleration_y_g,acceleration_z_g,light_raw',
+      phases: [
+        {
+          // Power-on TSL2591 gain and integration (1x, 100 ms): the count is the light itself.
+          label: 'level on the bench under room light',
+          steps: [delayMs(1000)],
+          expect: { acceleration_x_g: g(0), acceleration_y_g: g(0), acceleration_z_g: g(1), light_raw: approx(TSL2591_DEFAULT_RAW.ch0, 0) },
+        },
+        {
+          label: 'tilted 30° toward the window',
+          steps: [
+            set('mpu6050', 'accelX', tilt.x),
+            set('mpu6050', 'accelZ', tilt.z),
+            set('mpu6050', 'ch0Raw', 5000),
+            set('mpu6050', 'ch1Raw', 900),
+            delayMs(1000),
+          ],
+          expect: { acceleration_x_g: g(tilt.x), acceleration_y_g: g(0), acceleration_z_g: g(tilt.z), light_raw: approx(5000, 0) },
+          settleRows: 1,
+        },
+      ],
+      timeColumn: 'time_ms',
+      // 200 ms pause + 2 ms for the auxiliary read + a 9600-baud line.
+      sampleInterval: { min: 200, max: 260 },
+      minRows: 8,
+    } satisfies Phase5BehaviorSpec
+  })(),
   {
     recipeId: 's14-tca-address-reset',
     header: 'time_ms,mux_0x70_recovery_us,mux_0x70_channels,mux_0x71_recovery_us,mux_0x71_channels',

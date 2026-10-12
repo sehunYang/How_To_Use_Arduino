@@ -10,6 +10,7 @@ export const PHASE5_WOKWI_MANIFEST_VERSION = 1
 const CUSTOM_CHIP_BY_PART_TYPE: Readonly<Record<string, string>> = {
   'chip-bme280': 'bme280',
   'chip-cds': 'cds',
+  'chip-mpu6050aux': 'mpu6050aux',
   'chip-tca9548a': 'tca9548a',
   'chip-ina219': 'ina219',
   'chip-tsl2591': 'tsl2591',
@@ -145,6 +146,44 @@ function withTcaChips(diagram: Diagram, recipe: Recipe, sensors: Sensor[]): Diag
   }
 }
 
+/**
+ * Swaps an MPU6050 with a TSL2591 on its auxiliary bus for chips/mpu6050aux.chip.c:
+ * Wokwi's MPU6050 has no auxiliary I2C master, so the TSL2591 moves inside the
+ * chip, its light controls with it. MPU6050s with nothing on XDA/XCL keep
+ * Wokwi's own part.
+ */
+function withAuxMpuChips(diagram: Diagram, recipe: Recipe, sensors: Sensor[]): Diagram {
+  if (!diagram.parts.some((part) => part.type === 'wokwi-mpu6050')) return diagram
+  const nets = recipeNetlist(recipe, sensors)
+  const netOf = (pin: string) => nets.find((net) => net.includes(pin)) ?? [pin]
+  const typeOf = new Map(diagram.parts.map((part) => [part.id, part.type]))
+  const absorbed = new Set<string>()
+  const parts = diagram.parts.map((part) => {
+    if (part.type !== 'wokwi-mpu6050') return part
+    const others = (pin: string) => netOf(`${part.id}:${pin}`).filter((other) => !other.startsWith(`${part.id}:`))
+    const xda = others('XDA')
+    const xcl = others('XCL')
+    if (xda.length === 0 && xcl.length === 0) return part
+    const fail = (why: string): never => {
+      throw new Error(`Phase 5 Wokwi generation: ${recipe.id} ${part.id} ${why}`)
+    }
+    const sensor = xda[0]?.split(':')[0]
+    if (xda.length !== 1 || xcl.length !== 1 || xda[0] !== `${sensor}:SDA` || xcl[0] !== `${sensor}:SCL`) {
+      fail(`auxiliary bus must carry exactly one sensor's SDA and SCL, found ${[...xda, ...xcl].join(', ')}`)
+    }
+    if (typeOf.get(sensor) !== 'chip-tsl2591') fail(`auxiliary bus carries ${sensor}; the chip only models a TSL2591 there`)
+    if (netOf(`${part.id}:AD0`).includes('uno:5V')) fail('has AD0 high; the auxiliary-bus chip answers at 0x68 only')
+    absorbed.add(sensor)
+    return { ...part, type: 'chip-mpu6050aux', attrs: { ...part.attrs, tslOnAux: '1' } }
+  })
+  const touches = (endpoint: string) => absorbed.has(endpoint.split(':')[0])
+  return {
+    ...diagram,
+    parts: parts.filter((part) => !absorbed.has(part.id)),
+    connections: diagram.connections.filter(([from, to]) => !touches(from) && !touches(to)),
+  }
+}
+
 function instrumentSketch(recipeId: string, sketch: string): string {
   const serialBegin = /Serial\.begin\(([^;]+)\);/
   if (!serialBegin.test(sketch)) {
@@ -174,7 +213,8 @@ export function buildPhase5WokwiProjects(
     const path = `${root}/${entry.recipeId}`
     const timeoutMs = behavior?.timeoutMs ?? entry.timeoutMs
     const scenario = 'scenario.test.yaml'
-    const diagram = simulatable(withTcaChips(withCdsChips(buildDiagram(recipe, sensors), recipe, sensors), recipe, sensors))
+    const standIns = [withCdsChips, withTcaChips, withAuxMpuChips]
+    const diagram = simulatable(standIns.reduce((built, swap) => swap(built, recipe, sensors), buildDiagram(recipe, sensors)))
     const chips = chipsOf(diagram)
 
     return {

@@ -1,0 +1,56 @@
+{
+  "name": "MPU6050 with TSL2591 on its auxiliary bus",
+  "author": "sehunYang",
+  "pins": [
+    "VCC",
+    "GND",
+    "SCL",
+    "SDA",
+    "XDA",
+    "XCL",
+    "AD0",
+    "INT"
+  ],
+  "controls": [
+    {
+      "id": "accelX",
+      "label": "Acceleration X (g)",
+      "type": "range",
+      "min": -2,
+      "max": 2,
+      "step": 0.01
+    },
+    {
+      "id": "accelY",
+      "label": "Acceleration Y (g)",
+      "type": "range",
+      "min": -2,
+      "max": 2,
+      "step": 0.01
+    },
+    {
+      "id": "accelZ",
+      "label": "Acceleration Z (g)",
+      "type": "range",
+      "min": -2,
+      "max": 2,
+      "step": 0.01
+    },
+    {
+      "id": "ch0Raw",
+      "label": "Light: full-spectrum raw count",
+      "type": "range",
+      "min": 0,
+      "max": 65535,
+      "step": 1
+    },
+    {
+      "id": "ch1Raw",
+      "label": "Light: infrared raw count",
+      "type": "range",
+      "min": 0,
+      "max": 65535,
+      "step": 1
+    }
+  ]
+}
