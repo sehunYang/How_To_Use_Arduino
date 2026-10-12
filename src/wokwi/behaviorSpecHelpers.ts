@@ -134,6 +134,19 @@ export const lux = (ch0Raw: number, ch1Raw: number, gain: number) => {
   return approx(value, Math.max(0.02, Math.abs(value) * 0.001))
 }
 
+/** Steps that set the light on the TSL2591 at a TCA9548A channel (chips/tca9548a.chip.c). */
+export const tcaLight = (partId: string, channel: number, ch0: number, ch1: number): ScenarioStep[] => [
+  set(partId, `ch0Raw${channel}`, ch0),
+  set(partId, `ch1Raw${channel}`, ch1),
+]
+
+/** Rows that must visit `channels` in order, over and over. */
+export const cyclesThrough = (column: string, channels: readonly number[]) => (rows: readonly ParsedRow[]) =>
+  rows.flatMap((row, index) => {
+    const expected = channels[index % channels.length]
+    return row.values[column] === expected ? [] : [`row ${index + 1}: ${column} ${row.values[column]}, expected ${expected}`]
+  })
+
 /** Raw light that falls off with the inverse square of distance from a lamp. */
 export const lampAt = (distanceM: number) => {
   const ch0 = Math.round(2000 * (0.5 / distanceM) ** 2)

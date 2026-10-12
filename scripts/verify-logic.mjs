@@ -61,20 +61,27 @@ for (const testFile of tests) {
   // logic/ is header-only, but chips/ splits declarations from a portable C
   // implementation. Compile that <name>.c as C11 in its own step (one driver
   // invocation cannot take -std=c++17 and a C input), then link the object in.
+  // A model built on another chip's model names it in a `// link: chips/x.c` line.
   const sources = [testFile]
   const impl = testFile.replace(/\.test\.cpp$/, '.c')
-  if (existsSync(impl)) {
-    const obj = path.join(buildDir, `${name}.o`)
-    const buildC = spawnSync(zig, ['cc', '-std=c11', '-c', impl, '-o', obj], {
+  const linked = [...(await fs.readFile(testFile, 'utf8')).matchAll(/^\/\/ link: (\S+\.c)$/gm)]
+    .map((match) => path.join(repoRoot, match[1]))
+  const cFiles = [...(existsSync(impl) ? [impl] : []), ...linked]
+  let cFailed = false
+  for (const cFile of cFiles) {
+    const obj = path.join(buildDir, `${name}-${path.basename(cFile, '.c')}.o`)
+    const buildC = spawnSync(zig, ['cc', '-std=c11', '-c', cFile, '-o', obj], {
       stdio: 'inherit',
       cwd: repoRoot,
     })
     if (buildC.status !== 0) {
-      failures.push(`${rel}: C implementation failed to compile (exit ${buildC.status})`)
-      continue
+      failures.push(`${rel}: C implementation ${path.basename(cFile)} failed to compile (exit ${buildC.status})`)
+      cFailed = true
+      break
     }
     sources.push(obj)
   }
+  if (cFailed) continue
 
   const build = spawnSync(zig, ['c++', '-std=c++17', '-o', exe, ...sources], {
     stdio: 'inherit',

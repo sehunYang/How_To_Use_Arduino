@@ -18,6 +18,7 @@ import {
   echo,
   adc,
   cdsAdc,
+  tcaLight,
   expectPin,
   lux,
   type ParsedRow,
@@ -472,6 +473,53 @@ const phase6: Phase5BehaviorSpec[] = [
     sampleInterval: { min: 100, max: 106 },
     minRows: 4,
   },
+  {
+    recipeId: 's14-tca-address-reset',
+    header: 'time_ms,mux_0x70_recovery_us,mux_0x70_channels,mux_0x71_recovery_us,mux_0x71_channels',
+    phases: [
+      {
+        // A RESET pulse must clear the open channel at once (datasheet t_REC ≈ 0);
+        // the time is the sketch's 10 µs pulse plus the I2C polls that confirm it.
+        // A switch that never answers, or ignores RESET, runs to the 20 ms timeout.
+        label: 'both switches reset by their own RESET line',
+        steps: [delayMs(4500)],
+        expect: {
+          mux_0x70_recovery_us: { min: 10, max: 2000 },
+          mux_0x70_channels: approx(0, 0),
+          mux_0x71_recovery_us: { min: 10, max: 2000 },
+          mux_0x71_channels: approx(0, 0),
+        },
+      },
+    ],
+    timeColumn: 'time_ms',
+    sampleInterval: { min: 1000, max: 1030 },
+    minRows: 4,
+  },
+  (() => {
+    // A lamp level with channel 0; each sensor sits one step further along the
+    // bench, so the light falls off with the inverse square of (n + 1).
+    const field = Array.from({ length: 8 }, (_, channel) => Math.round(4000 / (channel + 1) ** 2))
+    const columns = (light: (channel: number) => number) =>
+      Object.fromEntries(field.map((_, channel) => [`light_ch${channel}_raw`, approx(light(channel), 0)]))
+    return {
+      recipeId: 'p10-eight-point-light-field',
+      header: 'time_ms,light_ch0_raw,light_ch1_raw,light_ch2_raw,light_ch3_raw,light_ch4_raw,light_ch5_raw,light_ch6_raw,light_ch7_raw',
+      phases: [
+        // Power-on gain and integration (1x, 100 ms): the count is the light itself.
+        { label: 'room light on every sensor', steps: [delayMs(1000)], expect: columns(() => TSL2591_DEFAULT_RAW.ch0) },
+        {
+          label: 'a lamp at one end of the bench',
+          steps: [...field.flatMap((raw, channel) => tcaLight('tca9548a', channel, raw, Math.round(raw / 4))), delayMs(1000)],
+          expect: columns((channel) => field[channel]),
+          settleRows: 1,
+        },
+      ],
+      timeColumn: 'time_ms',
+      // 100 ms pause + eight switch-and-read transactions + a 9600-baud line.
+      sampleInterval: { min: 100, max: 175 },
+      minRows: 10,
+    } satisfies Phase5BehaviorSpec
+  })(),
   {
     recipeId: 'p9-motion-interrupt',
     header: 'time_us,acceleration_x_g,acceleration_y_g,acceleration_z_g',

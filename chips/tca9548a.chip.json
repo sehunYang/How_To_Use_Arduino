@@ -1,0 +1,160 @@
+{
+  "name": "TCA9548A I2C Switch with TSL2591s",
+  "author": "sehunYang",
+  "pins": [
+    "VIN",
+    "GND",
+    "SDA",
+    "SCL",
+    "RST",
+    "A0",
+    "A1",
+    "A2",
+    "SD0",
+    "SC0",
+    "SD1",
+    "SC1",
+    "SD2",
+    "SC2",
+    "SD3",
+    "SC3",
+    "SD4",
+    "SC4",
+    "SD5",
+    "SC5",
+    "SD6",
+    "SC6",
+    "SD7",
+    "SC7"
+  ],
+  "controls": [
+    {
+      "id": "ch0Raw0",
+      "label": "Channel 0 full-spectrum raw count",
+      "type": "range",
+      "min": 0,
+      "max": 65535,
+      "step": 1
+    },
+    {
+      "id": "ch1Raw0",
+      "label": "Channel 0 infrared raw count",
+      "type": "range",
+      "min": 0,
+      "max": 65535,
+      "step": 1
+    },
+    {
+      "id": "ch0Raw1",
+      "label": "Channel 1 full-spectrum raw count",
+      "type": "range",
+      "min": 0,
+      "max": 65535,
+      "step": 1
+    },
+    {
+      "id": "ch1Raw1",
+      "label": "Channel 1 infrared raw count",
+      "type": "range",
+      "min": 0,
+      "max": 65535,
+      "step": 1
+    },
+    {
+      "id": "ch0Raw2",
+      "label": "Channel 2 full-spectrum raw count",
+      "type": "range",
+      "min": 0,
+      "max": 65535,
+      "step": 1
+    },
+    {
+      "id": "ch1Raw2",
+      "label": "Channel 2 infrared raw count",
+      "type": "range",
+      "min": 0,
+      "max": 65535,
+      "step": 1
+    },
+    {
+      "id": "ch0Raw3",
+      "label": "Channel 3 full-spectrum raw count",
+      "type": "range",
+      "min": 0,
+      "max": 65535,
+      "step": 1
+    },
+    {
+      "id": "ch1Raw3",
+      "label": "Channel 3 infrared raw count",
+      "type": "range",
+      "min": 0,
+      "max": 65535,
+      "step": 1
+    },
+    {
+      "id": "ch0Raw4",
+      "label": "Channel 4 full-spectrum raw count",
+      "type": "range",
+      "min": 0,
+      "max": 65535,
+      "step": 1
+    },
+    {
+      "id": "ch1Raw4",
+      "label": "Channel 4 infrared raw count",
+      "type": "range",
+      "min": 0,
+      "max": 65535,
+      "step": 1
+    },
+    {
+      "id": "ch0Raw5",
+      "label": "Channel 5 full-spectrum raw count",
+      "type": "range",
+      "min": 0,
+      "max": 65535,
+      "step": 1
+    },
+    {
+      "id": "ch1Raw5",
+      "label": "Channel 5 infrared raw count",
+      "type": "range",
+      "min": 0,
+      "max": 65535,
+      "step": 1
+    },
+    {
+      "id": "ch0Raw6",
+      "label": "Channel 6 full-spectrum raw count",
+      "type": "range",
+      "min": 0,
+      "max": 65535,
+      "step": 1
+    },
+    {
+      "id": "ch1Raw6",
+      "label": "Channel 6 infrared raw count",
+      "type": "range",
+      "min": 0,
+      "max": 65535,
+      "step": 1
+    },
+    {
+      "id": "ch0Raw7",
+      "label": "Channel 7 full-spectrum raw count",
+      "type": "range",
+      "min": 0,
+      "max": 65535,
+      "step": 1
+    },
+    {
+      "id": "ch1Raw7",
+      "label": "Channel 7 infrared raw count",
+      "type": "range",
+      "min": 0,
+      "max": 65535,
+      "step": 1
+    }
+  ]
+}

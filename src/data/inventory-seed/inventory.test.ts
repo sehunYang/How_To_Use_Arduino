@@ -85,9 +85,9 @@ describe('sensor inventory seed', () => {
   it('sim-coverage-derivable set includes all three packaged custom chips', () => {
     const supported = sensors.filter((s) => s.wokwi.simSupported)
     const unsupported = sensors.filter((s) => !s.wokwi.simSupported)
-    expect(supported).toHaveLength(9)
+    expect(supported).toHaveLength(10)
     expect(supported.find((s) => s.id === 'bme280')?.wokwi.part).toBe('chip-bme280')
-    expect(unsupported.map((s) => s.id)).toEqual(['tca9548a'])
+    expect(unsupported).toEqual([])
   })
 })
 

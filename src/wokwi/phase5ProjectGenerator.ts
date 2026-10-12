@@ -10,6 +10,7 @@ export const PHASE5_WOKWI_MANIFEST_VERSION = 1
 const CUSTOM_CHIP_BY_PART_TYPE: Readonly<Record<string, string>> = {
   'chip-bme280': 'bme280',
   'chip-cds': 'cds',
+  'chip-tca9548a': 'tca9548a',
   'chip-ina219': 'ina219',
   'chip-tsl2591': 'tsl2591',
 }
@@ -95,6 +96,55 @@ function withCdsChips(diagram: Diagram, recipe: Recipe, sensors: Sensor[]): Diag
   return { ...diagram, parts }
 }
 
+/**
+ * Swaps each TCA9548A for the switch chip (chips/tca9548a.chip.c). A Wokwi chip
+ * cannot drive a second I2C bus, so the TSL2591s wired to the switch's channels
+ * move inside it: the generator reads which channel each one sits on, drops the
+ * separate parts, and tells the chip which channels carry a sensor. Their light
+ * controls become `ch0Raw<n>`/`ch1Raw<n>` on the switch.
+ */
+function withTcaChips(diagram: Diagram, recipe: Recipe, sensors: Sensor[]): Diagram {
+  if (!diagram.parts.some((part) => part.type === 'custom-tca9548a')) return diagram
+  const nets = recipeNetlist(recipe, sensors)
+  const netOf = (pin: string) => nets.find((net) => net.includes(pin)) ?? [pin]
+  const typeOf = new Map(diagram.parts.map((part) => [part.id, part.type]))
+  const absorbed = new Set<string>()
+  const parts = diagram.parts.map((part) => {
+    if (part.type !== 'custom-tca9548a') return part
+    const fail = (why: string): never => {
+      throw new Error(`Phase 5 Wokwi generation: ${recipe.id} ${part.id} ${why}`)
+    }
+    // The breakout pulls A0-A2 down, so an unwired strap reads 0.
+    const address = [0, 1, 2].reduce((sum, bit) => {
+      const net = netOf(`${part.id}:A${bit}`)
+      if (net.includes('uno:5V')) return sum + (1 << bit)
+      if (net.length === 1 || net.includes('uno:GND')) return sum
+      return fail(`A${bit} is on neither 5V nor GND`)
+    }, 0x70)
+    let tslMask = 0
+    for (let channel = 0; channel < 8; channel += 1) {
+      const others = (pin: string) => netOf(`${part.id}:${pin}${channel}`).filter((other) => !other.startsWith(`${part.id}:`))
+      const sda = others('SD')
+      const scl = others('SC')
+      if (sda.length === 0 && scl.length === 0) continue
+      const sensor = sda[0]?.split(':')[0]
+      if (sda.length !== 1 || scl.length !== 1 || sda[0] !== `${sensor}:SDA` || scl[0] !== `${sensor}:SCL`) {
+        fail(`channel ${channel} must carry exactly one sensor's SDA and SCL, found ${[...sda, ...scl].join(', ')}`)
+      }
+      if (typeOf.get(sensor) !== 'chip-tsl2591') fail(`channel ${channel} carries ${sensor}; the switch chip only models TSL2591s`)
+      absorbed.add(sensor)
+      tslMask |= 1 << channel
+    }
+    return { ...part, type: 'chip-tca9548a', attrs: { address: String(address), tslMask: String(tslMask) } }
+  })
+  const touches = (endpoint: string) => absorbed.has(endpoint.split(':')[0])
+  return {
+    ...diagram,
+    parts: parts.filter((part) => !absorbed.has(part.id)),
+    connections: diagram.connections.filter(([from, to]) => !touches(from) && !touches(to)),
+  }
+}
+
 function instrumentSketch(recipeId: string, sketch: string): string {
   const serialBegin = /Serial\.begin\(([^;]+)\);/
   if (!serialBegin.test(sketch)) {
@@ -124,7 +174,7 @@ export function buildPhase5WokwiProjects(
     const path = `${root}/${entry.recipeId}`
     const timeoutMs = behavior?.timeoutMs ?? entry.timeoutMs
     const scenario = 'scenario.test.yaml'
-    const diagram = simulatable(withCdsChips(buildDiagram(recipe, sensors), recipe, sensors))
+    const diagram = simulatable(withTcaChips(withCdsChips(buildDiagram(recipe, sensors), recipe, sensors), recipe, sensors))
     const chips = chipsOf(diagram)
 
     return {

@@ -1,11 +1,8 @@
 {
   "version": 1,
   "generatedFrom": "phase5SimulationRegistry",
-  "projectCount": 39,
-  "exclusions": [
-    "s14-tca-address-reset",
-    "p10-eight-point-light-field"
-  ],
+  "projectCount": 41,
+  "exclusions": [],
   "projects": [
     {
       "id": "s11-tsl2591-interrupt",
@@ -50,6 +47,30 @@
         "tsl2591"
       ],
       "fingerprint": "81f67f964bb16434"
+    },
+    {
+      "id": "s14-tca-address-reset",
+      "path": "wokwi/phase6/s14-tca-address-reset",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase6/s14-tca-address-reset --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "tca9548a"
+      ],
+      "fingerprint": "40f3f96f07efb855"
+    },
+    {
+      "id": "p10-eight-point-light-field",
+      "path": "wokwi/phase6/p10-eight-point-light-field",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase6/p10-eight-point-light-field --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "tca9548a"
+      ],
+      "fingerprint": "54cea5e5e380842f"
     },
     {
       "id": "ph01-uniform-motion",

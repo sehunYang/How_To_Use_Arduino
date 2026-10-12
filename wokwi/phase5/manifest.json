@@ -1,11 +1,8 @@
 {
   "version": 1,
   "generatedFrom": "phase5SimulationRegistry",
-  "projectCount": 32,
-  "exclusions": [
-    "S9",
-    "e5-spatial-light-map"
-  ],
+  "projectCount": 34,
+  "exclusions": [],
   "projects": [
     {
       "id": "S1",
@@ -94,6 +91,18 @@
         "tsl2591"
       ],
       "fingerprint": "60d296faf6c8884c"
+    },
+    {
+      "id": "S9",
+      "path": "wokwi/phase5/S9",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/S9 --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "tca9548a"
+      ],
+      "fingerprint": "fa03216b8f28b059"
     },
     {
       "id": "S10",
@@ -233,6 +242,18 @@
         "bme280"
       ],
       "fingerprint": "6900135aa0a5b1d0"
+    },
+    {
+      "id": "e5-spatial-light-map",
+      "path": "wokwi/phase5/e5-spatial-light-map",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/e5-spatial-light-map --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "tca9548a"
+      ],
+      "fingerprint": "dd312c19097da5f7"
     },
     {
       "id": "e6-multi-point-temperature",

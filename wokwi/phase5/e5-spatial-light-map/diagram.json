@@ -1,0 +1,103 @@
+{
+  "version": 1,
+  "author": "e5-spatial-light-map",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "id": "uno",
+      "type": "wokwi-arduino-uno",
+      "top": 0,
+      "left": 0
+    },
+    {
+      "id": "bb",
+      "type": "wokwi-breadboard-half",
+      "top": 0,
+      "left": 100
+    },
+    {
+      "id": "tca9548a",
+      "type": "chip-tca9548a",
+      "top": 0,
+      "left": 100,
+      "attrs": {
+        "address": "112",
+        "tslMask": "7"
+      }
+    }
+  ],
+  "connections": [
+    [
+      "tca9548a:VIN",
+      "bb:tp.5",
+      "red",
+      []
+    ],
+    [
+      "uno:5V",
+      "bb:tp.1",
+      "red",
+      []
+    ],
+    [
+      "tca9548a:GND",
+      "bb:tn.5",
+      "black",
+      []
+    ],
+    [
+      "uno:GND",
+      "bb:tn.1",
+      "black",
+      []
+    ],
+    [
+      "tca9548a:SDA",
+      "uno:A4",
+      "green",
+      []
+    ],
+    [
+      "tca9548a:SCL",
+      "uno:A5",
+      "yellow",
+      []
+    ],
+    [
+      "tca9548a:SD0",
+      "bb:1t.b",
+      "green",
+      []
+    ],
+    [
+      "tca9548a:SC0",
+      "bb:5t.b",
+      "yellow",
+      []
+    ],
+    [
+      "tca9548a:SD1",
+      "bb:9t.b",
+      "green",
+      []
+    ],
+    [
+      "tca9548a:SC1",
+      "bb:13t.b",
+      "yellow",
+      []
+    ],
+    [
+      "tca9548a:SD2",
+      "bb:17t.b",
+      "green",
+      []
+    ],
+    [
+      "tca9548a:SC2",
+      "bb:21t.b",
+      "yellow",
+      []
+    ]
+  ]
+}

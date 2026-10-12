@@ -1,0 +1,71 @@
+name: Phase 5 behavior - p10-eight-point-light-field
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "time_ms,light_ch0_raw,light_ch1_raw,light_ch2_raw,light_ch3_raw,light_ch4_raw,light_ch5_raw,light_ch6_raw,light_ch7_raw"
+  - delay: 1000ms
+  - set-control:
+      part-id: tca9548a
+      control: ch0Raw0
+      value: 4000
+  - set-control:
+      part-id: tca9548a
+      control: ch1Raw0
+      value: 1000
+  - set-control:
+      part-id: tca9548a
+      control: ch0Raw1
+      value: 1000
+  - set-control:
+      part-id: tca9548a
+      control: ch1Raw1
+      value: 250
+  - set-control:
+      part-id: tca9548a
+      control: ch0Raw2
+      value: 444
+  - set-control:
+      part-id: tca9548a
+      control: ch1Raw2
+      value: 111
+  - set-control:
+      part-id: tca9548a
+      control: ch0Raw3
+      value: 250
+  - set-control:
+      part-id: tca9548a
+      control: ch1Raw3
+      value: 63
+  - set-control:
+      part-id: tca9548a
+      control: ch0Raw4
+      value: 160
+  - set-control:
+      part-id: tca9548a
+      control: ch1Raw4
+      value: 40
+  - set-control:
+      part-id: tca9548a
+      control: ch0Raw5
+      value: 111
+  - set-control:
+      part-id: tca9548a
+      control: ch1Raw5
+      value: 28
+  - set-control:
+      part-id: tca9548a
+      control: ch0Raw6
+      value: 82
+  - set-control:
+      part-id: tca9548a
+      control: ch1Raw6
+      value: 21
+  - set-control:
+      part-id: tca9548a
+      control: ch0Raw7
+      value: 63
+  - set-control:
+      part-id: tca9548a
+      control: ch1Raw7
+      value: 16
+  - delay: 1000ms

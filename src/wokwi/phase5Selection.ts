@@ -36,6 +36,9 @@ export const PHASE5_GLOBAL_INPUTS: readonly string[] = [
   'chips/wokwi-api.h',
 ]
 
+/** Chips compiled with another chip's model (package.json build:wokwi:chips). */
+const CHIP_MODELS_BUILT_IN: Readonly<Record<string, readonly string[]>> = { tca9548a: ['tsl2591'] }
+
 /** `chips/bme280.chip.c` → `bme280`, for every source file of a custom chip. */
 function chipOf(path: string): string | undefined {
   return /^chips\/([a-z0-9]+)(?:\.chip)?\.(?:c|h|json)$/.exec(path)?.[1]
@@ -65,7 +68,8 @@ export function selectPhase5Projects(
       else if (before.fingerprint === undefined || before.fingerprint !== project.fingerprint) {
         select(project.id, 'sketch, circuit, scenario or expectations changed')
       }
-      const chip = project.chips.find((candidate) => changedChips.has(candidate))
+      const chip = project.chips.find((candidate) =>
+        [candidate, ...(CHIP_MODELS_BUILT_IN[candidate] ?? [])].some((source) => changedChips.has(source)))
       if (chip) select(project.id, `custom chip ${chip} changed`)
     }
   }

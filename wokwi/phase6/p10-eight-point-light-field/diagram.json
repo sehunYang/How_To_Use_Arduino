@@ -1,0 +1,163 @@
+{
+  "version": 1,
+  "author": "p10-eight-point-light-field",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "id": "uno",
+      "type": "wokwi-arduino-uno",
+      "top": 0,
+      "left": 0
+    },
+    {
+      "id": "bb",
+      "type": "wokwi-breadboard-half",
+      "top": 0,
+      "left": 100
+    },
+    {
+      "id": "tca9548a",
+      "type": "chip-tca9548a",
+      "top": 0,
+      "left": 100,
+      "attrs": {
+        "address": "112",
+        "tslMask": "255"
+      }
+    }
+  ],
+  "connections": [
+    [
+      "tca9548a:VIN",
+      "bb:tp.3",
+      "red",
+      []
+    ],
+    [
+      "uno:5V",
+      "bb:tp.1",
+      "red",
+      []
+    ],
+    [
+      "tca9548a:GND",
+      "bb:tn.3",
+      "black",
+      []
+    ],
+    [
+      "uno:GND",
+      "bb:tn.1",
+      "black",
+      []
+    ],
+    [
+      "tca9548a:SDA",
+      "uno:A4",
+      "green",
+      []
+    ],
+    [
+      "tca9548a:SCL",
+      "uno:A5",
+      "yellow",
+      []
+    ],
+    [
+      "tca9548a:SD0",
+      "bb:1t.b",
+      "green",
+      []
+    ],
+    [
+      "tca9548a:SC0",
+      "bb:2t.b",
+      "yellow",
+      []
+    ],
+    [
+      "tca9548a:SD1",
+      "bb:3t.b",
+      "green",
+      []
+    ],
+    [
+      "tca9548a:SC1",
+      "bb:4t.b",
+      "yellow",
+      []
+    ],
+    [
+      "tca9548a:SD2",
+      "bb:5t.b",
+      "green",
+      []
+    ],
+    [
+      "tca9548a:SC2",
+      "bb:6t.b",
+      "yellow",
+      []
+    ],
+    [
+      "tca9548a:SD3",
+      "bb:7t.b",
+      "green",
+      []
+    ],
+    [
+      "tca9548a:SC3",
+      "bb:8t.b",
+      "yellow",
+      []
+    ],
+    [
+      "tca9548a:SD4",
+      "bb:9t.b",
+      "green",
+      []
+    ],
+    [
+      "tca9548a:SC4",
+      "bb:10t.b",
+      "yellow",
+      []
+    ],
+    [
+      "tca9548a:SD5",
+      "bb:11t.b",
+      "green",
+      []
+    ],
+    [
+      "tca9548a:SC5",
+      "bb:12t.b",
+      "yellow",
+      []
+    ],
+    [
+      "tca9548a:SD6",
+      "bb:13t.b",
+      "green",
+      []
+    ],
+    [
+      "tca9548a:SC6",
+      "bb:14t.b",
+      "yellow",
+      []
+    ],
+    [
+      "tca9548a:SD7",
+      "bb:15t.b",
+      "green",
+      []
+    ],
+    [
+      "tca9548a:SC7",
+      "bb:16t.b",
+      "yellow",
+      []
+    ]
+  ]
+}

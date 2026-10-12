@@ -25,6 +25,8 @@ import {
   echo,
   adc,
   cdsAdc,
+  cyclesThrough,
+  tcaLight,
   lux,
   lampAt,
   ds18b20Temperature,
@@ -788,6 +790,74 @@ export const phase5BehaviorSpecs: readonly Phase5BehaviorSpec[] = [
     sampleInterval: { min: 49, max: 60 },
     minRows: 25,
   },
+  // ── TCA9548A with TSL2591s (chips/tca9548a.chip.c) ───────────────────────
+  (() => {
+    // Medium gain, 100 ms: the full-spectrum count is 25 × the light at 1x.
+    const counts = (raw: number) => raw * TSL2591_GAIN.medium
+    return {
+      recipeId: 'S9',
+      header: 'time_ms,channel,light_raw',
+      phases: [
+        {
+          label: 'both positions under the same room light',
+          steps: [delayMs(2000)],
+          expect: { channel: { oneOf: [0, 1], tolerance: 0 }, light_raw: approx(counts(TSL2591_DEFAULT_RAW.ch0), 0) },
+        },
+        {
+          // Each channel must report its own sensor, not the other one's.
+          label: 'a lamp beside position 1, position 0 in shade',
+          steps: [...tcaLight('tca9548a', 0, 400, 100), ...tcaLight('tca9548a', 1, 2400, 600), delayMs(2500)],
+          expect: {
+            channel: { oneOf: [0, 1], tolerance: 0 },
+            light_raw: derived(({ values }) => counts(values.channel === 0 ? 400 : 2400), 0),
+          },
+          settleRows: 2,
+        },
+      ],
+      checkRows: cyclesThrough('channel', [0, 1]),
+      timeColumn: 'time_ms',
+      // Channel 0 → 1: 120 ms settle + 120 ms integration; 1 → 0 adds the 500 ms pause.
+      sampleInterval: { min: 235, max: 770 },
+      minRows: 8,
+    } satisfies Phase5BehaviorSpec
+  })(),
+  (() => {
+    const window = { ch0: 3000, ch1: 900 }
+    const middle = { ch0: 1200, ch1: 300 }
+    const interior = { ch0: 300, ch1: 60 }
+    const luxAt = [window, middle, interior].map((light) => tsl2591Lux(light.ch0, light.ch1, TSL2591_GAIN.low))
+    return {
+      recipeId: 'e5-spatial-light-map',
+      header: 'time_ms,position,lux',
+      phases: [
+        {
+          label: 'evenly lit room',
+          steps: [delayMs(2000)],
+          expect: {
+            position: { oneOf: [0, 1, 2], tolerance: 0 },
+            lux: lux(TSL2591_DEFAULT_RAW.ch0, TSL2591_DEFAULT_RAW.ch1, TSL2591_GAIN.low),
+          },
+        },
+        {
+          label: 'daylight falling off from the window inward',
+          steps: [
+            ...[window, middle, interior].flatMap((light, position) => tcaLight('tca9548a', position, light.ch0, light.ch1)),
+            delayMs(3000),
+          ],
+          expect: {
+            position: { oneOf: [0, 1, 2], tolerance: 0 },
+            lux: derived(({ values }) => luxAt[values.position], Math.max(...luxAt) * 0.001),
+          },
+          settleRows: 3,
+        },
+      ],
+      checkRows: cyclesThrough('position', [0, 1, 2]),
+      timeColumn: 'time_ms',
+      // 25 ms settle + 120 ms integration per position; a 500 ms pause after the third.
+      sampleInterval: { min: 140, max: 680 },
+      minRows: 12,
+    } satisfies Phase5BehaviorSpec
+  })(),
 ]
 
 /** Behaviour specs for every phase, keyed by recipe id (ids are unique across phases). */

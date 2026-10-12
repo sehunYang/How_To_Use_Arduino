@@ -30,6 +30,11 @@ describe('Phase 5 PR selection', () => {
     expect(selectPhase5Projects(['chips/bme280.chip.json'], head, head).ids).toEqual(['S6', 'plant-growth'])
   })
 
+  it('runs the TCA9548A projects when the TSL2591 model built into the switch changes', () => {
+    const withMux = [...head, { id: 'S9', chips: ['tca9548a'], fingerprint: 'eeee' }]
+    expect(selectPhase5Projects(['chips/tsl2591.c'], withMux, withMux).ids).toEqual(['plant-growth', 'S8', 'S9'])
+  })
+
   it('runs everything when a shared input changed or the base has no manifest', () => {
     expect(selectPhase5Projects(['src/wokwi/sensorOracles.ts'], head, head).ids).toHaveLength(head.length)
     expect(selectPhase5Projects([], head, undefined).ids).toHaveLength(head.length)
