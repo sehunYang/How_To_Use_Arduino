@@ -1,0 +1,50 @@
+# Manual characterisation run of the fault variants only (wokwi/variants):
+# each sensor unplugged, a BME280 at 0x77, and noise at control thresholds.
+# Costs about 7 simulated minutes, against the 40-minute monthly Wokwi target
+# (docs/wokwi-setup.md §6); the monthly PR Verification schedule runs them too.
+name: Wokwi Fault Variants
+
+on:
+  workflow_dispatch:
+    inputs:
+      kind:
+        description: Which variants to run
+        type: choice
+        default: all
+        options: [all, unplugged, i2c-address, jitter]
+
+permissions:
+  contents: read
+
+jobs:
+  variants:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Install arduino-cli + arduino:avr core
+        run: npm run setup:arduino-cli
+
+      - name: Install Wokwi CLI
+        run: curl -L https://wokwi.com/ci/install.sh | sh
+
+      # Before staging: the variants copy chips/*.chip.wasm, and the BME280
+      # address attribute only exists in the source build.
+      - name: Build INA219, TSL2591, and BME280 custom chips
+        run: npm run build:wokwi:chips
+
+      - name: Build and stage firmware for every project and variant
+        run: npm run build:wokwi:phase5
+
+      - name: Run the fault variants
+        env:
+          WOKWI_CLI_TOKEN: ${{ secrets.WOKWI_CLI_TOKEN }}
+          KIND: ${{ inputs.kind }}
+        run: npx tsx scripts/run-wokwi-variants.ts ${KIND:+$([ "$KIND" != all ] && echo --kind "$KIND")}
