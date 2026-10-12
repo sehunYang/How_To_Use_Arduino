@@ -1,4 +1,5 @@
 import { CodeBlock } from '@/components/ui/CodeBlock'
+import { GuideTable, LabelledBox, SectionHeading, tdClass } from '@/components/ui/guide'
 import { SafeMarkdown } from '@/components/ui/SafeMarkdown'
 import { firstReadingFor } from '@/recipes/firstReading'
 import { ARDUINO_IDE_URL, firstRunSteps } from '@/recipes/firstRun'
@@ -20,6 +21,8 @@ export function CodePage() {
 
   return (
     <div>
+      {/* 절 번호와 상자, 표는 탐구 설계·측정 화면과 같은 모양입니다. */}
+      <SectionHeading badge="3-1">올리기 전에 준비하기</SectionHeading>
       {/* 두 번째 레시피부터는 이미 아는 내용이라 늘 펼쳐 두면 코드가 화면 밖으로
           밀려납니다. 접어 두되 요약 줄만 읽고도 열지 말지 고를 수 있게 합니다. */}
       <details className="max-w-3xl rounded-card border border-border p-4">
@@ -74,55 +77,39 @@ export function CodePage() {
 
       {/* 속도만은 접지 않습니다. 맞추지 않으면 시리얼 모니터에 깨진 기호만 나오고,
           학생은 무엇이 잘못됐는지 짐작할 단서를 얻지 못합니다. */}
-      <p className="mt-4 max-w-3xl text-caption">
-        <strong>시리얼 모니터 속도 {recipe.baudRate} baud</strong>
-        <span className="text-muted"> · 업로드 뒤 [도구] → [시리얼 모니터]를 열고 오른쪽 아래에서 맞추세요.</span>
-      </p>
+      <div className="max-w-3xl">
+        <LabelledBox label={`시리얼 모니터 속도 ${recipe.baudRate} baud`}>
+          업로드 뒤 [도구] → [시리얼 모니터]를 열고 오른쪽 아래에서 맞추세요.
+        </LabelledBox>
+      </div>
 
       {/* 코드를 처음 보는 학생에게 스케치는 복사할 덩어리일 뿐입니다. 흐름을
           먼저 알려 주어야 노란 줄을 바꿀 때 무엇이 달라지는지 짐작할 수 있습니다. */}
-      <div className="mt-4 max-w-3xl rounded-card border border-border p-4">
-        <h3 className="font-semibold">이 코드가 하는 일</h3>
-        <div className="prose mt-2">
-          <SafeMarkdown source={summary.map((line) => `- ${line}`).join('\n')} />
-        </div>
+      <div className="max-w-3xl">
+        <SectionHeading badge="3-2">이 코드가 하는 일</SectionHeading>
+        <SafeMarkdown source={summary.map((line) => `- ${line}`).join('\n')} />
       </div>
 
+      <SectionHeading badge="3-3">코드 복사해 올리기</SectionHeading>
       <PinMap lines={pins} recipeId={recipe.id} />
 
       <div className="mt-3 overflow-hidden rounded-card border border-border"><CodeBlock code={recipe.sketch} tunables={recipe.tunables} /></div>
 
       {/* 값이 나오기만 하면 측정이 되고 있다고 믿기 쉽습니다. 고장났을 때만 나오는
           값을 여기에서 걸러 내지 못하면 한 시간을 헛측정하고 데이터 화면에서야 압니다. */}
-      <section aria-labelledby="first-reading-title" className="mt-6 max-w-3xl rounded-card border border-border p-5">
-        <h3 id="first-reading-title" className="font-semibold">처음 나온 값이 정상인지 확인하기</h3>
-        {reading.normal.length > 0 && (
-          <ul className="mt-3 space-y-2">
-            {reading.normal.map((line) => (
-              <li key={line}>
-                <span className="font-semibold text-success">정상</span>
-                <span className="ml-2">{line}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-        <table className="mt-4 w-full text-left">
-          <caption className="sr-only">시리얼 모니터에 나온 값과 그 뜻</caption>
-          <thead>
-            <tr className="border-b border-border">
-              <th scope="col" className="py-2 pr-4 font-semibold">이런 값이 나오면</th>
-              <th scope="col" className="py-2 font-semibold">무엇을 다시 보나</th>
+      <section aria-labelledby="first-reading-title" className="max-w-3xl">
+        <SectionHeading id="first-reading-title" badge="3-4">처음 나온 값이 정상인지 확인하기</SectionHeading>
+        {reading.normal.map((line) => (
+          <LabelledBox key={line} label="정상" tone="tip">{line}</LabelledBox>
+        ))}
+        <GuideTable caption="시리얼 모니터에 나온 값과 그 뜻" head={['이런 값이 나오면', '무엇을 다시 보나']}>
+          {reading.signals.map((signal) => (
+            <tr key={signal.sign}>
+              <td className={tdClass}>{signal.sign}</td>
+              <td className={`${tdClass} text-muted`}>{signal.meaning}</td>
             </tr>
-          </thead>
-          <tbody>
-            {reading.signals.map((signal) => (
-              <tr key={signal.sign} className="border-b border-border align-top">
-                <td className="py-2 pr-4">{signal.sign}</td>
-                <td className="py-2 text-muted">{signal.meaning}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+          ))}
+        </GuideTable>
       </section>
     </div>
   )

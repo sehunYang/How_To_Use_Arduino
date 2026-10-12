@@ -7,6 +7,7 @@ import rehypeSanitize from 'rehype-sanitize'
 import rehypeKatex from 'rehype-katex'
 import 'katex/dist/katex.min.css'
 import { Callout } from './Callout'
+import { SectionHeading, stepBadgeClass, tableClass, tableWrapClass, tdClass, thClass } from './guide'
 import { Toggle } from './Toggle'
 import { loadChecklist, saveChecklist, type ChecklistState } from '@/progress'
 
@@ -87,7 +88,7 @@ function Markdown({ source, checklist }: { source: string; checklist?: Checklist
               <label className="flex cursor-pointer items-start gap-2">
                 {/* 번호 있는 체크 목록이면 몇 번째 할 일인지 보여 줍니다. 숫자는 CSS
                     카운터가 채우고, 번호 없는 목록에서는 이 칸이 숨습니다(tokens.css). */}
-                <span aria-hidden="true" className="md-step-number mt-0.5 inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-accent text-caption font-semibold text-background" />
+                <span aria-hidden="true" className={`md-step-number mt-0.5 ${stepBadgeClass}`} />
                 <input
                   type="checkbox"
                   className="mt-1 size-4 shrink-0 accent-accent"
@@ -132,24 +133,20 @@ function Markdown({ source, checklist }: { source: string; checklist?: Checklist
           // 절을 읽는지 한눈에 보이게 합니다.
           const [first, ...rest] = Array.isArray(children) ? children : [children]
           const numbered = typeof first === 'string' ? /^(\d+-\d+)\.\s*(.*)$/s.exec(first) : null
-          return (
-            <h3 {...props} className="mt-10 flex items-center gap-3 border-t border-border pt-6 text-xl font-bold text-foreground">
-              {numbered
-                ? <><span className="inline-flex shrink-0 items-center rounded-full bg-accent px-2.5 py-0.5 text-caption font-semibold text-background">{numbered[1]}</span><span>{numbered[2]}{rest}</span></>
-                : children}
-            </h3>
-          )
+          return numbered
+            ? <SectionHeading id={props.id} badge={numbered[1]}>{numbered[2]}{rest}</SectionHeading>
+            : <SectionHeading id={props.id}>{children}</SectionHeading>
         },
         h4: ({ children, ...props }) => (
           <h4 {...props} className="mt-6 border-l-4 border-accent pl-3 text-lg font-semibold text-foreground">{children}</h4>
         ),
         table: ({ children, ...props }) => (
-          <div className="my-5 overflow-x-auto rounded-card border border-border">
-            <table {...props} className="m-0 min-w-2xl border-collapse text-sm">{children}</table>
+          <div className={tableWrapClass}>
+            <table {...props} className={`${tableClass} min-w-2xl`}>{children}</table>
           </div>
         ),
-        th: ({ children, ...props }) => <th {...props} className="border-b border-border bg-surface-strong px-3 py-2 text-left font-semibold">{children}</th>,
-        td: ({ children, ...props }) => <td {...props} className="border-b border-border px-3 py-2 align-top tabular-nums">{children}</td>,
+        th: ({ children, ...props }) => <th {...props} className={thClass}>{children}</th>,
+        td: ({ children, ...props }) => <td {...props} className={tdClass}>{children}</td>,
       }}
     >
       {source}
