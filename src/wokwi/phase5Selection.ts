@@ -38,6 +38,7 @@ export const PHASE5_GLOBAL_INPUTS: readonly string[] = [
 
 /** Chips compiled with another chip's model (package.json build:wokwi:chips). */
 const CHIP_MODELS_BUILT_IN: Readonly<Record<string, readonly string[]>> = {
+  ina219rc: ['ina219'],
   mpu6050aux: ['tsl2591'],
   tca9548a: ['tsl2591'],
 }

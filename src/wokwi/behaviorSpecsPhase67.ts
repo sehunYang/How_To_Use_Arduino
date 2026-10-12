@@ -849,26 +849,64 @@ const phase6: Phase5BehaviorSpec[] = [
       minRows: 4,
     }
   })(),
-  {
-    recipeId: 'ph21-rc-time-constant',
-    header: 'condition_id,time_ms,capacitor_V,current_mA',
-    textColumns: ['condition_id'],
-    // 5 V through 1 kΩ into 1000 µF: I = 5 mA · e^(-t/τ), τ = 1 s. Read at t = 0, τ and 2τ.
-    phases: [0, 1, 2].map((tau, index) => {
-      const milliamps = Number((5 * Math.exp(-tau)).toFixed(1))
-      return {
-        label: `charging current at t = ${tau}τ: ${milliamps} mA`,
-        steps: [set('ina219', 'shuntRaw', shuntRawFor(milliamps)), delayMs(400)],
-        expect: { current_mA: approx(milliamps, 0.0001) },
-        settleRows: index === 0 ? 0 : 1,
-      }
-    }),
-    startupRows: 1,
-    always: { condition_id: { text: 'CHARGE' }, capacitor_V: { min: 0, max: 5 } },
-    timeColumn: 'time_ms',
-    sampleInterval: { min: 50, max: 58 },
-    minRows: 12,
-  },
+  (() => {
+    // 5 V through 1 kΩ and the INA219's 0.1 Ω shunt into 1000 µF (chips/ina219rc.chip.c).
+    const SOURCE_V = 5
+    const LOOP_KOHM = 1.0001
+    const TAU_S = LOOP_KOHM * 1000 * 1000e-6
+    /** τ from a least-squares line through ln(y) against t: y ∝ e^(-t/τ). */
+    const fitTau = (points: readonly (readonly [number, number])[]) => {
+      const n = points.length
+      const xs = points.map(([t]) => t)
+      const ys = points.map(([, y]) => Math.log(y))
+      const meanX = xs.reduce((a, b) => a + b, 0) / n
+      const meanY = ys.reduce((a, b) => a + b, 0) / n
+      const slope = xs.reduce((sum, x, i) => sum + (x - meanX) * (ys[i] - meanY), 0)
+        / xs.reduce((sum, x) => sum + (x - meanX) ** 2, 0)
+      return -1 / slope
+    }
+    return {
+      recipeId: 'ph21-rc-time-constant',
+      header: 'condition_id,time_ms,capacitor_V,current_mA',
+      textColumns: ['condition_id'],
+      phases: [
+        {
+          label: 'capacitor discharged, source not yet connected',
+          steps: [delayMs(300)],
+          expect: { capacitor_V: approx(0, 0.01), current_mA: approx(0, 0) },
+        },
+        {
+          label: 'source connected: charging',
+          steps: [set('ina219', 'connected', 1), delayMs(3500)],
+          expect: {
+            capacitor_V: { min: 0, max: SOURCE_V },
+            // Kirchhoff's voltage law round the loop at every instant: V_C + I·R = 5 V.
+            // 0.05 mA INA219 rounding, the ADC step and the gap between the two readings.
+            current_mA: derived(({ values }) => (SOURCE_V - values.capacitor_V) / LOOP_KOHM, 0.08),
+          },
+        },
+      ],
+      always: { condition_id: { text: 'CHARGE' } },
+      // The recipe's analysis: τ from the log-linear fit, once from the current and
+      // once from the voltage still to go, must both come out as RC.
+      checkRows: (rows) => {
+        const seconds = (row: ParsedRow) => row.values.time_ms / 1000
+        const charging = rows.filter((row) => row.values.current_mA > 0)
+        const fits = {
+          current: charging.filter((row) => row.values.current_mA >= 0.5).map((row) => [seconds(row), row.values.current_mA] as const),
+          voltage: charging.filter((row) => SOURCE_V - row.values.capacitor_V >= 0.5).map((row) => [seconds(row), SOURCE_V - row.values.capacitor_V] as const),
+        }
+        return Object.entries(fits).flatMap(([quantity, points]) => {
+          if (points.length < 10) return [`only ${points.length} rows to fit τ from the ${quantity}`]
+          const tau = fitTau(points)
+          return Math.abs(tau - TAU_S) / TAU_S > 0.05 ? [`τ from the ${quantity} is ${tau.toFixed(3)} s, expected RC = ${TAU_S.toFixed(3)} s ±5%`] : []
+        })
+      },
+      timeColumn: 'time_ms',
+      sampleInterval: { min: 50, max: 58 },
+      minRows: 40,
+    } satisfies Phase5BehaviorSpec
+  })(),
   ((): Phase5BehaviorSpec => {
     // A new 9 V battery: E = 9 V, r = 2 Ω. The sketch reads the bus after the
     // 0.1 Ω shunt, so the V-I slope is r + 0.1 Ω, which the analysis subtracts.

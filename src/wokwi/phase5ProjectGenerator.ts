@@ -10,6 +10,7 @@ export const PHASE5_WOKWI_MANIFEST_VERSION = 1
 const CUSTOM_CHIP_BY_PART_TYPE: Readonly<Record<string, string>> = {
   'chip-bme280': 'bme280',
   'chip-cds': 'cds',
+  'chip-ina219rc': 'ina219rc',
   'chip-mpu6050aux': 'mpu6050aux',
   'chip-tca9548a': 'tca9548a',
   'chip-ina219': 'ina219',
@@ -184,6 +185,54 @@ function withAuxMpuChips(diagram: Diagram, recipe: Recipe, sensors: Sensor[]): D
   }
 }
 
+/**
+ * Swaps the INA219 on an RC charging branch for chips/ina219rc.chip.c. Wokwi has
+ * no capacitor, so the chip charges one itself: it drives the capacitor node
+ * that the INA219's VIN- and an analog pin share, and reports the same charging
+ * current through the INA219 registers. The generator proves the branch is
+ * source → resistor → VIN+ … VIN- → capacitor → GND and takes the capacitance
+ * from the wiring text the student follows. Other capacitors (e.g. ph17's PWM
+ * filter) stay illustrations.
+ */
+function withRcChips(diagram: Diagram, recipe: Recipe, sensors: Sensor[]): Diagram {
+  if (!diagram.parts.some((part) => part.type === 'visual-capacitor')) return diagram
+  const nets = recipeNetlist(recipe, sensors)
+  const netOf = (pin: string) => nets.find((net) => net.includes(pin)) ?? [pin]
+  const typeOf = new Map(diagram.parts.map((part) => [part.id, part.type]))
+  const resistorOhms = new Map(diagram.parts
+    .filter((part) => part.type === 'wokwi-resistor')
+    .map((part) => [part.id, Number(part.attrs?.value)]))
+  const swaps = new Map<string, Record<string, string>>()
+  for (const capacitor of diagram.parts.filter((part) => part.type === 'visual-capacitor')) {
+    const plus = netOf(`${capacitor.id}:1`)
+    const meter = diagram.parts.find((part) => part.type === 'chip-ina219' && plus.includes(`${part.id}:VIN-`))
+    if (!meter || !plus.some((pin) => /^uno:A\d$/.test(pin))) continue
+    const fail = (why: string): never => {
+      throw new Error(`Phase 5 Wokwi generation: ${recipe.id} ${capacitor.id} ${why}`)
+    }
+    if (!netOf(`${capacitor.id}:2`).includes('uno:GND')) fail('negative leg does not reach GND')
+    const series = netOf(`${meter.id}:VIN+`).filter((pin) => resistorOhms.has(pin.split(':')[0]))
+    if (series.length !== 1) fail(`needs exactly one resistor into ${meter.id} VIN+, found ${series.length}`)
+    const [resistor, end] = series[0].split(':')
+    const supply = netOf(`${resistor}:${end === '1' ? '2' : '1'}`)
+    if (!supply.some((pin) => typeOf.get(pin.split(':')[0]) === 'wokwi-slide-potentiometer')) fail(`resistor ${resistor} does not reach the supply`)
+    const microfarads = new Set(recipe.wiring
+      .filter((step) => [step.from, step.to].some((ref) => ref.startsWith('CAPACITOR')))
+      .flatMap((step) => [...step.text.matchAll(/(\d+(?:\.\d+)?)\s*µF/g)].map((match) => Number(match[1]))))
+    if (microfarads.size !== 1) fail(`wiring text names ${microfarads.size} capacitances, expected one`)
+    swaps.set(meter.id, {
+      sourceVolts: '5',
+      seriesOhms: String(resistorOhms.get(resistor)),
+      capacitanceUf: String([...microfarads][0]),
+    })
+  }
+  if (swaps.size === 0) return diagram
+  return {
+    ...diagram,
+    parts: diagram.parts.map((part) => swaps.has(part.id) ? { ...part, type: 'chip-ina219rc', attrs: swaps.get(part.id) } : part),
+  }
+}
+
 function instrumentSketch(recipeId: string, sketch: string): string {
   const serialBegin = /Serial\.begin\(([^;]+)\);/
   if (!serialBegin.test(sketch)) {
@@ -213,7 +262,7 @@ export function buildPhase5WokwiProjects(
     const path = `${root}/${entry.recipeId}`
     const timeoutMs = behavior?.timeoutMs ?? entry.timeoutMs
     const scenario = 'scenario.test.yaml'
-    const standIns = [withCdsChips, withTcaChips, withAuxMpuChips]
+    const standIns = [withCdsChips, withTcaChips, withAuxMpuChips, withRcChips]
     const diagram = simulatable(standIns.reduce((built, swap) => swap(built, recipe, sensors), buildDiagram(recipe, sensors)))
     const chips = chipsOf(diagram)
 

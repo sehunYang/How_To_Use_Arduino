@@ -294,9 +294,9 @@
       "scenario": "scenario.test.yaml",
       "command": "wokwi-cli wokwi/phase6/ph21-rc-time-constant --scenario scenario.test.yaml --timeout 20000",
       "chips": [
-        "ina219"
+        "ina219rc"
       ],
-      "fingerprint": "859ba9c3733de9c9"
+      "fingerprint": "d80e76e214b6e874"
     },
     {
       "id": "ph22-battery-internal-resistance",

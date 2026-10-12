@@ -149,6 +149,17 @@ describe('simulation stand-ins for parts Wokwi lacks', () => {
     expect(project('s12-dual-mpu6050-address').diagram.parts.filter((part) => part.type === 'wokwi-mpu6050')).toHaveLength(2)
   })
 
+  it('charges the RC branch inside the INA219 chip, taking R and C from the recipe', () => {
+    const { diagram, chips } = project('ph21-rc-time-constant')
+    expect(diagram.parts.find((part) => part.id === 'ina219')).toMatchObject({
+      type: 'chip-ina219rc',
+      attrs: { sourceVolts: '5', seriesOhms: '1000', capacitanceUf: '1000' },
+    })
+    expect(chips).toEqual(['ina219rc'])
+    // ph17's capacitor is a PWM filter ahead of the INA219, not a branch it measures.
+    expect(project('ph17-ohms-law').chips).toEqual(['ina219'])
+  })
+
   it('reads the switch address from the A0-A2 straps', () => {
     const muxes = project('s14-tca-address-reset').diagram.parts.filter((part) => part.type === 'chip-tca9548a')
     expect(muxes.map((part) => part.attrs?.address)).toEqual(['112', '113'])

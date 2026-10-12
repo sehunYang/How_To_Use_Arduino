@@ -745,9 +745,9 @@
       "timeoutMs": 6000,
       "scenario": "scenario.test.yaml",
       "chips": [
-        "ina219"
+        "ina219rc"
       ],
-      "fingerprint": "51bcc43d2706539b"
+      "fingerprint": "4f588888fba2d1f6"
     },
     {
       "id": "ph22-battery-internal-resistance--unplugged-ina219",
