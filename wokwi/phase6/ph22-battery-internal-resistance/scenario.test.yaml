@@ -10,14 +10,32 @@ steps:
   - set-control:
       part-id: ina219
       control: busRaw
-      value: 3000
+      value: 18000
   - delay: 800ms
   - set-control:
       part-id: ina219
       control: shuntRaw
-      value: 68
+      value: 191
   - set-control:
       part-id: ina219
       control: busRaw
-      value: 2992
+      value: 17920
+  - delay: 800ms
+  - set-control:
+      part-id: ina219
+      control: shuntRaw
+      value: 405
+  - set-control:
+      part-id: ina219
+      control: busRaw
+      value: 17832
+  - delay: 800ms
+  - set-control:
+      part-id: ina219
+      control: shuntRaw
+      value: 881
+  - set-control:
+      part-id: ina219
+      control: busRaw
+      value: 17632
   - delay: 800ms
