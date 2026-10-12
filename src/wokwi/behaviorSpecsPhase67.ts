@@ -771,13 +771,16 @@ const phase6: Phase5BehaviorSpec[] = [
     recipeId: 'ph21-rc-time-constant',
     header: 'condition_id,time_ms,capacitor_V,current_mA',
     textColumns: ['condition_id'],
-    // The charging current through 10 kΩ from 5 V starts at 0.5 mA: five INA219 LSBs.
-    phases: [0.5, 0.3, 0.1].map((milliamps, index) => ({
-      label: `charging current ${milliamps} mA`,
-      steps: [set('ina219', 'shuntRaw', shuntRawFor(milliamps)), delayMs(400)],
-      expect: { current_mA: approx(milliamps, 0.0001) },
-      settleRows: index === 0 ? 0 : 1,
-    })),
+    // 5 V through 1 kΩ into 1000 µF: I = 5 mA · e^(-t/τ), τ = 1 s. Read at t = 0, τ and 2τ.
+    phases: [0, 1, 2].map((tau, index) => {
+      const milliamps = Number((5 * Math.exp(-tau)).toFixed(1))
+      return {
+        label: `charging current at t = ${tau}τ: ${milliamps} mA`,
+        steps: [set('ina219', 'shuntRaw', shuntRawFor(milliamps)), delayMs(400)],
+        expect: { current_mA: approx(milliamps, 0.0001) },
+        settleRows: index === 0 ? 0 : 1,
+      }
+    }),
     startupRows: 1,
     always: { condition_id: { text: 'CHARGE' }, capacitor_V: { min: 0, max: 5 } },
     timeColumn: 'time_ms',
@@ -785,23 +788,51 @@ const phase6: Phase5BehaviorSpec[] = [
     minRows: 12,
   },
   ((): Phase5BehaviorSpec => {
-    // A 1.5 V cell with 0.5 Ω internal resistance: V = E - I r.
-    const open = { shunt: 0, bus: ina219BusRegisterFor(1.5) }
-    const milliamps = (1.5 / 220.5) * 1000
-    const loaded = { shunt: shuntRawFor(milliamps), bus: ina219BusRegisterFor(1.5 - (milliamps / 1000) * 0.5) }
+    // A new 9 V battery: E = 9 V, r = 2 Ω. The sketch reads the bus after the
+    // 0.1 Ω shunt, so the V-I slope is r + 0.1 Ω, which the analysis subtracts.
+    const emf = 9
+    const pathOhms = 2 + 0.1
+    const states = [
+      { label: 'open circuit (OPEN)', ohms: Infinity },
+      { label: '470 Ω load', ohms: 470 },
+      { label: '220 Ω load', ohms: 220 },
+      { label: '100 Ω load', ohms: 100 },
+    ].map((state) => {
+      const milliamps = Number.isFinite(state.ohms) ? (emf / (state.ohms + pathOhms)) * 1000 : 0
+      return { ...state, shunt: shuntRawFor(milliamps), bus: ina219BusRegisterFor(emf - (milliamps / 1000) * pathOhms) }
+    })
     return {
       recipeId: 'ph22-battery-internal-resistance',
       header: 'condition_id,time_ms,terminal_V,current_mA',
       textColumns: ['condition_id'],
-      phases: [
-        { label: 'open circuit: E = 1.5 V', steps: [...inaSteps(INA_DEFAULT, open), delayMs(800)], expect: { terminal_V: busVolts(open.bus), current_mA: current(open.shunt) } },
-        { label: '220 Ω load', steps: [...inaSteps(open, loaded), delayMs(800)], expect: { terminal_V: busVolts(loaded.bus), current_mA: current(loaded.shunt) }, settleRows: 1 },
-      ],
+      phases: states.map(({ label, shunt, bus }, index) => ({
+        label,
+        steps: [...inaSteps(index === 0 ? INA_DEFAULT : states[index - 1], { shunt, bus }), delayMs(800)],
+        expect: { terminal_V: busVolts(bus), current_mA: current(shunt) },
+        settleRows: index === 0 ? 0 : 1,
+      })),
       startupRows: 1,
       always: { condition_id: { text: 'R220' } },
+      // The recipe's analysis: fit V = E - I(r + 0.1 Ω) over the loaded conditions.
+      checkRows: (rows) => {
+        const loaded = states.slice(1).map(({ shunt }) =>
+          rows.find((row) => Math.abs(row.values.current_mA - ina219CurrentMa(shunt)) < 0.01)?.values)
+        if (loaded.some((row) => row === undefined)) return ['missing a loaded reading']
+        const points = loaded as Array<Record<string, number>>
+        const meanI = points.reduce((sum, row) => sum + row.current_mA, 0) / points.length
+        const meanV = points.reduce((sum, row) => sum + row.terminal_V, 0) / points.length
+        const slope = points.reduce((sum, row) => sum + (row.current_mA - meanI) * (row.terminal_V - meanV), 0)
+          / points.reduce((sum, row) => sum + (row.current_mA - meanI) ** 2, 0)
+        const internalOhms = -slope * 1000 - 0.1
+        const intercept = meanV - slope * meanI
+        const failures: string[] = []
+        if (Math.abs(internalOhms - 2) > 0.3) failures.push(`fitted internal resistance ${internalOhms.toFixed(2)} Ω, expected 2 Ω`)
+        if (Math.abs(intercept - emf) > 0.02) failures.push(`fitted EMF ${intercept.toFixed(3)} V, expected ${emf} V`)
+        return failures
+      },
       timeColumn: 'time_ms',
       sampleInterval: { min: 250, max: 265 },
-      minRows: 5,
+      minRows: 8,
     }
   })(),
   ((): Phase5BehaviorSpec => {

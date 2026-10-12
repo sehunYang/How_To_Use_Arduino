@@ -142,7 +142,7 @@ describe('Phase 6 recipe expansion', () => {
       expect.objectContaining({ from: 'INA219.VIN-', to: 'RESISTOR_10.1' }),
     ]))
     expect(byId('ph21-rc-time-constant').wiring).toEqual(expect.arrayContaining([
-      expect.objectContaining({ from: 'BATTERY.+', to: 'RESISTOR_10000.1' }),
+      expect.objectContaining({ from: 'BATTERY.+', to: 'RESISTOR_1000.1' }),
       expect.objectContaining({ from: 'INA219.VIN-', to: 'CAPACITOR.1' }),
       expect.objectContaining({ from: 'CAPACITOR.1', to: 'UNO.A0' }),
     ]))

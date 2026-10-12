@@ -747,7 +747,7 @@
       "chips": [
         "ina219"
       ],
-      "fingerprint": "8d7ab0b791f7a881"
+      "fingerprint": "51bcc43d2706539b"
     },
     {
       "id": "ph22-battery-internal-resistance--unplugged-ina219",
@@ -760,7 +760,7 @@
       "chips": [
         "ina219"
       ],
-      "fingerprint": "bd1888b4f3b790de"
+      "fingerprint": "eecb1b51f53156db"
     },
     {
       "id": "ph23-solar-iv-mpp--unplugged-ina219",
