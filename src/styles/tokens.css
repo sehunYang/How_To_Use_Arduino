@@ -303,3 +303,20 @@ html {
     transition-duration: 0.01ms !important;
   }
 }
+
+/*
+ * 번호 있는 체크 목록(`1. [ ] …`)의 단계 번호. 체크 상자로 바꿔 그리면서 목록
+ * 번호가 사라져, 학생이 지금 몇 번째 할 일인지 셀 수 없었습니다. 번호는 목록마다
+ * `md-step` 카운터로 다시 셉니다. 번호 없는 체크 목록에서는 번호 칸을 숨깁니다.
+ */
+.md-steps > .md-step {
+  counter-increment: md-step;
+}
+
+.md-steps > .md-step .md-step-number::before {
+  content: counter(md-step);
+}
+
+ul > .md-step .md-step-number {
+  display: none;
+}

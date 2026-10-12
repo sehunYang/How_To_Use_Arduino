@@ -83,8 +83,11 @@ function Markdown({ source, checklist }: { source: string; checklist?: Checklist
           const item = nodeText(node).trim()
           const checked = checklist.isChecked(item)
           return (
-            <li {...props} className="my-1 list-none">
+            <li {...props} className="md-step my-2 list-none">
               <label className="flex cursor-pointer items-start gap-2">
+                {/* 번호 있는 체크 목록이면 몇 번째 할 일인지 보여 줍니다. 숫자는 CSS
+                    카운터가 채우고, 번호 없는 목록에서는 이 칸이 숨습니다(tokens.css). */}
+                <span aria-hidden="true" className="md-step-number mt-0.5 inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-accent text-caption font-semibold text-background" />
                 <input
                   type="checkbox"
                   className="mt-1 size-4 shrink-0 accent-accent"
@@ -105,14 +108,40 @@ function Markdown({ source, checklist }: { source: string; checklist?: Checklist
           typeof href === 'string' && href.startsWith('/recipes/')
             ? <Link to={href} className="text-accent underline-offset-4 hover:underline">{children}</Link>
             : <a {...props} href={href} target="_blank" rel="noopener noreferrer">{children}</a>,
+        /**
+         * Tailwind의 기본 스타일은 목록 기호와 번호, 인용 상자, 문단 간격을 모두
+         * 지웁니다. 그대로 두면 가이드의 목록·가설·순서가 한 덩어리 글로 보입니다.
+         */
+        p: ({ children, ...props }) => <p {...props} className="my-3 leading-7">{children}</p>,
+        ul: ({ children, className, ...props }) => (
+          <ul {...props} className={className?.includes('contains-task-list') ? 'my-3 pl-0' : 'my-3 list-disc space-y-1.5 pl-6 marker:text-accent'}>{children}</ul>
+        ),
+        ol: ({ children, className, start, ...props }) => (
+          className?.includes('contains-task-list')
+            ? <ol {...props} className="md-steps my-3 pl-0" style={{ counterReset: `md-step ${(start ?? 1) - 1}` }}>{children}</ol>
+            : <ol {...props} start={start} className="my-3 list-decimal space-y-1.5 pl-6 marker:font-semibold marker:text-accent">{children}</ol>
+        ),
+        blockquote: ({ children, ...props }) => (
+          <blockquote {...props} className="my-4 rounded-card border-l-4 border-accent bg-muted-background px-4 py-1 text-foreground">{children}</blockquote>
+        ),
         h2: ({ children, ...props }) => (
           <h2 {...props} className="mt-10 border-l-4 border-accent pl-4 text-2xl font-bold tracking-tight text-foreground">{children}</h2>
         ),
-        h3: ({ children, ...props }) => (
-          <h3 {...props} className="mt-8 text-xl font-bold text-foreground">{children}</h3>
-        ),
+        h3: ({ children, ...props }) => {
+          // "4-1. 과학 이론…"처럼 번호가 붙은 절은 번호를 표시로 떼어, 지금 몇 번째
+          // 절을 읽는지 한눈에 보이게 합니다.
+          const [first, ...rest] = Array.isArray(children) ? children : [children]
+          const numbered = typeof first === 'string' ? /^(\d+-\d+)\.\s*(.*)$/s.exec(first) : null
+          return (
+            <h3 {...props} className="mt-10 flex items-center gap-3 border-t border-border pt-6 text-xl font-bold text-foreground">
+              {numbered
+                ? <><span className="inline-flex shrink-0 items-center rounded-full bg-accent px-2.5 py-0.5 text-caption font-semibold text-background">{numbered[1]}</span><span>{numbered[2]}{rest}</span></>
+                : children}
+            </h3>
+          )
+        },
         h4: ({ children, ...props }) => (
-          <h4 {...props} className="mt-6 text-lg font-semibold text-foreground">{children}</h4>
+          <h4 {...props} className="mt-6 border-l-4 border-accent pl-3 text-lg font-semibold text-foreground">{children}</h4>
         ),
         table: ({ children, ...props }) => (
           <div className="my-5 overflow-x-auto rounded-card border border-border">
