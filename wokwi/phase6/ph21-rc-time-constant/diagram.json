@@ -35,12 +35,6 @@
       "attrs": {
         "value": "10000"
       }
-    },
-    {
-      "id": "capacitor",
-      "type": "visual-capacitor",
-      "top": 0,
-      "left": 400
     }
   ],
   "connections": [
@@ -117,21 +111,9 @@
       []
     ],
     [
-      "capacitor:1",
-      "bb:7t.e",
-      "purple",
-      []
-    ],
-    [
       "uno:A0",
       "bb:7t.b",
       "blue",
-      []
-    ],
-    [
-      "capacitor:2",
-      "bb:9t.e",
-      "black",
       []
     ],
     [

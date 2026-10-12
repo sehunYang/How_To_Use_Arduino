@@ -227,7 +227,7 @@
       "chips": [
         "ina219"
       ],
-      "fingerprint": "b02126074ed0b781"
+      "fingerprint": "0e372e10d1d4f7ba"
     },
     {
       "id": "ph18-series-parallel-resistance",
@@ -275,7 +275,7 @@
       "chips": [
         "ina219"
       ],
-      "fingerprint": "2a9fa6bebae70290"
+      "fingerprint": "317b611ab5d12ecc"
     },
     {
       "id": "ph22-battery-internal-resistance",

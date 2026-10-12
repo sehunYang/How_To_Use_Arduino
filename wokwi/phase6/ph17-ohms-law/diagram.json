@@ -31,12 +31,6 @@
       }
     },
     {
-      "id": "capacitor",
-      "type": "visual-capacitor",
-      "top": 0,
-      "left": 300
-    },
-    {
       "id": "resistor_1000",
       "type": "wokwi-resistor",
       "top": 0,
@@ -114,12 +108,6 @@
       []
     ],
     [
-      "capacitor:1",
-      "bb:7t.e",
-      "orange",
-      []
-    ],
-    [
       "bb:4t.a",
       "bb:7t.a",
       "orange",
@@ -129,12 +117,6 @@
       "ina219:VIN+",
       "bb:4t.a",
       "red",
-      []
-    ],
-    [
-      "capacitor:2",
-      "bb:9t.e",
-      "black",
       []
     ],
     [

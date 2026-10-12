@@ -44,6 +44,22 @@ export interface Phase5WokwiManifest {
   }>
 }
 
+/**
+ * Drops illustration-only parts (`visual-*`, e.g. the RC recipes' capacitor):
+ * they exist for the student's wiring picture, Wokwi has no model for them, and
+ * leaving them in only makes every run report an unknown part type.
+ */
+function simulatable(diagram: Diagram): Diagram {
+  const illustrative = new Set(diagram.parts.filter((part) => part.type.startsWith('visual-')).map((part) => part.id))
+  if (illustrative.size === 0) return diagram
+  const touches = (endpoint: string) => illustrative.has(endpoint.split(':')[0])
+  return {
+    ...diagram,
+    parts: diagram.parts.filter((part) => !illustrative.has(part.id)),
+    connections: diagram.connections.filter(([from, to]) => !touches(from) && !touches(to)),
+  }
+}
+
 function instrumentSketch(recipeId: string, sketch: string): string {
   const serialBegin = /Serial\.begin\(([^;]+)\);/
   if (!serialBegin.test(sketch)) {
@@ -73,7 +89,7 @@ export function buildPhase5WokwiProjects(
     const path = `${root}/${entry.recipeId}`
     const timeoutMs = behavior?.timeoutMs ?? entry.timeoutMs
     const scenario = 'scenario.test.yaml'
-    const diagram = buildDiagram(recipe, sensors)
+    const diagram = simulatable(buildDiagram(recipe, sensors))
     const chips = chipsOf(diagram)
 
     return {
