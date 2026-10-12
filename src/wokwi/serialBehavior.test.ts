@@ -5,6 +5,7 @@ import { simulationPhases } from './phase5SimulationRegistry'
 import { buildDiagram } from './buildDiagram'
 import { behaviorSpecs, phase5BehaviorSpecById, type Phase5BehaviorSpec } from './behaviorSpecs'
 import { checkSerialBehavior, serialFromCliOutput } from './serialBehavior'
+import { sketchHostSpecs } from '@/verification/sketchHostSpecs'
 
 const cooling = phase5BehaviorSpecById.get('cooling-curve')!
 
@@ -191,10 +192,10 @@ const allRecipes = simulationPhases.flatMap((phase) => phase.recipes)
  * run must carry a behaviour spec.
  */
 const SMOKE_ONLY: Record<string, string> = {
-  S3: 'PIR needs 30 s to settle, past the 20 s cap, and Wokwi has no PIR automation control',
-  'automatic-door': 'PIR needs 30 s to settle, past the 20 s cap, and Wokwi has no PIR automation control',
-  'night-activity': 'waits 30 s for the PIR to settle before its first row, past the 20 s cap',
-  'smart-lighting': 'waits 30 s for the PIR to settle before its first row, past the 20 s cap',
+  S3: 'PIR needs 30 s to settle, past the 20 s cap; judged on the host instead',
+  'automatic-door': 'PIR needs 30 s to settle, past the 20 s cap; judged on the host instead',
+  'night-activity': 'waits 30 s for the PIR to settle before its first row; judged on the host instead',
+  'smart-lighting': 'waits 30 s for the PIR to settle before its first row; judged on the host instead',
 }
 
 describe('behaviour specs', () => {
@@ -206,6 +207,11 @@ describe('behaviour specs', () => {
         expect(specified.has(entry.recipeId) && entry.recipeId in SMOKE_ONLY, entry.recipeId).toBe(false)
       }
     }
+  })
+
+  it('leave no smoke-only recipe without a host run (src/verification/sketchHostSpecs.ts)', () => {
+    const hosted = new Set(sketchHostSpecs.map((spec) => spec.recipeId))
+    for (const id of Object.keys(SMOKE_ONLY)) expect(hosted.has(id), id).toBe(true)
   })
 
   it('cover distinct recipes and match the sketches they claim to test', () => {

@@ -441,6 +441,9 @@ int brightThreshold = 450;
 // 조명 유지 시간 실험은 이 값을 10000, 30000, 60000으로 바꿔 가며 반복하세요.
 unsigned long holdOnMs = 30000;
 unsigned long lastMotion=0,lastSwitch=0;
+// 아직 아무도 감지하지 않았을 때 lastMotion은 0입니다. 이 표시가 없으면 유지 시간을
+// 60000으로 늘렸을 때 안정화 직후 30초 동안 빈 방도 사람이 있는 것으로 판정됩니다.
+bool motionSeen=false;
 bool lamp=false;
 void setup() {
   Serial.begin(9600);
@@ -453,8 +456,11 @@ void setup() {
 }
 void loop() {
   int light=analogRead(LIGHT_PIN);
-  if(digitalRead(PIR_PIN)==HIGH) lastMotion=millis();
-  bool occupied=millis()-lastMotion<holdOnMs;
+  if(digitalRead(PIR_PIN)==HIGH) {
+    lastMotion=millis();
+    motionSeen=true;
+  }
+  bool occupied=motionSeen && millis()-lastMotion<holdOnMs;
   // 릴레이 보호를 위해 상태를 바꾼 뒤 10초 동안은 다시 바꾸지 않습니다.
   if (millis()-lastSwitch>=10000) {
     if (!lamp && occupied && light<darkThreshold) { lamp=true; lastSwitch=millis(); }
