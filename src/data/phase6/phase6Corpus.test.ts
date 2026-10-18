@@ -88,8 +88,8 @@ describe('Phase 6 recipe expansion', () => {
     expect(ohmsLaw).toBeDefined()
     expect(ohmsLaw?.wiring).toEqual(expect.arrayContaining([
       expect.objectContaining({ from: 'RESISTOR_100.1', to: 'UNO.D9' }),
-      expect.objectContaining({ from: 'RESISTOR_100.2', to: 'CAPACITOR.1' }),
-      expect.objectContaining({ from: 'CAPACITOR.2', to: 'UNO.GND' }),
+      expect.objectContaining({ from: 'RESISTOR_100.2', to: 'CAPACITOR_470.1' }),
+      expect.objectContaining({ from: 'CAPACITOR_470.2', to: 'UNO.GND' }),
       expect.objectContaining({ from: 'INA219.VIN-', to: 'RESISTOR_1000.1' }),
     ]))
     expect(ohmsLaw?.wiring.some((step) => step.from.startsWith('BATTERY.'))).toBe(false)
@@ -143,8 +143,8 @@ describe('Phase 6 recipe expansion', () => {
     ]))
     expect(byId('ph21-rc-time-constant').wiring).toEqual(expect.arrayContaining([
       expect.objectContaining({ from: 'BATTERY.+', to: 'RESISTOR_1000.1' }),
-      expect.objectContaining({ from: 'INA219.VIN-', to: 'CAPACITOR.1' }),
-      expect.objectContaining({ from: 'CAPACITOR.1', to: 'UNO.A0' }),
+      expect.objectContaining({ from: 'INA219.VIN-', to: 'CAPACITOR_1000.1' }),
+      expect.objectContaining({ from: 'CAPACITOR_1000.1', to: 'UNO.A0' }),
     ]))
     expect(byId('ph21-rc-time-constant').sketch).toContain('analogRead(CAPACITOR_VOLTAGE_PIN)')
     expect(byId('ph22-battery-internal-resistance').body).toContain('OPEN')
@@ -165,11 +165,11 @@ describe('Phase 6 recipe expansion', () => {
     const ohmsLaw = phase6PhysicsRecipes.find((recipe) => recipe.id === 'ph17-ohms-law')!
     const diagram = buildDiagram(ohmsLaw, sensors)
     expect(diagram.parts).toEqual(expect.arrayContaining([
-      expect.objectContaining({ id: 'capacitor', type: 'visual-capacitor' }),
+      expect.objectContaining({ id: 'capacitor_470', type: 'visual-capacitor' }),
       expect.objectContaining({ id: 'resistor_100', type: 'wokwi-resistor' }),
       expect.objectContaining({ id: 'resistor_1000', type: 'wokwi-resistor' }),
     ]))
-    for (const partId of ['capacitor', 'resistor_100', 'resistor_1000']) {
+    for (const partId of ['capacitor_470', 'resistor_100', 'resistor_1000']) {
       const connections = diagram.connections.filter(([from, to]) =>
         from.startsWith(`${partId}:`) || to.startsWith(`${partId}:`),
       )

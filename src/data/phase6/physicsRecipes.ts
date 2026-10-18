@@ -253,9 +253,9 @@ const electricity: Phase6RecipeDefinition[] = [
       { from: 'INA219.SDA', to: 'UNO.A4', color: 'green', text: 'INA219 SDA를 UNO A4(SDA)에 직접 연결하세요.' },
       { from: 'INA219.SCL', to: 'UNO.A5', color: 'yellow', text: 'INA219 SCL을 UNO A5(SCL)에 직접 연결하세요.' },
       { from: 'RESISTOR_100.1', to: 'UNO.D9', color: 'orange', text: '브레드보드에 꽂은 100 Ω RC 필터 저항 1번 다리를 UNO D9 PWM 출력에 연결하세요.' },
-      { from: 'RESISTOR_100.2', to: 'CAPACITOR.1', color: 'orange', text: '100 Ω 저항 2번 다리와 470 µF 커패시터 +극을 같은 브레드보드 단자 열에 연결해 평활 노드를 만드세요.' },
+      { from: 'RESISTOR_100.2', to: 'CAPACITOR_470.1', color: 'orange', text: '100 Ω 저항 2번 다리와 470 µF 커패시터 +극을 같은 브레드보드 단자 열에 연결해 평활 노드를 만드세요.' },
       { from: 'RESISTOR_100.2', to: 'INA219.VIN+', color: 'red', text: '평활 노드가 있는 브레드보드 단자 열을 INA219 VIN+에 연결하세요.' },
-      { from: 'CAPACITOR.2', to: 'UNO.GND', color: 'black', text: '470 µF 커패시터 -극을 브레드보드 - 전원 레일에 연결하세요.' },
+      { from: 'CAPACITOR_470.2', to: 'UNO.GND', color: 'black', text: '470 µF 커패시터 -극을 브레드보드 - 전원 레일에 연결하세요.' },
       { from: 'INA219.VIN-', to: 'RESISTOR_1000.1', color: 'purple', text: 'INA219 VIN-를 브레드보드에 꽂은 1 kΩ 측정 저항 1번 다리에 연결하세요.' },
       { from: 'RESISTOR_1000.2', to: 'UNO.GND', color: 'black', text: '1 kΩ 측정 저항 2번 다리를 브레드보드 - 전원 레일에 연결하세요.' },
     ],
@@ -436,9 +436,9 @@ void loop(){float busV=(readIna(2)>>3)*0.004f,currentMa=(readIna(1)*0.01f)/INA_S
       { from: 'INA219.SCL', to: 'UNO.A5', color: 'yellow', text: 'INA219 SCL을 UNO A5에 연결하세요.' },
       { from: 'BATTERY.+', to: 'RESISTOR_1000.1', color: 'red', text: 'CHARGE 조건에서 5 V 전원 +를 1 kΩ 저항 1번 다리에 연결하세요.' },
       { from: 'RESISTOR_1000.2', to: 'INA219.VIN+', color: 'orange', text: '1 kΩ 저항 2번 다리를 INA219 VIN+에 연결하세요.' },
-      { from: 'INA219.VIN-', to: 'CAPACITOR.1', color: 'purple', text: 'INA219 VIN-를 1000 µF 커패시터 +극에 연결하세요. 이 노드의 전압은 A0가 잽니다.' },
-      { from: 'CAPACITOR.1', to: 'UNO.A0', color: 'blue', text: '1000 µF 커패시터 +극을 UNO A0에도 연결해 커패시터 전압을 직접 측정하세요.' },
-      { from: 'CAPACITOR.2', to: 'BATTERY.-', color: 'black', text: '1000 µF 커패시터 -극을 전원 -에 연결하세요.' },
+      { from: 'INA219.VIN-', to: 'CAPACITOR_1000.1', color: 'purple', text: 'INA219 VIN-를 1000 µF 커패시터 +극에 연결하세요. 이 노드의 전압은 A0가 잽니다.' },
+      { from: 'CAPACITOR_1000.1', to: 'UNO.A0', color: 'blue', text: '1000 µF 커패시터 +극을 UNO A0에도 연결해 커패시터 전압을 직접 측정하세요.' },
+      { from: 'CAPACITOR_1000.2', to: 'BATTERY.-', color: 'black', text: '1000 µF 커패시터 -극을 전원 -에 연결하세요.' },
       { from: 'BATTERY.-', to: 'UNO.GND', color: 'black', text: '전원 -와 UNO GND를 공통 접지하세요.' },
     ],
     sketch: `#include <Wire.h>
@@ -490,11 +490,11 @@ void loop(){float terminalV=(readIna(2)>>3)*0.004f,currentMa=(readIna(1)*0.01f)/
   },
   {
     id: 'ph23-solar-iv-mpp', title: '태양전지 I-V 곡선과 최대전력점', difficulty: '고급', minutes: 80, sensors: ['ina219', 'tsl2591'],
-    keywords: ['태양전지', 'IV곡선', '최대전력점', '조도'],
-    law: '태양전지의 출력 전력 $P=VI$는 연결한 저항에 따라 변하며 $I$-$V$ 곡선 위에 최대전력점이 존재합니다.',
-    apparatus: 'INA219, 소형 태양전지, TSL2591, 100 Ω~10 kΩ 저항 세트, 일정한 광원, Arduino UNO, 브레드보드',
-    method: '패널과 TSL2591 수광면을 같은 광원 방향에 고정합니다. 그림처럼 패널-INA219-저항을 직렬로 연결하고 가장 큰 저항부터 바꿉니다. 각 교체 때 전원을 차단한 뒤 코드의 conditionId를 실제로 연결한 저항과 맞추세요. 10 kΩ은 R10K, 4.7 kΩ은 R4K7, 2.2 kΩ은 R2K2, 1 kΩ은 R1K, 470 Ω은 R470, 220 Ω은 R220, 100 Ω은 R100입니다. 각 조건에서 V, I, 조도를 함께 기록합니다.',
-    graph: '$I$-$V$ 및 $P$-$V$ 그래프를 그리고 최대 $P$ 지점과 광량 변화에 따른 이동을 비교합니다.',
+    keywords: ['태양전지', 'IV곡선', '최대전력점', '조도', '가변저항', 'MPPT'],
+    law: '태양전지의 출력 전력 $P=VI$는 연결한 저항에 따라 변하며 $I$-$V$ 곡선 위에 최대전력점이 존재합니다. 태양전지는 광전류를 만드는 전류원과 p-n 접합 다이오드가 나란히 놓인 구조라, 전압이 다이오드가 켜지는 전압에 가까워지면 광전류가 내부 다이오드로 새어 바깥으로 나오는 전류가 급히 줄어듭니다. 그래서 $I$-$V$ 곡선은 직선이 아니라 무릎처럼 꺾이고, 그 무릎 근처에서 전력이 가장 큽니다.',
+    apparatus: 'INA219, 소형 태양전지, TSL2591, 100 Ω~10 kΩ 저항 세트, 일정한 광원, Arduino UNO, 브레드보드. 곡선을 한 번에 그리려면 점퍼케이블형 10 kΩ 가변저항 1개',
+    method: '패널과 TSL2591 수광면을 같은 광원 방향에 고정합니다. 그림처럼 패널-INA219-저항을 직렬로 연결하고 가장 큰 저항부터 바꿉니다. 각 교체 때 전원을 차단한 뒤 코드의 conditionId를 실제로 연결한 저항과 맞추세요. 10 kΩ은 R10K, 4.7 kΩ은 R4K7, 2.2 kΩ은 R2K2, 1 kΩ은 R1K, 470 Ω은 R470, 220 Ω은 R220, 100 Ω은 R100입니다. 각 조건에서 V, I, 조도를 함께 기록합니다. 고정 저항 대신 10 kΩ 가변저항으로 곡선을 한 번에 그릴 수도 있습니다. 고정 저항을 빼고 가변저항의 가운데 핀을 INA219 VIN-에, 양 끝 핀 중 하나를 태양전지 −에 꽂고 나머지 핀은 비워 두세요. 코드의 conditionId를 SWEEP으로, samplingIntervalMs를 100으로 바꾼 뒤, 노브를 0 Ω 쪽 끝에서 시작해 10~15초 동안 반대쪽 끝까지 일정하게 돌립니다. 최대전력점은 보통 처음 1/4바퀴(수십 Ω~1 kΩ) 안에 있으므로 그 구간을 천천히 돌리세요. 1 kΩ 고정 저항을 가변저항과 나란히 꽂으면 전체가 0~909 Ω으로 좁아져 노브 전체를 그 구간에 쓸 수 있습니다.',
+    graph: '$I$-$V$ 및 $P$-$V$ 그래프를 그리고 최대 $P$ 지점과 광량 변화에 따른 이동을 비교합니다. 각 줄에서 부하 저항을 $R = V/I$로 계산해 가로축에, 전력을 세로축에 두면 전력이 가장 커지는 최적 부하 저항을 읽을 수 있습니다. 전류가 0.05 mA보다 작은 줄은 $R$이 크게 튀므로 빼세요.',
     connections: [
       { from: 'INA219.VCC', to: 'UNO.5V', color: 'red', text: 'INA219 VCC를 UNO 5V에 연결하세요.' },
       { from: 'INA219.GND', to: 'UNO.GND', color: 'black', text: 'INA219 GND를 UNO GND에 연결하세요.' },
@@ -512,7 +512,7 @@ void loop(){float terminalV=(readIna(2)>>3)*0.004f,currentMa=(readIna(1)*0.01f)/
     sketch: `#include <Wire.h>
 // @baud 9600
 const float INA_SHUNT_OHMS=0.1f;
-const char* conditionId="R1K"; // R10K, R4K7, R2K2, R1K, R470, R220, R100 중 실제 연결한 저항과 맞추세요.
+const char* conditionId="R1K"; // R10K, R4K7, R2K2, R1K, R470, R220, R100 중 실제 연결한 저항과 맞추세요. 가변저항을 돌리며 잴 때는 SWEEP.
 // @tunable samplingIntervalMs
 unsigned long samplingIntervalMs=500;
 int16_t readIna(byte reg){

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "variantCount": 119,
+  "variantCount": 122,
   "variants": [
     {
       "id": "S1--unplugged-mpu6050",
@@ -774,7 +774,7 @@
         "ina219",
         "tsl2591"
       ],
-      "fingerprint": "77f37669fde426e7"
+      "fingerprint": "d7186129ae6d9fd7"
     },
     {
       "id": "ph23-solar-iv-mpp--unplugged-tsl2591",
@@ -788,7 +788,7 @@
         "ina219",
         "tsl2591"
       ],
-      "fingerprint": "54a69ed656738408"
+      "fingerprint": "aff280969b0a6758"
     },
     {
       "id": "ph24-solenoid-current-field--unplugged-ina219",
@@ -1367,6 +1367,45 @@
       "scenario": "scenario.test.yaml",
       "chips": [],
       "fingerprint": "0cc0495e7bd2a740"
+    },
+    {
+      "id": "f1-hand-generator-power--unplugged-ina219",
+      "recipeId": "f1-hand-generator-power",
+      "kind": "unplugged",
+      "path": "wokwi/variants/f1-hand-generator-power--unplugged-ina219",
+      "sourcePath": "wokwi/phase7/f1-hand-generator-power",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "ina219"
+      ],
+      "fingerprint": "7367b1063fb69d18"
+    },
+    {
+      "id": "f2-solar-panel-power--unplugged-ina219",
+      "recipeId": "f2-solar-panel-power",
+      "kind": "unplugged",
+      "path": "wokwi/variants/f2-solar-panel-power--unplugged-ina219",
+      "sourcePath": "wokwi/phase7/f2-solar-panel-power",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "ina219"
+      ],
+      "fingerprint": "afa884fba3daf4e9"
+    },
+    {
+      "id": "f3-rectifier-rpm-efficiency--unplugged-ina219",
+      "recipeId": "f3-rectifier-rpm-efficiency",
+      "kind": "unplugged",
+      "path": "wokwi/variants/f3-rectifier-rpm-efficiency--unplugged-ina219",
+      "sourcePath": "wokwi/phase7/f3-rectifier-rpm-efficiency",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "ina219"
+      ],
+      "fingerprint": "4efe9cb49275149a"
     },
     {
       "id": "fan-control--jitter",

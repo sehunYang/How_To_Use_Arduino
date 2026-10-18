@@ -1,0 +1,111 @@
+name: Phase 5 behavior - f3-rectifier-rpm-efficiency
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "time_ms,rpm,mag_delta,voltage_V,current_mA,power_mW"
+  - set-control:
+      part-id: ina219
+      control: shuntRaw
+      value: 0
+  - set-control:
+      part-id: ina219
+      control: busRaw
+      value: 0
+  - delay: 1000ms
+  - set-control:
+      part-id: ina219
+      control: shuntRaw
+      value: 250
+  - set-control:
+      part-id: ina219
+      control: busRaw
+      value: 5000
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 0
+  - delay: 150ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 1
+  - delay: 150ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 0
+  - delay: 150ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 1
+  - delay: 150ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 0
+  - delay: 150ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 1
+  - delay: 150ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 0
+  - delay: 150ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 1
+  - delay: 150ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 0
+  - delay: 150ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 1
+  - delay: 150ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 0
+  - delay: 150ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 1
+  - delay: 150ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 0
+  - delay: 150ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 1
+  - delay: 150ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 0
+  - delay: 150ms
+  - set-control:
+      part-id: hbe0704
+      control: position
+      value: 1
+  - delay: 150ms
+  - set-control:
+      part-id: ina219
+      control: shuntRaw
+      value: 0
+  - set-control:
+      part-id: ina219
+      control: busRaw
+      value: 0
+  - delay: 2600ms

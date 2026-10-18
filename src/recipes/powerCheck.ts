@@ -58,6 +58,8 @@ const POLARITY_NOTES: Record<string, string> = {
   CAPACITOR: '옆면에 흰 띠와 −가 인쇄된 쪽이 −입니다. 전해 커패시터를 거꾸로 꽂으면 부풀거나 터질 수 있습니다.',
   BATTERY: '+와 −를 바꿔 꽂으면 보드가 상할 수 있습니다. 표시를 확인하세요.',
   PANEL: '+와 −를 바꿔 꽂으면 전류가 0으로만 측정됩니다.',
+  DIODE: '은색 띠가 있는 쪽(K)이 INA219 VIN+ 쪽입니다. 거꾸로 꽂으면 전류가 막혀 0으로만 측정됩니다.',
+  GENERATOR: '손잡이나 바퀴를 반대로 돌리면 +와 −가 바뀌어 다이오드가 전류를 막습니다. 0만 나오면 반대로 돌려 보세요.',
   DS18B20: '방수 프로브는 선 색과 실제 핀이 다를 수 있습니다. 판매처의 핀 표를 확인하세요.',
 }
 
@@ -109,6 +111,8 @@ export function powerChecks(recipe: Pick<Recipe, 'wiring'>): PowerCheck[] {
     recipe.wiring
       .flatMap((step) => [step.from, step.to])
       .map((endpoint) => baseToken(splitEndpoint(endpoint).component))
+      // 값이 붙은 커패시터(`CAPACITOR_100`)도 극성은 같습니다.
+      .map((component) => (component.startsWith('CAPACITOR_') ? 'CAPACITOR' : component))
       .filter((component) => component in POLARITY_NOTES),
   )]
   for (const component of polarity) {

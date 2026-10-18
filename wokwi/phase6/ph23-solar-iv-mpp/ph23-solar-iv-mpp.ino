@@ -4,7 +4,7 @@
 // @baud 9600
 const float INA_SHUNT_OHMS=0.1f;
 const char* conditionId="R1K";
-// R10K, R4K7, R2K2, R1K, R470, R220, R100 중 실제 연결한 저항과 맞추세요.
+// R10K, R4K7, R2K2, R1K, R470, R220, R100 중 실제 연결한 저항과 맞추세요. 가변저항을 돌리며 잴 때는 SWEEP.
 // @tunable samplingIntervalMs
 unsigned long samplingIntervalMs=500;
 int16_t readIna(byte reg) {

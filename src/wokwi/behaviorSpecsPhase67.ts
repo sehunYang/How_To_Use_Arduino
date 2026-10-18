@@ -377,6 +377,55 @@ function gyroVersusHall(recipeId: string): Phase5BehaviorSpec {
   }
 }
 
+// ── Generator and solar panel power log through Adafruit_INA219 (f1, f2) ────
+
+/** What the Adafruit library prints: bus volts to 3 decimals, current to 2, clamped at zero. */
+const printedVolts = (register: number) => approx(Math.max(0, ina219BusVolts(register)), 0.001)
+const printedCurrent = (shuntRaw: number) => approx(Math.max(0, ina219CurrentMa(shuntRaw)), 0.01)
+
+/** E = Σ P·Δt: each row adds its own power over the gap since the row before. */
+const accumulatedEnergy = derived((row, previous) => {
+  const before = previous[previous.length - 1]
+  if (!before) return row.values.energy_mJ
+  return before.values.energy_mJ + row.values.power_mW * ((row.values.time_ms - before.values.time_ms) / 1000)
+}, 0.02)
+
+function powerLog(
+  recipeId: string,
+  states: Array<{ label: string; shunt: number; bus: number }>,
+): Phase5BehaviorSpec {
+  return {
+    recipeId,
+    header: 'time_ms,voltage_V,current_mA,power_mW,energy_mJ',
+    phases: states.map(({ label, shunt, bus }, index) => ({
+      label,
+      steps: [...inaSteps(index === 0 ? INA_DEFAULT : states[index - 1], { shunt, bus }), delayMs(1000)],
+      expect: { voltage_V: printedVolts(bus), current_mA: printedCurrent(shunt) },
+      settleRows: 1,
+    })),
+    startupRows: 1,
+    always: {
+      // P = V × I from the printed (rounded) V and I.
+      power_mW: derived(({ values }) => values.voltage_V * values.current_mA, 0.05),
+      energy_mJ: accumulatedEnergy,
+    },
+    checkRows: (rows) => {
+      const failures: string[] = []
+      rows.forEach((row, index) => {
+        if (index > 0 && row.values.energy_mJ < rows[index - 1].values.energy_mJ) {
+          failures.push(`energy fell from ${rows[index - 1].values.energy_mJ} to ${row.values.energy_mJ} mJ`)
+        }
+      })
+      return failures
+    },
+    timeColumn: 'time_ms',
+    sampleInterval: { min: 100, max: 105 },
+    minRows: states.length * 7,
+  }
+}
+
+const atRest = { shunt: 0, bus: ina219BusRegisterFor(0) }
+
 // ── BME280 through the recipes' bare-register driver (integer compensation) ─
 
 function bmeRawDriver(recipeId: string, labels: [string, string, string]): Phase5BehaviorSpec {
@@ -1452,6 +1501,73 @@ const phase7: Phase5BehaviorSpec[] = [
     sampleInterval: { min: 20, max: 21 },
     minRows: 10,
   },
+  powerLog('f1-hand-generator-power', [
+    { label: 'crank at rest', ...atRest },
+    // The diode blocks the reversed EMF; the shunt reads a little noise below zero.
+    { label: 'cranked backwards: noise reads -0.3 mA', shunt: -3, bus: ina219BusRegisterFor(0) },
+    { label: 'cranked slowly: 1.5 V across 100 Ω', ...load(1.5, 100) },
+    { label: 'cranked fast: 4.5 V across 100 Ω', ...load(4.5, 100) },
+  ]),
+  powerLog('f2-solar-panel-power', [
+    { label: 'room light only: 0.3 V across 100 Ω', ...load(0.3, 100) },
+    { label: 'flashlight at 10 cm: 1.0 V', ...load(1.0, 100) },
+    { label: 'flashlight at 5 cm: 2.4 V', ...load(2.4, 100) },
+    { label: 'flashlight at 1 cm: 4.0 V', ...load(4.0, 100) },
+  ]),
+  ((): Phase5BehaviorSpec => {
+    // One magnet on the wheel passing every 300 ms is 200 rpm.
+    const periodMs = 300
+    const rpm = 60000 / periodMs
+    const turning = load(2.5, 100)
+    return {
+      recipeId: 'f3-rectifier-rpm-efficiency',
+      header: 'time_ms,rpm,mag_delta,voltage_V,current_mA,power_mW',
+      phases: [
+        {
+          // The Hall stand-in powers up at 0 V, so that is the baseline the sketch takes.
+          label: 'wheel at rest, magnet away from the sensor',
+          steps: [...inaSteps(INA_DEFAULT, atRest), delayMs(1000)],
+          expect: { rpm: approx(0, 0), mag_delta: approx(0, 3), voltage_V: printedVolts(atRest.bus), current_mA: printedCurrent(0) },
+          settleRows: 1,
+        },
+        {
+          label: `wheel turning: a magnet pass every ${periodMs} ms, 2.5 V across 100 Ω`,
+          steps: [...inaSteps(atRest, turning), ...magnetPasses(8, periodMs)],
+          expect: {
+            rpm: { oneOf: [0, rpm], tolerance: rpm * 0.03 },
+            mag_delta: { oneOf: [0, 1023], tolerance: 3 },
+            voltage_V: printedVolts(turning.bus),
+            current_mA: printedCurrent(turning.shunt),
+          },
+          settleRows: 1,
+        },
+        {
+          // Two seconds without a pass and the sketch calls the wheel stopped.
+          label: 'wheel stopped with the magnet parked at the sensor',
+          steps: [...inaSteps(turning, atRest), delayMs(2600)],
+          expect: {
+            rpm: { oneOf: [0, rpm], tolerance: rpm * 0.03 },
+            mag_delta: { oneOf: [0, 1023], tolerance: 3 },
+            voltage_V: printedVolts(atRest.bus),
+            current_mA: printedCurrent(0),
+          },
+          settleRows: 1,
+        },
+      ],
+      startupRows: 1,
+      always: { power_mW: derived(({ values }) => values.voltage_V * values.current_mA, 0.05) },
+      checkRows: (rows) => {
+        const failures: string[] = []
+        const spinning = rows.filter((row) => Math.abs(row.values.rpm - rpm) <= rpm * 0.03)
+        if (spinning.length < 3) failures.push(`only ${spinning.length} rows read ${rpm} rpm while the wheel turned`)
+        if (rows[rows.length - 1].values.rpm !== 0) failures.push(`rpm still ${rows[rows.length - 1].values.rpm} after the wheel stopped`)
+        return failures
+      },
+      timeColumn: 'time_ms',
+      sampleInterval: { min: 200, max: 206 },
+      minRows: 25,
+    }
+  })(),
 ]
 
 export const phase67BehaviorSpecs: readonly Phase5BehaviorSpec[] = [...phase6, ...phase7]
