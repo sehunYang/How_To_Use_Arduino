@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom'
+import { Link, Navigate, Route, Routes, useLocation, useNavigationType, useParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { SimBadge } from '@/components/ui/SimBadge'
 import { canarySimStatus, studentRecipes } from '@/data/studentCatalog'
@@ -49,6 +49,7 @@ function emitStudentEvent(event: Parameters<typeof sendAnonymousEvent>[0]) {
 export function RecipeDetailPage({ previewServices = defaultPreviewServices }: { previewServices?: PreviewServices }) {
   const { id = '', '*': rest } = useParams()
   const location = useLocation()
+  const navigationType = useNavigationType()
   const previewRequested = new URLSearchParams(location.search).get('preview') === '1'
   const [previewAuthorized, setPreviewAuthorized] = useState(false)
   const [previewChecked, setPreviewChecked] = useState(!previewRequested)
@@ -120,6 +121,13 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
   useEffect(() => {
     if (recipe?.status === 'published') emitStudentEvent({ recipeId: recipe.id, event: 'start' })
   }, [recipe])
+
+  // 단계 화면은 주소만 바뀌고 페이지는 그대로라, 아래쪽 "다음 단계 →"를 누르면 새
+  // 단계가 읽던 자리(화면 맨 아래)에서 열렸습니다. 새 단계로 갈 때는 맨 위에서
+  // 시작합니다. 뒤로 가기(POP)에서는 스크롤을 건드리지 않습니다.
+  useEffect(() => {
+    if (navigationType !== 'POP') window.scrollTo({ top: 0 })
+  }, [id, rest, navigationType])
 
   if (previewRequested && !previewChecked) {
     return <p className="py-20 text-center text-muted">미리보기 권한을 확인하고 있습니다…</p>

@@ -83,7 +83,7 @@ describe('다음 탐구로 가는 링크', () => {
   it('모든 레시피의 “다른 탐구로”가 실제 레시피 링크가 된다', () => {
     const published = allRecipes.map((recipe) => ({ id: recipe.id, title: recipe.title }))
     for (const recipe of allRecipes) {
-      const line = /\*\*다른 탐구로\*\*: (.+)/.exec(recipe.body)?.[1]
+      const line = /\| ③\u00a0다른\u00a0탐구로 \| (.+) \|$/m.exec(recipe.body)?.[1]
       expect(line, recipe.id).toBeDefined()
       expect(linkRecipeTitles(line!, published, recipe.id), recipe.id).toContain('](/recipes/')
     }

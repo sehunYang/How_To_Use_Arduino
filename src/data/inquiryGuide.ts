@@ -327,15 +327,23 @@ function apparatusBlock(plan: InquiryPlan): string {
   return `\n\n${APPARATUS_MARKERS.start}\n### 전자 부품 밖의 준비물\n\n${lines}\n${APPARATUS_MARKERS.end}`
 }
 
+/**
+ * 용어 풀이. 목록으로 두면 "용어: 뜻. 예." 줄이 이어 붙어 한 문단처럼 읽혔고,
+ * 용어마다 굵은 글씨가 붙어 어느 것도 눈에 띄지 않았습니다. 용어·뜻·생활 속 예를
+ * 칸으로 나누면 찾는 용어로 바로 내려갈 수 있습니다.
+ */
 function conceptList(plan: InquiryPlan): string {
-  return plan.concepts
+  const rows = plan.concepts
     .map((id) => {
       const concept = conceptById(id)
       const symbol = concept.symbol ? ` ${concept.symbol}` : ''
-      const unit = concept.unit ? ` (단위 ${concept.unit})` : ''
-      return `- **${concept.term}${symbol}${unit}**: ${concept.plain} ${concept.everyday}`
+      const unit = concept.unit ? ` (${concept.unit})` : ''
+      return `| ${concept.term}${symbol}${unit} | ${concept.plain} | ${concept.everyday} |`
     })
     .join('\n')
+  return `| 용어 | 뜻 | 생활 속 예 |
+|:---|:---|:---|
+${rows}`
 }
 
 function formulaBlock(plan: InquiryPlan): string {
@@ -354,7 +362,9 @@ ${expression}
 |:---:|:---|:---|
 ${rows}
 
-**측정하기 전에 예상해 보세요.** ${prediction}`
+:::callout tip
+**측정하기 전에 예상해 보기** ${prediction}
+:::`
 }
 
 function sensorBridge(recipe: Recipe, plan: ExperimentPlan): string {
@@ -394,9 +404,9 @@ type Section = { title: string; body: string } | null
 function theorySection(recipe: Recipe, plan: InquiryPlan, kind: ExperimentPlan): Section {
   return {
     title: '과학 이론 쉽게 이해하기',
-    body: `이 탐구가 확인하려는 것
-
-> **${plan.relation}**
+    body: `:::callout info
+**이 탐구가 확인하려는 것** ${plan.relation}
+:::
 
 #### 먼저 알아 둘 말
 
@@ -413,12 +423,13 @@ function variableSection(plan: InquiryPlan): Section {
     .join('\n')
   return {
     title: '변인 설계',
-    body: `| 구분 | 이 탐구에서는 |
-|:---|:---|
-| 독립 변인(내가 단계적으로 바꾸는 것) | ${plan.variables.independent} |
-| 종속 변인(센서가 재는 것) | ${plan.variables.dependent} |
+    body: `| 구분 | 무엇인가 | 이 탐구에서는 |
+|:---|:---|:---|
+| ${keepTogether('① 독립 변인')} | 내가 단계적으로 바꾸는 것 | ${plan.variables.independent} |
+| ${keepTogether('② 종속 변인')} | 센서가 재는 것 | ${plan.variables.dependent} |
+| ${keepTogether('③ 통제 변인')} | 끝까지 같게 유지할 것 | 아래 목록에서 하나씩 확인하세요 |
 
-**통제 변인(끝까지 같게 유지할 것)**
+#### ③ 통제 변인 확인
 
 ${controls}`,
   }
@@ -530,7 +541,7 @@ function procedureSection(plan: InquiryPlan, authored: AuthoredBody): Section {
     .filter((sentence) => !ALREADY_DONE_IN_CODE_SECTION.test(sentence.trim()))
     .filter((sentence) => !setup.some((step) => isShorterRestatement(step, sentence)))
   if (!setup.length && !measurement.length) return null
-  return { title: '탐구 순서', body: `${PROCEDURE_LEAD}\n\n${toProcedure(setup, measurement)}` }
+  return { title: '탐구 순서', body: `:::callout info\n${PROCEDURE_LEAD}\n:::\n\n${toProcedure(setup, measurement)}` }
 }
 
 function columnSection(recipe: Recipe): Section {
@@ -608,12 +619,22 @@ ${rows}`,
   }
 }
 
+/**
+ * 표 첫 칸의 이름을 줄 바꿈 없는 공백으로 잇습니다. 옆 칸이 길면 "① 바로"와
+ * "해보기"가 두 줄로 갈라져 이름이 읽히지 않았습니다.
+ */
+function keepTogether(label: string): string {
+  return label.replace(/ /g, '\u00a0')
+}
+
 function extensionSection(plan: InquiryPlan): Section {
   return {
     title: '더 나아가기',
-    body: `1. **바로 해보기**: ${plan.extensions.immediate}
-2. **조건 넓히기**: ${plan.extensions.broaden}
-3. **다른 탐구로**: ${plan.extensions.connect}`,
+    body: `| 방향 | 해 볼 것 |
+|:---|:---|
+| ${keepTogether('① 바로 해보기')} | ${plan.extensions.immediate} |
+| ${keepTogether('② 조건 넓히기')} | ${plan.extensions.broaden} |
+| ${keepTogether('③ 다른 탐구로')} | ${plan.extensions.connect} |`,
   }
 }
 

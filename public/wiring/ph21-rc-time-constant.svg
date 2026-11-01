@@ -23,28 +23,28 @@
 </g>
 <g>
   <rect x="790" y="30" width="165" height="78" rx="8" fill="#ffffff" stroke="red" stroke-width="4"/>
-  <text x="800" y="55" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">5. BATTERY.+ → RESISTOR_10000.1</text>
-  <text x="800" y="77" font-family="sans-serif" font-size="11" fill="#455064">CHARGE 조건에서 5 V 전원 +를 10</text>
+  <text x="800" y="55" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">5. BATTERY.+ → RESISTOR_1000.1</text>
+  <text x="800" y="77" font-family="sans-serif" font-size="11" fill="#455064">CHARGE 조건에서 5 V 전원 +를 1 </text>
 </g>
 <g>
   <rect x="30" y="135" width="165" height="78" rx="8" fill="#ffffff" stroke="orange" stroke-width="4"/>
-  <text x="40" y="160" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">6. RESISTOR_10000.2 → INA219.VIN+</text>
-  <text x="40" y="182" font-family="sans-serif" font-size="11" fill="#455064">10 kΩ 저항 2번 다리를 INA219 V</text>
+  <text x="40" y="160" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">6. RESISTOR_1000.2 → INA219.VIN+</text>
+  <text x="40" y="182" font-family="sans-serif" font-size="11" fill="#455064">1 kΩ 저항 2번 다리를 INA219 VI</text>
 </g>
 <g>
   <rect x="220" y="135" width="165" height="78" rx="8" fill="#ffffff" stroke="purple" stroke-width="4"/>
-  <text x="230" y="160" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">7. INA219.VIN- → CAPACITOR.1</text>
-  <text x="230" y="182" font-family="sans-serif" font-size="11" fill="#455064">INA219 VIN-를 100 µF 커패시터</text>
+  <text x="230" y="160" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">7. INA219.VIN- → CAPACITOR_1000.1</text>
+  <text x="230" y="182" font-family="sans-serif" font-size="11" fill="#455064">INA219 VIN-를 1000 µF 커패시</text>
 </g>
 <g>
   <rect x="410" y="135" width="165" height="78" rx="8" fill="#ffffff" stroke="blue" stroke-width="4"/>
-  <text x="420" y="160" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">8. CAPACITOR.1 → UNO.A0</text>
-  <text x="420" y="182" font-family="sans-serif" font-size="11" fill="#455064">100 µF 커패시터 +극을 UNO A0에도</text>
+  <text x="420" y="160" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">8. CAPACITOR_1000.1 → UNO.A0</text>
+  <text x="420" y="182" font-family="sans-serif" font-size="11" fill="#455064">1000 µF 커패시터 +극을 UNO A0에</text>
 </g>
 <g>
   <rect x="600" y="135" width="165" height="78" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>
-  <text x="610" y="160" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">9. CAPACITOR.2 → BATTERY.-</text>
-  <text x="610" y="182" font-family="sans-serif" font-size="11" fill="#455064">100 µF 커패시터 -극을 전원 -에 연결</text>
+  <text x="610" y="160" font-family="sans-serif" font-size="13" font-weight="700" fill="#172033">9. CAPACITOR_1000.2 → BATTERY.-</text>
+  <text x="610" y="182" font-family="sans-serif" font-size="11" fill="#455064">1000 µF 커패시터 -극을 전원 -에 연</text>
 </g>
 <g>
   <rect x="790" y="135" width="165" height="78" rx="8" fill="#ffffff" stroke="black" stroke-width="4"/>

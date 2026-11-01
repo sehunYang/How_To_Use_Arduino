@@ -306,4 +306,52 @@ inline double expectedSlopeRatio(double inertiaInner, double inertiaOuter) {
   return inertiaOuter / inertiaInner;
 }
 
+/** F1·F2: 한 표본 동안 쌓인 에너지. mW × s = mJ. 음수 전력(잡음)은 0으로 자른 뒤 더합니다. */
+inline double energyStepMj(double powerMw, double dtSeconds) {
+  if (powerMw <= 0.0 || dtSeconds <= 0.0) return 0.0;
+  return powerMw * dtSeconds;
+}
+
+/** F1: 부하 저항이 받는 전력 P = V²/R (mW). */
+inline double loadPowerMw(double volts, double ohms) {
+  if (ohms <= 0.0) return 0.0;
+  return volts * volts / ohms * 1000.0;
+}
+
+/** F2: 점광원에서 거리를 r1에서 r2로 옮길 때 빛의 세기가 몇 배가 되는지. */
+inline double inverseSquareRatio(double r1, double r2) {
+  if (r1 <= 0.0 || r2 <= 0.0) return 0.0;
+  return (r1 * r1) / (r2 * r2);
+}
+
+/** F2: 출력이 얼마나 흔들리는지. 표준편차를 평균으로 나눈 값(변동계수)입니다. */
+inline double variationCoefficient(const double* values, std::size_t count) {
+  if (count < 2) return 0.0;
+  double sum = 0.0;
+  for (std::size_t i = 0; i < count; ++i) sum += values[i];
+  const double mean = sum / static_cast<double>(count);
+  if (mean <= 0.0) return 0.0;
+  double squares = 0.0;
+  for (std::size_t i = 0; i < count; ++i) squares += (values[i] - mean) * (values[i] - mean);
+  return std::sqrt(squares / static_cast<double>(count - 1)) / mean;
+}
+
+/** F3: 자석 하나가 연달아 지나간 간격(ms)에서 구한 분당 회전수. 50 ms 이하는 떨림으로 버립니다. */
+inline double rpmFromPassIntervalMs(unsigned long intervalMs) {
+  if (intervalMs <= 50UL) return 0.0;
+  return 60000.0 / static_cast<double>(intervalMs);
+}
+
+/** F3: 커패시터를 단 뒤 전압 표준편차가 몇 퍼센트 줄었는지. */
+inline double rippleReductionPct(double sdWithout, double sdWith) {
+  if (sdWithout <= 0.0) return 0.0;
+  return (sdWithout - sdWith) / sdWithout * 100.0;
+}
+
+/** F3: 전동기에 넣은 전력 가운데 발전기에서 나온 비율(%). */
+inline double conversionEfficiencyPct(double powerOutMw, double powerInMw) {
+  if (powerInMw <= 0.0) return 0.0;
+  return powerOutMw / powerInMw * 100.0;
+}
+
 }  // namespace phase7

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "variantCount": 119,
+  "variantCount": 122,
   "variants": [
     {
       "id": "S1--unplugged-mpu6050",
@@ -747,7 +747,7 @@
       "chips": [
         "ina219"
       ],
-      "fingerprint": "c1d99da4e58c91d6"
+      "fingerprint": "bb466a4ad6dce018"
     },
     {
       "id": "ph22-battery-internal-resistance--unplugged-ina219",
@@ -760,7 +760,7 @@
       "chips": [
         "ina219"
       ],
-      "fingerprint": "4d850f7d04819823"
+      "fingerprint": "7c6f1f5e43c02040"
     },
     {
       "id": "ph23-solar-iv-mpp--unplugged-ina219",
@@ -774,7 +774,7 @@
         "ina219",
         "tsl2591"
       ],
-      "fingerprint": "f08552b9e71ecdcf"
+      "fingerprint": "7a41ff3f3fac79bd"
     },
     {
       "id": "ph23-solar-iv-mpp--unplugged-tsl2591",
@@ -788,7 +788,7 @@
         "ina219",
         "tsl2591"
       ],
-      "fingerprint": "76b275c66e4a2dd0"
+      "fingerprint": "a17a0ca077247d02"
     },
     {
       "id": "ph24-solenoid-current-field--unplugged-ina219",
@@ -1367,6 +1367,45 @@
       "scenario": "scenario.test.yaml",
       "chips": [],
       "fingerprint": "c6c2abe89a5d6e8e"
+    },
+    {
+      "id": "f1-hand-generator-power--unplugged-ina219",
+      "recipeId": "f1-hand-generator-power",
+      "kind": "unplugged",
+      "path": "wokwi/variants/f1-hand-generator-power--unplugged-ina219",
+      "sourcePath": "wokwi/phase7/f1-hand-generator-power",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "ina219"
+      ],
+      "fingerprint": "7367b1063fb69d18"
+    },
+    {
+      "id": "f2-solar-panel-power--unplugged-ina219",
+      "recipeId": "f2-solar-panel-power",
+      "kind": "unplugged",
+      "path": "wokwi/variants/f2-solar-panel-power--unplugged-ina219",
+      "sourcePath": "wokwi/phase7/f2-solar-panel-power",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "ina219"
+      ],
+      "fingerprint": "afa884fba3daf4e9"
+    },
+    {
+      "id": "f3-rectifier-rpm-efficiency--unplugged-ina219",
+      "recipeId": "f3-rectifier-rpm-efficiency",
+      "kind": "unplugged",
+      "path": "wokwi/variants/f3-rectifier-rpm-efficiency--unplugged-ina219",
+      "sourcePath": "wokwi/phase7/f3-rectifier-rpm-efficiency",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "ina219"
+      ],
+      "fingerprint": "4efe9cb49275149a"
     },
     {
       "id": "fan-control--jitter",

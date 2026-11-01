@@ -282,9 +282,9 @@ describe('rendered guide structure', () => {
    * 번호를 받지 않고 바로 앞 단계의 딸림 줄로 내려갑니다.
    */
   // `m` 없이 씁니다. `$`가 줄 끝을 뜻하면 제목 바로 아래 빈 줄에서 멈춰
-  // 본문을 하나도 담지 못합니다.
+  // 본문을 하나도 담지 못합니다. 절은 시작 안내 상자로 열리므로 그 상자는 건너뜁니다.
   const procedureBody = (body: string) =>
-    /### 4-\d+\. 탐구 순서\n\n([\s\S]*?)(?=\n### |\n:::|$)/.exec(body)?.[1]
+    /### 4-\d+\. 탐구 순서\n\n(?::::callout info\n[\s\S]*?\n:::\n\n)?([\s\S]*?)(?=\n### |\n:::|$)/.exec(body)?.[1]
 
   it('checkboxes only the sentences that tell the student to do something', () => {
     for (const entry of allRecipes) {
@@ -340,7 +340,7 @@ describe('rendered guide structure', () => {
 
   it('lists the controlled variables one per line instead of packing them into a cell', () => {
     for (const entry of allRecipes) {
-      expect(entry.body, entry.id).toContain('**통제 변인(끝까지 같게 유지할 것)**')
+      expect(entry.body, entry.id).toContain('#### ③ 통제 변인 확인')
       expect(entry.body, entry.id).not.toMatch(/통제 변인[^\n]*\|\s*1\)/)
     }
   })
@@ -449,7 +449,8 @@ describe('화면이 나눠 그릴 수 있게 자른 가이드', () => {
       expect(entry.body.match(/:::callout warn/g)!.length, entry.id).toBe(1)
       const { overview, design, measure } = splitGuide(entry.body)
       for (const part of [overview, design, measure]) {
-        expect(part, entry.id).not.toContain(':::callout')
+        // 안내 상자(info·tip)는 가이드의 일부이고, 빼낸 것은 안전 경고(warn)입니다.
+        expect(part, entry.id).not.toContain(':::callout warn')
         expect(part, entry.id).not.toContain('안전 점검')
       }
     }

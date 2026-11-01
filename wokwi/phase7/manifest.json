@@ -1,7 +1,7 @@
 {
   "version": 1,
   "generatedFrom": "phase5SimulationRegistry",
-  "projectCount": 31,
+  "projectCount": 34,
   "exclusions": [
     "b7-woodlouse-phototaxis",
     "d3-line-follower"
@@ -337,6 +337,42 @@
       "command": "wokwi-cli wokwi/phase7/e3-moment-of-inertia --scenario scenario.test.yaml --timeout 20000",
       "chips": [],
       "fingerprint": "6e46a0da328fd620"
+    },
+    {
+      "id": "f1-hand-generator-power",
+      "path": "wokwi/phase7/f1-hand-generator-power",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase7/f1-hand-generator-power --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "ina219"
+      ],
+      "fingerprint": "8573605d9af30b6b"
+    },
+    {
+      "id": "f2-solar-panel-power",
+      "path": "wokwi/phase7/f2-solar-panel-power",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase7/f2-solar-panel-power --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "ina219"
+      ],
+      "fingerprint": "9bc324d663a1e5bc"
+    },
+    {
+      "id": "f3-rectifier-rpm-efficiency",
+      "path": "wokwi/phase7/f3-rectifier-rpm-efficiency",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase7/f3-rectifier-rpm-efficiency --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "ina219"
+      ],
+      "fingerprint": "a14b07410b844b57"
     }
   ]
 }

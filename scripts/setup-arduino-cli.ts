@@ -72,6 +72,28 @@ function run(bin: string, args: string[]): void {
   }
 }
 
+const NETWORK_ATTEMPTS = 3
+
+/**
+ * Steps that fetch from downloads.arduino.cc sometimes fail on a good run:
+ * once on CI the package index was reported "downloaded" and then missing
+ * from disk. The next attempt a few seconds later succeeds, so retry those
+ * steps rather than fail the whole job.
+ */
+async function runWithRetry(bin: string, args: string[]): Promise<void> {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      run(bin, args)
+      return
+    } catch (error) {
+      if (attempt >= NETWORK_ATTEMPTS) throw error
+      const waitMs = attempt * 5000
+      console.warn(`Attempt ${attempt} of ${NETWORK_ATTEMPTS} failed; retrying in ${waitMs / 1000} s.`)
+      await new Promise((resolve) => setTimeout(resolve, waitMs))
+    }
+  }
+}
+
 async function downloadBinary(): Promise<void> {
   const asset = releaseAsset()
   const url = `https://github.com/arduino/arduino-cli/releases/download/v${ARDUINO_CLI_VERSION}/${asset}`
@@ -111,11 +133,11 @@ async function main(): Promise<void> {
   }
 
   run(arduinoCliBin, ['version'])
-  run(arduinoCliBin, ['core', 'update-index'])
-  run(arduinoCliBin, ['core', 'install', 'arduino:avr'])
-  run(arduinoCliBin, ['lib', 'update-index'])
+  await runWithRetry(arduinoCliBin, ['core', 'update-index'])
+  await runWithRetry(arduinoCliBin, ['core', 'install', 'arduino:avr'])
+  await runWithRetry(arduinoCliBin, ['lib', 'update-index'])
   for (const lib of REQUIRED_LIBRARIES) {
-    run(arduinoCliBin, ['lib', 'install', lib])
+    await runWithRetry(arduinoCliBin, ['lib', 'install', lib])
   }
 
   console.log('\narduino-cli setup complete.')

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { BreadboardMap } from '@/components/BreadboardMap'
 import { Button } from '@/components/ui/button'
+import { LabelledBox, SectionHeading, StepBadge } from '@/components/ui/guide'
 import { WiringIllustration } from '@/components/WiringIllustration'
 import { breadboardBasics, safetyNotice } from '@/recipes/firstRun'
 import { glossaryFor } from '@/recipes/glossary'
@@ -79,11 +80,12 @@ export function WiringPage() {
 
   return (
     <div>
+      {/* 절 번호와 상자는 탐구 설계·측정 화면과 같은 모양입니다. */}
+      <SectionHeading badge="2-1">꽂기 전에 알아 둘 것</SectionHeading>
       {/* 안전 안내는 꽂기 전에 읽어야 뜻이 있습니다. 본문 안에 두면 다 꽂은 뒤에 만납니다. */}
-      <aside className="max-w-3xl rounded-card border border-warning bg-warning-background p-4">
-        <strong className="text-warning">꽂기 전에 읽으세요</strong>
-        <p className="mt-1 text-caption">{safety}</p>
-      </aside>
+      <div className="max-w-3xl">
+        <LabelledBox label="꽂기 전에 읽으세요" tone="warn">{safety}</LabelledBox>
+      </div>
 
       {/* 단계는 "어디에 꽂는가"만 알려 줍니다. 한 칸 밀려 꽂았을 때 스스로 되짚으려면
           어떤 구멍이 서로 이어져 있는지를 알아야 하므로 단계보다 먼저 둡니다. */}
@@ -102,6 +104,7 @@ export function WiringPage() {
         </ul>
       </details>
 
+      <SectionHeading badge="2-2">배선도를 보며 하나씩 꽂기</SectionHeading>
       <div data-testid="wiring-layout" className="mt-5 min-w-0 space-y-6">
         <div ref={stickyRef} className="sticky top-16 z-20 w-full bg-background pb-2 lg:top-20"><WiringIllustration recipe={recipe} activeStep={active} /></div>
         <ol data-testid="wiring-steps" className="min-w-0 space-y-3">
@@ -113,11 +116,11 @@ export function WiringPage() {
               className={`scroll-mt-24 rounded-card border p-4 ${active === index ? 'border-accent bg-muted-background' : 'border-border'}`}
             >
               <label className="flex min-h-11 cursor-pointer items-start gap-3">
+                <StepBadge>{index + 1}</StepBadge>
                 <input className="mt-1 size-5 accent-accent" type="checkbox" checked={machine.checked[index] ?? false} onChange={(event) => toggleStep(index, event.target.checked)} onFocus={() => machine.setActiveStep(index)} />
                 <span>
                   <strong>
-                    <span className="text-syntax-number">{index + 1}</span>
-                    <span className="text-syntax-operator">. </span>
+                    <span className="sr-only">{index + 1}.</span>{' '}
                     <EndpointLabel value={step.from} />
                     <span className="text-syntax-operator">
                       {plannedWiring.some(
@@ -153,6 +156,7 @@ export function WiringPage() {
         </ol>
       </div>
 
+      <SectionHeading badge="2-3">USB를 꽂기 전에 점검하기</SectionHeading>
       <PowerCheckList checks={checks} recipeId={recipe.id} />
 
       <GlossaryList title="이 단계에 나오는 말의 뜻" entries={glossary.wiring} />

@@ -275,7 +275,7 @@
       "chips": [
         "ina219"
       ],
-      "fingerprint": "430b0166c3c2e770"
+      "fingerprint": "4449fbc76ff03d75"
     },
     {
       "id": "ph22-battery-internal-resistance",
@@ -287,7 +287,7 @@
       "chips": [
         "ina219"
       ],
-      "fingerprint": "09eacecdca97ec47"
+      "fingerprint": "6f311e0e7efa5810"
     },
     {
       "id": "ph23-solar-iv-mpp",
@@ -300,7 +300,7 @@
         "ina219",
         "tsl2591"
       ],
-      "fingerprint": "318b24eb169a7d39"
+      "fingerprint": "ed6296cc47812ffe"
     },
     {
       "id": "ph24-solenoid-current-field",

@@ -377,6 +377,55 @@ function gyroVersusHall(recipeId: string): Phase5BehaviorSpec {
   }
 }
 
+// ── Generator and solar panel power log through Adafruit_INA219 (f1, f2) ────
+
+/** What the Adafruit library prints: bus volts to 3 decimals, current to 2, clamped at zero. */
+const printedVolts = (register: number) => approx(Math.max(0, ina219BusVolts(register)), 0.001)
+const printedCurrent = (shuntRaw: number) => approx(Math.max(0, ina219CurrentMa(shuntRaw)), 0.01)
+
+/** E = Σ P·Δt: each row adds its own power over the gap since the row before. */
+const accumulatedEnergy = derived((row, previous) => {
+  const before = previous[previous.length - 1]
+  if (!before) return row.values.energy_mJ
+  return before.values.energy_mJ + row.values.power_mW * ((row.values.time_ms - before.values.time_ms) / 1000)
+}, 0.02)
+
+function powerLog(
+  recipeId: string,
+  states: Array<{ label: string; shunt: number; bus: number }>,
+): Phase5BehaviorSpec {
+  return {
+    recipeId,
+    header: 'time_ms,voltage_V,current_mA,power_mW,energy_mJ',
+    phases: states.map(({ label, shunt, bus }, index) => ({
+      label,
+      steps: [...inaSteps(index === 0 ? INA_DEFAULT : states[index - 1], { shunt, bus }), delayMs(1000)],
+      expect: { voltage_V: printedVolts(bus), current_mA: printedCurrent(shunt) },
+      settleRows: 1,
+    })),
+    startupRows: 1,
+    always: {
+      // P = V × I from the printed (rounded) V and I.
+      power_mW: derived(({ values }) => values.voltage_V * values.current_mA, 0.05),
+      energy_mJ: accumulatedEnergy,
+    },
+    checkRows: (rows) => {
+      const failures: string[] = []
+      rows.forEach((row, index) => {
+        if (index > 0 && row.values.energy_mJ < rows[index - 1].values.energy_mJ) {
+          failures.push(`energy fell from ${rows[index - 1].values.energy_mJ} to ${row.values.energy_mJ} mJ`)
+        }
+      })
+      return failures
+    },
+    timeColumn: 'time_ms',
+    sampleInterval: { min: 100, max: 105 },
+    minRows: states.length * 7,
+  }
+}
+
+const atRest = { shunt: 0, bus: ina219BusRegisterFor(0) }
+
 // ── BME280 through the recipes' bare-register driver (integer compensation) ─
 
 function bmeRawDriver(recipeId: string, labels: [string, string, string]): Phase5BehaviorSpec {
@@ -771,13 +820,16 @@ const phase6: Phase5BehaviorSpec[] = [
     recipeId: 'ph21-rc-time-constant',
     header: 'condition_id,time_ms,capacitor_V,current_mA',
     textColumns: ['condition_id'],
-    // The charging current through 10 kΩ from 5 V starts at 0.5 mA: five INA219 LSBs.
-    phases: [0.5, 0.3, 0.1].map((milliamps, index) => ({
-      label: `charging current ${milliamps} mA`,
-      steps: [set('ina219', 'shuntRaw', shuntRawFor(milliamps)), delayMs(400)],
-      expect: { current_mA: approx(milliamps, 0.0001) },
-      settleRows: index === 0 ? 0 : 1,
-    })),
+    // 5 V through 1 kΩ into 1000 µF: I = 5 mA · e^(-t/τ), τ = 1 s. Read at t = 0, τ and 2τ.
+    phases: [0, 1, 2].map((tau, index) => {
+      const milliamps = Number((5 * Math.exp(-tau)).toFixed(1))
+      return {
+        label: `charging current at t = ${tau}τ: ${milliamps} mA`,
+        steps: [set('ina219', 'shuntRaw', shuntRawFor(milliamps)), delayMs(400)],
+        expect: { current_mA: approx(milliamps, 0.0001) },
+        settleRows: index === 0 ? 0 : 1,
+      }
+    }),
     startupRows: 1,
     always: { condition_id: { text: 'CHARGE' }, capacitor_V: { min: 0, max: 5 } },
     timeColumn: 'time_ms',
@@ -785,23 +837,51 @@ const phase6: Phase5BehaviorSpec[] = [
     minRows: 12,
   },
   ((): Phase5BehaviorSpec => {
-    // A 1.5 V cell with 0.5 Ω internal resistance: V = E - I r.
-    const open = { shunt: 0, bus: ina219BusRegisterFor(1.5) }
-    const milliamps = (1.5 / 220.5) * 1000
-    const loaded = { shunt: shuntRawFor(milliamps), bus: ina219BusRegisterFor(1.5 - (milliamps / 1000) * 0.5) }
+    // A new 9 V battery: E = 9 V, r = 2 Ω. The sketch reads the bus after the
+    // 0.1 Ω shunt, so the V-I slope is r + 0.1 Ω, which the analysis subtracts.
+    const emf = 9
+    const pathOhms = 2 + 0.1
+    const states = [
+      { label: 'open circuit (OPEN)', ohms: Infinity },
+      { label: '470 Ω load', ohms: 470 },
+      { label: '220 Ω load', ohms: 220 },
+      { label: '100 Ω load', ohms: 100 },
+    ].map((state) => {
+      const milliamps = Number.isFinite(state.ohms) ? (emf / (state.ohms + pathOhms)) * 1000 : 0
+      return { ...state, shunt: shuntRawFor(milliamps), bus: ina219BusRegisterFor(emf - (milliamps / 1000) * pathOhms) }
+    })
     return {
       recipeId: 'ph22-battery-internal-resistance',
       header: 'condition_id,time_ms,terminal_V,current_mA',
       textColumns: ['condition_id'],
-      phases: [
-        { label: 'open circuit: E = 1.5 V', steps: [...inaSteps(INA_DEFAULT, open), delayMs(800)], expect: { terminal_V: busVolts(open.bus), current_mA: current(open.shunt) } },
-        { label: '220 Ω load', steps: [...inaSteps(open, loaded), delayMs(800)], expect: { terminal_V: busVolts(loaded.bus), current_mA: current(loaded.shunt) }, settleRows: 1 },
-      ],
+      phases: states.map(({ label, shunt, bus }, index) => ({
+        label,
+        steps: [...inaSteps(index === 0 ? INA_DEFAULT : states[index - 1], { shunt, bus }), delayMs(800)],
+        expect: { terminal_V: busVolts(bus), current_mA: current(shunt) },
+        settleRows: index === 0 ? 0 : 1,
+      })),
       startupRows: 1,
       always: { condition_id: { text: 'R220' } },
+      // The recipe's analysis: fit V = E - I(r + 0.1 Ω) over the loaded conditions.
+      checkRows: (rows) => {
+        const loaded = states.slice(1).map(({ shunt }) =>
+          rows.find((row) => Math.abs(row.values.current_mA - ina219CurrentMa(shunt)) < 0.01)?.values)
+        if (loaded.some((row) => row === undefined)) return ['missing a loaded reading']
+        const points = loaded as Array<Record<string, number>>
+        const meanI = points.reduce((sum, row) => sum + row.current_mA, 0) / points.length
+        const meanV = points.reduce((sum, row) => sum + row.terminal_V, 0) / points.length
+        const slope = points.reduce((sum, row) => sum + (row.current_mA - meanI) * (row.terminal_V - meanV), 0)
+          / points.reduce((sum, row) => sum + (row.current_mA - meanI) ** 2, 0)
+        const internalOhms = -slope * 1000 - 0.1
+        const intercept = meanV - slope * meanI
+        const failures: string[] = []
+        if (Math.abs(internalOhms - 2) > 0.3) failures.push(`fitted internal resistance ${internalOhms.toFixed(2)} Ω, expected 2 Ω`)
+        if (Math.abs(intercept - emf) > 0.02) failures.push(`fitted EMF ${intercept.toFixed(3)} V, expected ${emf} V`)
+        return failures
+      },
       timeColumn: 'time_ms',
       sampleInterval: { min: 250, max: 265 },
-      minRows: 5,
+      minRows: 8,
     }
   })(),
   ((): Phase5BehaviorSpec => {
@@ -1421,6 +1501,73 @@ const phase7: Phase5BehaviorSpec[] = [
     sampleInterval: { min: 20, max: 21 },
     minRows: 10,
   },
+  powerLog('f1-hand-generator-power', [
+    { label: 'crank at rest', ...atRest },
+    // The diode blocks the reversed EMF; the shunt reads a little noise below zero.
+    { label: 'cranked backwards: noise reads -0.3 mA', shunt: -3, bus: ina219BusRegisterFor(0) },
+    { label: 'cranked slowly: 1.5 V across 100 Ω', ...load(1.5, 100) },
+    { label: 'cranked fast: 4.5 V across 100 Ω', ...load(4.5, 100) },
+  ]),
+  powerLog('f2-solar-panel-power', [
+    { label: 'room light only: 0.3 V across 100 Ω', ...load(0.3, 100) },
+    { label: 'flashlight at 10 cm: 1.0 V', ...load(1.0, 100) },
+    { label: 'flashlight at 5 cm: 2.4 V', ...load(2.4, 100) },
+    { label: 'flashlight at 1 cm: 4.0 V', ...load(4.0, 100) },
+  ]),
+  ((): Phase5BehaviorSpec => {
+    // One magnet on the wheel passing every 300 ms is 200 rpm.
+    const periodMs = 300
+    const rpm = 60000 / periodMs
+    const turning = load(2.5, 100)
+    return {
+      recipeId: 'f3-rectifier-rpm-efficiency',
+      header: 'time_ms,rpm,mag_delta,voltage_V,current_mA,power_mW',
+      phases: [
+        {
+          // The Hall stand-in powers up at 0 V, so that is the baseline the sketch takes.
+          label: 'wheel at rest, magnet away from the sensor',
+          steps: [...inaSteps(INA_DEFAULT, atRest), delayMs(1000)],
+          expect: { rpm: approx(0, 0), mag_delta: approx(0, 3), voltage_V: printedVolts(atRest.bus), current_mA: printedCurrent(0) },
+          settleRows: 1,
+        },
+        {
+          label: `wheel turning: a magnet pass every ${periodMs} ms, 2.5 V across 100 Ω`,
+          steps: [...inaSteps(atRest, turning), ...magnetPasses(8, periodMs)],
+          expect: {
+            rpm: { oneOf: [0, rpm], tolerance: rpm * 0.03 },
+            mag_delta: { oneOf: [0, 1023], tolerance: 3 },
+            voltage_V: printedVolts(turning.bus),
+            current_mA: printedCurrent(turning.shunt),
+          },
+          settleRows: 1,
+        },
+        {
+          // Two seconds without a pass and the sketch calls the wheel stopped.
+          label: 'wheel stopped with the magnet parked at the sensor',
+          steps: [...inaSteps(turning, atRest), delayMs(2600)],
+          expect: {
+            rpm: { oneOf: [0, rpm], tolerance: rpm * 0.03 },
+            mag_delta: { oneOf: [0, 1023], tolerance: 3 },
+            voltage_V: printedVolts(atRest.bus),
+            current_mA: printedCurrent(0),
+          },
+          settleRows: 1,
+        },
+      ],
+      startupRows: 1,
+      always: { power_mW: derived(({ values }) => values.voltage_V * values.current_mA, 0.05) },
+      checkRows: (rows) => {
+        const failures: string[] = []
+        const spinning = rows.filter((row) => Math.abs(row.values.rpm - rpm) <= rpm * 0.03)
+        if (spinning.length < 3) failures.push(`only ${spinning.length} rows read ${rpm} rpm while the wheel turned`)
+        if (rows[rows.length - 1].values.rpm !== 0) failures.push(`rpm still ${rows[rows.length - 1].values.rpm} after the wheel stopped`)
+        return failures
+      },
+      timeColumn: 'time_ms',
+      sampleInterval: { min: 200, max: 206 },
+      minRows: 25,
+    }
+  })(),
 ]
 
 export const phase67BehaviorSpecs: readonly Phase5BehaviorSpec[] = [...phase6, ...phase7]

@@ -6,15 +6,15 @@ steps:
   - set-control:
       part-id: ina219
       control: shuntRaw
-      value: 5
+      value: 50
   - delay: 400ms
   - set-control:
       part-id: ina219
       control: shuntRaw
-      value: 3
+      value: 18
   - delay: 400ms
   - set-control:
       part-id: ina219
       control: shuntRaw
-      value: 1
+      value: 7
   - delay: 400ms

@@ -58,6 +58,11 @@ const bundles = {
     'e2-pendulum-damping',
     'e3-moment-of-inertia',
   ],
+  F: [
+    'f1-hand-generator-power',
+    'f2-solar-panel-power',
+    'f3-rectifier-rpm-efficiency',
+  ],
 }
 
 const expectedIds = Object.values(bundles).flat()

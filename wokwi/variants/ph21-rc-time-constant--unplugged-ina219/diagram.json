@@ -28,12 +28,12 @@
       "left": 200
     },
     {
-      "id": "resistor_10000",
+      "id": "resistor_1000",
       "type": "wokwi-resistor",
       "top": 0,
       "left": 300,
       "attrs": {
-        "value": "10000"
+        "value": "1000"
       }
     }
   ],
@@ -63,13 +63,13 @@
       []
     ],
     [
-      "resistor_10000:1",
+      "resistor_1000:1",
       "bb:2t.e",
       "red",
       []
     ],
     [
-      "resistor_10000:2",
+      "resistor_1000:2",
       "bb:4t.e",
       "orange",
       []
