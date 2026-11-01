@@ -30,6 +30,8 @@ void setup() {
   Wire.write(0xA1);
   Wire.write(LIGHT_CONFIG);
   Wire.endTransmission();
+  Wire.beginTransmission(0x29);
+  if(Wire.endTransmission()!=0)Serial.println("# TSL2591_ERROR");
   Serial.println("time_ms,light_raw");
 }
 void loop() {

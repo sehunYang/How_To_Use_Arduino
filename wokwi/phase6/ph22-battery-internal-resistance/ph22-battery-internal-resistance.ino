@@ -20,6 +20,8 @@ int16_t readIna(byte reg) {
 void setup() {
   Serial.begin(9600);
   Wire.begin();
+  Wire.beginTransmission(0x40);
+  if(Wire.endTransmission()!=0)Serial.println("# INA219_ERROR");
   Serial.println("condition_id,time_ms,terminal_V,current_mA");
 }
 void loop() {

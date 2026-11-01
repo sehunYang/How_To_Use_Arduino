@@ -18,12 +18,17 @@ int16_t readIna(byte reg) {
   // 한 식에 두 번 읽으면 순서가 정해지지 않습니다.
   return (int16_t)(((uint16_t)high<<8)|low);
 }
-void oneWireReset() {
+bool oneWireReset() {
   pinMode(ONEWIRE,OUTPUT);
   digitalWrite(ONEWIRE,LOW);
   delayMicroseconds(480);
+  noInterrupts();
   pinMode(ONEWIRE,INPUT_PULLUP);
-  delayMicroseconds(480);
+  delayMicroseconds(70);
+  bool present=!digitalRead(ONEWIRE);
+  interrupts();
+  delayMicroseconds(410);
+  return present;
 }
 // 1-Wire 비트는 마이크로초 단위입니다. 시리얼 인터럽트가 끼어들면 펄스가 늘어나 값이 틀어지므로 잠시 막습니다.
 void writeOneWire(byte value) {
@@ -54,11 +59,11 @@ byte readOneWire() {
   return value;
 }
 float readTemperatureC() {
-  oneWireReset();
+  if(!oneWireReset())return NAN;
   writeOneWire(0xCC);
   writeOneWire(0x44);
   delay(750);
-  oneWireReset();
+  if(!oneWireReset())return NAN;
   writeOneWire(0xCC);
   writeOneWire(0xBE);
   byte lsb=readOneWire();
@@ -69,6 +74,8 @@ float readTemperatureC() {
 void setup() {
   Serial.begin(9600);
   Wire.begin();
+  Wire.beginTransmission(0x40);
+  if(Wire.endTransmission()!=0)Serial.println("# INA219_ERROR");
   Serial.println("condition_id,time_ms,bus_V,current_mA,power_W,temperature_C");
 }
 void loop() {

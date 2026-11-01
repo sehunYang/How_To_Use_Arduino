@@ -46,6 +46,9 @@ void setup() {
   pinMode(RIGHT_IN4,OUTPUT);
   pinMode(LEFT_PWM,OUTPUT);
   pinMode(RIGHT_PWM,OUTPUT);
+  // 센서가 I2C에 응답하는지 확인합니다. 선이 빠져도 0이나 65535 같은 그럴듯한 값이 계속 나와 고장을 알아채기 어렵습니다.
+  Wire.beginTransmission(0x68);
+  if(Wire.endTransmission()!=0)Serial.println("# MPU6050_ERROR");
   Serial.println("time_ms,distance_cm,tilt_x_g");
 }
 // 속도 단계 실험은 이 값을 120, 150, 180처럼 바꿔 가며 반복하세요.

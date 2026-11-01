@@ -51,6 +51,8 @@ void setup() {
   Serial.begin(9600);
   Wire.begin();
   mpuWrite(0x68,0x6B,0);
+  Wire.beginTransmission(0x68);
+  if(Wire.endTransmission()!=0)Serial.println("# MPU6050_ERROR");
   Serial.println("time_ms,gyro_z_dps,hall_raw,pulse_count,pulse_interval_us");
 }
 void loop() {

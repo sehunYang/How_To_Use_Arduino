@@ -132,5 +132,12 @@ void loop() {
     Serial.println(readAddressTemperatureC(address),3);
     index++;
   }
+  // 찾은 프로브가 정한 수보다 적으면 알립니다. 빠진 프로브는 표에서 조용히 사라져 알아채기 어렵습니다.
+  if(index<sensorCount) {
+    Serial.print("# DS18B20_MISSING:");
+    Serial.print(index);
+    Serial.print('/');
+    Serial.println(sensorCount);
+  }
   delay(1000);
 }

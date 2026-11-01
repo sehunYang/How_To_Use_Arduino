@@ -36,6 +36,11 @@ void setup() {
     mpuWrite(MPU_ADDRESSES[i],0x1C,0x18);
     // ±16 g: 충돌 봉우리는 ±2 g 기본 범위를 넘습니다.
   }
+  // 센서가 I2C에 응답하는지 확인합니다. 선이 빠져도 0이나 65535 같은 그럴듯한 값이 계속 나와 고장을 알아채기 어렵습니다.
+  Wire.beginTransmission(0x68);
+  if(Wire.endTransmission()!=0)Serial.println("# MPU6050_0x68_ERROR");
+  Wire.beginTransmission(0x69);
+  if(Wire.endTransmission()!=0)Serial.println("# MPU6050_0x69_ERROR");
   Serial.println("time_ms,mpu0_ax_g,mpu1_ax_g");
 }
 void loop() {
