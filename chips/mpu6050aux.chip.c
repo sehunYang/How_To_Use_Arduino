@@ -3,8 +3,11 @@
 
 #include <stdlib.h>
 
+typedef enum { TARGET_NONE, TARGET_MPU, TARGET_BYPASS } target_t;
+
 typedef struct {
   Mpu6050Aux mpu;
+  target_t target;  // which device the current I2C transaction addressed
   uint32_t accel_attr[3];
   uint32_t ch0_raw_attr;
   uint32_t ch1_raw_attr;
@@ -32,39 +35,42 @@ static void on_sample(void *user_data) {
   }
 }
 
-static bool on_mpu_connect(void *user_data, uint32_t address, bool read) {
+static bool on_connect(void *user_data, uint32_t address, bool read) {
   chip_state_t *chip = user_data;
-  if (read) refresh_inputs(chip);
-  mpu6050aux_connect(&chip->mpu, read);
-  return true;
+  chip->target = TARGET_NONE;
+  if (address == MPU6050_I2C_ADDRESS) {
+    if (read) refresh_inputs(chip);
+    mpu6050aux_connect(&chip->mpu, read);
+    chip->target = TARGET_MPU;
+    return true;
+  }
+  if (address == TSL2591_I2C_ADDRESS) {
+    if (read) refresh_inputs(chip);
+    if (!mpu6050aux_bypass_connect(&chip->mpu, read)) return false;
+    chip->target = TARGET_BYPASS;
+    return true;
+  }
+  return false;
 }
 
-static uint8_t on_mpu_read(void *user_data) {
+static uint8_t on_read(void *user_data) {
   chip_state_t *chip = user_data;
-  return mpu6050aux_read(&chip->mpu);
+  if (chip->target == TARGET_MPU) return mpu6050aux_read(&chip->mpu);
+  if (chip->target == TARGET_BYPASS) return mpu6050aux_bypass_read(&chip->mpu);
+  return 0xff;
 }
 
-static bool on_mpu_write(void *user_data, uint8_t data) {
+static bool on_write(void *user_data, uint8_t data) {
   chip_state_t *chip = user_data;
-  mpu6050aux_write(&chip->mpu, data);
-  return true;
-}
-
-static bool on_bypass_connect(void *user_data, uint32_t address, bool read) {
-  chip_state_t *chip = user_data;
-  if (read) refresh_inputs(chip);
-  return mpu6050aux_bypass_connect(&chip->mpu, read);
-}
-
-static uint8_t on_bypass_read(void *user_data) {
-  chip_state_t *chip = user_data;
-  return mpu6050aux_bypass_read(&chip->mpu);
-}
-
-static bool on_bypass_write(void *user_data, uint8_t data) {
-  chip_state_t *chip = user_data;
-  mpu6050aux_bypass_write(&chip->mpu, data);
-  return true;
+  if (chip->target == TARGET_MPU) {
+    mpu6050aux_write(&chip->mpu, data);
+    return true;
+  }
+  if (chip->target == TARGET_BYPASS) {
+    mpu6050aux_bypass_write(&chip->mpu, data);
+    return true;
+  }
+  return false;
 }
 
 void chip_init(void) {
@@ -77,19 +83,15 @@ void chip_init(void) {
   chip->ch1_raw_attr = attr_init("ch1Raw", 321);
   pin_init("INT", OUTPUT_LOW);
 
-  const pin_t scl = pin_init("SCL", INPUT_PULLUP);
-  const pin_t sda = pin_init("SDA", INPUT_PULLUP);
-  const i2c_config_t mpu = {
-      .user_data = chip, .address = MPU6050_I2C_ADDRESS, .scl = scl, .sda = sda,
-      .connect = on_mpu_connect, .read = on_mpu_read, .write = on_mpu_write,
+  // The MPU at 0x68 and, in bypass mode, the TSL2591 on XDA/XCL joined to the
+  // main bus. Wokwi documents one i2c_init per chip, so a single listener
+  // takes every address (address 0) and NACKs the ones that are not ours.
+  const i2c_config_t bus = {
+      .user_data = chip, .address = 0,
+      .scl = pin_init("SCL", INPUT_PULLUP), .sda = pin_init("SDA", INPUT_PULLUP),
+      .connect = on_connect, .read = on_read, .write = on_write,
   };
-  i2c_init(&mpu);
-  // XDA/XCL joined to the main bus in bypass mode.
-  const i2c_config_t bypass = {
-      .user_data = chip, .address = TSL2591_I2C_ADDRESS, .scl = scl, .sda = sda,
-      .connect = on_bypass_connect, .read = on_bypass_read, .write = on_bypass_write,
-  };
-  i2c_init(&bypass);
+  i2c_init(&bus);
 
   const timer_config_t sampler = {.user_data = chip, .callback = on_sample};
   chip->sampler = timer_init(&sampler);

@@ -6,9 +6,12 @@
 // The generator (src/wokwi/phase5ProjectGenerator.ts) reads the recipe's wiring
 // and sets `address` from the A0-A2 straps and `tslMask` from the channels that
 // carry a TSL2591.
+typedef enum { TARGET_NONE, TARGET_MUX, TARGET_TSL } target_t;
+
 typedef struct {
   Tca9548a mux;
   uint32_t address;
+  target_t target;  // which device the current I2C transaction addressed
   uint32_t ch0_attr[TCA9548A_CHANNELS];
   uint32_t ch1_attr[TCA9548A_CHANNELS];
 } chip_state_t;
@@ -27,38 +30,42 @@ static void on_reset_change(void *user_data, pin_t pin, uint32_t value) {
   tca9548a_set_reset(&chip->mux, value == LOW);
 }
 
-static uint8_t on_mux_read(void *user_data) {
+static bool on_connect(void *user_data, uint32_t address, bool read) {
   chip_state_t *chip = user_data;
-  return tca9548a_read_control(&chip->mux);
+  chip->target = TARGET_NONE;
+  if (address == chip->address) {
+    if (!tca9548a_connect(&chip->mux)) return false;
+    chip->target = TARGET_MUX;
+    return true;
+  }
+  if (address == TSL2591_I2C_ADDRESS && chip->mux.tslMask) {
+    if (read) refresh_light(chip);
+    if (!tca9548a_tsl_connect(&chip->mux, read)) return false;
+    chip->target = TARGET_TSL;
+    return true;
+  }
+  return false;
 }
 
-static bool on_mux_write(void *user_data, uint8_t data) {
+static uint8_t on_read(void *user_data) {
   chip_state_t *chip = user_data;
-  tca9548a_write_control(&chip->mux, data);
-  return true;
+  if (chip->target == TARGET_MUX) return tca9548a_read_control(&chip->mux);
+  if (chip->target == TARGET_TSL) return tca9548a_tsl_read(&chip->mux);
+  return 0xff;
 }
 
-static bool on_mux_connect(void *user_data, uint32_t address, bool read) {
+static bool on_write(void *user_data, uint8_t data) {
   chip_state_t *chip = user_data;
-  return tca9548a_connect(&chip->mux);
-}
-
-static bool on_tsl_connect(void *user_data, uint32_t address, bool read) {
-  chip_state_t *chip = user_data;
-  if (read) refresh_light(chip);
-  return tca9548a_tsl_connect(&chip->mux, read);
-}
-
-static uint8_t on_tsl_read(void *user_data) {
-  chip_state_t *chip = user_data;
-  return tca9548a_tsl_read(&chip->mux);
-}
-
-static bool on_tsl_write(void *user_data, uint8_t data) {
-  chip_state_t *chip = user_data;
-  tca9548a_tsl_write(&chip->mux, data);
-  refresh_light(chip);
-  return true;
+  if (chip->target == TARGET_MUX) {
+    tca9548a_write_control(&chip->mux, data);
+    return true;
+  }
+  if (chip->target == TARGET_TSL) {
+    tca9548a_tsl_write(&chip->mux, data);
+    refresh_light(chip);
+    return true;
+  }
+  return false;
 }
 
 void chip_init(void) {
@@ -82,19 +89,13 @@ void chip_init(void) {
   pin_watch(reset, &watch);
 
   // Two devices on one pair of pins: the switch itself, and 0x29 standing for
-  // whichever downstream sensors the switch has opened.
-  const pin_t scl = pin_init("SCL", INPUT_PULLUP);
-  const pin_t sda = pin_init("SDA", INPUT_PULLUP);
-  const i2c_config_t mux = {
-      .user_data = chip, .address = chip->address, .scl = scl, .sda = sda,
-      .connect = on_mux_connect, .read = on_mux_read, .write = on_mux_write,
+  // whichever downstream sensors the switch has opened. Wokwi documents one
+  // i2c_init per chip, so a single listener takes every address (address 0)
+  // and NACKs the ones that are not ours.
+  const i2c_config_t bus = {
+      .user_data = chip, .address = 0,
+      .scl = pin_init("SCL", INPUT_PULLUP), .sda = pin_init("SDA", INPUT_PULLUP),
+      .connect = on_connect, .read = on_read, .write = on_write,
   };
-  i2c_init(&mux);
-  if (chip->mux.tslMask) {
-    const i2c_config_t tsl = {
-        .user_data = chip, .address = TSL2591_I2C_ADDRESS, .scl = scl, .sda = sda,
-        .connect = on_tsl_connect, .read = on_tsl_read, .write = on_tsl_write,
-    };
-    i2c_init(&tsl);
-  }
+  i2c_init(&bus);
 }

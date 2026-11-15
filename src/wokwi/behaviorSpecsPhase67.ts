@@ -396,15 +396,25 @@ function powerLog(
   recipeId: string,
   states: Array<{ label: string; shunt: number; bus: number }>,
 ): Phase5BehaviorSpec {
+  // The sketch clamps negative readings to 0, so a state can print exactly what
+  // the one before it printed. Rows cannot tell such states apart, so they
+  // share one phase whose steps apply both stimuli in turn.
+  const printed = ({ shunt, bus }: { shunt: number; bus: number }) =>
+    `${bus}|${Math.max(0, ina219CurrentMa(shunt))}`
+  const phases: Phase5BehaviorSpec['phases'] = []
+  states.forEach(({ label, shunt, bus }, index) => {
+    const steps = [...inaSteps(index === 0 ? INA_DEFAULT : states[index - 1], { shunt, bus }), delayMs(1000)]
+    const last = phases[phases.length - 1]
+    if (index > 0 && printed(states[index - 1]) === printed({ shunt, bus })) {
+      phases[phases.length - 1] = { ...last, label: `${last.label}, then ${label}`, steps: [...last.steps, ...steps] }
+      return
+    }
+    phases.push({ label, steps, expect: { voltage_V: printedVolts(bus), current_mA: printedCurrent(shunt) }, settleRows: 1 })
+  })
   return {
     recipeId,
     header: 'time_ms,voltage_V,current_mA,power_mW,energy_mJ',
-    phases: states.map(({ label, shunt, bus }, index) => ({
-      label,
-      steps: [...inaSteps(index === 0 ? INA_DEFAULT : states[index - 1], { shunt, bus }), delayMs(1000)],
-      expect: { voltage_V: printedVolts(bus), current_mA: printedCurrent(shunt) },
-      settleRows: 1,
-    })),
+    phases,
     startupRows: 1,
     always: {
       // P = V × I from the printed (rounded) V and I.
@@ -1667,8 +1677,9 @@ const phase7: Phase5BehaviorSpec[] = [
   },
   powerLog('f1-hand-generator-power', [
     { label: 'crank at rest', ...atRest },
-    // The diode blocks the reversed EMF; the shunt reads a little noise below zero.
-    { label: 'cranked backwards: noise reads -0.3 mA', shunt: -3, bus: ina219BusRegisterFor(0) },
+    // The diode blocks the reversed EMF; the shunt reads a little noise below zero,
+    // which the sketch prints as 0 mA.
+    { label: 'cranked backwards: -0.3 mA of noise prints as 0', shunt: -3, bus: ina219BusRegisterFor(0) },
     { label: 'cranked slowly: 1.5 V across 100 Ω', ...load(1.5, 100) },
     { label: 'cranked fast: 4.5 V across 100 Ω', ...load(4.5, 100) },
   ]),
