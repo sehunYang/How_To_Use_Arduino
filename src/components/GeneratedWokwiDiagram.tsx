@@ -63,6 +63,8 @@ const PART_SIZE: Record<string, { width: number; height: number }> = {
   'wokwi-servo': { width: 170.08, height: 119.55 },
   'wokwi-slide-potentiometer': { width: 150, height: 109.61 },
   'visual-capacitor': { width: 50, height: 70 },
+  'visual-diode': { width: 70, height: 40 },
+  'visual-generator': { width: 132, height: 82 },
 }
 
 const GEOMETRY_TYPE: Record<string, string> = {
@@ -75,8 +77,16 @@ const GEOMETRY_TYPE: Record<string, string> = {
   'custom-tca9548a': 'visual-tca9548a',
 }
 
+/** 커패시터 토큰에 붙은 값(`CAPACITOR_100` = 100 µF). 값이 없으면 지어내지 않고 이름만 적습니다. */
+function capacitorLabel(part: Pick<DiagramPart, 'id'>): string {
+  const microfarads = /^capacitor_(\d+)$/i.exec(part.id)?.[1]
+  return microfarads ? `${microfarads} µF` : 'C'
+}
+
 function displayName(part: DiagramPart): string {
-  if (part.type === 'visual-capacitor') return '470 µF'
+  if (part.type === 'visual-capacitor') return capacitorLabel(part)
+  if (part.type === 'visual-diode') return '1N5819'
+  if (part.type === 'visual-generator') return '발전기'
   if (part.type === 'wokwi-resistor') {
     const rated = /^resistor_(\d+)$/i.exec(part.id)
     if (rated) return Number(rated[1]) >= 1000
@@ -174,6 +184,7 @@ function boardMountedParts(
       || part.type === 'wokwi-led'
       || part.type === 'wokwi-buzzer'
       || part.type === 'visual-capacitor'
+      || part.type === 'visual-diode'
     ))
     .flatMap((part) => {
       const pinPoints = new Map<string, Point>()
@@ -205,10 +216,15 @@ function boardMountedGraphic(mounted: BoardMountedPart) {
   const resistor = part.type === 'wokwi-resistor'
   const led = part.type === 'wokwi-led'
   const capacitor = part.type === 'visual-capacitor'
-  const bodyTop = holeY - (resistor ? 20 : led ? 42 : capacitor ? 46 : 48)
-  const bodyHeight = resistor ? 12 : led ? 25 : capacitor ? 28 : 32
-  const visualLeft = resistor ? left.x : centerX - (led ? 14 : capacitor ? 13 : 16)
-  const visualRight = resistor ? right.x : centerX + (led ? 14 : capacitor ? 13 : 16)
+  const diode = part.type === 'visual-diode'
+  const cathode = mounted.pinPoints.get('K')
+  const cathodeOnRight = cathode ? cathode.x >= (left.x + right.x) / 2 : true
+  // 다이오드는 저항처럼 두 구멍 사이에 눕혀 그립니다.
+  const lying = resistor || diode
+  const bodyTop = holeY - (lying ? 20 : led ? 42 : capacitor ? 46 : 48)
+  const bodyHeight = lying ? 12 : led ? 25 : capacitor ? 28 : 32
+  const visualLeft = lying ? left.x : centerX - (led ? 14 : capacitor ? 13 : 16)
+  const visualRight = lying ? right.x : centerX + (led ? 14 : capacitor ? 13 : 16)
   return (
     <g
       key={part.id}
@@ -222,7 +238,8 @@ function boardMountedGraphic(mounted: BoardMountedPart) {
       data-mounted-resistor={resistor ? part.id : undefined}
       data-mounted-led={led ? part.id : undefined}
       data-mounted-capacitor={capacitor ? part.id : undefined}
-      data-mounted-buzzer={!resistor && !led && !capacitor ? part.id : undefined}
+      data-mounted-diode={diode ? part.id : undefined}
+      data-mounted-buzzer={!resistor && !led && !capacitor && !diode ? part.id : undefined}
       data-resistor-pin-1={`${start.x},${start.y}`}
       data-resistor-pin-2={`${end.x},${end.y}`}
     >
@@ -243,6 +260,12 @@ function boardMountedGraphic(mounted: BoardMountedPart) {
             />
           ))}
         </>
+      ) : diode ? (
+        <>
+          <rect x={left.x} y={bodyTop} width={width} height={bodyHeight} rx="2" fill="#1f2937" stroke="#050708" strokeWidth="1.2" />
+          {/* 은색 띠는 K(캐소드) 다리 쪽에 둡니다. */}
+          <rect x={cathodeOnRight ? right.x - width * 0.22 : left.x + width * 0.1} y={bodyTop} width={width * 0.12} height={bodyHeight} fill="#cbd5e1" />
+        </>
       ) : led ? (
         <>
           <path d={`M${centerX - 12} ${bodyTop + 18}v-6a12 12 0 0 1 24 0v6z`} fill="#ef4444" stroke="#991b1b" strokeWidth="1.4" />
@@ -253,7 +276,7 @@ function boardMountedGraphic(mounted: BoardMountedPart) {
           <rect x={centerX - 13} y={bodyTop + 4} width="26" height="24" rx="5" fill="#1f2937" stroke="#050708" strokeWidth="1.5" />
           <path d={`M${centerX - 13} ${bodyTop + 9}h26`} stroke="#cbd5e1" strokeWidth="4" />
           <text x={centerX - 8} y={bodyTop + 9} fill="#111827" fontSize="8" fontWeight="bold">+</text>
-          <text x={centerX} y={bodyTop + 22} textAnchor="middle" fill="#f8fafc" fontSize="7">470µF</text>
+          <text x={centerX} y={bodyTop + 22} textAnchor="middle" fill="#f8fafc" fontSize="7">{capacitorLabel(part).replace(' ', '')}</text>
         </>
       ) : (
         <>

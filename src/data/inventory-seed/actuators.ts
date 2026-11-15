@@ -222,6 +222,26 @@ export const wokwiAuxiliaryParts: WokwiAuxiliaryPart[] = [
     },
   },
   {
+    // 손발전기와 TT모터는 Wokwi에 모델이 없고, 시뮬레이션에서는 INA219 칩이
+    // 측정값을 직접 받으므로 그림에만 둡니다.
+    id: 'generator',
+    wokwi: {
+      part: 'visual-generator',
+      pinMap: { POSITIVE: '+', NEGATIVE: '-' },
+      simSupported: false,
+      aliases: ['GENERATOR'],
+    },
+  },
+  {
+    id: 'diode',
+    wokwi: {
+      part: 'visual-diode',
+      pinMap: { A: 'A', K: 'K' },
+      simSupported: false,
+      aliases: ['DIODE'],
+    },
+  },
+  {
     id: 'battery',
     wokwi: {
       part: 'wokwi-slide-potentiometer',

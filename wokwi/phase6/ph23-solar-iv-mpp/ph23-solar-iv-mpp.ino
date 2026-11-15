@@ -4,7 +4,7 @@
 // @baud 9600
 const float INA_SHUNT_OHMS=0.1f;
 const char* conditionId="R1K";
-// R10K, R4K7, R2K2, R1K, R470, R220, R100 중 실제 연결한 저항과 맞추세요.
+// R10K, R4K7, R2K2, R1K, R470, R220, R100 중 실제 연결한 저항과 맞추세요. 가변저항을 돌리며 잴 때는 SWEEP.
 // @tunable samplingIntervalMs
 unsigned long samplingIntervalMs=500;
 int16_t readIna(byte reg) {
@@ -34,6 +34,10 @@ void setup() {
   Wire.write(0xA0);
   Wire.write(0x03);
   Wire.endTransmission();
+  Wire.beginTransmission(0x40);
+  if(Wire.endTransmission()!=0)Serial.println("# INA219_ERROR");
+  Wire.beginTransmission(0x29);
+  if(Wire.endTransmission()!=0)Serial.println("# TSL2591_ERROR");
   Serial.println("condition_id,time_ms,panel_V,current_mA,power_mW,light_raw");
 }
 void loop() {

@@ -1267,13 +1267,16 @@ export const phase6Plans: Record<string, InquiryPlan> = {
     relation: '너무 크거나 작은 저항에서는 전력이 작고, 그 사이 어딘가에 최대전력점이 있다',
     concepts: ['solarCell', 'maximumPowerPoint', 'electricPower', 'illuminance'],
     formula: {
-      expression: '$P=VI$',
+      expression: '$I = I_L - I_0\\left(e^{qV/nkT} - 1\\right),\\quad P=VI$',
       symbols: [
+        { symbol: '$I$', meaning: '출력 전류', unit: 'mA' },
+        { symbol: '$I_L$', meaning: '빛이 만든 광전류. 빛이 셀수록 큽니다', unit: 'mA' },
+        { symbol: '$I_0$', meaning: '다이오드의 포화 전류. 아주 작은 값입니다', unit: 'mA' },
+        { symbol: '$q/nkT$', meaning: '온도와 다이오드 성질이 정하는 상수. 실온에서 대략 $1/0.026\\,\\text{V}$를 $n$으로 나눈 값입니다', unit: '1/V' },
         { symbol: '$P$', meaning: '태양전지의 출력', unit: 'mW' },
         { symbol: '$V$', meaning: '패널 전압', unit: 'V' },
-        { symbol: '$I$', meaning: '출력 전류', unit: 'mA' },
       ],
-      prediction: '저항이 아주 크면 전압은 높지만 전류가 거의 없고, 아주 작으면 반대입니다. 전력은 그 중간에서 최대가 됩니다.',
+      prediction: '저항이 아주 작으면 전압이 거의 0이라 전류는 광전류 그대로지만 전력은 0에 가깝습니다. 저항이 아주 크면 내부 다이오드가 켜져 전류가 0으로 떨어집니다. 전력은 전류가 꺾이기 직전의 무릎에서 최대가 됩니다.',
     },
     setup: [
       '소형 태양전지를 받침대에 고정하고 빛을 받는 면이 광원을 정면으로 보게 맞춥니다.',
@@ -1295,9 +1298,11 @@ export const phase6Plans: Record<string, InquiryPlan> = {
       '같은 자료로 전압을 가로축, 전력을 세로축으로 그려 $P$-$V$ 곡선을 만듭니다.',
       '전력이 가장 큰 점의 전압과 전류를 읽어 최대전력점으로 기록합니다.',
       '광원을 어둡게 한 뒤 같은 실험을 반복해 최대전력점이 어느 쪽으로 옮겨 가는지 비교합니다.',
+      '각 줄의 전압을 전류로 나눠 부하 저항을 구하고, 저항을 가로축, 전력을 세로축으로 그려 최적 부하 저항을 읽습니다.',
     ],
     checkpoints: [
       { sign: '전력이 계속 커지기만 합니다', meaning: '저항 범위가 최대전력점을 지나지 못했습니다. 더 작은 저항을 추가하세요.' },
+      { sign: 'SWEEP 기록에서 무릎 부근의 점이 듬성듬성합니다', meaning: '노브를 처음 1/4바퀴에서 너무 빨리 돌렸습니다. 그 구간을 더 천천히 돌리거나 1 kΩ 저항을 나란히 꽂으세요.' },
       { sign: '조도는 그대로인데 전력이 줄어듭니다', meaning: '패널이 데워졌을 수 있습니다. 조건 사이에 식히는 시간을 두세요.' },
     ],
     extensions: {

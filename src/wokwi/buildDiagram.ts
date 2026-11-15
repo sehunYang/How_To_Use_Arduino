@@ -91,6 +91,7 @@ export function planBreadboardWiring(recipe: Recipe): PlannedWiringConnection[] 
       || /^BUZZER(?:_\d+)?$/.test(token)
       || token.includes('RESISTOR')
       || token.includes('CAPACITOR')
+      || token === 'DIODE'
       || token === 'LOAD'
       || token === 'LAMP'
   }

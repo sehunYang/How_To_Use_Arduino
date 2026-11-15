@@ -24,12 +24,18 @@ export function splitEndpoint(value: string): Endpoint {
 
 /**
  * 같은 부품을 여러 개 쓰는 레시피는 `TSL2591_1`, `TSL2591_2`처럼 번호를 붙입니다.
- * 저항만은 접미사가 개수가 아니라 저항값(`RESISTOR_4700` = 4.7 kΩ)이므로
- * 번호를 떼면 안 됩니다.
+ * 저항과 커패시터만은 접미사가 개수가 아니라 값(`RESISTOR_4700` = 4.7 kΩ,
+ * `CAPACITOR_100` = 100 µF)이므로 번호를 떼면 안 됩니다.
  */
 export function baseToken(component: string): string {
-  if (/^RESISTOR_\d+$/.test(component)) return component
+  if (/^(?:RESISTOR|CAPACITOR)_\d+$/.test(component)) return component
   return component.replace(/_\d+$/, '')
+}
+
+/** 값이 붙은 커패시터 토큰(`CAPACITOR_100`)의 전기용량(µF). 값이 없는 `CAPACITOR`는 undefined입니다. */
+export function capacitorMicrofarads(component: string): number | undefined {
+  const capacitor = /^CAPACITOR_(\d+)$/.exec(baseToken(component))
+  return capacitor ? Number(capacitor[1]) : undefined
 }
 
 function ohmLabel(ohms: number): string {
@@ -58,6 +64,8 @@ const COMPONENT_LABELS: Record<string, string> = {
   LCD: 'LCD1602 화면 (I2C 변환 보드 포함)',
   PANEL: '태양광 패널',
   CAPACITOR: '커패시터',
+  GENERATOR: '발전기 (손발전기 또는 TT모터)',
+  DIODE: '쇼트키 다이오드 1N5819',
   // 부하는 레시피마다 다릅니다. 태양광 레시피는 수십 Ω 저항을, 전류 예제는
   // 220 Ω + LED를 씁니다. 여기에 한 값을 못 박으면 한쪽 레시피가 거짓말을 합니다.
   LOAD: '실험용 부하',
@@ -76,6 +84,8 @@ export function shortComponentLabel(component: string): string {
   if (base === 'CDS_RESISTOR') return COMPONENT_LABELS.CDS_RESISTOR
   const resistor = /^RESISTOR_(\d+)$/.exec(base)
   if (resistor) return ohmLabel(Number(resistor[1]))
+  const microfarads = capacitorMicrofarads(base)
+  if (microfarads !== undefined) return `${microfarads} µF 커패시터`
   if (base === 'LOAD' || base === 'LAMP') return COMPONENT_LABELS[base]
   return component
 }
@@ -87,7 +97,7 @@ export function shortComponentLabel(component: string): string {
  */
 export function hasPartLabel(component: string): boolean {
   const base = baseToken(component)
-  return /^RESISTOR_\d+$/.test(base) || base in COMPONENT_LABELS
+  return /^(?:RESISTOR|CAPACITOR)_\d+$/.test(base) || base in COMPONENT_LABELS
 }
 
 /** 준비물 목록에 쓰는 이름. 토큰만으로는 무엇을 사야 할지 알 수 없으므로 우리말을 붙입니다. */
@@ -95,6 +105,8 @@ export function partLabel(component: string): string {
   const base = baseToken(component)
   const resistor = /^RESISTOR_(\d+)$/.exec(base)
   if (resistor) return ohmLabel(Number(resistor[1]))
+  const microfarads = capacitorMicrofarads(base)
+  if (microfarads !== undefined) return `${microfarads} µF 전해 커패시터`
   return COMPONENT_LABELS[base] ?? base
 }
 
@@ -109,6 +121,7 @@ const PART_NOTES: Record<string, string> = {
   BME280: '3.3V 전용 모듈은 5V에 꽂으면 손상됩니다. 기판의 전압 표기를 확인하세요.',
   DS18B20: '방수 프로브는 선 색과 실제 핀이 다를 수 있어 판매처 표를 확인해야 합니다.',
   RELAY: '접점 쪽(COM·NO)에는 아두이노가 아니라 별도 전원을 연결합니다.',
+  GENERATOR: '손발전기 교구에 딸린 USB 5V 정전압 모듈은 쓰지 않습니다. 모터 단자의 빨간 선(+)과 검은 선(−)에 악어클립을 물리세요.',
 }
 
 /**

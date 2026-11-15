@@ -1,0 +1,37 @@
+name: Phase 5 behavior - f1-hand-generator-power
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "time_ms,voltage_V,current_mA,power_mW,energy_mJ"
+  - set-control:
+      part-id: ina219
+      control: shuntRaw
+      value: 0
+  - set-control:
+      part-id: ina219
+      control: busRaw
+      value: 0
+  - delay: 1000ms
+  - set-control:
+      part-id: ina219
+      control: shuntRaw
+      value: -3
+  - delay: 1000ms
+  - set-control:
+      part-id: ina219
+      control: shuntRaw
+      value: 150
+  - set-control:
+      part-id: ina219
+      control: busRaw
+      value: 3000
+  - delay: 1000ms
+  - set-control:
+      part-id: ina219
+      control: shuntRaw
+      value: 450
+  - set-control:
+      part-id: ina219
+      control: busRaw
+      value: 9000
+  - delay: 1000ms

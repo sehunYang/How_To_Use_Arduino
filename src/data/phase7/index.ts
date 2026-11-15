@@ -1,5 +1,6 @@
 import { phase7BioProjects } from './bioProjects'
 import { phase7ChemistryProjects } from './chemistryProjects'
+import { phase7EnergyProjects } from './energyProjects'
 import { phase7EngineeringProjects } from './engineeringProjects'
 import { phase7OutputExamples } from './outputExamples'
 import { phase7PhysicsProjects } from './physicsProjects'
@@ -9,12 +10,13 @@ import { phase7Plans } from '../inquiry/plansPhase7'
 export { phase7OutputExamples } from './outputExamples'
 export { phase7BioProjects } from './bioProjects'
 export { phase7ChemistryProjects } from './chemistryProjects'
+export { phase7EnergyProjects } from './energyProjects'
 export { phase7EngineeringProjects } from './engineeringProjects'
 export { phase7PhysicsProjects } from './physicsProjects'
 
 /**
  * 묶음 순서는 학생이 읽는 순서이기도 합니다. 장치를 하나씩 다루는 A를 먼저
- * 두고, 그 장치를 실제 탐구에 쓰는 B·C·D·E를 뒤에 둡니다.
+ * 두고, 그 장치를 실제 탐구에 쓰는 B·C·D·E·F를 뒤에 둡니다.
  */
 export const phase7Recipes = [
   ...phase7OutputExamples,
@@ -22,4 +24,5 @@ export const phase7Recipes = [
   ...phase7ChemistryProjects,
   ...phase7EngineeringProjects,
   ...phase7PhysicsProjects,
+  ...phase7EnergyProjects,
 ].map(withInquiryWorkbook(phase7Plans)).map(withFormattedSketch)

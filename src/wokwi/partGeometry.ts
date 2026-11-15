@@ -219,6 +219,22 @@ const capacitorVisualGeometry: PartGeometry = {
   pins: pins([['1', 15, 69], ['2', 35, 69]]),
 }
 
+// 다이오드는 커패시터처럼 브레드보드에 꽂히는 두 다리 부품입니다. 은색 띠가 K 쪽입니다.
+const diodeVisualGeometry: PartGeometry = {
+  width: 70,
+  height: 40,
+  source: 'measured',
+  tolerance: MEASURED_TOLERANCE,
+  pins: pins([['A', 5, 39], ['K', 65, 39]]),
+}
+const generatorVisualGeometry: PartGeometry = {
+  width: 132,
+  height: 82,
+  source: 'measured',
+  tolerance: MEASURED_TOLERANCE,
+  pins: pins([['+', 46, 81], ['-', 86, 81]]),
+}
+
 export const PART_GEOMETRY: Record<string, PartGeometry> = {
   // 72.58mm x 53.34mm. Two 9.5px-pitch headers: digital along y=9, power and
   // analog along y=191.5.
@@ -293,6 +309,8 @@ export const PART_GEOMETRY: Record<string, PartGeometry> = {
   'visual-ds18b20': ds18b20VisualGeometry,
   'visual-hbe0704': hbe0704VisualGeometry,
   'visual-capacitor': capacitorVisualGeometry,
+  'visual-diode': diodeVisualGeometry,
+  'visual-generator': generatorVisualGeometry,
   'visual-tca9548a': tca9548aVisualGeometry(),
 }
 

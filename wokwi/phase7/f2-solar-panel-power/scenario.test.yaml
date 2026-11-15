@@ -1,0 +1,41 @@
+name: Phase 5 behavior - f2-solar-panel-power
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "time_ms,voltage_V,current_mA,power_mW,energy_mJ"
+  - set-control:
+      part-id: ina219
+      control: shuntRaw
+      value: 30
+  - set-control:
+      part-id: ina219
+      control: busRaw
+      value: 600
+  - delay: 1000ms
+  - set-control:
+      part-id: ina219
+      control: shuntRaw
+      value: 100
+  - set-control:
+      part-id: ina219
+      control: busRaw
+      value: 2000
+  - delay: 1000ms
+  - set-control:
+      part-id: ina219
+      control: shuntRaw
+      value: 240
+  - set-control:
+      part-id: ina219
+      control: busRaw
+      value: 4800
+  - delay: 1000ms
+  - set-control:
+      part-id: ina219
+      control: shuntRaw
+      value: 400
+  - set-control:
+      part-id: ina219
+      control: busRaw
+      value: 8000
+  - delay: 1000ms

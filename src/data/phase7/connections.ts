@@ -33,6 +33,23 @@ export const bme280 = (token = 'BME280') => i2cModule(token, 'VCC', 'BME280 온�
 export const tsl2591 = (token = 'TSL2591') => i2cModule(token, 'VIN', 'TSL2591 조도 센서')
 export const mpu6050 = (token = 'MPU6050') => i2cModule(token, 'VCC', 'MPU6050 가속도·자이로 센서')
 export const lcd1602 = () => i2cModule('LCD', 'VCC', 'LCD 뒤에 붙은 I2C 변환 보드')
+export const ina219 = () => i2cModule('INA219', 'VCC', 'INA219 전류·전압 센서')
+
+/**
+ * 발전기 → 쇼트키 다이오드 → INA219 → 부하 저항 → 발전기의 한 고리.
+ * 다이오드는 거꾸로 돌렸을 때 생기는 음의 전압이 INA219에 걸리지 않게 막습니다.
+ * 부하 저항의 아래쪽 마디가 공통 GND여야 INA219가 부하 전압을 읽습니다.
+ */
+export function generatorLoop(loadOhms: number): Connection[] {
+  const load = `RESISTOR_${loadOhms}`
+  return [
+    { from: 'GENERATOR.POSITIVE', to: 'DIODE.A', color: 'red', text: '발전기 + 단자(빨간 선)에 악어클립을 물리고, 반대쪽 핀을 다이오드의 은색 띠가 없는 다리(A)와 같은 열에 꽂으세요.' },
+    { from: 'DIODE.K', to: 'INA219.VIN+', color: 'red', text: '다이오드의 은색 띠가 있는 다리(K)를 INA219 VIN+에 연결하세요.' },
+    { from: 'INA219.VIN-', to: `${load}.1`, color: 'orange', text: `INA219 VIN-를 ${loadOhms} Ω 부하 저항의 한쪽 다리에 연결하세요.` },
+    { from: `${load}.2`, to: 'GENERATOR.NEGATIVE', color: 'black', text: `${loadOhms} Ω 저항의 남은 다리를 발전기 − 단자(검은 선)의 악어클립과 연결하세요.` },
+    { from: 'GENERATOR.NEGATIVE', to: 'UNO.GND', color: 'black', text: '발전기 − 단자를 아두이노 GND와 공통으로 묶으세요. 이 선이 없으면 INA219가 전압을 읽지 못합니다.' },
+  ]
+}
 
 /**
  * 1-Wire 버스. 프로브를 몇 개 달아도 신호선은 하나이고, 신호선을 기본 HIGH로

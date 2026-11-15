@@ -197,3 +197,24 @@ TEST_CASE("E3 moving the same mass twice as far out quadruples the inertia") {
   CHECK(outer / inner == doctest::Approx(4.0));
   CHECK(phase7::expectedSlopeRatio(inner, outer) == doctest::Approx(4.0));
 }
+TEST_CASE("F1 twice the voltage across the same load is four times the power") {
+  CHECK(phase7::loadPowerMw(2.0, 100.0) == doctest::Approx(40.0));
+  CHECK(phase7::loadPowerMw(4.0, 100.0) / phase7::loadPowerMw(2.0, 100.0) == doctest::Approx(4.0));
+  // 40 mW를 0.1초 동안 내면 4 mJ이 쌓입니다. 잡음으로 생긴 음수 전력은 에너지를 줄이지 않습니다.
+  CHECK(phase7::energyStepMj(40.0, 0.1) == doctest::Approx(4.0));
+  CHECK(phase7::energyStepMj(-0.3, 0.1) == doctest::Approx(0.0));
+}
+TEST_CASE("F2 halving the distance to a point source quadruples the light") {
+  CHECK(phase7::inverseSquareRatio(10.0, 5.0) == doctest::Approx(4.0));
+  const double steady[] = {20.0, 20.2, 19.8, 20.0};
+  const double cranked[] = {5.0, 40.0, 10.0, 25.0};
+  CHECK(phase7::variationCoefficient(steady, 4) < 0.02);
+  CHECK(phase7::variationCoefficient(cranked, 4) > 0.5);
+}
+TEST_CASE("F3 pass interval gives rpm, and efficiency stays below one hundred percent") {
+  CHECK(phase7::rpmFromPassIntervalMs(300UL) == doctest::Approx(200.0));
+  CHECK(phase7::rpmFromPassIntervalMs(40UL) == doctest::Approx(0.0));
+  CHECK(phase7::rippleReductionPct(0.8, 0.2) == doctest::Approx(75.0));
+  CHECK(phase7::conversionEfficiencyPct(30.0, 120.0) == doctest::Approx(25.0));
+  CHECK(phase7::conversionEfficiencyPct(30.0, 0.0) == doctest::Approx(0.0));
+}
