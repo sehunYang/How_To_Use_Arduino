@@ -37,6 +37,8 @@ void setup(){
   writeReg(0x0C,0x03); // APERS: 연속 3회 벗어날 때만 알림
   writeReg(0x00,0x13); // PON|AEN|AIEN
   clearInterrupt();
+  // 센서가 I2C에 응답하는지 확인합니다. 선이 빠져도 0이나 65535 같은 그럴듯한 값이 계속 나와 고장을 알아채기 어렵습니다.
+  Wire.beginTransmission(0x29);if(Wire.endTransmission()!=0)Serial.println("# TSL2591_ERROR");
   Serial.println("event,time_ms,interrupt_count,light_raw");
 }
 void loop(){
@@ -62,7 +64,7 @@ int16_t read16(byte a,byte r){
   byte high=Wire.read();byte low=Wire.read(); // 한 식에 두 번 읽으면 순서가 정해지지 않습니다.
   return (int16_t)(((uint16_t)high<<8)|low);
 }
-void setup(){Serial.begin(9600);Wire.begin();writeReg(0x68,0x6B,0);writeReg(0x69,0x6B,0);Serial.println("time_ms,mpu_0x68_accel_x_raw,mpu_0x69_accel_x_raw");}
+void setup(){Serial.begin(9600);Wire.begin();writeReg(0x68,0x6B,0);writeReg(0x69,0x6B,0);Wire.beginTransmission(0x68);if(Wire.endTransmission()!=0)Serial.println("# MPU6050_0x68_ERROR");Wire.beginTransmission(0x69);if(Wire.endTransmission()!=0)Serial.println("# MPU6050_0x69_ERROR");Serial.println("time_ms,mpu_0x68_accel_x_raw,mpu_0x69_accel_x_raw");}
 void loop(){Serial.print(millis());Serial.print(',');Serial.print(read16(0x68,0x3B));Serial.print(',');Serial.println(read16(0x69,0x3B));delay(samplingIntervalMs);}`
 
 // 충돌은 보통 10~50 ms 안에 끝납니다. 9600 baud로는 초당 약 24행밖에 보낼 수

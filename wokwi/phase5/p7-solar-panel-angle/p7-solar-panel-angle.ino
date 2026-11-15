@@ -33,6 +33,9 @@ void setup() {
   // 가장 낮은 증폭으로 두어야 lux가 -1(포화)로 떨어지지 않습니다.
   tsl.setGain(TSL2591_GAIN_LOW);
   tsl.setTiming(TSL2591_INTEGRATIONTIME_100MS);
+  // 센서가 I2C에 응답하는지 확인합니다. 선이 빠져도 0이나 65535 같은 그럴듯한 값이 계속 나와 고장을 알아채기 어렵습니다.
+  Wire.beginTransmission(0x40);
+  if(Wire.endTransmission()!=0)Serial.println("# INA219_ERROR");
   Serial.println("time_ms,voltage_v,current_ma,power_mw,lux,power_density_mw_cm2");
 }
 void loop() {

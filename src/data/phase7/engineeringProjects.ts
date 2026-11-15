@@ -105,6 +105,8 @@ void setup() {
   imu.initialize();
   lcd.init();
   lcd.backlight();
+  // 센서가 I2C에 응답하는지 확인합니다. 선이 빠져도 0이나 65535 같은 그럴듯한 값이 계속 나와 고장을 알아채기 어렵습니다.
+  Wire.beginTransmission(0x68);if(Wire.endTransmission()!=0)Serial.println("# MPU6050_ERROR");
   Serial.println("time_ms,roll_deg,pitch_deg");
 }
 
@@ -338,6 +340,8 @@ void setup() {
   Wire.begin();
   imu.initialize();
   pinMode(BUZZER_PIN, OUTPUT);
+  // 센서가 I2C에 응답하는지 확인합니다. 선이 빠져도 0이나 65535 같은 그럴듯한 값이 계속 나와 고장을 알아채기 어렵습니다.
+  Wire.beginTransmission(0x68);if(Wire.endTransmission()!=0)Serial.println("# MPU6050_ERROR");
   Serial.println("time_ms,dynamic_g,alarm_state");
 }
 
@@ -397,9 +401,12 @@ long readCm() {
 
 void loop() {
   long cm = readCm();
-  // 거리를 층 높이로 나눠 반올림하면 층 번호가 됩니다. 층 간격보다 센서의
-  // 흔들림이 크면 이 나눗셈이 층을 잘못 짚습니다.
-  int floorIndex = cm > 0 ? (int)((cm + floorHeightCm / 2) / floorHeightCm) : -1;
+  // 거리를 층 높이로 나눠 반올림하면 층 번호가 됩니다. 다만 두 층의 경계에
+  // 멈추면 센서가 1 cm만 흔들려도 층이 오가므로, 지금 층에서 0.65층 넘게
+  // 벗어났을 때만 바꿉니다.
+  static int floorIndex = -1;
+  if (cm <= 0) floorIndex = -1;
+  else if (floorIndex < 0 || fabs(cm / floorHeightCm - floorIndex) > 0.65) floorIndex = (int)((cm + floorHeightCm / 2) / floorHeightCm);
   int angle = (cm > 0 && cm < floorHeightCm / 2) ? 90 : 0;
   door.write(angle);
 

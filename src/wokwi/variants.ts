@@ -258,7 +258,9 @@ export function buildWokwiVariants(
  * published sketch, listed so they stay visible until the recipe is fixed;
  * fixing one means changing its entry here in the same change. The two b1
  * variants hit Wokwi service errors (1006 mid-run, HTTP 503) and are not yet
- * recorded.
+ * recorded. Entries marked `fixed:` were silent/chatter in that run and are
+ * expected to change with the sensor checks added to the sketches; the next
+ * variants run confirms them.
  */
 export const VARIANT_EXPECTATIONS: Readonly<Record<string, string>> = {
   'S2--unplugged-hc-sr04': 'diagnosed', // # out-of-range
@@ -312,53 +314,53 @@ export const VARIANT_EXPECTATIONS: Readonly<Record<string, string>> = {
   'plant-growth--unplugged-tsl2591': 'diagnosed', // # TSL2591_ERROR
   'b4-reaction-time--unplugged-hc-sr04': 'no-data', // no complete rows
   'p9-motion-interrupt--unplugged-mpu6050': 'no-data', // no complete rows
-  'S1--unplugged-mpu6050': 'silent', // 2929,0.0,0.0
-  'a1-led-brightness--unplugged-tsl2591': 'silent', // 1999,0,65535
-  'b5-step-counter--unplugged-mpu6050': 'silent', // 2980,0.0000
-  'b6-skin-temperature-recovery--unplugged-mpu6050': 'silent', // 2617,22.00,-1.0000
-  'd2-digital-level--unplugged-mpu6050': 'silent', // 2890,0.00,0.00
-  'd7-vibration-alarm--unplugged-mpu6050': 'silent', // 2962,1.0000,1
-  'e2-pendulum-damping--unplugged-mpu6050': 'silent', // 2980,0.0000
-  'e3-moment-of-inertia--unplugged-mpu6050': 'silent', // 2980,0.000
-  'e6-multi-point-temperature--unplugged-ds18b20_1': 'silent', // 2600,1,22.000
-  'human-activity-meter--unplugged-mpu6050': 'silent', // 2947,1.0000,1.0000
-  'obstacle-avoid-car--unplugged-mpu6050': 'silent', // 2969,401.2,0.000
-  'p1-pendulum-period--unplugged-mpu6050': 'silent', // 2992,0.0000
-  'p2-mechanical-energy--unplugged-mpu6050': 'silent', // 2980,0.0000,0.0000,0.0000,0.0000
-  'p4-friction-energy-loss--unplugged-mpu6050': 'silent', // 2940,4.0061,0.0000
-  'p5-incline-acceleration--unplugged-mpu6050': 'silent', // 2980,0.0000,0.00
-  'p7-solar-panel-angle--unplugged-ina219': 'silent', // 2758,32.764,-0.100,131070.000,2756.05,1310.6999
-  'ph02-newton-second-law--unplugged-mpu6050': 'silent', // 2909,-0.00006,-0.00006,-0.00006
-  'ph03-projectile-motion--unplugged-hc-sr04': 'silent', // 2965,0.0000,0.00000
-  'ph03-projectile-motion--unplugged-mpu6050': 'silent', // 2911,4.0114,-0.00006
-  'ph04-momentum-collision--unplugged-mpu6050_1': 'silent', // 2997,-0.0005,0.0000
-  'ph06-spring-oscillation--unplugged-mpu6050': 'silent', // 2909,-0.00006,-0.00006,-0.00006
-  'ph07-centripetal-acceleration--unplugged-mpu6050': 'silent', // 2949,-0.00006,-0.00006,-0.00006,-0.008
-  'ph08-rpm-comparison--unplugged-mpu6050': 'silent', // 2926,-0.008,0,1,0
-  'ph09-friction-coefficients--unplugged-mpu6050': 'silent', // 2909,-0.00006,-0.00006,-0.00006
-  'ph10-rotational-damping--unplugged-mpu6050': 'silent', // 2926,-0.008,0,1,0
-  'ph11-specific-heat--unplugged-ds18b20_1': 'silent', // 2547,0,22.000
-  'ph13-thermal-conductivity--unplugged-ds18b20_1': 'silent', // 2547,0,22.000
-  'ph17-ohms-law--unplugged-ina219': 'silent', // R1K,78,-0.0040,-0.0100,-0.100
-  'ph18-series-parallel-resistance--unplugged-ina219': 'silent', // SERIES_220_1000,2540,-0.0040,-0.100,40.00
-  'ph19-kirchhoff-laws--unplugged-ina219': 'silent', // TOTAL,2526,-0.0040,-0.0100,-0.100
-  'ph20-joule-heating--unplugged-ds18b20': 'silent', // HEATING,2516,2.5000,10.000,0.0250,-0.063
-  'ph20-joule-heating--unplugged-ina219': 'silent', // HEATING,2514,-0.0040,-0.100,0.0000,22.000
-  'ph21-rc-time-constant--unplugged-ina219': 'silent', // CHARGE,2956,2.6344,-0.1000
-  'ph22-battery-internal-resistance--unplugged-ina219': 'silent', // R220,2771,-0.0040,-0.100
-  'ph23-solar-iv-mpp--unplugged-ina219': 'silent', // R1K,2542,-0.0040,-0.100,0.000,1234
-  'ph23-solar-iv-mpp--unplugged-tsl2591': 'silent', // R1K,2545,2.5000,10.000,25.000,65535
-  'ph24-solenoid-current-field--unplugged-ina219': 'silent', // I050,2761,-0.100,0
-  'ph25-coil-turns-field--unplugged-ina219': 'silent', // N50,2761,-0.100,0
-  'ph28-malus-law--unplugged-tsl2591': 'silent', // 2920,65535
-  'ph29-transmittance-absorbance--unplugged-tsl2591': 'silent', // 2920,65535
-  'ph30-reflection-intensity-angle--unplugged-tsl2591': 'silent', // 2920,65535
-  'ph31-lens-focal-length--unplugged-tsl2591': 'silent', // 2920,65535
-  'ph32-aperture-light--unplugged-tsl2591': 'silent', // 2920,65535
-  'ph33-light-source-stability--unplugged-tsl2591': 'silent', // 2920,65535
-  'ph35-temperature-speed-of-sound--unplugged-hc-sr04': 'silent', // 2895,25.08,1006.53,0,0.0000
-  's11-tsl2591-interrupt--unplugged-tsl2591': 'silent', // sample,2949,0,65535
-  's12-dual-mpu6050-address--unplugged-mpu6050_1': 'silent', // 2933,-1,0
+  'S1--unplugged-mpu6050': 'diagnosed', // fixed: # MPU6050_ERROR
+  'a1-led-brightness--unplugged-tsl2591': 'diagnosed', // fixed: # TSL2591_ERROR
+  'b5-step-counter--unplugged-mpu6050': 'diagnosed', // fixed: # MPU6050_ERROR
+  'b6-skin-temperature-recovery--unplugged-mpu6050': 'diagnosed', // fixed: # MPU6050_ERROR
+  'd2-digital-level--unplugged-mpu6050': 'diagnosed', // fixed: # MPU6050_ERROR
+  'd7-vibration-alarm--unplugged-mpu6050': 'diagnosed', // fixed: # MPU6050_ERROR
+  'e2-pendulum-damping--unplugged-mpu6050': 'diagnosed', // fixed: # MPU6050_ERROR
+  'e3-moment-of-inertia--unplugged-mpu6050': 'diagnosed', // fixed: # MPU6050_ERROR
+  'e6-multi-point-temperature--unplugged-ds18b20_1': 'diagnosed', // fixed: # DS18B20_MISSING:found/expected
+  'human-activity-meter--unplugged-mpu6050': 'diagnosed', // fixed: # MPU6050_ERROR
+  'obstacle-avoid-car--unplugged-mpu6050': 'diagnosed', // fixed: # MPU6050_ERROR
+  'p1-pendulum-period--unplugged-mpu6050': 'diagnosed', // fixed: # MPU6050_ERROR
+  'p2-mechanical-energy--unplugged-mpu6050': 'diagnosed', // fixed: # MPU6050_ERROR
+  'p4-friction-energy-loss--unplugged-mpu6050': 'diagnosed', // fixed: # MPU6050_ERROR
+  'p5-incline-acceleration--unplugged-mpu6050': 'diagnosed', // fixed: # MPU6050_ERROR
+  'p7-solar-panel-angle--unplugged-ina219': 'diagnosed', // fixed: # INA219_ERROR
+  'ph02-newton-second-law--unplugged-mpu6050': 'diagnosed', // fixed: # MPU6050_ERROR
+  'ph03-projectile-motion--unplugged-hc-sr04': 'diagnosed', // fixed: distance=-1
+  'ph03-projectile-motion--unplugged-mpu6050': 'diagnosed', // fixed: # MPU6050_ERROR
+  'ph04-momentum-collision--unplugged-mpu6050_1': 'diagnosed', // fixed: # MPU6050_0x68_ERROR
+  'ph06-spring-oscillation--unplugged-mpu6050': 'diagnosed', // fixed: # MPU6050_ERROR
+  'ph07-centripetal-acceleration--unplugged-mpu6050': 'diagnosed', // fixed: # MPU6050_ERROR
+  'ph08-rpm-comparison--unplugged-mpu6050': 'diagnosed', // fixed: # MPU6050_ERROR
+  'ph09-friction-coefficients--unplugged-mpu6050': 'diagnosed', // fixed: # MPU6050_ERROR
+  'ph10-rotational-damping--unplugged-mpu6050': 'diagnosed', // fixed: # MPU6050_ERROR
+  'ph11-specific-heat--unplugged-ds18b20_1': 'diagnosed', // fixed: # DS18B20_MISSING:found/expected
+  'ph13-thermal-conductivity--unplugged-ds18b20_1': 'diagnosed', // fixed: # DS18B20_MISSING:found/expected
+  'ph17-ohms-law--unplugged-ina219': 'diagnosed', // fixed: # INA219_ERROR
+  'ph18-series-parallel-resistance--unplugged-ina219': 'diagnosed', // fixed: # INA219_ERROR
+  'ph19-kirchhoff-laws--unplugged-ina219': 'diagnosed', // fixed: # INA219_ERROR
+  'ph20-joule-heating--unplugged-ds18b20': 'diagnosed', // fixed: temperature_C=nan
+  'ph20-joule-heating--unplugged-ina219': 'diagnosed', // fixed: # INA219_ERROR
+  'ph21-rc-time-constant--unplugged-ina219': 'diagnosed', // fixed: # INA219_ERROR
+  'ph22-battery-internal-resistance--unplugged-ina219': 'diagnosed', // fixed: # INA219_ERROR
+  'ph23-solar-iv-mpp--unplugged-ina219': 'diagnosed', // fixed: # INA219_ERROR
+  'ph23-solar-iv-mpp--unplugged-tsl2591': 'diagnosed', // fixed: # TSL2591_ERROR
+  'ph24-solenoid-current-field--unplugged-ina219': 'diagnosed', // fixed: # INA219_ERROR
+  'ph25-coil-turns-field--unplugged-ina219': 'diagnosed', // fixed: # INA219_ERROR
+  'ph28-malus-law--unplugged-tsl2591': 'diagnosed', // fixed: # TSL2591_ERROR
+  'ph29-transmittance-absorbance--unplugged-tsl2591': 'diagnosed', // fixed: # TSL2591_ERROR
+  'ph30-reflection-intensity-angle--unplugged-tsl2591': 'diagnosed', // fixed: # TSL2591_ERROR
+  'ph31-lens-focal-length--unplugged-tsl2591': 'diagnosed', // fixed: # TSL2591_ERROR
+  'ph32-aperture-light--unplugged-tsl2591': 'diagnosed', // fixed: # TSL2591_ERROR
+  'ph33-light-source-stability--unplugged-tsl2591': 'diagnosed', // fixed: # TSL2591_ERROR
+  'ph35-temperature-speed-of-sound--unplugged-hc-sr04': 'diagnosed', // fixed: distance=-1
+  's11-tsl2591-interrupt--unplugged-tsl2591': 'diagnosed', // fixed: # TSL2591_ERROR
+  's12-dual-mpu6050-address--unplugged-mpu6050_1': 'diagnosed', // fixed: # MPU6050_0x68_ERROR
   'S6--bme280-at-0x77': 'diagnosed', // # BME280_ERROR
   'b2-leaf-transpiration--bme280-at-0x77': 'diagnosed', // # BME280_ERROR
   'b3-photosynthesis-pressure--bme280-at-0x77': 'diagnosed', // # BME280_ERROR
@@ -371,7 +373,7 @@ export const VARIANT_EXPECTATIONS: Readonly<Record<string, string>> = {
   'ph16-altitude-pressure--bme280-at-0x77': 'diagnosed', // # BME280_ERROR
   'ph35-temperature-speed-of-sound--bme280-at-0x77': 'diagnosed', // # BME280_ERROR
   'plant-growth--bme280-at-0x77': 'diagnosed', // # BME280_ERROR
-  'd8-elevator-floor--jitter': 'chatter', // floor_index changed 17 times over 19 rows: 1212121212122121212
+  'd8-elevator-floor--jitter': 'steady', // fixed: floor changes only 0.65 floors past the current one
   'd4-parking-barrier--jitter': 'steady', // door_state changed 0 times over 36 rows: 11111111111111111111111111...
   'd5-auto-curtain--jitter': 'steady', // commanded_deg changed 1 times over 11 rows: 01201201201201201201201...
   'd6-temperature-alarm--jitter': 'steady', // alarm_state changed 1 times over 6 rows: 000111

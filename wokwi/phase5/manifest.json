@@ -19,7 +19,7 @@
       "scenario": "scenario.test.yaml",
       "command": "wokwi-cli wokwi/phase5/S1 --scenario scenario.test.yaml --timeout 20000",
       "chips": [],
-      "fingerprint": "274161db7052b1dd"
+      "fingerprint": "baee30b6cc7dfdd4"
     },
     {
       "id": "S2",
@@ -105,7 +105,7 @@
       "scenario": "scenario.test.yaml",
       "command": "wokwi-cli wokwi/phase5/p1-pendulum-period --scenario scenario.test.yaml --timeout 20000",
       "chips": [],
-      "fingerprint": "d4821acab6f4a3f0"
+      "fingerprint": "417e99ef1ef99119"
     },
     {
       "id": "p2-mechanical-energy",
@@ -115,7 +115,7 @@
       "scenario": "scenario.test.yaml",
       "command": "wokwi-cli wokwi/phase5/p2-mechanical-energy --scenario scenario.test.yaml --timeout 20000",
       "chips": [],
-      "fingerprint": "a4bd8ee9a8d9b6e3"
+      "fingerprint": "f98607925872e600"
     },
     {
       "id": "free-fall",
@@ -135,7 +135,7 @@
       "scenario": "scenario.test.yaml",
       "command": "wokwi-cli wokwi/phase5/p4-friction-energy-loss --scenario scenario.test.yaml --timeout 20000",
       "chips": [],
-      "fingerprint": "bc96b1599229918f"
+      "fingerprint": "b1a850568fff36e8"
     },
     {
       "id": "p5-incline-acceleration",
@@ -145,7 +145,7 @@
       "scenario": "scenario.test.yaml",
       "command": "wokwi-cli wokwi/phase5/p5-incline-acceleration --scenario scenario.test.yaml --timeout 20000",
       "chips": [],
-      "fingerprint": "c817be3d114c536f"
+      "fingerprint": "4036979083349996"
     },
     {
       "id": "p6-magnetic-field-distance",
@@ -168,7 +168,7 @@
         "ina219",
         "tsl2591"
       ],
-      "fingerprint": "a6da5ce36b432fb1"
+      "fingerprint": "4ba4be45021833db"
     },
     {
       "id": "p8-inverse-square-light",
@@ -234,7 +234,7 @@
       "scenario": "scenario.test.yaml",
       "command": "wokwi-cli wokwi/phase5/e6-multi-point-temperature --scenario scenario.test.yaml --timeout 20000",
       "chips": [],
-      "fingerprint": "2744c231e2c5b6fb"
+      "fingerprint": "0114b86216b10cd0"
     },
     {
       "id": "plant-growth",
@@ -269,7 +269,7 @@
       "scenario": "scenario.test.yaml",
       "command": "wokwi-cli wokwi/phase5/human-activity-meter --scenario scenario.test.yaml --timeout 20000",
       "chips": [],
-      "fingerprint": "aac0e15810d3f1f6"
+      "fingerprint": "37e12c1b704ad0b5"
     },
     {
       "id": "obstacle-avoid-car",
@@ -279,7 +279,7 @@
       "scenario": "scenario.test.yaml",
       "command": "wokwi-cli wokwi/phase5/obstacle-avoid-car --scenario scenario.test.yaml --timeout 20000",
       "chips": [],
-      "fingerprint": "f8a888e23af3f180"
+      "fingerprint": "1b24d8e1c4ffc9a3"
     },
     {
       "id": "automatic-door",

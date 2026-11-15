@@ -30,6 +30,8 @@ void setup() {
   mpuWrite(0x68,0x6B,0);
   pinMode(TRIG_PIN,OUTPUT);
   pinMode(ECHO_PIN,INPUT);
+  Wire.beginTransmission(0x68);
+  if(Wire.endTransmission()!=0)Serial.println("# MPU6050_ERROR");
   Serial.println("time_ms,distance_m,acceleration_x_g");
 }
 void loop() {
@@ -41,7 +43,7 @@ void loop() {
   unsigned long us=pulseIn(ECHO_PIN,HIGH,30000);
   Serial.print(millis());
   Serial.print(',');
-  Serial.print(us*0.000343f/2.0f,4);
+  Serial.print(us?us*0.000343f/2.0f:-1.0f,4);
   Serial.print(',');
   Serial.println(mpuRead16(0x68,0x3B)/16384.0f,5);
   delay(samplingIntervalMs);

@@ -25,6 +25,10 @@ void setup() {
   Wire.begin();
   writeReg(0x68,0x6B,0);
   writeReg(0x69,0x6B,0);
+  Wire.beginTransmission(0x68);
+  if(Wire.endTransmission()!=0)Serial.println("# MPU6050_0x68_ERROR");
+  Wire.beginTransmission(0x69);
+  if(Wire.endTransmission()!=0)Serial.println("# MPU6050_0x69_ERROR");
   Serial.println("time_ms,mpu_0x68_accel_x_raw,mpu_0x69_accel_x_raw");
 }
 void loop() {
