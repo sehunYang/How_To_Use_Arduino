@@ -371,12 +371,17 @@ function escapePoints(point: Point, part: PositionedPart, routeIndex: number): P
   return [{ x: point.x, y: part.top + part.height + clearance }]
 }
 
+/**
+ * `activeWire`는 `planBreadboardWiring`이 펼친 실제 선의 번호입니다(0부터). 그 선까지
+ * 그리고, 그 선 **하나만** 깜빡입니다. 레시피의 배선 줄 하나가 선 여러 개로 펼쳐질 때
+ * 그 선들을 한꺼번에 깜빡이면 학생이 어느 것부터 꽂을지 모릅니다.
+ */
 export function GeneratedWokwiDiagram({
   recipe,
-  activeStep,
+  activeWire,
 }: {
   recipe: Recipe
-  activeStep: number
+  activeWire: number
 }) {
   const diagram = useMemo(() => buildDiagram(recipe, sensors), [recipe])
   const plannedWiring = useMemo(() => planBreadboardWiring(recipe), [recipe])
@@ -393,8 +398,8 @@ export function GeneratedWokwiDiagram({
   const sketchPadding = Math.max(80, diagram.connections.length * 7 + 28)
   const sketchWidth = 900 + sketchPadding * 2
   const sketchHeight = contentHeight + sketchPadding * 2
-  const visibleCount = plannedWiring.filter((connection) => connection.stepIndex <= activeStep).length
-  const currentCount = plannedWiring.filter((connection) => connection.stepIndex === activeStep).length
+  const visibleCount = Math.min(plannedWiring.length, Math.max(0, activeWire + 1))
+  const currentCount = visibleCount > 0 ? 1 : 0
   const visible = diagram.connections.slice(0, visibleCount)
   const visibleWires = visible.filter(([from, to]) => {
     const fromPart = from.split(':')[0]
@@ -460,7 +465,7 @@ export function GeneratedWokwiDiagram({
     <svg
       viewBox={`${-sketchPadding} ${-sketchPadding} ${sketchWidth} ${sketchHeight}`}
       role="img"
-      aria-label={`${recipe.title} Wokwi 배선도 ${activeStep + 1}단계까지 연결됨`}
+      aria-label={`${recipe.title} Wokwi 배선도 ${activeWire + 1}단계까지 연결됨`}
       className="size-full"
       preserveAspectRatio="xMidYMid meet"
       data-generated-wokwi-diagram={recipe.id}

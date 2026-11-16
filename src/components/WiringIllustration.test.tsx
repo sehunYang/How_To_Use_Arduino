@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { pendulumRecipe } from '@/data/canary'
 import { phase5Recipes } from '@/data/phase5'
 import { phase6Recipes } from '@/data/phase6'
+import { wiringSequence } from '@/recipes/wiringSequence'
 import { planBreadboardWiring } from '@/wokwi/buildDiagram'
 import { WiringIllustration } from './WiringIllustration'
 
@@ -102,7 +103,7 @@ describe('WiringIllustration zoom and pan', () => {
 
   it('describes the current step for screen readers', () => {
     render(<WiringIllustration recipe={pendulumRecipe} activeStep={1} />)
-    const step = pendulumRecipe.wiring[1]
+    const step = wiringSequence(pendulumRecipe)[1]
 
     expect(screen.getByText(new RegExp(`${step.from}.*${step.to}.*${step.color}`))).toBeInTheDocument()
   })
@@ -149,10 +150,11 @@ describe('WiringIllustration zoom and pan', () => {
     expect(screen.getByRole('img', { name: /Wokwi 배선도 2단계까지 연결됨/ })).toBeInTheDocument()
     expect(container.querySelector('[data-generated-wokwi-diagram="S1"]')).toBeInTheDocument()
     expect(container.querySelectorAll('[data-part-id]').length).toBeGreaterThan(1)
-    expect(container.querySelectorAll('[data-wire-id]')).toHaveLength(4)
+    // 한 단계가 선 하나이므로 2단계에서는 선 두 개가 보입니다.
+    expect(container.querySelectorAll('[data-wire-id]')).toHaveLength(2)
   })
 
-  it('renders sharp wires above boards, below labels, and blinks only the current step', () => {
+  it('renders sharp wires above boards, below labels, and blinks only the current wire', () => {
     const recipe = phase5Recipes.find((candidate) => candidate.id === 'S1')!
     const { container } = render(<WiringIllustration recipe={recipe} activeStep={1} />)
     const diagram = container.querySelector('[data-generated-wokwi-diagram]')
@@ -180,13 +182,14 @@ describe('WiringIllustration zoom and pan', () => {
     expect(current?.querySelector('[data-wire-blink]')).toHaveAttribute('dur', '3s')
     expect(current?.querySelector('[data-wire-blink]')).toHaveAttribute('repeatCount', 'indefinite')
     expect(currentWires.map((wire) => wire.querySelector('[data-wire-blink]')?.getAttribute('begin')))
-      .toEqual(['0s', '-1.5s'])
+      .toEqual(['0s'])
     expect(current?.querySelector('[data-wire-line]')).toHaveAttribute('stroke-width', '2.5')
     expect(current?.querySelector('[data-wire-halo]')).toHaveAttribute('stroke-width', '4.5')
   })
 
   it('routes the UNO-to-rail and rail-to-sensor wires without overlapping segments', () => {
-    const { container } = render(<WiringIllustration recipe={pendulumRecipe} activeStep={0} />)
+    // 1단계(UNO→레일)와 2단계(레일→센서)까지 펼쳐 두 선을 함께 봅니다.
+    const { container } = render(<WiringIllustration recipe={pendulumRecipe} activeStep={1} />)
     const wireLines = Array.from(container.querySelectorAll('[data-wire-line]'))
     expect(wireLines).toHaveLength(2)
     const breadboard = container.querySelector('[data-part-id="bb"]')!
@@ -239,7 +242,7 @@ describe('WiringIllustration zoom and pan', () => {
   it('anchors every Phase 5 wire endpoint to a visible pin center', () => {
     for (const recipe of phase5Recipes) {
       const { container, unmount } = render(
-        <WiringIllustration recipe={recipe} activeStep={recipe.wiring.length - 1} />,
+        <WiringIllustration recipe={recipe} activeStep={wiringSequence(recipe).length - 1} />,
       )
       const pinPoints = new Set(
         Array.from(container.querySelectorAll('[data-pin-x][data-pin-y]'))
@@ -292,7 +295,7 @@ describe('WiringIllustration zoom and pan', () => {
   it('mounts resistor leads directly in breadboard holes with concrete resistance labels', () => {
     const recipe = phase5Recipes.find((candidate) => candidate.id === 'S4')!
     const { container } = render(
-      <WiringIllustration recipe={recipe} activeStep={recipe.wiring.length - 1} />,
+      <WiringIllustration recipe={recipe} activeStep={wiringSequence(recipe).length - 1} />,
     )
     const resistor = container.querySelector('[data-part-id="cds_resistor"]')
     expect(resistor).toHaveAttribute('data-mounted-resistor', 'cds_resistor')
@@ -306,7 +309,7 @@ describe('WiringIllustration zoom and pan', () => {
   it('connects battery negative to the common ground rail in the internal-resistance recipe', () => {
     const recipe = phase6Recipes.find((candidate) => candidate.id === 'ph22-battery-internal-resistance')!
     const { container } = render(
-      <WiringIllustration recipe={recipe} activeStep={recipe.wiring.length - 1} />,
+      <WiringIllustration recipe={recipe} activeStep={wiringSequence(recipe).length - 1} />,
     )
 
     expect(recipe.wiring).toEqual(expect.arrayContaining([
@@ -332,7 +335,7 @@ describe('WiringIllustration zoom and pan', () => {
   it('mounts LED and buzzer leads directly in breadboard holes', () => {
     const recipe = phase5Recipes.find((candidate) => candidate.id === 'parking-alarm')!
     const { container } = render(
-      <WiringIllustration recipe={recipe} activeStep={recipe.wiring.length - 1} />,
+      <WiringIllustration recipe={recipe} activeStep={wiringSequence(recipe).length - 1} />,
     )
     const planned = planBreadboardWiring(recipe)
     for (const token of ['LED.', 'BUZZER.']) {
@@ -406,7 +409,7 @@ describe('WiringIllustration zoom and pan', () => {
     for (const [sensorId, partType, accessibleName] of expected) {
       const recipe = phase5Recipes.find((candidate) => candidate.sensors.includes(sensorId))!
       const { container, unmount } = render(
-        <WiringIllustration recipe={recipe} activeStep={recipe.wiring.length - 1} />,
+        <WiringIllustration recipe={recipe} activeStep={wiringSequence(recipe).length - 1} />,
       )
       const part = container.querySelector(`[data-part-type="${partType}"]`)
       expect(part, `${recipe.id}: ${sensorId} SVG part`).not.toBeNull()

@@ -8,7 +8,7 @@ import { breadboardBasics, safetyNotice } from '@/recipes/firstRun'
 import { glossaryFor } from '@/recipes/glossary'
 import { jumperWireLabel } from '@/recipes/parts'
 import { powerChecks } from '@/recipes/powerCheck'
-import { planBreadboardWiring } from '@/wokwi/buildDiagram'
+import { breadboardHoleLabel, type WireStep } from '@/recipes/wiringSequence'
 import { useRecipeContext } from './RecipeContext'
 import { EndpointLabel, GlossaryList, HighlightedWiringText, PowerCheckList, WIRE_COLOR_CLASS } from './shared'
 
@@ -18,8 +18,30 @@ function scrollWindowBy(top: number) {
   window.scrollBy({ top, behavior: reduce ? 'auto' : 'smooth' })
 }
 
+/** 브레드보드 구멍은 학생이 찾아갈 수 있는 말로, 나머지는 부품.핀 이름으로 보여 줍니다. */
+function WireEnd({ value }: { value: string }) {
+  const hole = breadboardHoleLabel(value)
+  if (!hole) return <EndpointLabel value={value} />
+  return <span data-wiring-endpoint={value} className="text-syntax-type">{hole}</span>
+}
+
+/**
+ * 이 선이 무엇을 위한 것인지. 레시피의 배선 줄 하나가 선 여러 개가 되면, 지금 꽂는 선이
+ * 그중 몇 번째인지도 함께 적어 둡니다. 그래야 한 칸만 보고도 왜 이 구멍인지 압니다.
+ */
+function WirePurpose({ step }: { step: WireStep }) {
+  return (
+    <>
+      <HighlightedWiringText text={step.purpose} />
+      {step.parts > 1 && (
+        <span className="text-muted"> ({step.parts}개 중 {step.part}번째)</span>
+      )}
+    </>
+  )
+}
+
 export function WiringPage() {
-  const { recipe, machine, toggleStep } = useRecipeContext()
+  const { recipe, wires, machine, toggleStep } = useRecipeContext()
   const location = useLocation()
   const stepRefs = useRef<Array<HTMLLIElement | null>>([])
   /** 화면 위에 붙어 있는 배선도. 현재 단계를 이 아래로 내려 보내는 데 씁니다. */
@@ -27,7 +49,6 @@ export function WiringPage() {
   const [linkCopied, setLinkCopied] = useState<'idle' | 'copied' | 'failed'>('idle')
 
   const active = machine.activeStep ?? 0
-  const plannedWiring = planBreadboardWiring(recipe)
   const safety = safetyNotice(recipe.body)
   const checks = powerChecks(recipe)
   const glossary = glossaryFor(recipe)
@@ -44,8 +65,8 @@ export function WiringPage() {
 
   useEffect(() => {
     const match = location.hash.match(/^#step-(\d+)$/)
-    if (match) setActiveStep(Math.min(recipe.wiring.length - 1, Math.max(0, Number(match[1]) - 1)))
-  }, [location.hash, recipe.wiring.length, setActiveStep])
+    if (match) setActiveStep(Math.min(wires.length - 1, Math.max(0, Number(match[1]) - 1)))
+  }, [location.hash, wires.length, setActiveStep])
 
   /**
    * 현재 단계를 배선도 **아래**로 데려옵니다.
@@ -108,11 +129,11 @@ export function WiringPage() {
       <div data-testid="wiring-layout" className="mt-5 min-w-0 space-y-6">
         <div ref={stickyRef} className="sticky top-16 z-20 w-full bg-background pb-2 lg:top-20"><WiringIllustration recipe={recipe} activeStep={active} /></div>
         <ol data-testid="wiring-steps" className="min-w-0 space-y-3">
-          {recipe.wiring.map((step, index) => (
+          {wires.map((step, index) => (
             <li
               id={`step-${index + 1}`}
               ref={(node) => { stepRefs.current[index] = node }}
-              key={`${step.from}-${step.to}`}
+              key={`${step.from}-${step.to}-${index}`}
               className={`scroll-mt-24 rounded-card border p-4 ${active === index ? 'border-accent bg-muted-background' : 'border-border'}`}
             >
               <label className="flex min-h-11 cursor-pointer items-start gap-3">
@@ -121,33 +142,25 @@ export function WiringPage() {
                 <span>
                   <strong>
                     <span className="sr-only">{index + 1}.</span>{' '}
-                    <EndpointLabel value={step.from} />
-                    <span className="text-syntax-operator">
-                      {plannedWiring.some(
-                        (connection) => connection.stepIndex === index
-                          && (connection.from.startsWith('BB.') || connection.to.startsWith('BB.')),
-                      ) ? ' → 브레드보드 → ' : ' → '}
-                    </span>
-                    <EndpointLabel value={step.to} />
+                    <WireEnd value={step.from} />
+                    <span className="text-syntax-operator">{step.kind === 'leg' ? ' 다리를 → ' : ' → '}</span>
+                    <WireEnd value={step.to} />
+                    {step.kind === 'leg' && <span className="text-syntax-operator">에 꽂기</span>}
                   </strong>
                   <span className="mt-1 block text-caption">
-                    <span className="text-syntax-string">{jumperWireLabel(step.from, step.to)}</span>
-                    <span className="text-muted"> · </span>
-                    <HighlightedWiringText text={step.text} />
-                    {plannedWiring
-                      .filter((connection) => connection.stepIndex === index)
-                      .map((connection) => (
-                        <span
-                          key={`${connection.from}-${connection.to}`}
-                          className="mt-1 block text-muted"
-                        >
-                          {connection.from} → {connection.to}
+                    {step.kind === 'wire' ? (
+                      <>
+                        <span className="text-syntax-string">{jumperWireLabel(step.from, step.to)}</span>
+                        <span className="text-muted"> · </span>
+                        <span className={WIRE_COLOR_CLASS[step.color.toLowerCase()] ?? 'text-syntax-function'}>
+                          {step.color} 선
                         </span>
-                      ))}
-                    <span className="text-muted"> · </span>
-                    <span className={WIRE_COLOR_CLASS[step.color.toLowerCase()] ?? 'text-syntax-function'}>
-                      {step.color} 선
-                    </span>
+                        <span className="text-muted"> · </span>
+                      </>
+                    ) : (
+                      <span className="text-muted">선 없이 부품 다리를 바로 꽂습니다 · </span>
+                    )}
+                    <WirePurpose step={step} />
                   </span>
                 </span>
               </label>
@@ -168,8 +181,8 @@ export function WiringPage() {
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background px-page pt-3 [padding-bottom:calc(0.75rem+env(safe-area-inset-bottom))] lg:static lg:mt-5 lg:border-0 lg:p-0">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-3">
           <Button variant="outline" disabled={active === 0} onClick={() => machine.setActiveStep(active - 1)}>이전</Button>
-          <span className="text-caption text-muted">{machine.checked.filter(Boolean).length}/{recipe.wiring.length} 완료</span>
-          <Button disabled={active >= recipe.wiring.length - 1} onClick={() => machine.setActiveStep(active + 1)}>다음</Button>
+          <span className="text-caption text-muted">{machine.checked.filter(Boolean).length}/{wires.length} 완료</span>
+          <Button disabled={active >= wires.length - 1} onClick={() => machine.setActiveStep(active + 1)}>다음</Button>
         </div>
       </div>
 

@@ -1,6 +1,7 @@
 import { createContext, useContext } from 'react'
 import type { useWiringSteps } from '@/hooks/useWiringSteps'
 import type { RecipeLink } from '@/recipes/relatedRecipes'
+import type { WireStep } from '@/recipes/wiringSequence'
 import type { Recipe } from '@/schema'
 
 /**
@@ -13,6 +14,8 @@ import type { Recipe } from '@/schema'
  */
 export interface RecipeContextValue {
   recipe: Recipe
+  /** 선 하나를 한 단계로 펼친 배선 순서. `machine`의 칸이 이 순서를 따릅니다. */
+  wires: WireStep[]
   /** 배선 단계 진행. 배선 화면 밖에서도 "어디까지 했나"를 읽습니다. */
   machine: ReturnType<typeof useWiringSteps>
   /** 가이드가 이름으로 가리키는 다음 탐구를 링크로 바꾸는 데 쓰는 목록. */

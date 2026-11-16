@@ -41,25 +41,6 @@ export function parseBaudRate(raw: string | null | undefined): number | null {
   return Number.isInteger(value) && value > 0 && value <= MAX_BAUD_RATE ? value : null
 }
 
-/**
- * USB에서 오는 글자 덩어리는 줄 경계와 무관하게 끊깁니다. 덩어리를 줄로 자르고,
- * 마지막에 남은 조각은 스트림이 닫힐 때 내보냅니다.
- */
-export function lineSplitter(): TransformStream<string, string> {
-  let carry = ''
-  return new TransformStream<string, string>({
-    transform(chunk, controller) {
-      carry += chunk
-      const lines = carry.split(/\r\n|\r|\n/)
-      carry = lines.pop() ?? ''
-      for (const line of lines) controller.enqueue(line)
-    },
-    flush(controller) {
-      if (carry.length > 0) controller.enqueue(carry)
-    },
-  })
-}
-
 /** 속도가 어긋나면 UTF-8로 읽히지 않는 바이트(U+FFFD)나 제어 문자가 섞여 나옵니다. */
 export function isGarbledLine(line: string) {
   // eslint-disable-next-line no-control-regex
@@ -114,54 +95,73 @@ export function describeSerialError(error: unknown, phase: 'open' | 'read'): Ser
   return { kind: 'unknown', message: 'USB로 받는 중 오류가 났습니다. 케이블을 뺐다 꽂고 다시 시도하세요.' }
 }
 
-export interface SerialCaptureOptions {
+export interface SerialConnectOptions {
   serial: SerialLike
   baudRate: number
+  /** 포트에서 온 줄을 모두 넘깁니다. 측정 중인지는 부르는 쪽이 정합니다. */
   onLine: (line: string) => void
   /**
-   * 받기가 끝났을 때 한 번. 사람이 멈췄고 포트도 닫혔으면 `null`, 끊겼거나 포트를
+   * 연결이 끝났을 때 한 번. 사람이 끊었고 포트도 닫혔으면 `null`, 끊겼거나 포트를
    * 못 닫았으면 그 이유입니다.
    */
   onEnd: (error: SerialCaptureError | null) => void
+  /**
+   * 리셋을 건 뒤 이만큼은 오는 글을 버립니다. 리셋 전에 보드가 보낸 글이 아직 오는 중일 수
+   * 있는데, 우노는 리셋 뒤 부트로더가 0.5초 넘게 아무것도 보내지 않으므로 그 사이의 글은
+   * 모두 리셋 전 것입니다.
+   */
+  settleMs?: number
 }
 
-export interface SerialCaptureHandle {
+export interface SerialConnection {
+  /**
+   * 보드를 리셋해 스케치를 setup()부터 다시 돌립니다. 리셋 전에 받다 만 줄 조각과
+   * 리셋 직후 도착한 옛 글은 버리므로, 이 약속이 풀린 뒤 오는 줄은 새로 시작한 스케치의 것입니다.
+   */
+  restart: () => Promise<void>
   /** 읽기를 멈추고 포트를 닫습니다. 닫아 두지 않으면 IDE에서 업로드가 안 됩니다. */
   stop: () => Promise<void>
 }
 
+/** 리셋 뒤 버리는 시간의 기본값. 부트로더의 침묵(0.5초 이상)보다 짧아야 새 줄을 잃지 않습니다. */
+export const RESET_SETTLE_MS = 150
+
 async function pulseReset(port: SerialPort) {
   // 우노는 DTR 선이 높음→낮음으로 바뀔 때 리셋됩니다. API의 `dataTerminalReady: true`가
   // 선을 낮음으로 두는 쪽이라, false→true 순서가 곧 높음→낮음입니다. 리셋을 걸어야
-  // 스케치가 setup()부터 돌아 열 이름 줄을 먼저 보냅니다. 걸지 않으면 측정값 한가운데부터
-  // 받게 되어 열 이름이 없다는 오류로 끝납니다. 신호를 못 바꾸는 포트는 건너뜁니다.
+  // 스케치가 setup()부터 돌아 열 이름 줄을 먼저 보냅니다. 신호를 못 바꾸는 포트는 건너뜁니다.
   try {
     await port.setSignals({ dataTerminalReady: false })
     await new Promise((resolve) => setTimeout(resolve, 50))
     await port.setSignals({ dataTerminalReady: true })
+    return true
   } catch {
-    // 리셋 없이 받되, 파서가 열 이름을 못 찾으면 그때 알려 줍니다.
+    return false
   }
 }
 
 /**
- * 포트 선택 창을 띄우고, 고른 포트를 열어 줄 단위로 읽기 시작합니다.
+ * 포트 선택 창을 띄우고, 고른 포트를 열어 둡니다. 여는 것만 하고 측정은 시작하지 않습니다.
+ * 측정을 시작할 때 `restart()`로 보드를 리셋합니다.
  * 선택 취소·포트 사용 중 같은 열기 실패는 예외로 던지므로 부르는 쪽이 문장으로 바꿔 보여 줍니다.
  */
-export async function startSerialCapture(options: SerialCaptureOptions): Promise<SerialCaptureHandle> {
-  const { serial, baudRate, onLine, onEnd } = options
+export async function connectSerial(options: SerialConnectOptions): Promise<SerialConnection> {
+  const { serial, baudRate, onLine, onEnd, settleMs = RESET_SETTLE_MS } = options
   const port = await serial.requestPort()
   await port.open({ baudRate })
   if (!port.readable) {
     await port.close().catch(() => undefined)
     throw new DOMException('Port has no readable stream', 'NetworkError')
   }
-  await pulseReset(port)
 
   const decoder = new TextDecoderStream()
   const readableClosed = port.readable.pipeTo(decoder.writable)
-  const reader = decoder.readable.pipeThrough(lineSplitter()).getReader()
+  const reader = decoder.readable.getReader()
   let stoppedByUser = false
+  /** 줄 끝을 아직 못 받은 조각. 리셋하면 버립니다. */
+  let carry = ''
+  /** 리셋 중이거나 리셋 직후라 옛 글을 버리는 동안 true. */
+  let muted = false
 
   const finished = (async () => {
     let failure: SerialCaptureError | null = null
@@ -169,8 +169,13 @@ export async function startSerialCapture(options: SerialCaptureOptions): Promise
       while (true) {
         const { value, done } = await reader.read()
         if (done) break
-        onLine(value)
+        if (muted) continue
+        carry += value
+        const lines = carry.split(/\r\n|\r|\n/)
+        carry = lines.pop() ?? ''
+        for (const line of lines) onLine(line)
       }
+      if (!muted && carry.length > 0) onLine(carry)
     } catch (error) {
       failure = describeSerialError(error, 'read')
     }
@@ -189,6 +194,14 @@ export async function startSerialCapture(options: SerialCaptureOptions): Promise
   })()
 
   return {
+    async restart() {
+      muted = true
+      carry = ''
+      await pulseReset(port)
+      if (settleMs > 0) await new Promise((resolve) => setTimeout(resolve, settleMs))
+      carry = ''
+      muted = false
+    },
     async stop() {
       stoppedByUser = true
       await reader.cancel().catch(() => undefined)

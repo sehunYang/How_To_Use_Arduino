@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useReducer } from 'react'
-import type { WiringStep } from '@/schema'
 
 export interface WiringState { checked: boolean[]; activeStep: number | null }
 export type WiringAction =
@@ -18,7 +17,7 @@ export function wiringReducer(state: WiringState, action: WiringAction): WiringS
   return { checked, activeStep }
 }
 
-export function useWiringSteps(steps: WiringStep[], initialChecked?: boolean[]): WiringState & { completed: boolean; checkStep: (step: number) => void; uncheckStep: (step: number) => void; setActiveStep: (step: number | null) => void } {
+export function useWiringSteps(steps: readonly unknown[], initialChecked?: boolean[]): WiringState & { completed: boolean; checkStep: (step: number) => void; uncheckStep: (step: number) => void; setActiveStep: (step: number | null) => void } {
   const initial = useMemo(() => {
     const checked = Array.from({ length: steps.length }, (_, index) => initialChecked?.[index] === true)
     const firstUnchecked = checked.findIndex((value) => !value)

@@ -539,6 +539,19 @@ describe('USB로 바로 받기', () => {
     })
   }
 
+  /** [연결]한 뒤 [측정 시작]을 누르고, 보드 리셋이 끝나 [정지]가 보일 때까지 기다립니다. */
+  async function connectAndStart(user: ReturnType<typeof userEvent.setup>) {
+    await user.click(screen.getByRole('button', { name: '연결' }))
+    await user.click(await screen.findByRole('button', { name: '측정 시작' }))
+    await screen.findByRole('button', { name: '정지' })
+  }
+
+  /** [정지]를 누르고 받은 줄을 회차로 넣습니다. */
+  async function stopAndKeep(user: ReturnType<typeof userEvent.setup>) {
+    await user.click(screen.getByRole('button', { name: '정지' }))
+    await user.click(screen.getByRole('button', { name: '회차로 추가' }))
+  }
+
   afterEach(() => {
     cleanup()
     Reflect.deleteProperty(navigator, 'serial')
@@ -549,12 +562,12 @@ describe('USB로 바로 받기', () => {
     installSerial(null)
     render(<DataAnalysisPage />)
 
-    expect(screen.queryByRole('button', { name: 'USB로 받기' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '연결' })).not.toBeInTheDocument()
     expect(screen.getByText(/크롬이나 엣지에서/)).toBeInTheDocument()
     expect(screen.getByLabelText('시리얼 모니터 내용')).toBeInTheDocument()
   })
 
-  it('레시피가 넘긴 속도로 포트를 열고, 멈추면 받은 줄이 회차가 된다', async () => {
+  it('레시피가 넘긴 속도로 포트를 열고, 정지한 뒤 회차로 추가하면 받은 줄이 회차가 된다', async () => {
     const { push, port } = fakeSerialPort()
     installSerial(port)
     window.history.replaceState({}, '', '/data-analysis?baud=115200')
@@ -562,35 +575,38 @@ describe('USB로 바로 받기', () => {
     render(<DataAnalysisPage />)
 
     expect(screen.getByLabelText('속도(baud)')).toHaveValue('115200')
-    await user.click(screen.getByRole('button', { name: 'USB로 받기' }))
-    await waitFor(() => expect(port.open).toHaveBeenCalledWith({ baudRate: 115200 }))
+    await connectAndStart(user)
+    expect(port.open).toHaveBeenCalledWith({ baudRate: 115200 })
 
     push('time_ms,temperature_c,humidity_pct\r\n0,20,50\r\n1000,22,48\r\n2000,24,4')
     await waitFor(() => expect(screen.getByText(/3줄 받는 중/)).toBeInTheDocument())
     push('6\r\n')
     await waitFor(() => expect(screen.getByText(/4줄 받는 중/)).toBeInTheDocument())
 
-    await user.click(screen.getByRole('button', { name: '멈추고 회차로 넣기' }))
+    await stopAndKeep(user)
 
     await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('1개 회차, 3개 열, 모두 3개 데이터 행'))
-    expect(port.close).toHaveBeenCalledTimes(1)
+    // 회차를 넣어도 포트는 열어 두어 다음 회차를 바로 잴 수 있습니다.
+    expect(port.close).not.toHaveBeenCalled()
     expect(screen.getByLabelText('시리얼 모니터 내용')).toHaveValue('')
-    expect(screen.getByRole('button', { name: 'USB로 받기' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '측정 시작' })).toBeInTheDocument()
   })
 
-  it('버리기를 누르면 받은 줄을 회차로 넣지 않는다', async () => {
+  it('정지한 뒤 버리기를 고르면 받은 줄을 회차로 넣지 않는다', async () => {
     const { push, port } = fakeSerialPort()
     installSerial(port)
     const user = userEvent.setup()
     render(<DataAnalysisPage />)
 
-    await user.click(screen.getByRole('button', { name: 'USB로 받기' }))
+    await connectAndStart(user)
     push('time_ms,temperature_c\r\n0,20\r\n')
     await waitFor(() => expect(screen.getByText(/2줄 받는 중/)).toBeInTheDocument())
 
+    await user.click(screen.getByRole('button', { name: '정지' }))
     await user.click(screen.getByRole('button', { name: '버리기' }))
 
-    await waitFor(() => expect(port.close).toHaveBeenCalledTimes(1))
+    expect(screen.getByRole('button', { name: '측정 시작' })).toBeInTheDocument()
+    expect(port.close).not.toHaveBeenCalled()
     expect(screen.queryByText(/개 회차/)).not.toBeInTheDocument()
     expect(screen.getByLabelText('시리얼 모니터 내용')).toHaveValue('')
   })
@@ -601,10 +617,10 @@ describe('USB로 바로 받기', () => {
     const user = userEvent.setup()
     render(<DataAnalysisPage />)
 
-    await user.click(screen.getByRole('button', { name: 'USB로 받기' }))
+    await connectAndStart(user)
     push('0,20\r\n1000,22\r\n')
     await waitFor(() => expect(screen.getByText(/2줄 받는 중/)).toBeInTheDocument())
-    await user.click(screen.getByRole('button', { name: '멈추고 회차로 넣기' }))
+    await stopAndKeep(user)
 
     await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('CSV 헤더를 찾을 수 없습니다'))
     expect(screen.getByLabelText('시리얼 모니터 내용')).toHaveValue('0,20\n1000,22')
@@ -617,10 +633,10 @@ describe('USB로 바로 받기', () => {
     const user = userEvent.setup()
     render(<DataAnalysisPage />)
 
-    await user.click(screen.getByRole('button', { name: 'USB로 받기' }))
+    await user.click(screen.getByRole('button', { name: '연결' }))
 
     await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('시리얼 모니터'))
-    expect(screen.getByRole('button', { name: 'USB로 받기' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: '연결' })).toBeEnabled()
   })
 
   it('속도가 어긋나 글자가 깨지면 다른 속도를 권한다', async () => {
@@ -629,7 +645,7 @@ describe('USB로 바로 받기', () => {
     const user = userEvent.setup()
     render(<DataAnalysisPage />)
 
-    await user.click(screen.getByRole('button', { name: 'USB로 받기' }))
+    await connectAndStart(user)
     push(Uint8Array.from([0xff, 0xfe, 0x0d, 0x0a, 0xff, 0x0d, 0x0a, 0xfe, 0x0d, 0x0a]))
     await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('속도를 115200으로 바꿔'))
   })
@@ -640,14 +656,14 @@ describe('USB로 바로 받기', () => {
     const user = userEvent.setup()
     render(<DataAnalysisPage />)
 
-    await user.click(screen.getByRole('button', { name: 'USB로 받기' }))
+    await connectAndStart(user)
     push('time_ms,temperature_c,humidity_pct\r\n0,20,50\r\n')
     await waitFor(() => expect(screen.getByText(/2줄 받는 중/)).toBeInTheDocument())
 
     await paste(user, RUN_1)
     expect(screen.getByRole('status')).toHaveTextContent('1개 회차')
 
-    await user.click(screen.getByRole('button', { name: '멈추고 회차로 넣기' }))
+    await stopAndKeep(user)
 
     await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('2개 회차, 3개 열, 모두 4개 데이터 행'))
   })
@@ -659,7 +675,7 @@ describe('USB로 바로 받기', () => {
     const user = userEvent.setup()
     render(<DataAnalysisPage />)
 
-    await user.click(screen.getByRole('button', { name: 'USB로 받기' }))
+    await connectAndStart(user)
     push(['time_ms,distance_cm', ...Array.from({ length: 8 }, (_, i) => `${i * 100},${20 + i}`)].join('\r\n') + '\r\n')
 
     await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('다른 레시피의 코드'))
@@ -672,7 +688,7 @@ describe('USB로 바로 받기', () => {
     const user = userEvent.setup()
     render(<DataAnalysisPage />)
 
-    await user.click(screen.getByRole('button', { name: 'USB로 받기' }))
+    await connectAndStart(user)
     push(['time_ms,temperature_c', ...Array.from({ length: 8 }, (_, i) => `${i * 1000},-127.00`)].join('\r\n') + '\r\n')
 
     const warning = await screen.findByRole('alert', { name: '고장났을 때만 나오는 값이 보입니다' })
@@ -686,7 +702,7 @@ describe('USB로 바로 받기', () => {
     const user = userEvent.setup()
     render(<DataAnalysisPage />)
 
-    await user.click(screen.getByRole('button', { name: 'USB로 받기' }))
+    await connectAndStart(user)
     push(['time_ms,temperature_c', ...Array.from({ length: 8 }, (_, i) => `${i * 1000},-127.00`)].join('\r\n') + '\r\n')
     await waitFor(() => expect(screen.getByText(/9줄 받는 중/)).toBeInTheDocument())
 
@@ -699,7 +715,7 @@ describe('USB로 바로 받기', () => {
     const user = userEvent.setup()
     const { unmount } = render(<DataAnalysisPage />)
 
-    await user.click(screen.getByRole('button', { name: 'USB로 받기' }))
+    await connectAndStart(user)
     push('time_ms,temperature_c\r\n')
     await waitFor(() => expect(screen.getByText(/1줄 받는 중/)).toBeInTheDocument())
 

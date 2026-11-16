@@ -129,9 +129,9 @@ export function PowerCheckList({ checks, recipeId }: { checks: PowerCheck[]; rec
  * 아는 것(레시피, 속도, 어디까지 했는지)을 채워 두면 그만큼을 건너뜁니다.
  * 빈칸은 학생이 채워야 하는 것이라 지어내지 않고 그대로 둡니다.
  */
-export function HelpCard({ recipe, checkedSteps }: { recipe: Recipe; checkedSteps: number }) {
+export function HelpCard({ recipe, checkedSteps, totalSteps }: { recipe: Recipe; checkedSteps: number; totalSteps?: number }) {
   const [copied, setCopied] = useState<'idle' | 'copied' | 'failed'>('idle')
-  const text = helpCardText({ recipe, checkedSteps })
+  const text = helpCardText({ recipe, checkedSteps, totalSteps })
 
   async function copy() {
     try {
