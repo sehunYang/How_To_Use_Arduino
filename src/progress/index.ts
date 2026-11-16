@@ -1,4 +1,8 @@
-export const PROGRESS_VERSION = 1 as const
+/**
+ * 2: 배선 단계가 레시피의 배선 줄이 아니라 실제 선 하나씩(`wiringSequence`)이 되면서
+ * 칸의 수와 뜻이 바뀌었습니다. 1판의 체크를 그대로 읽으면 엉뚱한 선이 꽂힌 것으로 나옵니다.
+ */
+export const PROGRESS_VERSION = 2 as const
 const EMPTY_UPDATED_AT = new Date(0).toISOString()
 
 export interface WiringProgress {
@@ -50,7 +54,7 @@ export function saveProgress(progress: WiringProgress, storage?: Storage): void 
 
 /**
  * 탐구 가이드의 체크 목록. 배선 진행도(`WiringProgress`)와 따로 두는 이유는
- * 두 가지입니다. 배선은 단계 수가 `recipe.wiring.length`로 정해져 있어 번호로
+ * 두 가지입니다. 배선은 단계 수가 `wiringSequence(recipe).length`로 정해져 있어 번호로
  * 셀 수 있지만, 가이드의 항목은 본문을 고칠 때마다 개수와 자리가 바뀝니다.
  * 그래서 번호가 아니라 **항목의 글자 자체**를 열쇠로 씁니다. 문장을 고치면 그
  * 항목의 체크만 풀리고, 순서를 바꾸거나 항목을 더해도 나머지는 그대로입니다.

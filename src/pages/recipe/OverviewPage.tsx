@@ -23,7 +23,7 @@ function withoutApparatus(overview: string): string {
  * 합니다. 절 제목과 단계 번호는 탐구 설계·측정 화면과 같은 모양입니다.
  */
 export function OverviewPage() {
-  const { recipe, machine } = useRecipeContext()
+  const { recipe, wires, machine } = useRecipeContext()
   const guide = splitGuide(recipe.body)
   const apparatus = apparatusFor(recipe.body)
   const wiringDone = machine.checked.filter(Boolean).length
@@ -65,8 +65,8 @@ export function OverviewPage() {
                 </span>
                 {/* 배선만 진행이 숫자로 남습니다. 나머지 단계는 끝났는지를 화면이
                     알 방법이 없어, 아는 척하지 않고 아무 말도 하지 않습니다. */}
-                {step.path === 'wiring' && recipe.wiring.length > 0 && (
-                  <span className="shrink-0 text-caption text-muted">{wiringDone}/{recipe.wiring.length} 완료</span>
+                {step.path === 'wiring' && wires.length > 0 && (
+                  <span className="shrink-0 text-caption text-muted">{wiringDone}/{wires.length} 완료</span>
                 )}
               </Link>
             </li>

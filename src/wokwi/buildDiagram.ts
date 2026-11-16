@@ -84,17 +84,20 @@ export interface PlannedWiringConnection {
   stepIndex: number
 }
 
+/** 점퍼선 없이 다리를 브레드보드에 바로 꽂는 부품(LED, 저항, 커패시터 등)의 끝점인지. */
+export function isBoardMountedEndpoint(endpoint: string): boolean {
+  const token = endpoint.slice(0, endpoint.indexOf('.')).toUpperCase()
+  return /^LED(?:_\d+)?$/.test(token)
+    || /^BUZZER(?:_\d+)?$/.test(token)
+    || token.includes('RESISTOR')
+    || token.includes('CAPACITOR')
+    || token === 'DIODE'
+    || token === 'LOAD'
+    || token === 'LAMP'
+}
+
 export function planBreadboardWiring(recipe: Recipe): PlannedWiringConnection[] {
-  const boardMountedToken = (endpoint: string) => {
-    const token = endpoint.slice(0, endpoint.indexOf('.')).toUpperCase()
-    return /^LED(?:_\d+)?$/.test(token)
-      || /^BUZZER(?:_\d+)?$/.test(token)
-      || token.includes('RESISTOR')
-      || token.includes('CAPACITOR')
-      || token === 'DIODE'
-      || token === 'LOAD'
-      || token === 'LAMP'
-  }
+  const boardMountedToken = isBoardMountedEndpoint
   const adjacency = new Map<string, Set<string>>()
   const connect = (from: string, to: string) => {
     if (!adjacency.has(from)) adjacency.set(from, new Set())

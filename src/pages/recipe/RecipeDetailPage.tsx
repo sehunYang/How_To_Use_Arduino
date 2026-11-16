@@ -5,6 +5,7 @@ import { SimBadge } from '@/components/ui/SimBadge'
 import { canarySimStatus, studentRecipes } from '@/data/studentCatalog'
 import { INVENTORY_VERSION } from '@/data/inventory-seed/version'
 import { useWiringSteps } from '@/hooks/useWiringSteps'
+import { wiringSequence } from '@/recipes/wiringSequence'
 import { loadProgress, PROGRESS_VERSION, saveProgress } from '@/progress'
 import { sendAnonymousEvent } from '@/telemetry/events'
 import { authorizeAdminPreview, loadAdminPreviewRecipe } from '@/firebase/adminPreview'
@@ -61,8 +62,9 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
     studentRecipes.map((entry) => ({ id: entry.id, title: entry.title })))
   const bundledRecipe = studentRecipes.find((candidate) => candidate.id === id)
   const recipe = remoteRecipe ?? (publicCatalogStatus !== 'withdrawn' ? bundledRecipe : undefined)
-  const stored = useMemo(() => recipe ? loadProgress(recipe.id, recipe.wiring.length, typeof window === 'undefined' ? undefined : window.localStorage) : null, [recipe])
-  const machine = useWiringSteps(recipe?.wiring ?? [], stored?.checked)
+  const wires = useMemo(() => recipe ? wiringSequence(recipe) : [], [recipe])
+  const stored = useMemo(() => recipe ? loadProgress(recipe.id, wires.length, typeof window === 'undefined' ? undefined : window.localStorage) : null, [recipe, wires.length])
+  const machine = useWiringSteps(wires, stored?.checked)
 
   useEffect(() => {
     if (previewRequested) return
@@ -178,7 +180,7 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
   }
 
   return (
-    <RecipeContextProvider value={{ recipe, machine, catalog, toggleStep }}>
+    <RecipeContextProvider value={{ recipe, wires, machine, catalog, toggleStep }}>
       <article className="mx-auto max-w-6xl pb-24">
         {previewRequested && previewAuthorized && <div className="sticky top-16 z-30 -mx-page mb-4 bg-warning-background px-page py-2 text-center font-semibold text-warning">관리자 미리보기 · 학생 화면과 동일한 레이아웃</div>}
         <Link to="/recipes" className="text-caption text-accent hover:underline">← 레시피 목록</Link>
@@ -240,7 +242,7 @@ export function RecipeDetailPage({ previewServices = defaultPreviewServices }: {
               </details>
             ))}
           </div>
-          <HelpCard recipe={activeRecipe} checkedSteps={checkedSteps} />
+          <HelpCard recipe={activeRecipe} checkedSteps={checkedSteps} totalSteps={wires.length} />
         </section>
       </article>
     </RecipeContextProvider>

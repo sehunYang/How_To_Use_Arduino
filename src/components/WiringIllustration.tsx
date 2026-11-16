@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { wiringSequence } from '@/recipes/wiringSequence'
 import type { Recipe } from '@/schema'
 import { layoutForRecipe } from '@/wokwi/layoutRegistry'
 import { validateReadableLayout } from '@/wokwi/readableLayout'
 import { CircuitDiagram } from './CircuitDiagram'
 import { GeneratedWokwiDiagram } from './GeneratedWokwiDiagram'
 
+/** `activeStep`은 선 하나를 한 단계로 센 번호입니다(`wiringSequence`). */
 export function WiringIllustration({
   recipe,
   activeStep,
@@ -13,6 +15,7 @@ export function WiringIllustration({
   recipe: Recipe
   activeStep: number
 }) {
+  const wires = useMemo(() => wiringSequence(recipe), [recipe])
   const layout = useMemo(() => {
     const candidate = layoutForRecipe(recipe)
     return candidate && validateReadableLayout(candidate).length === 0 ? candidate : null
@@ -130,9 +133,11 @@ export function WiringIllustration({
    * 담아, 그림을 볼 수 없어도 이번 단계에 무엇을 해야 하는지 알 수 있게 합니다.
    */
   const panHintId = `wiring-pan-hint-${recipe.id}`
-  const step = recipe.wiring[activeStep]
+  const step = wires[activeStep]
   const stepDescription = step
-    ? ` 지금은 ${activeStep + 1}단계로, ${step.from}과(와) ${step.to}을(를) ${step.color} 점퍼선으로 잇습니다.`
+    ? step.kind === 'leg'
+      ? ` 지금은 ${activeStep + 1}단계로, ${step.from}의 다리를 ${step.to}에 꽂습니다.`
+      : ` 지금은 ${activeStep + 1}단계로, ${step.from}과(와) ${step.to}을(를) ${step.color} 점퍼선으로 잇습니다.`
     : ''
 
   return (
@@ -199,9 +204,10 @@ export function WiringIllustration({
           style={{ transform: `translate(${view.x}px, ${view.y}px) scale(${view.scale})` }}
         >
           {layout ? (
-            <CircuitDiagram layout={layout} activeStep={activeStep} title={recipe.title} />
+            // 직접 그린 배선도는 선을 레시피의 배선 줄마다 하나씩 그려 두었습니다.
+            <CircuitDiagram layout={layout} activeStep={step?.recipeStep ?? 0} title={recipe.title} />
           ) : (
-            <GeneratedWokwiDiagram recipe={recipe} activeStep={activeStep} />
+            <GeneratedWokwiDiagram recipe={recipe} activeWire={activeStep} />
           )}
         </div>
         <figcaption

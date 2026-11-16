@@ -23,6 +23,7 @@ import { RecipeListPage } from './RecipeListPage'
 import { progressKey } from '@/progress'
 import { WiringIllustration } from '@/components/WiringIllustration'
 import { pendulumRecipe } from '@/data/canary'
+import { wiringSequence } from '@/recipes/wiringSequence'
 
 function renderAt(path: string, element: ReactNode, route = path.split('?')[0]) {
   window.history.replaceState({}, '', path)
@@ -108,22 +109,29 @@ describe('Phase 3 student flow', () => {
 
   it('advances wiring focus, persists progress, and reverses on uncheck', async () => {
     renderStep('wiring')
-    const checks = screen.getAllByRole('checkbox')
+    const total = wiringSequence(pendulumRecipe).length
+    const checks = within(screen.getByTestId('wiring-steps')).getAllByRole('checkbox')
+    expect(checks).toHaveLength(total)
     await userEvent.click(checks[0])
-    expect(screen.getByText('1/4 완료')).toBeInTheDocument()
+    expect(screen.getByText(`1/${total} 완료`)).toBeInTheDocument()
     expect(JSON.parse(window.localStorage.getItem(progressKey('pendulum')) ?? '{}').checked[0]).toBe(true)
     await userEvent.click(checks[0])
-    expect(screen.getByText('0/4 완료')).toBeInTheDocument()
+    expect(screen.getByText(`0/${total} 완료`)).toBeInTheDocument()
   })
 
-  it('names exact breadboard holes in the wiring instructions', () => {
-    renderStep('wiring')
+  it('names exact breadboard holes in the wiring instructions, one wire per step', () => {
+    const { container } = renderStep('wiring')
 
-    expect(screen.getByText('MPU6050.VCC → BB.tp.5')).toBeInTheDocument()
-    expect(screen.getByText('UNO.5V → BB.tp.1')).toBeInTheDocument()
-    expect(screen.getByText('MPU6050.GND → BB.tn.5')).toBeInTheDocument()
-    expect(screen.getByText('UNO.GND → BB.tn.1')).toBeInTheDocument()
-    expect(screen.getByText('MPU6050.SDA → UNO.A4')).toBeInTheDocument()
+    const steps = Array.from(container.querySelectorAll('[data-testid="wiring-steps"] > li strong'), (node) => node.textContent?.replace(/^\d+\.\s*/, ''))
+    expect(steps).toEqual(expect.arrayContaining([
+      'MPU6050.VCC → 브레드보드 위쪽 빨강(+) 줄 5번 구멍',
+      'UNO.5V → 브레드보드 위쪽 빨강(+) 줄 1번 구멍',
+      'MPU6050.GND → 브레드보드 위쪽 파랑(−) 줄 5번 구멍',
+      'UNO.GND → 브레드보드 위쪽 파랑(−) 줄 1번 구멍',
+      'MPU6050.SDA → UNO.A4',
+    ]))
+    // 한 단계에는 선이 하나뿐입니다.
+    for (const step of steps) expect(step?.match(/→/g)).toHaveLength(1)
   })
 
   /**
@@ -248,9 +256,9 @@ describe('Phase 3 student flow', () => {
     ['Firebase Storage URL', 'https://firebasestorage.googleapis.com/v0/b/example/o/wiring%2Fcircuit.svg?alt=media'],
   ])('renders the same validated vector circuit for a %s source', (_, imageUrl) => {
     const { container } = render(
-      <WiringIllustration recipe={{ ...pendulumRecipe, imageUrl }} activeStep={0} />,
+      <WiringIllustration recipe={{ ...pendulumRecipe, imageUrl }} activeStep={1} />,
     )
-    expect(screen.getByRole('img', { name: /1단계까지 연결됨/ })).toBeTruthy()
+    expect(screen.getByRole('img', { name: /2단계까지 연결됨/ })).toBeTruthy()
     const svg = container.querySelector('svg')
     expect(svg).toBeInTheDocument()
     expect(svg).toHaveAttribute('viewBox')
@@ -459,7 +467,7 @@ describe('처음인 학생이 멈추던 자리', () => {
     renderStep('')
 
     const card = screen.getByRole('heading', { name: /선생님께 보여 줄 카드/ }).closest('div')!
-    expect(card).toHaveTextContent(`${pendulumRecipe.wiring.length}단계 중 0단계까지 확인함`)
+    expect(card).toHaveTextContent(`${wiringSequence(pendulumRecipe).length}단계 중 0단계까지 확인함`)
     expect(card).toHaveTextContent('115200 baud')
     // 학생이 채울 자리를 지어내지 않습니다.
     expect(card).toHaveTextContent('무엇이 안 되나요:')
