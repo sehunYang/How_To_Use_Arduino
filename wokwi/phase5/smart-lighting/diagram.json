@@ -1,0 +1,185 @@
+{
+  "version": 1,
+  "author": "smart-lighting",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "id": "uno",
+      "type": "wokwi-arduino-uno",
+      "top": 0,
+      "left": 0
+    },
+    {
+      "id": "bb",
+      "type": "wokwi-breadboard-half",
+      "top": 0,
+      "left": 100
+    },
+    {
+      "id": "hc-sr501",
+      "type": "wokwi-pir-motion-sensor",
+      "top": 0,
+      "left": 100
+    },
+    {
+      "id": "cds",
+      "type": "chip-cds",
+      "top": 0,
+      "left": 200,
+      "attrs": {
+        "nodePin": "2",
+        "fixedOhms": "10000",
+        "supplyVolts": "5"
+      }
+    },
+    {
+      "id": "cds_resistor",
+      "type": "wokwi-resistor",
+      "top": 0,
+      "left": 300,
+      "attrs": {
+        "value": "10000"
+      }
+    },
+    {
+      "id": "relay",
+      "type": "wokwi-relay-module",
+      "top": 0,
+      "left": 400
+    },
+    {
+      "id": "lamp_supply",
+      "type": "wokwi-slide-potentiometer",
+      "top": 0,
+      "left": 500
+    },
+    {
+      "id": "lamp",
+      "type": "wokwi-resistor",
+      "top": 0,
+      "left": 600
+    }
+  ],
+  "connections": [
+    [
+      "hc-sr501:VCC",
+      "bb:tp.5",
+      "red",
+      []
+    ],
+    [
+      "uno:5V",
+      "bb:tp.1",
+      "red",
+      []
+    ],
+    [
+      "hc-sr501:GND",
+      "bb:tn.5",
+      "black",
+      []
+    ],
+    [
+      "uno:GND",
+      "bb:tn.1",
+      "black",
+      []
+    ],
+    [
+      "bb:tn.13",
+      "bb:4t.a",
+      "black",
+      []
+    ],
+    [
+      "hc-sr501:OUT",
+      "uno:2",
+      "yellow",
+      []
+    ],
+    [
+      "cds:L1",
+      "bb:tp.13",
+      "red",
+      []
+    ],
+    [
+      "cds:L2",
+      "bb:2t.a",
+      "blue",
+      []
+    ],
+    [
+      "cds_resistor:1",
+      "bb:2t.e",
+      "blue",
+      []
+    ],
+    [
+      "uno:A0",
+      "bb:2t.b",
+      "blue",
+      []
+    ],
+    [
+      "cds_resistor:2",
+      "bb:4t.e",
+      "black",
+      []
+    ],
+    [
+      "relay:VCC",
+      "bb:tp.9",
+      "red",
+      []
+    ],
+    [
+      "relay:GND",
+      "bb:tn.9",
+      "black",
+      []
+    ],
+    [
+      "relay:IN",
+      "uno:7",
+      "orange",
+      []
+    ],
+    [
+      "lamp_supply:SIG",
+      "bb:1t.a",
+      "red",
+      []
+    ],
+    [
+      "relay:COM",
+      "bb:1t.b",
+      "red",
+      []
+    ],
+    [
+      "relay:NO",
+      "bb:7t.a",
+      "purple",
+      []
+    ],
+    [
+      "lamp:1",
+      "bb:7t.e",
+      "purple",
+      []
+    ],
+    [
+      "lamp:2",
+      "bb:9t.e",
+      "black",
+      []
+    ],
+    [
+      "lamp_supply:GND",
+      "bb:9t.a",
+      "black",
+      []
+    ]
+  ]
+}

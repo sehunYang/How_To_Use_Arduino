@@ -958,6 +958,7 @@ export const phase7Plans: Record<string, InquiryPlan> = {
       { sign: '차가 선을 무시하고 곧장 나갑니다', meaning: '센서가 너무 높거나 두 센서가 붙어 있어 차이가 생기지 않습니다.' },
       { sign: '좌우로 심하게 흔들립니다', meaning: '민감도가 큽니다. 절반으로 줄이고 기본 속도도 낮추세요.' },
       { sign: '항상 한쪽으로만 돕니다', meaning: '두 CDS의 개체 차이입니다. 흰 종이 위 영점을 빼세요.' },
+      { sign: '선에 닿자마자 선 반대쪽으로 꺾여 나갑니다', meaning: '선 쪽 바퀴가 느려져야 하는데 거꾸로입니다. 왼쪽 CDS를 가렸을 때 left_speed가 줄어드는지 보고, 아니면 두 모터 배선을 서로 바꾸세요.' },
     ],
     extensions: {
       immediate: '기본 속도를 낮춰 같은 민감도에서 흔들림이 줄어드는지 확인하세요.',

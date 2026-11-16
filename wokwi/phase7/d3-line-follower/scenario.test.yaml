@@ -1,0 +1,24 @@
+name: Phase 5 behavior - d3-line-follower
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "time_ms,left_adc,right_adc,left_speed,right_speed"
+  - delay: 600ms
+  - set-control:
+      part-id: cds_1
+      control: lux
+      value: 20
+  - set-control:
+      part-id: cds_2
+      control: lux
+      value: 300
+  - delay: 600ms
+  - set-control:
+      part-id: cds_1
+      control: lux
+      value: 300
+  - set-control:
+      part-id: cds_2
+      control: lux
+      value: 20
+  - delay: 600ms

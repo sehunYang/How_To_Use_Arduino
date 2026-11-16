@@ -17,9 +17,14 @@
     },
     {
       "id": "ina219",
-      "type": "chip-ina219",
+      "type": "chip-ina219rc",
       "top": 0,
-      "left": 100
+      "left": 100,
+      "attrs": {
+        "sourceVolts": "5",
+        "seriesOhms": "1000",
+        "capacitanceUf": "1000"
+      }
     },
     {
       "id": "battery",

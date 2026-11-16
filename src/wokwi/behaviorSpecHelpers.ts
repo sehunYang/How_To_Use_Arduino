@@ -3,7 +3,7 @@
  * types, scenario step and expectation shorthands, and per-sensor helpers.
  */
 
-import { tsl2591Lux } from './sensorOracles'
+import { cdsDividerAdc, tsl2591Lux } from './sensorOracles'
 
 export type ScenarioStep =
   | { set: { partId: string; control: string; value: number } }
@@ -108,6 +108,9 @@ export const echo = (cm: number, unit: 'cm' | 'm' = 'cm') => {
 /** 10-bit ADC reading for a potentiometer at `position` of 5 V. */
 export const adc = (position: number) => approx(Math.min(1023, Math.round(position * 1023)), 3)
 
+/** 10-bit reading of a recipe's CdS divider (10 kΩ to GND) under `lux`; the chip refreshes every 1 ms. */
+export const cdsAdc = (lux: number) => approx(cdsDividerAdc(lux), 3)
+
 export function ds18b20Temperature(column: string, partId: string, values: number[], format: (t: number) => string) {
   return values.map<BehaviorPhase>((value, index) => ({
     label: `${partId} at ${value} °C`,
@@ -130,6 +133,19 @@ export const lux = (ch0Raw: number, ch1Raw: number, gain: number) => {
   const value = tsl2591Lux(ch0Raw, ch1Raw, gain)
   return approx(value, Math.max(0.02, Math.abs(value) * 0.001))
 }
+
+/** Steps that set the light on the TSL2591 at a TCA9548A channel (chips/tca9548a.chip.c). */
+export const tcaLight = (partId: string, channel: number, ch0: number, ch1: number): ScenarioStep[] => [
+  set(partId, `ch0Raw${channel}`, ch0),
+  set(partId, `ch1Raw${channel}`, ch1),
+]
+
+/** Rows that must visit `channels` in order, over and over. */
+export const cyclesThrough = (column: string, channels: readonly number[]) => (rows: readonly ParsedRow[]) =>
+  rows.flatMap((row, index) => {
+    const expected = channels[index % channels.length]
+    return row.values[column] === expected ? [] : [`row ${index + 1}: ${column} ${row.values[column]}, expected ${expected}`]
+  })
 
 /** Raw light that falls off with the inverse square of distance from a lamp. */
 export const lampAt = (distanceM: number) => {

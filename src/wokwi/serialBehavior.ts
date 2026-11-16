@@ -16,12 +16,22 @@ export interface SerialBehaviorResult {
  * that row in two (wokwi-cli TestScenario.log). Given the CSV's column count,
  * a fragment and its continuation are rejoined when only together they form
  * one row.
+ *
+ * A fragment after a complete-looking row is either the tail of that row's
+ * last cell or the head of the next row, and column counts alone cannot tell
+ * "…,62.5" + "0" from "…,62.50" + "365" + "9,…". The first column, usually a
+ * timestamp, settles it: the head reading is taken only when the row it forms
+ * moves forward and the tail reading would leave the next row going backwards.
  */
 export function serialFromCliOutput(stdout: string, columnCount?: number): string {
   const lines = stdout.split(/\r?\n/)
   const start = lines.findIndex((line) => line.trim() === 'Starting simulation...')
   const columns = (line: string) => line.split(',').length
-  const serial: string[] = []
+  const first = (line: string) => {
+    const cell = line.split(',')[0]
+    return /^(0|[1-9]\d*)(\.\d+)?$/.test(cell) ? Number(cell) : undefined
+  }
+  const pieces: { line: string; interrupted: boolean }[] = []
   let interrupted = false
   for (const line of lines.slice(start + 1)) {
     if (/^\[[^\]]+\] /.test(line)) {
@@ -29,17 +39,33 @@ export function serialFromCliOutput(stdout: string, columnCount?: number): strin
       continue
     }
     if (line.trim() === '') continue
+    pieces.push({ line, interrupted })
+    interrupted = false
+  }
+
+  const serial: string[] = []
+  for (const [index, { line, interrupted }] of pieces.entries()) {
     const previous = serial[serial.length - 1]
     if (interrupted && columnCount !== undefined && previous !== undefined) {
       const joined = previous + line
-      const wasCut = columns(previous) !== columnCount || columns(line) !== columnCount || previous.endsWith(',')
-      if (wasCut && columns(joined) === columnCount) {
+      const previousComplete = columns(previous) === columnCount && !previous.endsWith(',')
+      const startsRow = (() => {
+        if (!previousComplete || columns(line) >= columnCount) return false
+        const next = pieces[index + 1]
+        if (next === undefined || !next.interrupted) return false
+        const head = first(line + next.line)
+        if (columns(line + next.line) !== columnCount || head === undefined) return false
+        const before = first(previous)
+        if (before !== undefined && head < before) return false
+        const tail = first(next.line)
+        return columns(next.line) !== columnCount || tail === undefined || (before !== undefined && tail < before)
+      })()
+      const wasCut = !previousComplete || columns(line) !== columnCount
+      if (!startsRow && wasCut && columns(joined) === columnCount) {
         serial[serial.length - 1] = joined
-        interrupted = false
         continue
       }
     }
-    interrupted = false
     serial.push(line)
   }
   return serial.join('\n')

@@ -1,6 +1,7 @@
 import type { Recipe, Sensor } from '@/schema'
 import { phase5BehaviorSpecById, type Phase5BehaviorSpec, type ScenarioStep } from './behaviorSpecs'
 import { buildDiagram, type Diagram } from './buildDiagram'
+import { recipeNetlist } from './netlist'
 import type { EligiblePhase5Simulation } from './phase5SimulationRegistry'
 
 export const PHASE5_WOKWI_ROOT = 'wokwi/phase5'
@@ -8,6 +9,10 @@ export const PHASE5_WOKWI_MANIFEST_VERSION = 1
 
 const CUSTOM_CHIP_BY_PART_TYPE: Readonly<Record<string, string>> = {
   'chip-bme280': 'bme280',
+  'chip-cds': 'cds',
+  'chip-ina219rc': 'ina219rc',
+  'chip-mpu6050aux': 'mpu6050aux',
+  'chip-tca9548a': 'tca9548a',
   'chip-ina219': 'ina219',
   'chip-tsl2591': 'tsl2591',
 }
@@ -60,6 +65,174 @@ function simulatable(diagram: Diagram): Diagram {
   }
 }
 
+/**
+ * Swaps each CdS illustration for the divider chip (chips/cds.chip.c). The chip
+ * drives the analog node itself, so the generator first proves the recipe wires
+ * the divider the way the chip models it: one leg on 5 V, the other on an analog
+ * pin that a single resistor pulls to GND.
+ */
+function withCdsChips(diagram: Diagram, recipe: Recipe, sensors: Sensor[]): Diagram {
+  if (!diagram.parts.some((part) => part.type === 'visual-cds')) return diagram
+  const nets = recipeNetlist(recipe, sensors)
+  const netOf = (pin: string) => nets.find((net) => net.includes(pin)) ?? [pin]
+  const resistorOhms = new Map(diagram.parts
+    .filter((part) => part.type === 'wokwi-resistor')
+    .map((part) => [part.id, Number(part.attrs?.value)]))
+  const parts = diagram.parts.map((part) => {
+    if (part.type !== 'visual-cds') return part
+    const fail = (why: string): never => {
+      throw new Error(`Phase 5 Wokwi generation: ${recipe.id} ${part.id} ${why}`)
+    }
+    const legs = ([1, 2] as const).map((leg) => ({ leg, net: netOf(`${part.id}:L${leg}`) }))
+    const supply = legs.find(({ net }) => net.includes('uno:5V')) ?? fail('has no leg on 5V')
+    const node = legs.find(({ leg }) => leg !== supply.leg)!
+    if (!node.net.some((pin) => /^uno:A\d$/.test(pin))) fail('does not feed an analog pin')
+    const pulls = node.net.filter((pin) => resistorOhms.has(pin.split(':')[0]))
+    if (pulls.length !== 1) fail(`needs exactly one resistor on its analog node, found ${pulls.length}`)
+    const [resistor, end] = pulls[0].split(':')
+    if (!netOf(`${resistor}:${end === '1' ? '2' : '1'}`).includes('uno:GND')) fail(`resistor ${resistor} does not reach GND`)
+    const fixedOhms = resistorOhms.get(resistor)!
+    if (!(fixedOhms > 0)) fail(`resistor ${resistor} has no value`)
+    return { ...part, type: 'chip-cds', attrs: { nodePin: String(node.leg), fixedOhms: String(fixedOhms), supplyVolts: '5' } }
+  })
+  return { ...diagram, parts }
+}
+
+/**
+ * Swaps each TCA9548A for the switch chip (chips/tca9548a.chip.c). A Wokwi chip
+ * cannot drive a second I2C bus, so the TSL2591s wired to the switch's channels
+ * move inside it: the generator reads which channel each one sits on, drops the
+ * separate parts, and tells the chip which channels carry a sensor. Their light
+ * controls become `ch0Raw<n>`/`ch1Raw<n>` on the switch.
+ */
+function withTcaChips(diagram: Diagram, recipe: Recipe, sensors: Sensor[]): Diagram {
+  if (!diagram.parts.some((part) => part.type === 'custom-tca9548a')) return diagram
+  const nets = recipeNetlist(recipe, sensors)
+  const netOf = (pin: string) => nets.find((net) => net.includes(pin)) ?? [pin]
+  const typeOf = new Map(diagram.parts.map((part) => [part.id, part.type]))
+  const absorbed = new Set<string>()
+  const parts = diagram.parts.map((part) => {
+    if (part.type !== 'custom-tca9548a') return part
+    const fail = (why: string): never => {
+      throw new Error(`Phase 5 Wokwi generation: ${recipe.id} ${part.id} ${why}`)
+    }
+    // The breakout pulls A0-A2 down, so an unwired strap reads 0.
+    const address = [0, 1, 2].reduce((sum, bit) => {
+      const net = netOf(`${part.id}:A${bit}`)
+      if (net.includes('uno:5V')) return sum + (1 << bit)
+      if (net.length === 1 || net.includes('uno:GND')) return sum
+      return fail(`A${bit} is on neither 5V nor GND`)
+    }, 0x70)
+    let tslMask = 0
+    for (let channel = 0; channel < 8; channel += 1) {
+      const others = (pin: string) => netOf(`${part.id}:${pin}${channel}`).filter((other) => !other.startsWith(`${part.id}:`))
+      const sda = others('SD')
+      const scl = others('SC')
+      if (sda.length === 0 && scl.length === 0) continue
+      const sensor = sda[0]?.split(':')[0]
+      if (sda.length !== 1 || scl.length !== 1 || sda[0] !== `${sensor}:SDA` || scl[0] !== `${sensor}:SCL`) {
+        fail(`channel ${channel} must carry exactly one sensor's SDA and SCL, found ${[...sda, ...scl].join(', ')}`)
+      }
+      if (typeOf.get(sensor) !== 'chip-tsl2591') fail(`channel ${channel} carries ${sensor}; the switch chip only models TSL2591s`)
+      absorbed.add(sensor)
+      tslMask |= 1 << channel
+    }
+    return { ...part, type: 'chip-tca9548a', attrs: { address: String(address), tslMask: String(tslMask) } }
+  })
+  const touches = (endpoint: string) => absorbed.has(endpoint.split(':')[0])
+  return {
+    ...diagram,
+    parts: parts.filter((part) => !absorbed.has(part.id)),
+    connections: diagram.connections.filter(([from, to]) => !touches(from) && !touches(to)),
+  }
+}
+
+/**
+ * Swaps an MPU6050 with a TSL2591 on its auxiliary bus for chips/mpu6050aux.chip.c:
+ * Wokwi's MPU6050 has no auxiliary I2C master, so the TSL2591 moves inside the
+ * chip, its light controls with it. MPU6050s with nothing on XDA/XCL keep
+ * Wokwi's own part.
+ */
+function withAuxMpuChips(diagram: Diagram, recipe: Recipe, sensors: Sensor[]): Diagram {
+  if (!diagram.parts.some((part) => part.type === 'wokwi-mpu6050')) return diagram
+  const nets = recipeNetlist(recipe, sensors)
+  const netOf = (pin: string) => nets.find((net) => net.includes(pin)) ?? [pin]
+  const typeOf = new Map(diagram.parts.map((part) => [part.id, part.type]))
+  const absorbed = new Set<string>()
+  const parts = diagram.parts.map((part) => {
+    if (part.type !== 'wokwi-mpu6050') return part
+    const others = (pin: string) => netOf(`${part.id}:${pin}`).filter((other) => !other.startsWith(`${part.id}:`))
+    const xda = others('XDA')
+    const xcl = others('XCL')
+    if (xda.length === 0 && xcl.length === 0) return part
+    const fail = (why: string): never => {
+      throw new Error(`Phase 5 Wokwi generation: ${recipe.id} ${part.id} ${why}`)
+    }
+    const sensor = xda[0]?.split(':')[0]
+    if (xda.length !== 1 || xcl.length !== 1 || xda[0] !== `${sensor}:SDA` || xcl[0] !== `${sensor}:SCL`) {
+      fail(`auxiliary bus must carry exactly one sensor's SDA and SCL, found ${[...xda, ...xcl].join(', ')}`)
+    }
+    if (typeOf.get(sensor) !== 'chip-tsl2591') fail(`auxiliary bus carries ${sensor}; the chip only models a TSL2591 there`)
+    if (netOf(`${part.id}:AD0`).includes('uno:5V')) fail('has AD0 high; the auxiliary-bus chip answers at 0x68 only')
+    absorbed.add(sensor)
+    return { ...part, type: 'chip-mpu6050aux', attrs: { ...part.attrs, tslOnAux: '1' } }
+  })
+  const touches = (endpoint: string) => absorbed.has(endpoint.split(':')[0])
+  return {
+    ...diagram,
+    parts: parts.filter((part) => !absorbed.has(part.id)),
+    connections: diagram.connections.filter(([from, to]) => !touches(from) && !touches(to)),
+  }
+}
+
+/**
+ * Swaps the INA219 on an RC charging branch for chips/ina219rc.chip.c. Wokwi has
+ * no capacitor, so the chip charges one itself: it drives the capacitor node
+ * that the INA219's VIN- and an analog pin share, and reports the same charging
+ * current through the INA219 registers. The generator proves the branch is
+ * source → resistor → VIN+ … VIN- → capacitor → GND and takes the capacitance
+ * from the wiring text the student follows. Other capacitors (e.g. ph17's PWM
+ * filter) stay illustrations.
+ */
+function withRcChips(diagram: Diagram, recipe: Recipe, sensors: Sensor[]): Diagram {
+  if (!diagram.parts.some((part) => part.type === 'visual-capacitor')) return diagram
+  const nets = recipeNetlist(recipe, sensors)
+  const netOf = (pin: string) => nets.find((net) => net.includes(pin)) ?? [pin]
+  const typeOf = new Map(diagram.parts.map((part) => [part.id, part.type]))
+  const resistorOhms = new Map(diagram.parts
+    .filter((part) => part.type === 'wokwi-resistor')
+    .map((part) => [part.id, Number(part.attrs?.value)]))
+  const swaps = new Map<string, Record<string, string>>()
+  for (const capacitor of diagram.parts.filter((part) => part.type === 'visual-capacitor')) {
+    const plus = netOf(`${capacitor.id}:1`)
+    const meter = diagram.parts.find((part) => part.type === 'chip-ina219' && plus.includes(`${part.id}:VIN-`))
+    if (!meter || !plus.some((pin) => /^uno:A\d$/.test(pin))) continue
+    const fail = (why: string): never => {
+      throw new Error(`Phase 5 Wokwi generation: ${recipe.id} ${capacitor.id} ${why}`)
+    }
+    if (!netOf(`${capacitor.id}:2`).includes('uno:GND')) fail('negative leg does not reach GND')
+    const series = netOf(`${meter.id}:VIN+`).filter((pin) => resistorOhms.has(pin.split(':')[0]))
+    if (series.length !== 1) fail(`needs exactly one resistor into ${meter.id} VIN+, found ${series.length}`)
+    const [resistor, end] = series[0].split(':')
+    const supply = netOf(`${resistor}:${end === '1' ? '2' : '1'}`)
+    if (!supply.some((pin) => typeOf.get(pin.split(':')[0]) === 'wokwi-slide-potentiometer')) fail(`resistor ${resistor} does not reach the supply`)
+    const microfarads = new Set(recipe.wiring
+      .filter((step) => [step.from, step.to].some((ref) => ref.startsWith('CAPACITOR')))
+      .flatMap((step) => [...step.text.matchAll(/(\d+(?:\.\d+)?)\s*µF/g)].map((match) => Number(match[1]))))
+    if (microfarads.size !== 1) fail(`wiring text names ${microfarads.size} capacitances, expected one`)
+    swaps.set(meter.id, {
+      sourceVolts: '5',
+      seriesOhms: String(resistorOhms.get(resistor)),
+      capacitanceUf: String([...microfarads][0]),
+    })
+  }
+  if (swaps.size === 0) return diagram
+  return {
+    ...diagram,
+    parts: diagram.parts.map((part) => swaps.has(part.id) ? { ...part, type: 'chip-ina219rc', attrs: swaps.get(part.id) } : part),
+  }
+}
+
 function instrumentSketch(recipeId: string, sketch: string): string {
   const serialBegin = /Serial\.begin\(([^;]+)\);/
   if (!serialBegin.test(sketch)) {
@@ -89,7 +262,8 @@ export function buildPhase5WokwiProjects(
     const path = `${root}/${entry.recipeId}`
     const timeoutMs = behavior?.timeoutMs ?? entry.timeoutMs
     const scenario = 'scenario.test.yaml'
-    const diagram = simulatable(buildDiagram(recipe, sensors))
+    const standIns = [withCdsChips, withTcaChips, withAuxMpuChips, withRcChips]
+    const diagram = simulatable(standIns.reduce((built, swap) => swap(built, recipe, sensors), buildDiagram(recipe, sensors)))
     const chips = chipsOf(diagram)
 
     return {

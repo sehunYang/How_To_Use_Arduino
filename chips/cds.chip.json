@@ -1,0 +1,15 @@
+{
+  "name": "CdS Photoresistor Divider",
+  "author": "sehunYang",
+  "pins": ["L1", "L2"],
+  "controls": [
+    {
+      "id": "lux",
+      "label": "Illuminance (lux)",
+      "type": "range",
+      "min": 0,
+      "max": 10000,
+      "step": 1
+    }
+  ]
+}

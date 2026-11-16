@@ -1,11 +1,8 @@
 {
   "version": 1,
   "generatedFrom": "phase5SimulationRegistry",
-  "projectCount": 34,
-  "exclusions": [
-    "b7-woodlouse-phototaxis",
-    "d3-line-follower"
-  ],
+  "projectCount": 36,
+  "exclusions": [],
   "projects": [
     {
       "id": "a1-led-brightness",
@@ -137,6 +134,18 @@
       "fingerprint": "e89387dd97185ddf"
     },
     {
+      "id": "b7-woodlouse-phototaxis",
+      "path": "wokwi/phase7/b7-woodlouse-phototaxis",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase7/b7-woodlouse-phototaxis --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "cds"
+      ],
+      "fingerprint": "40cfd9543cc4970a"
+    },
+    {
       "id": "b8-seed-germination-gdd",
       "path": "wokwi/phase7/b8-seed-germination-gdd",
       "kind": "behavior",
@@ -257,6 +266,18 @@
       "fingerprint": "fe78aa079c90cf4d"
     },
     {
+      "id": "d3-line-follower",
+      "path": "wokwi/phase7/d3-line-follower",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase7/d3-line-follower --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "cds"
+      ],
+      "fingerprint": "2226f1f105099377"
+    },
+    {
       "id": "d4-parking-barrier",
       "path": "wokwi/phase7/d4-parking-barrier",
       "kind": "behavior",
@@ -348,7 +369,7 @@
       "chips": [
         "ina219"
       ],
-      "fingerprint": "8573605d9af30b6b"
+      "fingerprint": "1323f00c2a22ef7a"
     },
     {
       "id": "f2-solar-panel-power",

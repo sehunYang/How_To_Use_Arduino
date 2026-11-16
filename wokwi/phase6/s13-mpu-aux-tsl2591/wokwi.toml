@@ -5,5 +5,5 @@ firmware = "firmware.hex"
 elf = "firmware.elf"
 
 [[chip]]
-name = "tsl2591"
-binary = "tsl2591.chip.wasm"
+name = "mpu6050aux"
+binary = "mpu6050aux.chip.wasm"

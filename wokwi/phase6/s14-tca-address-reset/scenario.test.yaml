@@ -1,0 +1,6 @@
+name: Phase 5 behavior - s14-tca-address-reset
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "time_ms,mux_0x70_recovery_us,mux_0x70_channels,mux_0x71_recovery_us,mux_0x71_channels"
+  - delay: 4500ms

@@ -3,6 +3,8 @@ import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { sensors } from '@/data/inventory-seed/sensors'
 import { phase5Recipes } from '@/data/phase5'
+import { phase6Recipes } from '@/data/phase6'
+import { phase7Recipes } from '@/data/phase7'
 import {
   buildPhase5WokwiManifest,
   buildPhase5WokwiProjects,
@@ -27,17 +29,10 @@ describe('Phase 5 Wokwi project generation', () => {
     const projects = buildPhase5WokwiProjects(eligible, phase5Recipes, sensors)
     const manifest = buildPhase5WokwiManifest(projects, excluded)
 
-    expect(projects).toHaveLength(28)
-    expect(manifest.projectCount).toBe(28)
-    expect(manifest.exclusions).toEqual([
-      'S4',
-      'S9',
-      'e5-spatial-light-map',
-      'night-activity',
-      'light-follow-car',
-      'smart-lighting',
-    ])
-    expect(new Set(projects.map((project) => project.id)).size).toBe(28)
+    expect(projects).toHaveLength(34)
+    expect(manifest.projectCount).toBe(34)
+    expect(manifest.exclusions).toEqual([])
+    expect(new Set(projects.map((project) => project.id)).size).toBe(34)
     expect(projects.some((project) => excluded.includes(project.id))).toBe(false)
   })
 
@@ -118,4 +113,55 @@ describe('Phase 6 and 7 Wokwi project generation', () => {
       }
     })
   }
+})
+
+describe('simulation stand-ins for parts Wokwi lacks', () => {
+  const allRecipes = [...phase5Recipes, ...phase6Recipes, ...phase7Recipes]
+  const project = (id: string) => {
+    const entry = simulationPhases.flatMap((phase) => phase.registry).find((candidate) => candidate.recipeId === id)
+    if (!entry?.eligible) throw new Error(`${id} is not simulatable`)
+    return buildPhase5WokwiProjects([entry], allRecipes, sensors)[0]
+  }
+
+  it('drives each CdS divider from a chip told which leg is the analog node', () => {
+    const parts = project('light-follow-car').diagram.parts.filter((part) => part.type === 'chip-cds')
+    expect(parts.map((part) => [part.id, part.attrs])).toEqual([
+      ['cds_1', { nodePin: '2', fixedOhms: '10000', supplyVolts: '5' }],
+      ['cds_2', { nodePin: '2', fixedOhms: '10000', supplyVolts: '5' }],
+    ])
+    expect(project('light-follow-car').chips).toEqual(['cds'])
+  })
+
+  it('folds the TSL2591s behind a TCA9548A into the switch chip', () => {
+    const { diagram, chips } = project('S9')
+    expect(diagram.parts.find((part) => part.id === 'tca9548a')).toMatchObject({ type: 'chip-tca9548a', attrs: { address: '112', tslMask: '3' } })
+    expect(diagram.parts.some((part) => part.type === 'chip-tsl2591')).toBe(false)
+    expect(diagram.connections.some(([from, to]) => /^tsl2591/.test(from) || /^tsl2591/.test(to))).toBe(false)
+    expect(chips).toEqual(['tca9548a'])
+  })
+
+  it('moves a TSL2591 on the MPU6050 auxiliary bus into the MPU chip', () => {
+    const { diagram, chips } = project('s13-mpu-aux-tsl2591')
+    expect(diagram.parts.find((part) => part.id === 'mpu6050')).toMatchObject({ type: 'chip-mpu6050aux', attrs: { tslOnAux: '1' } })
+    expect(diagram.parts.some((part) => part.type === 'chip-tsl2591')).toBe(false)
+    expect(chips).toEqual(['mpu6050aux'])
+    // MPU6050s with nothing on XDA/XCL keep Wokwi's own part.
+    expect(project('s12-dual-mpu6050-address').diagram.parts.filter((part) => part.type === 'wokwi-mpu6050')).toHaveLength(2)
+  })
+
+  it('charges the RC branch inside the INA219 chip, taking R and C from the recipe', () => {
+    const { diagram, chips } = project('ph21-rc-time-constant')
+    expect(diagram.parts.find((part) => part.id === 'ina219')).toMatchObject({
+      type: 'chip-ina219rc',
+      attrs: { sourceVolts: '5', seriesOhms: '1000', capacitanceUf: '1000' },
+    })
+    expect(chips).toEqual(['ina219rc'])
+    // ph17's capacitor is a PWM filter ahead of the INA219, not a branch it measures.
+    expect(project('ph17-ohms-law').chips).toEqual(['ina219'])
+  })
+
+  it('reads the switch address from the A0-A2 straps', () => {
+    const muxes = project('s14-tca-address-reset').diagram.parts.filter((part) => part.type === 'chip-tca9548a')
+    expect(muxes.map((part) => part.attrs?.address)).toEqual(['112', '113'])
+  })
 })

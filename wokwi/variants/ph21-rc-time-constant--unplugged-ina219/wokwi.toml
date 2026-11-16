@@ -5,5 +5,5 @@ firmware = "firmware.hex"
 elf = "firmware.elf"
 
 [[chip]]
-name = "ina219"
-binary = "ina219.chip.wasm"
+name = "ina219rc"
+binary = "ina219rc.chip.wasm"

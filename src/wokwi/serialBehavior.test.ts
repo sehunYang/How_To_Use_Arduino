@@ -5,6 +5,7 @@ import { simulationPhases } from './phase5SimulationRegistry'
 import { buildDiagram } from './buildDiagram'
 import { behaviorSpecs, phase5BehaviorSpecById, type Phase5BehaviorSpec } from './behaviorSpecs'
 import { checkSerialBehavior, serialFromCliOutput } from './serialBehavior'
+import { sketchHostSpecs } from '@/verification/sketchHostSpecs'
 
 const cooling = phase5BehaviorSpecById.get('cooling-curve')!
 
@@ -178,6 +179,45 @@ describe('wokwi-cli rows split by progress lines', () => {
     expect(serialFromCliOutput(stdout, 3).split('\n')).toEqual(['time_ms,distance_cm,tilt_x_g', '2245,20.1,0.000'])
   })
 
+  it('starts a new row with a fragment cut inside its time column', () => {
+    // Fragments captured from GitHub Actions run 43704892470 (f3).
+    const stdout = cut([
+      'time_ms,rpm,mag_delta,voltage_V,current_mA,power_mW',
+      '2859,200.0,0,2.500,25.00,62.50',
+      '[f3] Executing step: delay',
+      '3059',
+      '[f3] Executing step: delay',
+      ',200.0,1023,2.500,25.00,62.50',
+      '[f3] Executing step: delay',
+      '3459,200.0,0,2.500,25.00,62.50',
+      '[f3] Executing step: delay',
+      '365',
+      '[f3] Executing step: delay',
+      '9,200.0,1023,2.500,25.00,62.50',
+      '3859,200.0,1023,0.000,0.00,0.00',
+    ])
+    expect(serialFromCliOutput(stdout, 6).split('\n')).toEqual([
+      'time_ms,rpm,mag_delta,voltage_V,current_mA,power_mW',
+      '2859,200.0,0,2.500,25.00,62.50',
+      '3059,200.0,1023,2.500,25.00,62.50',
+      '3459,200.0,0,2.500,25.00,62.50',
+      '3659,200.0,1023,2.500,25.00,62.50',
+      '3859,200.0,1023,0.000,0.00,0.00',
+    ])
+  })
+
+  it('still gives a last-cell tail to its row when the next row reads forward', () => {
+    const stdout = cut([
+      'time_ms,a,b',
+      '3059,1023,62.5',
+      '[x] Executing step: delay',
+      '0',
+      '[x] Executing step: delay',
+      '3259,1023,62.50',
+    ])
+    expect(serialFromCliOutput(stdout, 3).split('\n')).toEqual(['time_ms,a,b', '3059,1023,62.50', '3259,1023,62.50'])
+  })
+
   it('leaves complete rows on either side of a progress line alone', () => {
     const stdout = cut(['time_s,a,b', '0.8,22.000,0.000', '[x] Expected text matched: ",0.000"', '2.5,60.000,38.000'])
     expect(serialFromCliOutput(stdout, 3).split('\n')).toEqual(['time_s,a,b', '0.8,22.000,0.000', '2.5,60.000,38.000'])
@@ -191,9 +231,10 @@ const allRecipes = simulationPhases.flatMap((phase) => phase.recipes)
  * run must carry a behaviour spec.
  */
 const SMOKE_ONLY: Record<string, string> = {
-  S3: 'PIR needs 30 s to settle, past the 20 s cap, and Wokwi has no PIR automation control',
-  'automatic-door': 'PIR needs 30 s to settle, past the 20 s cap, and Wokwi has no PIR automation control',
-  's13-mpu-aux-tsl2591': "Wokwi's MPU6050 does not implement the auxiliary I2C master (XDA/XCL)",
+  S3: 'PIR needs 30 s to settle, past the 20 s cap; judged on the host instead',
+  'automatic-door': 'PIR needs 30 s to settle, past the 20 s cap; judged on the host instead',
+  'night-activity': 'waits 30 s for the PIR to settle before its first row; judged on the host instead',
+  'smart-lighting': 'waits 30 s for the PIR to settle before its first row; judged on the host instead',
 }
 
 describe('behaviour specs', () => {
@@ -205,6 +246,11 @@ describe('behaviour specs', () => {
         expect(specified.has(entry.recipeId) && entry.recipeId in SMOKE_ONLY, entry.recipeId).toBe(false)
       }
     }
+  })
+
+  it('leave no smoke-only recipe without a host run (src/verification/sketchHostSpecs.ts)', () => {
+    const hosted = new Set(sketchHostSpecs.map((spec) => spec.recipeId))
+    for (const id of Object.keys(SMOKE_ONLY)) expect(hosted.has(id), id).toBe(true)
   })
 
   it('cover distinct recipes and match the sketches they claim to test', () => {

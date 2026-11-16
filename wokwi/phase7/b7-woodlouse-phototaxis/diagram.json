@@ -1,0 +1,145 @@
+{
+  "version": 1,
+  "author": "b7-woodlouse-phototaxis",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "id": "uno",
+      "type": "wokwi-arduino-uno",
+      "top": 0,
+      "left": 0
+    },
+    {
+      "id": "bb",
+      "type": "wokwi-breadboard-half",
+      "top": 0,
+      "left": 100
+    },
+    {
+      "id": "cds_1",
+      "type": "chip-cds",
+      "top": 0,
+      "left": 100,
+      "attrs": {
+        "nodePin": "2",
+        "fixedOhms": "10000",
+        "supplyVolts": "5"
+      }
+    },
+    {
+      "id": "cds_resistor_1",
+      "type": "wokwi-resistor",
+      "top": 0,
+      "left": 200,
+      "attrs": {
+        "value": "10000"
+      }
+    },
+    {
+      "id": "cds_2",
+      "type": "chip-cds",
+      "top": 0,
+      "left": 300,
+      "attrs": {
+        "nodePin": "2",
+        "fixedOhms": "10000",
+        "supplyVolts": "5"
+      }
+    },
+    {
+      "id": "cds_resistor_2",
+      "type": "wokwi-resistor",
+      "top": 0,
+      "left": 400,
+      "attrs": {
+        "value": "10000"
+      }
+    }
+  ],
+  "connections": [
+    [
+      "cds_1:L1",
+      "bb:tp.5",
+      "red",
+      []
+    ],
+    [
+      "uno:5V",
+      "bb:tp.1",
+      "red",
+      []
+    ],
+    [
+      "cds_1:L2",
+      "bb:2t.a",
+      "blue",
+      []
+    ],
+    [
+      "uno:A0",
+      "bb:2t.b",
+      "blue",
+      []
+    ],
+    [
+      "cds_resistor_1:1",
+      "bb:2t.e",
+      "blue",
+      []
+    ],
+    [
+      "cds_resistor_1:2",
+      "bb:4t.e",
+      "black",
+      []
+    ],
+    [
+      "uno:GND",
+      "bb:tn.1",
+      "black",
+      []
+    ],
+    [
+      "bb:tn.5",
+      "bb:4t.a",
+      "black",
+      []
+    ],
+    [
+      "bb:tn.9",
+      "bb:9t.a",
+      "black",
+      []
+    ],
+    [
+      "cds_2:L1",
+      "bb:tp.9",
+      "red",
+      []
+    ],
+    [
+      "cds_2:L2",
+      "bb:7t.a",
+      "blue",
+      []
+    ],
+    [
+      "uno:A1",
+      "bb:7t.b",
+      "blue",
+      []
+    ],
+    [
+      "cds_resistor_2:1",
+      "bb:7t.e",
+      "blue",
+      []
+    ],
+    [
+      "cds_resistor_2:2",
+      "bb:9t.e",
+      "black",
+      []
+    ]
+  ]
+}

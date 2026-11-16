@@ -1,0 +1,23 @@
+name: Phase 5 behavior - S9
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "time_ms,channel,light_raw"
+  - delay: 2000ms
+  - set-control:
+      part-id: tca9548a
+      control: ch0Raw0
+      value: 400
+  - set-control:
+      part-id: tca9548a
+      control: ch1Raw0
+      value: 100
+  - set-control:
+      part-id: tca9548a
+      control: ch0Raw1
+      value: 2400
+  - set-control:
+      part-id: tca9548a
+      control: ch1Raw1
+      value: 600
+  - delay: 2500ms

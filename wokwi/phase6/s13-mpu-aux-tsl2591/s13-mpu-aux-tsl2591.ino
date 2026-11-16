@@ -35,7 +35,6 @@ uint16_t lightRaw() {
 }
 void setup() {
   Serial.begin(9600);
-  Serial.println("# PHASE5_READY:s13-mpu-aux-tsl2591");
   Wire.begin();
   mpuWrite(0x6B,0);
   mpuWrite(0x37,0x02);

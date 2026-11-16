@@ -17,6 +17,8 @@ import {
   DS18B20_LSB_C,
   echo,
   adc,
+  cdsAdc,
+  tcaLight,
   expectPin,
   lux,
   type ParsedRow,
@@ -394,15 +396,25 @@ function powerLog(
   recipeId: string,
   states: Array<{ label: string; shunt: number; bus: number }>,
 ): Phase5BehaviorSpec {
+  // The sketch clamps negative readings to 0, so a state can print exactly what
+  // the one before it printed. Rows cannot tell such states apart, so they
+  // share one phase whose steps apply both stimuli in turn.
+  const printed = ({ shunt, bus }: { shunt: number; bus: number }) =>
+    `${bus}|${Math.max(0, ina219CurrentMa(shunt))}`
+  const phases: Phase5BehaviorSpec['phases'] = []
+  states.forEach(({ label, shunt, bus }, index) => {
+    const steps = [...inaSteps(index === 0 ? INA_DEFAULT : states[index - 1], { shunt, bus }), delayMs(1000)]
+    const last = phases[phases.length - 1]
+    if (index > 0 && printed(states[index - 1]) === printed({ shunt, bus })) {
+      phases[phases.length - 1] = { ...last, label: `${last.label}, then ${label}`, steps: [...last.steps, ...steps] }
+      return
+    }
+    phases.push({ label, steps, expect: { voltage_V: printedVolts(bus), current_mA: printedCurrent(shunt) }, settleRows: 1 })
+  })
   return {
     recipeId,
     header: 'time_ms,voltage_V,current_mA,power_mW,energy_mJ',
-    phases: states.map(({ label, shunt, bus }, index) => ({
-      label,
-      steps: [...inaSteps(index === 0 ? INA_DEFAULT : states[index - 1], { shunt, bus }), delayMs(1000)],
-      expect: { voltage_V: printedVolts(bus), current_mA: printedCurrent(shunt) },
-      settleRows: 1,
-    })),
+    phases,
     startupRows: 1,
     always: {
       // P = V × I from the printed (rounded) V and I.
@@ -520,6 +532,86 @@ const phase6: Phase5BehaviorSpec[] = [
     sampleInterval: { min: 100, max: 106 },
     minRows: 4,
   },
+  (() => {
+    // Tilting the box 30° toward a window: gravity moves onto x, more light falls on the sensor.
+    const tilt = { x: Math.sin(Math.PI / 6), z: Math.cos(Math.PI / 6) }
+    const g = (value: number) => approx(accelG(value), 0.0001)
+    return {
+      recipeId: 's13-mpu-aux-tsl2591',
+      header: 'time_ms,acceleration_x_g,acceleration_y_g,acceleration_z_g,light_raw',
+      phases: [
+        {
+          // Power-on TSL2591 gain and integration (1x, 100 ms): the count is the light itself.
+          label: 'level on the bench under room light',
+          steps: [delayMs(1000)],
+          expect: { acceleration_x_g: g(0), acceleration_y_g: g(0), acceleration_z_g: g(1), light_raw: approx(TSL2591_DEFAULT_RAW.ch0, 0) },
+        },
+        {
+          label: 'tilted 30° toward the window',
+          steps: [
+            set('mpu6050', 'accelX', tilt.x),
+            set('mpu6050', 'accelZ', tilt.z),
+            set('mpu6050', 'ch0Raw', 5000),
+            set('mpu6050', 'ch1Raw', 900),
+            delayMs(1000),
+          ],
+          expect: { acceleration_x_g: g(tilt.x), acceleration_y_g: g(0), acceleration_z_g: g(tilt.z), light_raw: approx(5000, 0) },
+          settleRows: 1,
+        },
+      ],
+      timeColumn: 'time_ms',
+      // 200 ms pause + 2 ms for the auxiliary read + a 9600-baud line.
+      sampleInterval: { min: 200, max: 260 },
+      minRows: 8,
+    } satisfies Phase5BehaviorSpec
+  })(),
+  {
+    recipeId: 's14-tca-address-reset',
+    header: 'time_ms,mux_0x70_recovery_us,mux_0x70_channels,mux_0x71_recovery_us,mux_0x71_channels',
+    phases: [
+      {
+        // A RESET pulse must clear the open channel at once (datasheet t_REC ≈ 0);
+        // the time is the sketch's 10 µs pulse plus the I2C polls that confirm it.
+        // A switch that never answers, or ignores RESET, runs to the 20 ms timeout.
+        label: 'both switches reset by their own RESET line',
+        steps: [delayMs(4500)],
+        expect: {
+          mux_0x70_recovery_us: { min: 10, max: 2000 },
+          mux_0x70_channels: approx(0, 0),
+          mux_0x71_recovery_us: { min: 10, max: 2000 },
+          mux_0x71_channels: approx(0, 0),
+        },
+      },
+    ],
+    timeColumn: 'time_ms',
+    sampleInterval: { min: 1000, max: 1030 },
+    minRows: 4,
+  },
+  (() => {
+    // A lamp level with channel 0; each sensor sits one step further along the
+    // bench, so the light falls off with the inverse square of (n + 1).
+    const field = Array.from({ length: 8 }, (_, channel) => Math.round(4000 / (channel + 1) ** 2))
+    const columns = (light: (channel: number) => number) =>
+      Object.fromEntries(field.map((_, channel) => [`light_ch${channel}_raw`, approx(light(channel), 0)]))
+    return {
+      recipeId: 'p10-eight-point-light-field',
+      header: 'time_ms,light_ch0_raw,light_ch1_raw,light_ch2_raw,light_ch3_raw,light_ch4_raw,light_ch5_raw,light_ch6_raw,light_ch7_raw',
+      phases: [
+        // Power-on gain and integration (1x, 100 ms): the count is the light itself.
+        { label: 'room light on every sensor', steps: [delayMs(1000)], expect: columns(() => TSL2591_DEFAULT_RAW.ch0) },
+        {
+          label: 'a lamp at one end of the bench',
+          steps: [...field.flatMap((raw, channel) => tcaLight('tca9548a', channel, raw, Math.round(raw / 4))), delayMs(1000)],
+          expect: columns((channel) => field[channel]),
+          settleRows: 1,
+        },
+      ],
+      timeColumn: 'time_ms',
+      // 100 ms pause + eight switch-and-read transactions + a 9600-baud line.
+      sampleInterval: { min: 100, max: 175 },
+      minRows: 10,
+    } satisfies Phase5BehaviorSpec
+  })(),
   {
     recipeId: 'p9-motion-interrupt',
     header: 'time_us,acceleration_x_g,acceleration_y_g,acceleration_z_g',
@@ -816,26 +908,64 @@ const phase6: Phase5BehaviorSpec[] = [
       minRows: 4,
     }
   })(),
-  {
-    recipeId: 'ph21-rc-time-constant',
-    header: 'condition_id,time_ms,capacitor_V,current_mA',
-    textColumns: ['condition_id'],
-    // 5 V through 1 kΩ into 1000 µF: I = 5 mA · e^(-t/τ), τ = 1 s. Read at t = 0, τ and 2τ.
-    phases: [0, 1, 2].map((tau, index) => {
-      const milliamps = Number((5 * Math.exp(-tau)).toFixed(1))
-      return {
-        label: `charging current at t = ${tau}τ: ${milliamps} mA`,
-        steps: [set('ina219', 'shuntRaw', shuntRawFor(milliamps)), delayMs(400)],
-        expect: { current_mA: approx(milliamps, 0.0001) },
-        settleRows: index === 0 ? 0 : 1,
-      }
-    }),
-    startupRows: 1,
-    always: { condition_id: { text: 'CHARGE' }, capacitor_V: { min: 0, max: 5 } },
-    timeColumn: 'time_ms',
-    sampleInterval: { min: 50, max: 58 },
-    minRows: 12,
-  },
+  (() => {
+    // 5 V through 1 kΩ and the INA219's 0.1 Ω shunt into 1000 µF (chips/ina219rc.chip.c).
+    const SOURCE_V = 5
+    const LOOP_KOHM = 1.0001
+    const TAU_S = LOOP_KOHM * 1000 * 1000e-6
+    /** τ from a least-squares line through ln(y) against t: y ∝ e^(-t/τ). */
+    const fitTau = (points: readonly (readonly [number, number])[]) => {
+      const n = points.length
+      const xs = points.map(([t]) => t)
+      const ys = points.map(([, y]) => Math.log(y))
+      const meanX = xs.reduce((a, b) => a + b, 0) / n
+      const meanY = ys.reduce((a, b) => a + b, 0) / n
+      const slope = xs.reduce((sum, x, i) => sum + (x - meanX) * (ys[i] - meanY), 0)
+        / xs.reduce((sum, x) => sum + (x - meanX) ** 2, 0)
+      return -1 / slope
+    }
+    return {
+      recipeId: 'ph21-rc-time-constant',
+      header: 'condition_id,time_ms,capacitor_V,current_mA',
+      textColumns: ['condition_id'],
+      phases: [
+        {
+          label: 'capacitor discharged, source not yet connected',
+          steps: [delayMs(300)],
+          expect: { capacitor_V: approx(0, 0.01), current_mA: approx(0, 0) },
+        },
+        {
+          label: 'source connected: charging',
+          steps: [set('ina219', 'connected', 1), delayMs(3500)],
+          expect: {
+            capacitor_V: { min: 0, max: SOURCE_V },
+            // Kirchhoff's voltage law round the loop at every instant: V_C + I·R = 5 V.
+            // 0.05 mA INA219 rounding, the ADC step and the gap between the two readings.
+            current_mA: derived(({ values }) => (SOURCE_V - values.capacitor_V) / LOOP_KOHM, 0.08),
+          },
+        },
+      ],
+      always: { condition_id: { text: 'CHARGE' } },
+      // The recipe's analysis: τ from the log-linear fit, once from the current and
+      // once from the voltage still to go, must both come out as RC.
+      checkRows: (rows) => {
+        const seconds = (row: ParsedRow) => row.values.time_ms / 1000
+        const charging = rows.filter((row) => row.values.current_mA > 0)
+        const fits = {
+          current: charging.filter((row) => row.values.current_mA >= 0.5).map((row) => [seconds(row), row.values.current_mA] as const),
+          voltage: charging.filter((row) => SOURCE_V - row.values.capacitor_V >= 0.5).map((row) => [seconds(row), SOURCE_V - row.values.capacitor_V] as const),
+        }
+        return Object.entries(fits).flatMap(([quantity, points]) => {
+          if (points.length < 10) return [`only ${points.length} rows to fit τ from the ${quantity}`]
+          const tau = fitTau(points)
+          return Math.abs(tau - TAU_S) / TAU_S > 0.05 ? [`τ from the ${quantity} is ${tau.toFixed(3)} s, expected RC = ${TAU_S.toFixed(3)} s ±5%`] : []
+        })
+      },
+      timeColumn: 'time_ms',
+      sampleInterval: { min: 50, max: 58 },
+      minRows: 40,
+    } satisfies Phase5BehaviorSpec
+  })(),
   ((): Phase5BehaviorSpec => {
     // A new 9 V battery: E = 9 V, r = 2 Ω. The sketch reads the bus after the
     // 0.1 Ω shunt, so the V-I slope is r + 0.1 Ω, which the analysis subtracts.
@@ -1202,6 +1332,24 @@ const phase7: Phase5BehaviorSpec[] = [
     minRows: 3,
   },
   {
+    recipeId: 'b7-woodlouse-phototaxis',
+    header: 'time_ms,left_adc,right_adc,error',
+    // The box lit evenly, then from the left, then from the right.
+    phases: [
+      { label: 'even light', steps: [delayMs(2500)], expect: { left_adc: cdsAdc(300), right_adc: cdsAdc(300), error: approx(0, 6) } },
+      ...([[800, 50, 'lamp at the left end'], [50, 800, 'lamp at the right end']] as const).map(([left, right, label]) => ({
+        label,
+        steps: [set('cds_1', 'lux', left), set('cds_2', 'lux', right), delayMs(2500)],
+        expect: { left_adc: cdsAdc(left), right_adc: cdsAdc(right) },
+        settleRows: 1,
+      })),
+    ],
+    always: { error: derived(({ values }) => values.left_adc - values.right_adc, 0) },
+    timeColumn: 'time_ms',
+    sampleInterval: { min: 1000, max: 1030 },
+    minRows: 6,
+  },
+  {
     recipeId: 'b8-seed-germination-gdd',
     header: 'time_ms,temperature_c',
     // One reading a minute, so a single one fits in the run.
@@ -1383,6 +1531,32 @@ const phase7: Phase5BehaviorSpec[] = [
     minRows: 4,
   },
   {
+    recipeId: 'd3-line-follower',
+    header: 'time_ms,left_adc,right_adc,left_speed,right_speed',
+    // White paper reflects ~300 lux into the CdS, the black line ~20 lux.
+    phases: [
+      { label: 'centred: both sensors over white paper', steps: [delayMs(600)], expect: { left_adc: cdsAdc(300), right_adc: cdsAdc(300) } },
+      ...([[20, 300, 'drifted right: the left sensor is over the line'], [300, 20, 'drifted left: the right sensor is over the line']] as const)
+        .map(([left, right, label]) => ({
+          label,
+          steps: [set('cds_1', 'lux', left), set('cds_2', 'lux', right), delayMs(600)],
+          expect: { left_adc: cdsAdc(left), right_adc: cdsAdc(right) },
+          settleRows: 1,
+        })),
+    ],
+    // Steering back onto the line means slowing the wheel on the line's side.
+    checkRows: (rows) => rows.flatMap(({ values: v }, index) => {
+      const darker = v.left_adc < v.right_adc - 50 ? 'left' : v.right_adc < v.left_adc - 50 ? 'right' : undefined
+      if (!darker && Math.abs(v.left_speed - v.right_speed) > 3) return [`row ${index + 1}: centred but wheels at ${v.left_speed}/${v.right_speed}`]
+      if (darker === 'left' && !(v.left_speed < v.right_speed)) return [`row ${index + 1}: line under the left sensor but left wheel ${v.left_speed} is not slower than right ${v.right_speed}`]
+      if (darker === 'right' && !(v.right_speed < v.left_speed)) return [`row ${index + 1}: line under the right sensor but right wheel ${v.right_speed} is not slower than left ${v.left_speed}`]
+      return []
+    }),
+    timeColumn: 'time_ms',
+    sampleInterval: { min: 49, max: 60 },
+    minRows: 25,
+  },
+  {
     recipeId: 'd4-parking-barrier',
     header: 'time_ms,distance_cm,door_state,buzzer_on',
     // Opens below 20 cm, closes above 25 cm; buzzes below 10 cm.
@@ -1503,8 +1677,9 @@ const phase7: Phase5BehaviorSpec[] = [
   },
   powerLog('f1-hand-generator-power', [
     { label: 'crank at rest', ...atRest },
-    // The diode blocks the reversed EMF; the shunt reads a little noise below zero.
-    { label: 'cranked backwards: noise reads -0.3 mA', shunt: -3, bus: ina219BusRegisterFor(0) },
+    // The diode blocks the reversed EMF; the shunt reads a little noise below zero,
+    // which the sketch prints as 0 mA.
+    { label: 'cranked backwards: -0.3 mA of noise prints as 0', shunt: -3, bus: ina219BusRegisterFor(0) },
     { label: 'cranked slowly: 1.5 V across 100 Ω', ...load(1.5, 100) },
     { label: 'cranked fast: 4.5 V across 100 Ω', ...load(4.5, 100) },
   ]),

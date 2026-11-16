@@ -1,5 +1,23 @@
-name: Phase 5 deterministic smoke - s13-mpu-aux-tsl2591
+name: Phase 5 behavior - s13-mpu-aux-tsl2591
 version: 1
 author: phase5-generator
 steps:
-  - wait-serial: "# PHASE5_READY:s13-mpu-aux-tsl2591"
+  - wait-serial: "time_ms,acceleration_x_g,acceleration_y_g,acceleration_z_g,light_raw"
+  - delay: 1000ms
+  - set-control:
+      part-id: mpu6050
+      control: accelX
+      value: 0.49999999999999994
+  - set-control:
+      part-id: mpu6050
+      control: accelZ
+      value: 0.8660254037844387
+  - set-control:
+      part-id: mpu6050
+      control: ch0Raw
+      value: 5000
+  - set-control:
+      part-id: mpu6050
+      control: ch1Raw
+      value: 900
+  - delay: 1000ms

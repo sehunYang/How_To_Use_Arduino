@@ -1,0 +1,161 @@
+{
+  "version": 1,
+  "author": "s14-tca-address-reset",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "id": "uno",
+      "type": "wokwi-arduino-uno",
+      "top": 0,
+      "left": 0
+    },
+    {
+      "id": "bb",
+      "type": "wokwi-breadboard-half",
+      "top": 0,
+      "left": 100
+    },
+    {
+      "id": "tca9548a_1",
+      "type": "chip-tca9548a",
+      "top": 0,
+      "left": 100,
+      "attrs": {
+        "address": "112",
+        "tslMask": "0"
+      }
+    },
+    {
+      "id": "tca9548a_2",
+      "type": "chip-tca9548a",
+      "top": 0,
+      "left": 200,
+      "attrs": {
+        "address": "113",
+        "tslMask": "0"
+      }
+    }
+  ],
+  "connections": [
+    [
+      "tca9548a_1:VIN",
+      "bb:tp.5",
+      "red",
+      []
+    ],
+    [
+      "uno:5V",
+      "bb:tp.1",
+      "red",
+      []
+    ],
+    [
+      "tca9548a_1:GND",
+      "bb:tn.4",
+      "black",
+      []
+    ],
+    [
+      "uno:GND",
+      "bb:tn.1",
+      "black",
+      []
+    ],
+    [
+      "tca9548a_1:SDA",
+      "bb:1t.a",
+      "green",
+      []
+    ],
+    [
+      "uno:A4",
+      "bb:1t.b",
+      "green",
+      []
+    ],
+    [
+      "tca9548a_1:SCL",
+      "bb:5t.a",
+      "yellow",
+      []
+    ],
+    [
+      "uno:A5",
+      "bb:5t.b",
+      "yellow",
+      []
+    ],
+    [
+      "tca9548a_2:VIN",
+      "bb:tp.13",
+      "red",
+      []
+    ],
+    [
+      "tca9548a_2:GND",
+      "bb:tn.22",
+      "black",
+      []
+    ],
+    [
+      "tca9548a_2:SDA",
+      "bb:1t.c",
+      "green",
+      []
+    ],
+    [
+      "tca9548a_2:SCL",
+      "bb:5t.c",
+      "yellow",
+      []
+    ],
+    [
+      "tca9548a_1:A0",
+      "bb:tn.19",
+      "black",
+      []
+    ],
+    [
+      "tca9548a_1:A1",
+      "bb:tn.16",
+      "black",
+      []
+    ],
+    [
+      "tca9548a_1:A2",
+      "bb:tn.13",
+      "black",
+      []
+    ],
+    [
+      "tca9548a_2:A0",
+      "bb:tp.9",
+      "red",
+      []
+    ],
+    [
+      "tca9548a_2:A1",
+      "bb:tn.10",
+      "black",
+      []
+    ],
+    [
+      "tca9548a_2:A2",
+      "bb:tn.7",
+      "black",
+      []
+    ],
+    [
+      "tca9548a_1:RST",
+      "uno:2",
+      "purple",
+      []
+    ],
+    [
+      "tca9548a_2:RST",
+      "uno:3",
+      "purple",
+      []
+    ]
+  ]
+}

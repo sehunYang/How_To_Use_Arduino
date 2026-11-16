@@ -53,6 +53,7 @@ const SENSOR_PARTS: Readonly<Record<string, { sentinels: number[] }>> = {
   'wokwi-hc-sr04': { sentinels: [-1] },
   'chip-bme280': { sentinels: [] },
   'chip-ina219': { sentinels: [] },
+  'chip-ina219rc': { sentinels: [] },
   'chip-tsl2591': { sentinels: [] },
 }
 

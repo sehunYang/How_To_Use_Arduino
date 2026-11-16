@@ -19,16 +19,9 @@ describe('Phase 5 Wokwi simulation registry', () => {
     const eligible = phase5SimulationRegistry.filter((entry) => entry.eligible)
     const planned = phase5SimulationRegistry.filter((entry) => !entry.eligible)
 
-    expect(eligible).toHaveLength(28)
-    expect(planned).toHaveLength(6)
-    expect(planned.map((entry) => entry.recipeId)).toEqual([
-      'S4',
-      'S9',
-      'e5-spatial-light-map',
-      'night-activity',
-      'light-follow-car',
-      'smart-lighting',
-    ])
+    expect(eligible).toHaveLength(34)
+    expect(planned).toHaveLength(0)
+    expect(planned.map((entry) => entry.recipeId)).toEqual([])
   })
 
   it('provides unique deterministic scenarios within the timeout cap', () => {
@@ -59,7 +52,7 @@ describe('Phase 5 Wokwi simulation registry', () => {
       return buildDiagram(recipe!, sensors)
     })
 
-    expect(diagrams).toHaveLength(28)
+    expect(diagrams).toHaveLength(34)
     expect(diagrams.every((diagram) => diagram.parts.length > 1)).toBe(true)
   })
 

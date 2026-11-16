@@ -1,15 +1,8 @@
 {
   "version": 1,
   "generatedFrom": "phase5SimulationRegistry",
-  "projectCount": 28,
-  "exclusions": [
-    "S4",
-    "S9",
-    "e5-spatial-light-map",
-    "night-activity",
-    "light-follow-car",
-    "smart-lighting"
-  ],
+  "projectCount": 34,
+  "exclusions": [],
   "projects": [
     {
       "id": "S1",
@@ -40,6 +33,18 @@
       "command": "wokwi-cli wokwi/phase5/S3 --scenario scenario.test.yaml --timeout 20000",
       "chips": [],
       "fingerprint": "88d94d5ccdf407f2"
+    },
+    {
+      "id": "S4",
+      "path": "wokwi/phase5/S4",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/S4 --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "cds"
+      ],
+      "fingerprint": "0f71d273f4371cf1"
     },
     {
       "id": "S5",
@@ -86,6 +91,18 @@
         "tsl2591"
       ],
       "fingerprint": "60d296faf6c8884c"
+    },
+    {
+      "id": "S9",
+      "path": "wokwi/phase5/S9",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/S9 --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "tca9548a"
+      ],
+      "fingerprint": "fa03216b8f28b059"
     },
     {
       "id": "S10",
@@ -227,6 +244,18 @@
       "fingerprint": "6900135aa0a5b1d0"
     },
     {
+      "id": "e5-spatial-light-map",
+      "path": "wokwi/phase5/e5-spatial-light-map",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/e5-spatial-light-map --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "tca9548a"
+      ],
+      "fingerprint": "dd312c19097da5f7"
+    },
+    {
       "id": "e6-multi-point-temperature",
       "path": "wokwi/phase5/e6-multi-point-temperature",
       "kind": "behavior",
@@ -248,6 +277,18 @@
         "tsl2591"
       ],
       "fingerprint": "5d2a038065eedc8e"
+    },
+    {
+      "id": "night-activity",
+      "path": "wokwi/phase5/night-activity",
+      "kind": "smoke",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/night-activity --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "cds"
+      ],
+      "fingerprint": "c1c15af6ea5ff7e0"
     },
     {
       "id": "photosynthesis-light-control",
@@ -282,6 +323,18 @@
       "fingerprint": "1b24d8e1c4ffc9a3"
     },
     {
+      "id": "light-follow-car",
+      "path": "wokwi/phase5/light-follow-car",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/light-follow-car --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "cds"
+      ],
+      "fingerprint": "868dc36e4c404e88"
+    },
+    {
       "id": "automatic-door",
       "path": "wokwi/phase5/automatic-door",
       "kind": "smoke",
@@ -310,6 +363,18 @@
       "command": "wokwi-cli wokwi/phase5/rpm-meter --scenario scenario.test.yaml --timeout 20000",
       "chips": [],
       "fingerprint": "77e992a1da6ebf9b"
+    },
+    {
+      "id": "smart-lighting",
+      "path": "wokwi/phase5/smart-lighting",
+      "kind": "smoke",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase5/smart-lighting --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "cds"
+      ],
+      "fingerprint": "f2855984cff14aea"
     }
   ]
 }

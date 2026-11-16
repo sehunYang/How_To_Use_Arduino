@@ -86,8 +86,8 @@ describe('buildDiagram', () => {
     const tslParts = diagram.parts.filter((p) => p.type === 'chip-tsl2591')
     expect(tslParts).toHaveLength(2)
 
-    const tca = sensors.find((s) => s.id === 'tca9548a')
-    expect(tca?.wokwi.simSupported).toBe(false)
+    // The student's picture keeps the switch's illustration; only generated
+    // simulation projects swap it for chips/tca9548a.chip.c.
     expect(diagram.parts.some((p) => p.type === 'custom-tca9548a')).toBe(true)
   })
 
