@@ -509,7 +509,7 @@ describe('한 조건을 다 잰 뒤 다음 조건으로 가는 길', () => {
     const { measure, design } = splitGuide(recipe('pendulum').body)
     expect(measure).toContain('조건을 바꿔 다시 재기')
     expect(measure).toContain('2회차로 추가하기')
-    expect(measure).toContain('멈추고 회차로 넣기')
+    expect(measure).toContain('[정지]를 누른 뒤 [회차로 추가]')
     expect(measure).toContain('열 더하기')
     expect(measure).toContain('실의 길이 20~80 cm를 5단계')
     // 재기 전에 읽는 설계 쪽이 아니라 그래프를 본 뒤에 읽는 자리에 둡니다.
