@@ -52,6 +52,7 @@ const bundles = {
     'd6-temperature-alarm',
     'd7-vibration-alarm',
     'd8-elevator-floor',
+    'd9-night-intruder-alarm',
   ],
   E: [
     'e1-terminal-velocity',

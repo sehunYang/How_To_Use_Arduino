@@ -1650,6 +1650,33 @@ const phase7: Phase5BehaviorSpec[] = [
     minRows: 8,
   },
   {
+    recipeId: 'd9-night-intruder-alarm',
+    header: 'time_ms,light_adc,distance_cm,is_dark,is_near,buzzer_on',
+    // Dark below ADC 300 (~5 lux on the CdS model), near below 30 cm; the
+    // buzzer needs both. Walk the four rows of the truth table, then turn the
+    // lights back on with the visitor still there.
+    phases: [
+      { lux: 300, cm: 400, dark: 0, near: 0, label: 'lit classroom, nobody there' },
+      { lux: 300, cm: 15, dark: 0, near: 1, label: 'lit classroom, someone at 15 cm: no alarm by day' },
+      { lux: 2, cm: 400, dark: 1, near: 0, label: 'lights off, nobody there: no alarm in an empty room' },
+      { lux: 2, cm: 15, dark: 1, near: 1, label: 'lights off, someone at 15 cm: alarm' },
+      { lux: 300, cm: 15, dark: 0, near: 1, label: 'lights back on with the visitor still there: alarm stops' },
+    ].map(({ lux, cm, dark, near, label }, index) => ({
+      label,
+      steps: [...(index === 0 ? [] : [set('cds', 'lux', lux), set('hc-sr04', 'distance', cm)]), delayMs(1000)],
+      expect: {
+        light_adc: cdsAdc(lux),
+        distance_cm: echoCm(cm),
+        is_dark: approx(dark, 0),
+        is_near: approx(near, 0),
+        buzzer_on: approx(dark && near ? 1 : 0, 0),
+      },
+      settleRows: index === 0 ? 0 : 1,
+    })),
+    always: { buzzer_on: derived(({ values }) => (values.is_dark === 1 && values.is_near === 1 ? 1 : 0), 0) },
+    minRows: 15,
+  },
+  {
     recipeId: 'e1-terminal-velocity',
     header: 'time_ms,distance_cm',
     phases: [400, 200, 50].map((cm, index) => ({

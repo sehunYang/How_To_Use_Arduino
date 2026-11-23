@@ -175,6 +175,18 @@ TEST_CASE("D8 floors get misread once the noise is half the floor spacing") {
   CHECK(phase7::floorJudgementIsSafe(1.0, 8.0));
   CHECK_FALSE(phase7::floorJudgementIsSafe(3.0, 4.0));
 }
+TEST_CASE("D9 the alarm sounds only when it is dark and something is near") {
+  // 진리표의 네 줄: 밝음·멂, 밝음·가까움, 어두움·멂, 어두움·가까움.
+  CHECK_FALSE(phase7::intruderAlarm(900, 300, 120, 30));
+  CHECK_FALSE(phase7::intruderAlarm(900, 300, 15, 30));
+  CHECK_FALSE(phase7::intruderAlarm(150, 300, 120, 30));
+  CHECK(phase7::intruderAlarm(150, 300, 15, 30));
+  // 기준값과 같으면 아직 넘지 않은 것입니다.
+  CHECK_FALSE(phase7::isDark(300, 300));
+  CHECK_FALSE(phase7::isNear(30, 30));
+  // 소리가 돌아오지 않은 -1은 가까운 것이 아닙니다. 어둠 속 빈 방에서 울리면 안 됩니다.
+  CHECK_FALSE(phase7::intruderAlarm(150, 300, -1, 30));
+}
 
 TEST_CASE("E1 terminal speed grows with the square root of the weight") {
   // 15 cm에서 10 cm로 0.05초 만에 다가오면 1 m/s입니다.

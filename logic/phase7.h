@@ -268,6 +268,17 @@ inline bool floorJudgementIsSafe(double stdDevCm, double floorHeightCm) {
   return 2.0 * stdDevCm < floorHeightCm;
 }
 
+/** D9: 밝기 값이 기준보다 작으면 어둡다고 봅니다. */
+inline bool isDark(int lightAdc, int darkLevel) { return lightAdc < darkLevel; }
+
+/** D9: 기준보다 가까우면 다가왔다고 봅니다. 읽지 못한 거리(-1)는 가깝다고 보지 않습니다. */
+inline bool isNear(long centimeters, int nearCm) { return centimeters > 0 && centimeters < nearCm; }
+
+/** D9: 어둡고 그리고 가까울 때만 울립니다. */
+inline bool intruderAlarm(int lightAdc, int darkLevel, long centimeters, int nearCm) {
+  return isDark(lightAdc, darkLevel) && isNear(centimeters, nearCm);
+}
+
 // ── E 묶음 · 물리 ─────────────────────────────────────────────────────────
 
 /** E1: 이웃한 두 점에서 구한 속도(m/s). 거리는 cm, 시간은 ms로 들어옵니다. */
