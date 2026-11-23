@@ -1,0 +1,42 @@
+name: Phase 5 behavior - d9-night-intruder-alarm
+version: 1
+author: phase5-generator
+steps:
+  - wait-serial: "time_ms,light_adc,distance_cm,is_dark,is_near,buzzer_on"
+  - delay: 1000ms
+  - set-control:
+      part-id: cds
+      control: lux
+      value: 300
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 15
+  - delay: 1000ms
+  - set-control:
+      part-id: cds
+      control: lux
+      value: 2
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 400
+  - delay: 1000ms
+  - set-control:
+      part-id: cds
+      control: lux
+      value: 2
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 15
+  - delay: 1000ms
+  - set-control:
+      part-id: cds
+      control: lux
+      value: 300
+  - set-control:
+      part-id: hc-sr04
+      control: distance
+      value: 15
+  - delay: 1000ms

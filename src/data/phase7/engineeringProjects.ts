@@ -22,7 +22,7 @@ import {
 } from './shared'
 
 /**
- * D 묶음: 공학·로봇 8건.
+ * D 묶음: 공학·로봇 9건.
  *
  * A 묶음이 장치를 하나씩 "움직여 보는" 것이었다면, 여기서는 **센서가 읽은
  * 값이 장치를 움직이게** 합니다. 그래서 이 묶음의 탐구 질문은 모두 같은
@@ -428,6 +428,60 @@ const speedControlConnections: Connection[] = [
   ...motorChannel('D2', 'D4', 'D5'),
   ...motorSupply(),
 ]
+const intruderSketch = `// @pin CDS=A0
+// @pin TRIG=D7
+// @pin ECHO=D6
+// @pin BUZZER=D8
+// @baud 9600
+
+const byte LIGHT_PIN = A0, TRIG_PIN = 7, ECHO_PIN = 6, BUZZER_PIN = 8;
+// 밝기 값이 이보다 작으면 "어둡다"로 봅니다. 0(캄캄함)~1023(아주 밝음) 사이입니다.
+// 교실 불을 켰을 때와 손으로 CDS를 가렸을 때의 값을 시리얼 모니터로 보고 그 사이로 정하세요.
+const int darkLevel = 300;
+// 이 거리보다 가까우면 "누가 다가왔다"로 봅니다.
+// @tunable nearCm
+int nearCm = 30;
+
+long readCm() {
+  digitalWrite(TRIG_PIN, LOW); delayMicroseconds(2);
+  digitalWrite(TRIG_PIN, HIGH); delayMicroseconds(10);
+  digitalWrite(TRIG_PIN, LOW);
+  // 소리가 돌아오기까지 걸린 시간(µs)입니다. 왕복이므로 58로 나누면 cm가 됩니다.
+  unsigned long us = pulseIn(ECHO_PIN, HIGH, 30000);
+  return us == 0 ? -1 : (long)(us / 58);
+}
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(TRIG_PIN, OUTPUT); pinMode(ECHO_PIN, INPUT);
+  pinMode(BUZZER_PIN, OUTPUT);
+  Serial.println("time_ms,light_adc,distance_cm,is_dark,is_near,buzzer_on");
+}
+
+void loop() {
+  int light = analogRead(LIGHT_PIN);
+  long cm = readCm();
+
+  // 조건 1: 어두운가?
+  bool isDark = light < darkLevel;
+  // 조건 2: 가까이 무언가 있는가? -1은 소리가 돌아오지 않은 것이라 가깝다고 보지 않습니다.
+  bool isNear = cm > 0 && cm < nearCm;
+  // 두 조건을 &&(그리고)로 묶습니다. 둘 다 참일 때만 울립니다.
+  // 낮에 사람이 지나가도, 밤에 아무도 없어도 울리지 않습니다.
+  bool alarm = isDark && isNear;
+
+  if (alarm) tone(BUZZER_PIN, 2000); else noTone(BUZZER_PIN);
+
+  Serial.print(millis()); Serial.print(',');
+  Serial.print(light); Serial.print(',');
+  Serial.print(cm); Serial.print(',');
+  Serial.print(isDark ? 1 : 0); Serial.print(',');
+  Serial.print(isNear ? 1 : 0); Serial.print(',');
+  Serial.println(alarm ? 1 : 0);
+  delay(200);
+}
+`
+
 const lineFollowerConnections: Connection[] = [
   ...cdsDivider('CDS_1', 'CDS_RESISTOR_1', 'A0', '왼쪽'),
   ...cdsDivider('CDS_2', 'CDS_RESISTOR_2', 'A1', '오른쪽'),
@@ -440,6 +494,14 @@ const curtainConnections: Connection[] = [...tsl2591(), ...servo('D9')]
 const alarmConnections: Connection[] = [...ds18b20Bus(['DS18B20'], 'D4'), ...buzzer('D8'), ...led('D9')]
 const vibrationConnections: Connection[] = [...mpu6050(), ...buzzer('D8')]
 const elevatorConnections: Connection[] = [...ultrasonic('D7', 'D6'), ...servo('D9'), ...lcd1602()]
+const intruderConnections: Connection[] = [
+  { from: 'CDS.L1', to: 'UNO.5V', color: 'red', text: 'CDS의 한쪽 다리를 5V에 연결하세요. CDS는 다리 방향이 없습니다.' },
+  { from: 'CDS.L2', to: 'UNO.A0', color: 'blue', text: 'CDS의 남은 다리를 A0에 연결하세요. 이 지점의 전압이 밝기 값이 됩니다.' },
+  { from: 'CDS.L2', to: 'CDS_RESISTOR.1', color: 'blue', text: '같은 열에 10 kΩ 저항의 한쪽 다리를 함께 꽂으세요.' },
+  { from: 'CDS_RESISTOR.2', to: 'UNO.GND', color: 'black', text: '10 kΩ 저항의 남은 다리를 GND에 연결하세요. 이 저항이 없으면 밝기와 상관없이 값이 흔들립니다.' },
+  ...ultrasonic('D7', 'D6'),
+  ...buzzer('D8'),
+]
 
 export const phase7EngineeringProjects: Recipe[] = [
   createPhase7Recipe({
@@ -630,6 +692,32 @@ export const phase7EngineeringProjects: Recipe[] = [
       { symptom: '같은 자리인데 층 번호가 오르내림', cause: '센서 흔들림이 층 간격의 절반보다 큽니다.', fix: '여러 번 읽어 중앙값을 쓰거나 층 간격을 넓히세요.' },
       { symptom: '거리가 -1이 되어 층이 -1로 표시됨', cause: '되돌아온 소리를 받지 못했습니다.', fix: '반사면을 평평한 판으로 바꾸고 센서를 그 면과 나란히 맞추세요.' },
       i2cTroubleshooting,
+    ],
+  }),
+  createPhase7Recipe({
+    id: 'd9-night-intruder-alarm',
+    title: '어두울 때 다가오면 울리는 자동 방범 장치',
+    subject: '공학·로봇',
+    type: 'project',
+    difficulty: '초급',
+    minutes: 50,
+    sensors: ['cds', 'hc-sr04'],
+    actuators: ['buzzer'],
+    coreKeywords: ['방범', '두 조건', '그리고(AND)', '조도', '초음파 거리'],
+    connections: intruderConnections,
+    sketch: intruderSketch,
+    tunable: { anchor: 'nearCm', name: '가깝다고 볼 거리 (cm)', hint: '이 거리보다 가까우면 다가온 것으로 봅니다. 30 cm에서 시작해 10, 50 cm로도 바꿔 보세요.' },
+    overview: 'CDS로 주변이 어두운지, 초음파 센서로 무언가 가까이 왔는지를 각각 판정하고, 두 조건이 **동시에** 참일 때만 부저를 울리는 방범 장치를 만듭니다. 밝기와 거리는 시리얼 모니터로 함께 보며, 어둡다·가깝다의 기준을 직접 정합니다.',
+    procedure: '먼저 교실 불을 켠 채로 시리얼 모니터에서 밝기 값을 읽고, 손바닥으로 CDS를 덮었을 때의 값도 읽어 두 값 사이로 어둡다의 기준을 정하세요. 그다음 네 경우(밝고 멀다, 밝고 가깝다, 어둡고 멀다, 어둡고 가깝다)를 하나씩 만들어 부저가 마지막 경우에만 울리는지 표에 적으세요. 손이나 공책을 센서 앞 10, 20, 30, 40 cm에 대어 거리 기준이 맞게 작동하는지도 확인하세요.',
+    science: 'CDS는 빛을 받을수록 저항이 작아지는 부품입니다. 10 kΩ 저항과 이어 두 저항이 5 V를 나눠 갖게 하면, 밝을수록 A0의 전압이 높아져 큰 숫자가 나옵니다. 초음파 센서는 사람 귀에 들리지 않는 소리를 보내 물체에 부딪혀 돌아오기까지의 시간을 재고, 소리의 속력(약 340 m/s)으로 거리를 계산합니다. 두 판정을 "그리고(AND)"로 묶으면 둘 중 하나만 참일 때는 울리지 않으므로, 낮에 지나가는 사람이나 밤에 흔들리는 그림자 같은 헛경보가 줄어듭니다. 대신 조건을 늘릴수록 진짜 침입을 놓칠 수도 있습니다. 불을 켜고 들어오는 침입자는 이 장치가 잡지 못합니다.',
+    safety: '부저를 귀에 가까이 대지 마세요. 초음파 센서 앞에서 손을 흔들 때 점퍼선이 빠지지 않게 조심하세요.',
+    applicationGuide: '네 경우마다 `is_dark`, `is_near`, `buzzer_on` 값을 표로 정리해 진리표를 만들어 보세요. 그다음 "그리고(&&)"를 "또는(||)"으로 바꿔 업로드하고 표가 어떻게 달라지는지, 어느 쪽이 방범 장치에 알맞은지 이유와 함께 적어 보세요.',
+    troubleshooting: [
+      { symptom: '불을 꺼도 is_dark가 0으로 남음', cause: '어둡다의 기준(darkLevel)이 실제 어두울 때의 값보다 낮습니다. 교실마다 밝기와 CDS 개체가 다릅니다.', fix: '손으로 CDS를 덮었을 때의 light_adc를 읽고, 그 값과 불을 켰을 때 값의 중간쯤으로 darkLevel을 고쳐 다시 업로드하세요.' },
+      { symptom: 'light_adc가 0이나 1023에 붙어 움직이지 않음', cause: 'CDS나 10 kΩ 저항이 A0와 같은 열에 꽂히지 않았거나 저항이 빠졌습니다.', fix: 'CDS 한쪽 다리, 10 kΩ 저항 한쪽 다리, A0로 가는 선이 브레드보드의 같은 세로줄에 있는지 확인하세요.' },
+      { symptom: '거리가 -1로 기록됨', cause: '초음파가 되돌아오지 않았습니다. 물체가 너무 멀거나, 비스듬하거나, 옷처럼 푹신하면 소리를 되돌리지 않습니다.', fix: '공책처럼 평평하고 단단한 면을 센서 정면에 대어 보세요. 계속 -1이면 TRIG(D7)와 ECHO(D6)가 바뀌지 않았는지 확인하세요.' },
+      { symptom: '두 조건이 모두 1인데 소리가 나지 않음', cause: '부저의 극성이 바뀌었거나 신호선이 D8이 아닌 곳에 꽂혔습니다.', fix: '부저의 + 다리를 D8에, 남은 다리를 GND에 꽂았는지 확인하세요.' },
+      contactTroubleshooting,
     ],
   }),
 ]

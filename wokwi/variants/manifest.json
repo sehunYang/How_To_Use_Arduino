@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "variantCount": 122,
+  "variantCount": 123,
   "variants": [
     {
       "id": "S1--unplugged-mpu6050",
@@ -1334,6 +1334,19 @@
       "scenario": "scenario.test.yaml",
       "chips": [],
       "fingerprint": "d962f4a073f17d9a"
+    },
+    {
+      "id": "d9-night-intruder-alarm--unplugged-hc-sr04",
+      "recipeId": "d9-night-intruder-alarm",
+      "kind": "unplugged",
+      "path": "wokwi/variants/d9-night-intruder-alarm--unplugged-hc-sr04",
+      "sourcePath": "wokwi/phase7/d9-night-intruder-alarm",
+      "timeoutMs": 6000,
+      "scenario": "scenario.test.yaml",
+      "chips": [
+        "cds"
+      ],
+      "fingerprint": "c65f7d74b2cb2b72"
     },
     {
       "id": "e1-terminal-velocity--unplugged-hc-sr04",

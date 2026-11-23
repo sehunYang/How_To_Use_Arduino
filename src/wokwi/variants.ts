@@ -291,6 +291,7 @@ export const VARIANT_EXPECTATIONS: Readonly<Record<string, string>> = {
   'd5-auto-curtain--unplugged-tsl2591': 'diagnosed', // # TSL2591_ERROR
   'd6-temperature-alarm--unplugged-ds18b20': 'diagnosed', // temperature_c=-127.00
   'd8-elevator-floor--unplugged-hc-sr04': 'diagnosed', // distance_cm=-1
+  'd9-night-intruder-alarm--unplugged-hc-sr04': 'diagnosed', // distance_cm=-1
   'e1-terminal-velocity--unplugged-hc-sr04': 'diagnosed', // distance_cm=-1
   'e2-reaction-temperature--unplugged-ds18b20': 'diagnosed', // temperature_c=nan
   'e4-weather-pressure--unplugged-bme280': 'diagnosed', // # BME280_ERROR

@@ -1,7 +1,7 @@
 {
   "version": 1,
   "generatedFrom": "phase5SimulationRegistry",
-  "projectCount": 36,
+  "projectCount": 37,
   "exclusions": [],
   "projects": [
     {
@@ -328,6 +328,18 @@
       "command": "wokwi-cli wokwi/phase7/d8-elevator-floor --scenario scenario.test.yaml --timeout 20000",
       "chips": [],
       "fingerprint": "120af76daae8984f"
+    },
+    {
+      "id": "d9-night-intruder-alarm",
+      "path": "wokwi/phase7/d9-night-intruder-alarm",
+      "kind": "behavior",
+      "timeoutMs": 20000,
+      "scenario": "scenario.test.yaml",
+      "command": "wokwi-cli wokwi/phase7/d9-night-intruder-alarm --scenario scenario.test.yaml --timeout 20000",
+      "chips": [
+        "cds"
+      ],
+      "fingerprint": "0cf25a32b20a538c"
     },
     {
       "id": "e1-terminal-velocity",
